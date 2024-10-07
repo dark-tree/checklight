@@ -1,0 +1,1 @@
+lunarg_api_dump.no_addr = true
