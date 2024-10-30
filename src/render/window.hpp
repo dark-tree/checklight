@@ -38,6 +38,7 @@ class Window {
 
 		~Window();
 
+		GLFWwindow* getHandle() const;
 		void poll() const;
 		bool shouldClose() const;
 		void getFramebufferSize(int* width, int* height) const;

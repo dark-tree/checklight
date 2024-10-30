@@ -90,6 +90,10 @@ Window::~Window() {
 	glfwDestroyWindow(handle);
 }
 
+GLFWwindow* Window::getHandle() const {
+	return handle;
+}
+
 void Window::poll() const {
 	glfwPollEvents();
 }

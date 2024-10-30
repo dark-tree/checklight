@@ -1,0 +1,37 @@
+#pragma once
+
+#include "external.hpp"
+
+class Family {
+
+	private:
+
+		VkPhysicalDevice parent;
+		VkQueueFamilyProperties properties;
+		uint32_t index = 0;
+
+	public:
+
+		Family() = default;
+		Family(VkPhysicalDevice device, VkQueueFamilyProperties properties, int index);
+
+		/**
+		 * @brief Check if this queue family has the given usage flags
+		 *
+		 * @param type combination of one or more VkQueueFlagBits
+		 */
+		bool hasUsage(VkQueueFlags type);
+
+		/**
+		 * @brief Check if this queue family can present to the given surface
+		 *
+		 * @param surface the window surface to check compatibility with
+		 */
+		bool hasPresentation(VkSurfaceKHR& surface);
+
+		/**
+		 * @brief Get the queue family identifier (its index in the queue family array)
+		 */
+		int getIndex();
+
+};
