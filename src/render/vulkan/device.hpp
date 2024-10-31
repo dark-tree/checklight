@@ -65,6 +65,17 @@ class LogicalDevice {
 		LogicalDevice() = default;
 		LogicalDevice(VkDevice device);
 
+		template <typename F>
+		F getFunction(const char* name) {
+			PFN_vkVoidFunction address = vkGetDeviceProcAddr(vk_device, name);
+
+			if (address == nullptr) {
+				printf("ERROR: Device function '%s' failed to load!\n", name);
+			}
+
+			return (F) address;
+		}
+
 		/**
 		 * @brief Deletes the underlying vulkan object, must be called after all
 		 *        descending objects have been already closed

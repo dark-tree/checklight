@@ -3,7 +3,7 @@
 #include "external.hpp"
 
 class Instance;
-class Device;
+class LogicalDevice;
 
 struct Proxy {
 
@@ -26,6 +26,6 @@ struct Proxy {
 		/**
 		 * @brief Load functions through the Vulkan Logical Device
 		 */
-		static void loadDeviceFunctions(Device& device);
+		static void loadDeviceFunctions(LogicalDevice& device);
 
 };

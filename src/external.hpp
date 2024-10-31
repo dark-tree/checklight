@@ -10,6 +10,8 @@
 #include <list>
 #include <algorithm>
 #include <concepts>
+#include <fstream>
+#include <sstream>
 
 // GLFW
 #define GLFW_INCLUDE_VULKAN

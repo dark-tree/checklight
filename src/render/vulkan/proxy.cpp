@@ -15,6 +15,6 @@ void Proxy::loadInstanceFunctions(Instance& instance) {
 	vkGetPhysicalDeviceFeatures2KHR = instance.getFunction<PFN_vkGetPhysicalDeviceFeatures2KHR>("vkGetPhysicalDeviceFeatures2KHR");
 }
 
-void Proxy::loadDeviceFunctions(Device& device) {
-	// TODO load device functions
+void Proxy::loadDeviceFunctions(LogicalDevice& device) {
+
 }

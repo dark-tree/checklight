@@ -5,6 +5,7 @@
 #include "window.hpp"
 #include "render/vulkan/proxy.hpp"
 #include "render/vulkan/instance.hpp"
+#include "render/vulkan/compiler.hpp"
 
 class Renderer {
 
@@ -18,6 +19,7 @@ class Renderer {
 		VkSurfaceKHR surface;
 		LogicalDevice device;
 		Instance instance;
+		Compiler compiler;
 
 	private:
 

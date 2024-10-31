@@ -179,7 +179,10 @@ void Renderer::createDevice(PhysicalDevice physical, Family family) {
 		throw std::runtime_error {"Failed to create logical device!"};
 	}
 
+	// load all device functions
 	this->device = vk_device;
+	Proxy::loadDeviceFunctions(this->device);
+
 }
 
 Renderer::Renderer(ApplicationParameters& parameters)
