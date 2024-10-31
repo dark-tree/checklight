@@ -112,6 +112,11 @@ void Renderer::pickDevice() {
 			continue;
 		}
 
+		// check for support of required extensions
+		if (!device.hasExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)) {
+			continue;
+		}
+
 		// find a queue family of our liking
 		for (Family family : device.getFamilies()) {
 
@@ -132,11 +137,49 @@ void Renderer::pickDevice() {
 
 	}
 
-	printf("ERROR: No device could have been selected!\n");
+	throw std::runtime_error {"No device could have been selected!"};
 }
 
-void Renderer::createDevice(PhysicalDevice device, Family family) {
-	printf("INFO: Selected '%s' (queue #%d)\n", device.getName(), family.getIndex());
+void Renderer::createDevice(PhysicalDevice physical, Family family) {
+	printf("INFO: Selected '%s' (queue #%d)\n", physical.getName(), family.getIndex());
+
+	// list device extensions we need
+	std::vector<const char*> extensions;
+	extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
+	// we use only one queue at this time
+	const float priority = 1.0f;
+	VkDeviceQueueCreateInfo queue_info {};
+	queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	queue_info.pNext = nullptr;
+	queue_info.queueFamilyIndex = family.getIndex();
+	queue_info.queueCount = 1;
+	queue_info.pQueuePriorities = &priority;
+
+	// features we want to enable
+	VkPhysicalDeviceFeatures2KHR features {};
+	features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+
+	// we will now connect with the selected driver
+	VkDeviceCreateInfo create_info {};
+	create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	create_info.pNext = &features;
+	create_info.pQueueCreateInfos = &queue_info;
+	create_info.queueCreateInfoCount = 1;
+	create_info.pEnabledFeatures = nullptr;
+	create_info.enabledExtensionCount = extensions.size();
+	create_info.ppEnabledExtensionNames = extensions.data();
+
+	// deprecated and ignored
+	create_info.enabledLayerCount = 0;
+
+	VkDevice vk_device;
+
+	if (vkCreateDevice(physical.getHandle(), &create_info, nullptr, &vk_device) != VK_SUCCESS) {
+		throw std::runtime_error {"Failed to create logical device!"};
+	}
+
+	this->device = vk_device;
 }
 
 Renderer::Renderer(ApplicationParameters& parameters)
@@ -157,7 +200,10 @@ Renderer::~Renderer() {
 		Proxy::vkDestroyDebugUtilsMessengerEXT(instance.getHandle(), messenger, nullptr);
 	}
 
-	// instance needs to be destroyed last
+	vkDestroySurfaceKHR(instance.getHandle(), surface, nullptr);
+
+	// It's important to maintain the correct order
+	device.close();
 	instance.close();
 }
 

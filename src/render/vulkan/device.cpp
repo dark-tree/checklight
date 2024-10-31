@@ -39,6 +39,22 @@ VkPhysicalDevice PhysicalDevice::getHandle() const {
 	return vk_device;
 }
 
+bool PhysicalDevice::hasExtension(const char* name) const {
+	uint32_t count = 0;
+	vkEnumerateDeviceExtensionProperties(vk_device, nullptr, &count, nullptr);
+
+	std::vector<VkExtensionProperties> extensions {count};
+	vkEnumerateDeviceExtensionProperties(vk_device, nullptr, &count, extensions.data());
+
+	for (VkExtensionProperties extension : extensions) {
+		if (strcmp(extension.extensionName, name) == 0) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 std::vector<Family> PhysicalDevice::getFamilies() const {
 	uint32_t count = 0;
 	vkGetPhysicalDeviceQueueFamilyProperties(vk_device, &count, nullptr);
@@ -55,4 +71,20 @@ std::vector<Family> PhysicalDevice::getFamilies() const {
 	}
 
 	return entries;
+}
+
+/*
+ * Logical Device
+ */
+
+LogicalDevice::LogicalDevice(VkDevice device) {
+	this->vk_device = device;
+}
+
+void LogicalDevice::close() {
+	vkDestroyDevice(vk_device, nullptr);
+}
+
+VkDevice LogicalDevice::getHandle() const {
+	return vk_device;
 }

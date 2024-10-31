@@ -43,8 +43,38 @@ class PhysicalDevice {
 		VkPhysicalDevice getHandle() const;
 
 		/**
+		 * @brief Get the list of extensions supported by this device
+		 */
+		bool hasExtension(const char* name) const;
+
+		/**
 		 * @brief Get the list of queue families supported by this device
 		 */
 		std::vector<Family> getFamilies() const;
+
+};
+
+class LogicalDevice {
+
+	private:
+
+		VkDevice vk_device = nullptr;
+
+	public:
+
+		LogicalDevice() = default;
+		LogicalDevice(VkDevice device);
+
+		/**
+		 * @brief Deletes the underlying vulkan object, must be called after all
+		 *        descending objects have been already closed
+		 */
+		void close();
+
+		/**
+		 * @brief Get the underlying vulkan object handle
+		 * @note  Try to avoid using this function when possible
+		 */
+		VkDevice getHandle() const;
 
 };

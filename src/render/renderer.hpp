@@ -16,6 +16,7 @@ class Renderer {
 		// early vulkan objects
 		VkDebugUtilsMessengerEXT messenger;
 		VkSurfaceKHR surface;
+		LogicalDevice device;
 		Instance instance;
 
 	private:
