@@ -3,9 +3,10 @@
 #include "external.hpp"
 #include "application.hpp"
 #include "window.hpp"
-#include "render/vulkan/proxy.hpp"
-#include "render/vulkan/instance.hpp"
-#include "render/vulkan/compiler.hpp"
+#include "vulkan/proxy.hpp"
+#include "vulkan/instance.hpp"
+#include "vulkan/compiler.hpp"
+#include "vulkan/command.hpp"
 
 class Renderer {
 
@@ -22,6 +23,8 @@ class Renderer {
 		Compiler compiler;
 		Family family;
 		Queue queue;
+		CommandPool transient_pool;
+		CommandPool graphics_pool;
 
 	private:
 
@@ -37,6 +40,8 @@ class Renderer {
 
 		Renderer(ApplicationParameters& parameters);
 		~Renderer();
+
+
 
 		Window& getWindow() const;
 

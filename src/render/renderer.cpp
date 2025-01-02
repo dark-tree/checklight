@@ -198,11 +198,19 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	// family is selected and loaded as part of device picking
 	queue = device.getQueue(family);
 
+	// create command buffer pools for our family
+	transient_pool = CommandPool::create(device, family, true);
+	graphics_pool = CommandPool::create(device, family, false);
+
+
 
 
 }
 
 Renderer::~Renderer() {
+
+	transient_pool.close();
+	graphics_pool.close();
 
 	// destroy messenger only if it was created before
 	if (messenger) {
@@ -214,6 +222,9 @@ Renderer::~Renderer() {
 	// It's important to maintain the correct order
 	device.close();
 	instance.close();
+
+	printf("INFO: Renderer deinitialized, goodbye!\n");
+
 }
 
 Window& Renderer::getWindow() const {
