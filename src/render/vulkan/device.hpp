@@ -2,6 +2,7 @@
 
 #include "external.hpp"
 #include "family.hpp"
+#include "queue.hpp"
 
 class PhysicalDevice {
 
@@ -87,5 +88,11 @@ class LogicalDevice {
 		 * @note  Try to avoid using this function when possible
 		 */
 		VkDevice getHandle() const;
+
+		/**
+		 * @brief Get the queue corresponding to the given
+		 *        Family used during device creation
+		 */
+		Queue getQueue(const Family& family) const;
 
 };

@@ -20,6 +20,8 @@ class Renderer {
 		LogicalDevice device;
 		Instance instance;
 		Compiler compiler;
+		Family family;
+		Queue queue;
 
 	private:
 
@@ -29,7 +31,7 @@ class Renderer {
 		// early init
 		void createInstance(ApplicationParameters& parameters, bool debug);
 		void pickDevice();
-		void createDevice(PhysicalDevice device, Family family);
+		void createDevice(PhysicalDevice device, Family queue_family);
 
 	public:
 

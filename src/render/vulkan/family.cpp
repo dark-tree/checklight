@@ -11,16 +11,16 @@ Family::Family(VkPhysicalDevice parent, VkQueueFamilyProperties properties, int 
 	this->index = index;
 }
 
-bool Family::hasUsage(VkQueueFlags type) {
+bool Family::hasUsage(VkQueueFlags type) const {
 	return properties.queueFlags & type;
 }
 
-bool Family::hasPresentation(VkSurfaceKHR& surface) {
+bool Family::hasPresentation(VkSurfaceKHR& surface) const {
 	VkBool32 supported = true;
 	vkGetPhysicalDeviceSurfaceSupportKHR(parent, index, surface, &supported);
 	return supported;
 }
 
-int Family::getIndex() {
+int Family::getIndex() const {
 	return index;
 }

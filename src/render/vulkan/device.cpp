@@ -88,3 +88,9 @@ void LogicalDevice::close() {
 VkDevice LogicalDevice::getHandle() const {
 	return vk_device;
 }
+
+Queue LogicalDevice::getQueue(const Family& family) const {
+	VkQueue queue;
+	vkGetDeviceQueue(vk_device, family.getIndex(), 0, &queue);
+	return {queue};
+}

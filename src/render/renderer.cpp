@@ -118,20 +118,20 @@ void Renderer::pickDevice() {
 		}
 
 		// find a queue family of our liking
-		for (Family family : device.getFamilies()) {
+		for (Family queue_family : device.getFamilies()) {
 
 			// needs to be able to present to our window...
-			if (!family.hasPresentation(surface)) {
+			if (!queue_family.hasPresentation(surface)) {
 				continue;
 			}
 
 			// we will do all vulkan calls on a single queue for simplicity
-			if (!family.hasUsage(VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT)) {
+			if (!queue_family.hasUsage(VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT)) {
 				continue;
 			}
 
 			// we found the one, continue with this device and family
-			createDevice(device, family);
+			createDevice(device, queue_family);
 			return;
 		}
 
@@ -140,8 +140,8 @@ void Renderer::pickDevice() {
 	throw std::runtime_error {"No device could have been selected!"};
 }
 
-void Renderer::createDevice(PhysicalDevice physical, Family family) {
-	printf("INFO: Selected '%s' (queue #%d)\n", physical.getName(), family.getIndex());
+void Renderer::createDevice(PhysicalDevice physical, Family queue_family) {
+	printf("INFO: Selected '%s' (queue #%d)\n", physical.getName(), queue_family.getIndex());
 
 	// list device extensions we need
 	std::vector<const char*> extensions;
@@ -152,7 +152,7 @@ void Renderer::createDevice(PhysicalDevice physical, Family family) {
 	VkDeviceQueueCreateInfo queue_info {};
 	queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 	queue_info.pNext = nullptr;
-	queue_info.queueFamilyIndex = family.getIndex();
+	queue_info.queueFamilyIndex = queue_family.getIndex();
 	queue_info.queueCount = 1;
 	queue_info.pQueuePriorities = &priority;
 
@@ -181,6 +181,8 @@ void Renderer::createDevice(PhysicalDevice physical, Family family) {
 
 	// load all device functions
 	this->device = vk_device;
+	this->family = queue_family;
+
 	Proxy::loadDeviceFunctions(this->device);
 
 }
@@ -192,6 +194,10 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	createInstance(parameters, true);
 	glfwCreateWindowSurface(instance.getHandle(), window->getHandle(), nullptr, &surface);
 	pickDevice();
+
+	// family is selected and loaded as part of device picking
+	queue = device.getQueue(family);
+
 
 
 }
