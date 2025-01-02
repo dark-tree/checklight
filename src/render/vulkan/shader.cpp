@@ -3,7 +3,7 @@
 #include "device.hpp"
 
 Shader::Shader(LogicalDevice& device, const uint32_t* data, uint32_t size, VkShaderStageFlagBits stage)
-: vk_stage(stage), vk_device(device.getHandle()) {
+:  vk_device(device.getHandle()), vk_stage(stage) {
 
 	VkShaderModuleCreateInfo create_info {};
 	create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

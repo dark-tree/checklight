@@ -47,6 +47,12 @@ class Renderer {
 		/// Loads the LogicalDevice, and Family
 		void createDevice(PhysicalDevice device, Family queue_family);
 
+		void createAttachments();
+		void createRenderPasses();
+		void createFramebuffers();
+		void createPipelines();
+		void createFrames();
+
 		/// Close resources created during lateInit()
 		void lateClose();
 

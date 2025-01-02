@@ -39,3 +39,16 @@
 #include <glm/gtx/hash.hpp>
 #include <glm/gtx/norm.hpp>
 
+/**
+ * Can by use in function bodies to mark a spot that should normally be unreachable
+ * during execution, for example after an enum switch. Sometimes needed when
+ * the '-Werror=return-type' flag is used as the compiler is not always smart enough
+ */
+#ifdef __GNUC__ // GCC 4.8+, Clang, Intel and other compilers compatible with GCC (-std=c++0x or above)
+#	define UNREACHABLE __builtin_unreachable()
+#elif defined(_MSC_VER) // MSVC
+#	define UNREACHABLE __assume(false)
+#else
+#	define UNREACHABLE std::terminate()
+#endif
+

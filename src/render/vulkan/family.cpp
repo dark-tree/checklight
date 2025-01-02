@@ -5,7 +5,7 @@
  * Family
  */
 
-Family::Family(VkPhysicalDevice parent, VkQueueFamilyProperties properties, int index) {
+Family::Family(VkPhysicalDevice parent, VkQueueFamilyProperties properties, uint32_t index) {
 	this->parent = parent;
 	this->properties = properties;
 	this->index = index;
@@ -21,6 +21,6 @@ bool Family::hasPresentation(VkSurfaceKHR& surface) const {
 	return supported;
 }
 
-int Family::getIndex() const {
+uint32_t Family::getIndex() const {
 	return index;
 }

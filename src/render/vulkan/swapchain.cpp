@@ -30,7 +30,6 @@ void Swapchain::close() {
  * SwapchainBuilder
  */
 
-
 SwapchainBuilder::SwapchainBuilder(VkFormat format, VkColorSpaceKHR space, VkExtent2D extent, uint32_t images, VkSurfaceTransformFlagBitsKHR transform)
 : extent(extent), images(images), transform(transform) {
 	VkSurfaceFormatKHR surface_format;

@@ -13,7 +13,7 @@ class Family {
 	public:
 
 		Family() = default;
-		Family(VkPhysicalDevice device, VkQueueFamilyProperties properties, int index);
+		Family(VkPhysicalDevice device, VkQueueFamilyProperties properties, uint32_t index);
 
 		/**
 		 * @brief Check if this queue family has the given usage flags
@@ -32,6 +32,6 @@ class Family {
 		/**
 		 * @brief Get the queue family identifier (its index in the queue family array)
 		 */
-		int getIndex() const;
+		uint32_t getIndex() const;
 
 };

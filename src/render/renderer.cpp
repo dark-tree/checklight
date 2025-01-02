@@ -211,12 +211,37 @@ void Renderer::createSwapchain() {
 
 }
 
+void Renderer::createAttachments() {
+	// TODO
+}
+
+void Renderer::createRenderPasses() {
+	// TODO
+}
+
+void Renderer::createFramebuffers() {
+	// TODO
+}
+
+void Renderer::createPipelines() {
+	// TODO
+}
+
+void Renderer::createFrames() {
+	// TODO
+}
+
 void Renderer::lateClose() {
 	swapchain.close();
 }
 
 void Renderer::lateInit() {
 	createSwapchain();
+
+	createRenderPasses(); // render pass depends on the format of the color attachment
+	createFramebuffers(); // framebuffers depend on their renderpasses
+	createPipelines(); // pipelines depend on renderpass' subpasses
+	createFrames(); // frames need the whole system to be ready
 }
 
 Renderer::Renderer(ApplicationParameters& parameters)
