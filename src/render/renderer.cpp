@@ -180,11 +180,43 @@ void Renderer::createDevice(PhysicalDevice physical, Family queue_family) {
 	}
 
 	// load all device functions
+	this->physical = physical;
 	this->device = vk_device;
 	this->family = queue_family;
 
 	Proxy::loadDeviceFunctions(this->device);
 
+}
+
+void Renderer::createSwapchain() {
+
+	SwapchainInfo info = physical.getSwapchainInfo(this->surface);
+	auto extent = info.getExtent(*window);
+	auto images = info.getImageCount(4);
+	auto transform = info.getTransform();
+
+	const VkFormat format = VK_FORMAT_B8G8R8A8_SRGB;
+	const VkColorSpaceKHR space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+
+	if (!info.isFormatSupported(format, space)) {
+		throw std::runtime_error {"The preferred surface format is not supported!"};
+	}
+
+	SwapchainBuilder builder {format, space, extent, images, transform};
+	builder.setPresentMode(VK_PRESENT_MODE_IMMEDIATE_KHR);
+	builder.addQueueFamily(family);
+
+	this->swapchain = builder.build(device, surface);
+	printf("INFO: Swapchain ready\n");
+
+}
+
+void Renderer::lateClose() {
+	swapchain.close();
+}
+
+void Renderer::lateInit() {
+	createSwapchain();
 }
 
 Renderer::Renderer(ApplicationParameters& parameters)
@@ -202,12 +234,15 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	transient_pool = CommandPool::create(device, family, true);
 	graphics_pool = CommandPool::create(device, family, false);
 
-
-
+	// begin late initialization
+	lateInit();
 
 }
 
 Renderer::~Renderer() {
+
+	// late close is actually first :)
+	lateClose();
 
 	transient_pool.close();
 	graphics_pool.close();
@@ -225,6 +260,11 @@ Renderer::~Renderer() {
 
 	printf("INFO: Renderer deinitialized, goodbye!\n");
 
+}
+
+void Renderer::reload() {
+	lateClose();
+	lateInit();
 }
 
 Window& Renderer::getWindow() const {

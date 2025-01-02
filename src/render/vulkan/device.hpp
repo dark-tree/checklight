@@ -3,6 +3,7 @@
 #include "external.hpp"
 #include "family.hpp"
 #include "queue.hpp"
+#include "swapchain.hpp"
 
 class PhysicalDevice {
 
@@ -52,6 +53,11 @@ class PhysicalDevice {
 		 * @brief Get the list of queue families supported by this device
 		 */
 		std::vector<Family> getFamilies() const;
+
+		/**
+		 * @brief Get information about supported swapchain configurations
+		 */
+		SwapchainInfo getSwapchainInfo(VkSurfaceKHR surface);
 
 };
 

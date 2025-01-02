@@ -73,6 +73,10 @@ std::vector<Family> PhysicalDevice::getFamilies() const {
 	return entries;
 }
 
+SwapchainInfo PhysicalDevice::getSwapchainInfo(VkSurfaceKHR surface) {
+	return {vk_device, surface};
+}
+
 /*
  * Logical Device
  */
