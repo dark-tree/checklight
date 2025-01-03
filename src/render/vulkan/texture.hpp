@@ -4,18 +4,27 @@
 #include "image.hpp"
 #include "device.hpp"
 
+class Attachment;
+
 class Texture {
 
 	private:
 
+		VkFormat vk_format;
 		VkImage vk_image;
 		VkImageView vk_view;
 		VkSampler vk_sampler;
 
 	public:
 
-		Texture(VkImage vk_image, VkImageView vk_view, VkSampler vk_sampler)
-		: vk_image(vk_image), vk_view(vk_view), vk_sampler(vk_sampler) {}
+		Texture(VkFormat vk_format, VkImage vk_image, VkImageView vk_view, VkSampler vk_sampler);
+
+		/**
+		 * Convert this texture to an Attachment with the given VkClearValue
+		 */
+		Attachment asColorAttachment(float r, float g, float b, float a);
+		Attachment asColorAttachment(int r, int g, int b, int a);
+		Attachment asDepthAttachment(float depth, uint32_t stencil = 0);
 
 };
 
@@ -23,6 +32,7 @@ class TextureBuilder {
 
 	private:
 
+		VkFormat vk_format;
 		VkImageViewCreateInfo view_info {};
 		VkSamplerCreateInfo sampler_info {};
 

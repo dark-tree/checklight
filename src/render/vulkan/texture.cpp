@@ -1,5 +1,31 @@
 
 #include "texture.hpp"
+#include "attachment.hpp"
+
+/*
+ * Texture
+ */
+
+Texture::Texture(VkFormat vk_format, VkImage vk_image, VkImageView vk_view, VkSampler vk_sampler)
+: vk_format(vk_format), vk_image(vk_image), vk_view(vk_view), vk_sampler(vk_sampler) {}
+
+Attachment Texture::asColorAttachment(float r, float g, float b, float a) {
+	VkClearValue value;
+	value.color = {.float32 = {r, g, b, a}};
+	return {*this, value};
+}
+
+Attachment Texture::asColorAttachment(int r, int g, int b, int a) {
+	VkClearValue value;
+	value.color = {.int32 = {r, g, b, a}};
+	return {*this, value};
+}
+
+Attachment Texture::asDepthAttachment(float depth, uint32_t stencil) {
+	VkClearValue value;
+	value.depthStencil = {depth, stencil};
+	return {*this, value};
+}
 
 /*
  * TextureBuilder
@@ -22,6 +48,8 @@ TextureBuilder::TextureBuilder(const Image image) {
 	sampler_info.unnormalizedCoordinates = VK_FALSE;
 	sampler_info.compareEnable = VK_FALSE;
 	sampler_info.compareOp = VK_COMPARE_OP_ALWAYS;
+
+	vk_format = image.vk_format;
 
 	setType(VK_IMAGE_VIEW_TYPE_2D);
 	setSwizzle(VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY);
@@ -88,6 +116,6 @@ Texture TextureBuilder::build(LogicalDevice& device) const {
 		throw std::runtime_error {"Failed to create image sampler!"};
 	}
 
-	return {image, view, sampler};
+	return {vk_format, image, view, sampler};
 
 }
