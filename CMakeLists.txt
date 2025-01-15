@@ -30,31 +30,33 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 FetchContent_Declare(
+		vma
+		GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+		GIT_TAG v3.0.1
+)
+
+FetchContent_Declare(
 		glfw
 		GIT_REPOSITORY https://github.com/glfw/glfw.git
 		GIT_TAG 3.4
-		GIT_PROGRESS TRUE
 )
 
 FetchContent_Declare(
 		stb
 		GIT_REPOSITORY https://github.com/nothings/stb
 		GIT_TAG 5736b15f7ea0ffb08dd38af21067c314d6a3aae9
-		GIT_PROGRESS TRUE
 )
 
 FetchContent_Declare(
 		glm
 		GIT_REPOSITORY https://github.com/g-truc/glm
 		GIT_TAG 0.9.9.8
-		GIT_PROGRESS TRUE
 )
 
 FetchContent_Declare(
 		shaderc
 		GIT_REPOSITORY https://github.com/google/shaderc
 		GIT_TAG v2023.4
-		GIT_PROGRESS TRUE
 )
 
 # Time for some mental gymnastics for shaderc ...
@@ -81,7 +83,7 @@ set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
 
 # ... And finally add shaderc!
 add_subdirectory(${shaderc_SOURCE_DIR} ${shaderc_BINARY_DIR})
-FetchContent_MakeAvailable(glfw stb glm)
+FetchContent_MakeAvailable(glfw stb glm vma)
 
 include_directories(
 		src/
@@ -90,6 +92,7 @@ include_directories(
 		${glm_SOURCE_DIR}                        # Headers in ./glm
 		${shaderc_SOURCE_DIR}/libshaderc/include # Headers in ./shaderc
 		${Vulkan_INCLUDE_DIRS}                   # Headers in ./vulcan
+		${vma_SOURCE_DIR}/include                # Headers in ./
 )
 
 file(GLOB_RECURSE CHECKLIGHT_SOURCES
