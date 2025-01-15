@@ -8,6 +8,10 @@
 Buffer::Buffer(VkBuffer vk_buffer, Allocation allocation)
 : vk_buffer(vk_buffer), allocation(allocation) {}
 
+void Buffer::close() {
+	allocation.closeBuffer(vk_buffer);
+}
+
 VkBuffer Buffer::getHandle() {
 	return vk_buffer;
 }

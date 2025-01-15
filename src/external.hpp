@@ -12,6 +12,7 @@
 #include <concepts>
 #include <fstream>
 #include <sstream>
+#include <queue>
 
 // GLFW
 #define GLFW_INCLUDE_VULKAN
