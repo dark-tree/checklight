@@ -74,10 +74,28 @@ Allocator::Allocator(LogicalDevice& logical, PhysicalDevice& physical, Instance&
 	if (vmaCreateAllocator(&create_info, &vma_allocator) != VK_SUCCESS) {
 		throw std::runtime_error {"Failed to create allocator!"};
 	}
+
+	vkGetPhysicalDeviceMemoryProperties(physical.getHandle(), &vk_properties);
 }
 
 void Allocator::close() {
 	vmaDestroyAllocator(vma_allocator);
+}
+
+void Allocator::print() {
+	printf("INFO: There are %d memory types and %d memory heaps\n", vk_properties.memoryTypeCount, vk_properties.memoryHeapCount);
+
+	size_t free = 0;
+
+	for (int i = 0; i < vk_properties.memoryHeapCount; i ++) {
+		VkMemoryHeap heap = vk_properties.memoryHeaps[i];
+
+		if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+			free += heap.size / 1024 / 1024;
+		}
+	}
+
+	printf("INFO: Found %lu MiB of device local free memory\n", free);
 }
 
 Buffer Allocator::allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlagBits usage) {

@@ -8,6 +8,7 @@
 #include "vulkan/compiler.hpp"
 #include "vulkan/command.hpp"
 #include "vulkan/memory.hpp"
+#include "render/vulkan/allocator.hpp"
 
 class Renderer {
 
@@ -27,7 +28,7 @@ class Renderer {
 		Queue queue;
 		CommandPool transient_pool;
 		CommandPool graphics_pool;
-		Memory memory;
+		Allocator allocator;
 
 		// late vulkan objects
 		Swapchain swapchain;

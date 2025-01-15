@@ -36,6 +36,7 @@ class Allocator {
 	private:
 
 		VmaAllocator vma_allocator;
+		VkPhysicalDeviceMemoryProperties vk_properties;
 
 		void fromMemoryGroup(VmaAllocationCreateInfo* create_info, Memory group);
 
@@ -45,6 +46,7 @@ class Allocator {
 		Allocator(LogicalDevice& logical, PhysicalDevice& physical, Instance& instance);
 
 		void close();
+		void print();
 
 	public:
 

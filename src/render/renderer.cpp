@@ -259,8 +259,8 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	transient_pool = CommandPool::create(device, family, true);
 	graphics_pool = CommandPool::create(device, family, false);
 
-	memory = Memory {physical};
-	memory.print();
+	allocator = Allocator {device, physical, instance};
+	allocator.print();
 
 	// begin late initialization
 	lateInit();
