@@ -30,7 +30,7 @@ int TaskQueue::execute() {
 		}
 	}
 
-	for (Task& task : locals) {
+	for (std::function<void()>& task : locals) {
 		task();
 	}
 

@@ -25,8 +25,16 @@ CommandRecorder CommandBuffer::record(VkCommandBufferUsageFlags flags) {
 
 }
 
+CommandSubmitter CommandBuffer::submit() {
+	return {vk_buffer};
+}
+
 void CommandBuffer::close() {
 	vkFreeCommandBuffers(vk_device, vk_pool, 1, &vk_buffer);
+}
+
+VkCommandBuffer CommandBuffer::getHandle() const {
+	return vk_buffer;
 }
 
 /*

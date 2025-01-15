@@ -3,10 +3,13 @@
 #include "external.hpp"
 #include "device.hpp"
 #include "recorder.hpp"
+#include "semaphore.hpp"
+#include "fence.hpp"
+#include "submitter.hpp"
 
 class CommandBuffer {
 
-	public:
+	private:
 
 		VkCommandPool vk_pool;
 		VkCommandBuffer vk_buffer;
@@ -18,18 +21,23 @@ class CommandBuffer {
 		CommandBuffer(VkCommandPool vk_pool, VkCommandBuffer vk_buffer, VkDevice vk_device);
 
 		void close();
+		VkCommandBuffer getHandle() const;
 
 		/**
-		 * TODO documentation
+		 *
 		 */
 		CommandRecorder record(VkCommandBufferUsageFlags flags = 0);
 
+		/**
+		 *
+		 */
+		CommandSubmitter submit();
 
 };
 
 class CommandPool {
 
-	public:
+	private:
 
 		VkCommandPool vk_pool;
 		VkDevice vk_device;
