@@ -107,6 +107,7 @@ add_library(external
 		lib/stb_image.cpp
 		lib/stb_image_write.cpp
 		lib/stb_vorbis.cpp
+		lib/vk_mem_alloc.cpp
 )
 
 add_executable(main

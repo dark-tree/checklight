@@ -289,10 +289,11 @@ Image ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& recorde
  * Image
  */
 
-Image::Image(VkImage vk_image, VkFormat vk_format)
-: vk_image(vk_image), vk_format(vk_format) {}
+Image::Image(VkImage vk_image, VkFormat vk_format, Allocation allocation)
+: vk_image(vk_image), vk_format(vk_format), allocation(allocation) {}
 
 void Image::close() {
+	allocation.closeImage(vk_image);
 }
 
 VkImage Image::getHandle() const {
