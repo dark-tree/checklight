@@ -87,6 +87,7 @@ FetchContent_MakeAvailable(glfw stb glm vma)
 
 include_directories(
 		src/
+		lib/
 		${glfw_SOURCE_DIR}/include               # Headers in ./GLFW
 		${stb_SOURCE_DIR}                        # Headers in ./
 		${glm_SOURCE_DIR}                        # Headers in ./glm

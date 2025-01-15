@@ -18,6 +18,7 @@ class Allocation {
 
 	private:
 
+
 		VmaAllocator vma_allocator;
 		VmaAllocation vma_allocation;
 
@@ -26,6 +27,9 @@ class Allocation {
 		Allocation() = default;
 		Allocation(VmaAllocator allocator, VmaAllocation allocation);
 
+		void* map();
+		void unmap();
+		void flushNonCoherent(size_t offset = 0, size_t size = VK_WHOLE_SIZE);
 		void closeBuffer(VkBuffer buffer);
 		void closeImage(VkImage image);
 
@@ -53,11 +57,11 @@ class Allocator {
 		/**
 		 * Allocates a new Vulkan Buffer with the specified memory properties
 		 */
-		Buffer allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlagBits usage);
+		Buffer allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags usage);
 
 		/**
 		 * Allocates a new Vulkan Image with the specified memory properties
 		 */
-		Image allocateImage(Memory memory, int width, int height, VkFormat format, VkBufferUsageFlagBits usage, int mips = 1);
+		Image allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels);
 
 };

@@ -45,6 +45,9 @@
 #include <glm/gtx/hash.hpp>
 #include <glm/gtx/norm.hpp>
 
+// Vulkan Format Database
+#include "vk_format_info.hpp"
+
 /**
  * Can by use in function bodies to mark a spot that should normally be unreachable
  * during execution, for example after an enum switch. Sometimes needed when

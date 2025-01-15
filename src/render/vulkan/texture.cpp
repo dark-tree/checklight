@@ -49,7 +49,7 @@ TextureBuilder::TextureBuilder(const Image image) {
 	sampler_info.compareEnable = VK_FALSE;
 	sampler_info.compareOp = VK_COMPARE_OP_ALWAYS;
 
-	vk_format = image.vk_format;
+	vk_format = image.getFormat();
 
 	setType(VK_IMAGE_VIEW_TYPE_2D);
 	setSwizzle(VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY);

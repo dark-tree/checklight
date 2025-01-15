@@ -18,6 +18,20 @@ void Allocation::closeImage(VkImage image) {
 	vmaDestroyImage(vma_allocator, image, vma_allocation);
 }
 
+void* Allocation::map() {
+	void* pointer;
+	vmaMapMemory(vma_allocator, vma_allocation, &pointer);
+	return pointer;
+}
+
+void Allocation::unmap() {
+	vmaUnmapMemory(vma_allocator, vma_allocation);
+}
+
+void Allocation::flushNonCoherent(size_t offset, size_t size) {
+	vmaFlushAllocation(vma_allocator, vma_allocation, offset, size);
+}
+
 /*
  * Allocator
  */
@@ -98,7 +112,7 @@ void Allocator::print() {
 	printf("INFO: Found %lu MiB of device local free memory\n", free);
 }
 
-Buffer Allocator::allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlagBits usage) {
+Buffer Allocator::allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags usage) {
 	VmaAllocationCreateInfo allocation_info {};
 	fromMemoryGroup(&allocation_info, memory);
 
@@ -118,7 +132,7 @@ Buffer Allocator::allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlagB
 	return {buffer, {vma_allocator, allocation}};
 }
 
-Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat format, VkBufferUsageFlagBits usage, int mips) {
+Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels) {
 	VmaAllocationCreateInfo allocation_info {};
 	fromMemoryGroup(&allocation_info, memory);
 
@@ -128,8 +142,8 @@ Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat fo
 	create_info.extent.width = width;
 	create_info.extent.height = height;
 	create_info.extent.depth = 1;
-	create_info.mipLevels = mips;
-	create_info.arrayLayers = 1;
+	create_info.mipLevels = levels;
+	create_info.arrayLayers = layers;
 	create_info.format = format;
 	create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
 	create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;

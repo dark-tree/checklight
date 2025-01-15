@@ -204,7 +204,7 @@ class ManagedImageDataSet {
  */
 class Image {
 
-	public:
+	private:
 
 		// try to keep this packed in memory
 		uint16_t levels : 16;

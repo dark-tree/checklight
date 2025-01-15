@@ -7,7 +7,6 @@
 #include "vulkan/instance.hpp"
 #include "vulkan/compiler.hpp"
 #include "vulkan/command.hpp"
-#include "vulkan/memory.hpp"
 #include "render/vulkan/allocator.hpp"
 
 class Renderer {

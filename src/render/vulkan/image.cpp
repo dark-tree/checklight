@@ -1,5 +1,6 @@
 
 #include "image.hpp"
+#include "buffer.hpp"
 
 /*
  * ImageData
@@ -280,9 +281,52 @@ void ManagedImageDataSet::close() {
 }
 
 Image ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& recorder, VkFormat format) const {
-	// TODO upload
 
-	return {};
+	// dimensions of the base layer in the base level
+	int layer_width = level(0).width();
+	int layer_height = this->height;
+	int layer_count = layers();
+
+	// total image size (all layers and levels)
+	size_t total = size();
+	size_t offset = 0;
+
+	// verify the given format again the first level (all levels are the same)
+	if (getFormatInfo(format).size != (size_t) level(0).channels()) {
+		throw std::runtime_error {"The specified image format doesn't match pixel size!"};
+	}
+
+	Buffer staging = allocator.allocateBuffer(Memory::STAGED, total, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+	std::vector<size_t> offsets;
+	offsets.reserve(levels());
+
+	Allocation& allocation = staging.getAllocation();
+	auto* buffer = (uint8_t*) allocation.map();
+
+	// copy images level by level into staging buffer
+	for (ImageData image : images) {
+		memcpy(buffer + offset, image.data(), image.size());
+		offsets.push_back(offset);
+		offset += image.size();
+	}
+
+	// all done now
+	allocation.flushNonCoherent();
+	allocation.unmap();
+
+	Image image = allocator.allocateImage(Memory::DEVICE, layer_width, layer_height, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, layer_count, levels());
+	recorder.transitionLayout(image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_UNDEFINED, layer_count, levels());
+
+	// transfer the image level by level
+	for (int i = 0; i < levels(); i ++) {
+		recorder.copyBufferToImage(image, staging, offsets[i], level(i).width(), std::max(1, (height >> i)), layer_count, i);
+	}
+
+	recorder.transitionLayout(image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, layer_count, levels());
+
+//	TODO close staging, add to queue
+
+	return image;
 }
 
 /*

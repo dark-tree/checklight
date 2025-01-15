@@ -15,4 +15,7 @@ class Buffer {
 		Buffer() = default;
 		Buffer(VkBuffer vk_buffer, Allocation allocation);
 
+		VkBuffer getHandle();
+		Allocation& getAllocation();
+
 };
