@@ -17,14 +17,31 @@ class Texture {
 
 	public:
 
+		Texture() = default;
 		Texture(VkFormat vk_format, VkImage vk_image, VkImageView vk_view, VkSampler vk_sampler);
 
-		/**
-		 * Convert this texture to an Attachment with the given VkClearValue
-		 */
-		Attachment asColorAttachment(float r, float g, float b, float a);
-		Attachment asColorAttachment(int r, int g, int b, int a);
-		Attachment asDepthAttachment(float depth, uint32_t stencil = 0);
+};
+
+class TextureDelegate {
+
+	private:
+
+		VkImageUsageFlags vk_usage {};
+		VkClearValue vk_clear {};
+		VkImageViewCreateInfo view_info {};
+		VkSamplerCreateInfo sampler_info {};
+
+		friend class TextureBuilder;
+		friend class Attachment;
+
+		void checkImageFormat(VkFormat provided) const;
+
+	public:
+
+		TextureDelegate(VkImageUsageFlags usage, VkClearValue clear, VkImageViewCreateInfo view, VkSamplerCreateInfo sampler);
+
+		Texture buildTexture(LogicalDevice& device, const Image& image) const;
+		Attachment buildAttachment();
 
 };
 
@@ -32,17 +49,18 @@ class TextureBuilder {
 
 	private:
 
-		VkFormat vk_format;
+		VkImageUsageFlags vk_usage {};
+		VkClearValue vk_clear {};
 		VkImageViewCreateInfo view_info {};
 		VkSamplerCreateInfo sampler_info {};
 
 	public:
 
-		static TextureBuilder create(const Image image);
+		static TextureBuilder begin();
 
 	public:
 
-		TextureBuilder(const Image image);
+		TextureBuilder();
 
 		/// Set texture type (1D, 2D, 3D, etc.)
 		TextureBuilder& setType(VkImageViewType type);
@@ -65,7 +83,25 @@ class TextureBuilder {
 		/// Set border color (ignored is addressing is not 'border')
 		TextureBuilder& setBorder(VkBorderColor border);
 
-		/// Create the Texture resource using given settigns
-		Texture build(LogicalDevice& device) const;
+		/// Relevant for attachments only, set clear color float value
+		TextureBuilder& setClearColor(float r, float g, float b, float a);
+
+		/// Relevant for attachments only, set clear color int value
+		TextureBuilder& setClearColor(int r, int g, int b, int a);
+
+		/// Relevant for attachments only, set depth color value
+		TextureBuilder& setClearDepth(float depth, uint32_t stencil = 0);
+
+		/// Relevant for attachments only, set the expected image format
+		TextureBuilder& setFormat(VkFormat format);
+
+		/// Relevant for attachments only, set attachment image usage
+		TextureBuilder& setUsage(VkImageUsageFlags usage);
+
+	public:
+
+		TextureDelegate createDelegate() const;
+		Texture createTexture(LogicalDevice& device, const Image& image) const;
+		Attachment createAttachment() const;
 
 };

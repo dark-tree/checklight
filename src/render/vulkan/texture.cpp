@@ -9,47 +9,69 @@
 Texture::Texture(VkFormat vk_format, VkImage vk_image, VkImageView vk_view, VkSampler vk_sampler)
 : vk_format(vk_format), vk_image(vk_image), vk_view(vk_view), vk_sampler(vk_sampler) {}
 
-Attachment Texture::asColorAttachment(float r, float g, float b, float a) {
-	VkClearValue value;
-	value.color = {.float32 = {r, g, b, a}};
-	return {*this, value};
+/*
+ * TextureDelegate
+ */
+
+void TextureDelegate::checkImageFormat(VkFormat provided) const {
+	if (view_info.format == VK_FORMAT_UNDEFINED) {
+		return;
+	}
+
+	if (view_info.format != provided) {
+		throw std::runtime_error {"Image format incompatible, was the contain set intentionally?"};
+	}
 }
 
-Attachment Texture::asColorAttachment(int r, int g, int b, int a) {
-	VkClearValue value;
-	value.color = {.int32 = {r, g, b, a}};
-	return {*this, value};
+TextureDelegate::TextureDelegate(VkImageUsageFlags usage, VkClearValue clear, VkImageViewCreateInfo view, VkSamplerCreateInfo sampler)
+: vk_usage(usage), vk_clear(clear), view_info(view), sampler_info(sampler) {}
+
+Texture TextureDelegate::buildTexture(LogicalDevice& device, const Image& image) const {
+
+	VkImageViewCreateInfo view_info = this->view_info;
+	checkImageFormat(image.getFormat());
+
+	// complete view create info creation
+	view_info.image = image.getHandle();
+	view_info.subresourceRange.baseArrayLayer = 0;
+	view_info.subresourceRange.layerCount = image.getLayerCount();
+	view_info.subresourceRange.baseMipLevel = 0;
+	view_info.subresourceRange.levelCount = image.getLevelCount();
+	view_info.format = image.getFormat();
+
+	VkImageView view;
+	VkSampler sampler;
+
+	if (vkCreateImageView(device.getHandle(), &view_info, nullptr, &view) != VK_SUCCESS) {
+		throw std::runtime_error {"Failed to create image view!"};
+	}
+
+	if (vkCreateSampler(device.getHandle(), &sampler_info, nullptr, &sampler) != VK_SUCCESS) {
+		throw std::runtime_error {"Failed to create image sampler!"};
+	}
+
+	return {image.getFormat(), image.getHandle(), view, sampler};
+
 }
 
-Attachment Texture::asDepthAttachment(float depth, uint32_t stencil) {
-	VkClearValue value;
-	value.depthStencil = {depth, stencil};
-	return {*this, value};
+Attachment TextureDelegate::buildAttachment() {
+	return {*this};
 }
 
 /*
  * TextureBuilder
  */
 
-TextureBuilder TextureBuilder::create(const Image image) {
-	return {image};
+TextureBuilder TextureBuilder::begin() {
+	return {};
 }
 
-TextureBuilder::TextureBuilder(const Image image) {
+TextureBuilder::TextureBuilder() {
 	view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	view_info.image = image.getHandle();
-
-	view_info.subresourceRange.baseArrayLayer = 0;
-	view_info.subresourceRange.layerCount = image.getLayerCount();
-	view_info.subresourceRange.baseMipLevel = 0;
-	view_info.subresourceRange.levelCount = image.getLevelCount();
-
 	sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	sampler_info.unnormalizedCoordinates = VK_FALSE;
 	sampler_info.compareEnable = VK_FALSE;
 	sampler_info.compareOp = VK_COMPARE_OP_ALWAYS;
-
-	vk_format = image.getFormat();
 
 	setType(VK_IMAGE_VIEW_TYPE_2D);
 	setSwizzle(VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY);
@@ -58,6 +80,8 @@ TextureBuilder::TextureBuilder(const Image image) {
 	setAnisotropy(0.0f);
 	setBorder(VK_BORDER_COLOR_INT_OPAQUE_BLACK);
 	setAspectFlags(VK_IMAGE_ASPECT_COLOR_BIT);
+	setFormat(VK_FORMAT_UNDEFINED);
+	setUsage(0);
 }
 
 TextureBuilder& TextureBuilder::setType(VkImageViewType type) {
@@ -102,20 +126,42 @@ TextureBuilder& TextureBuilder::setBorder(VkBorderColor border) {
 	return *this;
 }
 
-Texture TextureBuilder::build(LogicalDevice& device) const {
+TextureBuilder& TextureBuilder::setClearColor(float r, float g, float b, float a) {
+	VkClearValue value;
+	value.color = {.float32 = {r, g, b, a}};
+	return *this;
+}
 
-	VkImage image = view_info.image;
-	VkImageView view;
-	VkSampler sampler;
+TextureBuilder& TextureBuilder::setClearColor(int r, int g, int b, int a) {
+	VkClearValue value;
+	value.color = {.int32 = {r, g, b, a}};
+	return *this;
+}
 
-	if (vkCreateImageView(device.getHandle(), &view_info, nullptr, &view) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create image view!"};
-	}
+TextureBuilder& TextureBuilder::setClearDepth(float depth, uint32_t stencil) {
+	VkClearValue value;
+	value.depthStencil = {depth, stencil};
+	return *this;
+}
 
-	if (vkCreateSampler(device.getHandle(), &sampler_info, nullptr, &sampler) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create image sampler!"};
-	}
+TextureBuilder& TextureBuilder::setFormat(VkFormat format) {
+	view_info.format = format;
+	return *this;
+}
 
-	return {vk_format, image, view, sampler};
+TextureBuilder& TextureBuilder::setUsage(VkImageUsageFlags usage) {
+	vk_usage = usage;
+	return *this;
+}
 
+TextureDelegate TextureBuilder::createDelegate() const {
+	return {vk_usage, vk_clear, view_info, sampler_info};
+}
+
+Texture TextureBuilder::createTexture(LogicalDevice& device, const Image& image) const {
+	return createDelegate().buildTexture(device, image);
+}
+
+Attachment TextureBuilder::createAttachment() const {
+	return createDelegate().buildAttachment();
 }

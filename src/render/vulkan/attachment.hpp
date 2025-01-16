@@ -7,13 +7,16 @@ class Attachment {
 
 	private:
 
+		TextureDelegate settings;
 		Texture texture;
-		VkClearValue clear;
 
 	public:
 
-		Attachment(const Texture& texture, VkClearValue clear);
+		Attachment(const TextureDelegate& settings);
 
 		VkClearValue getClearValue() const;
+		VkFormat getFormat() const;
+
+		void allocate(LogicalDevice& device, int width, int height, Allocator& allocator);
 
 };
