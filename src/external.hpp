@@ -13,6 +13,7 @@
 #include <fstream>
 #include <sstream>
 #include <queue>
+#include <mutex>
 
 // GLFW
 #define GLFW_INCLUDE_VULKAN

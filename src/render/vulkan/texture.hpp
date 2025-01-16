@@ -42,24 +42,30 @@ class TextureBuilder {
 
 	public:
 
-		// TODO documentation
-
 		TextureBuilder(const Image image);
 
+		/// Set texture type (1D, 2D, 3D, etc.)
 		TextureBuilder& setType(VkImageViewType type);
 
+		/// Rebind color channels (eg. .r=b, .g=1, .b=g)
 		TextureBuilder& setSwizzle(VkComponentSwizzle r, VkComponentSwizzle g, VkComponentSwizzle b, VkComponentSwizzle a);
 
+		/// Type of data this will contain (COLOR, DEPTH, STENCIL, etc.)
 		TextureBuilder& setAspectFlags(VkImageAspectFlags aspect);
 
+		/// Filtering method (NEAREST, LINEAR, etc.)
 		TextureBuilder& setFilter(VkFilter filter);
 
+		/// Addressing method outside valid UV bounds (repeat, clamp to edge, border, etc.)
 		TextureBuilder& setAddressing(VkSamplerAddressMode mode);
 
+		/// @see https://en.wikipedia.org/wiki/Anisotropy
 		TextureBuilder& setAnisotropy(float anisotropy);
 
+		/// Set border color (ignored is addressing is not 'border')
 		TextureBuilder& setBorder(VkBorderColor border);
 
+		/// Create the Texture resource using given settigns
 		Texture build(LogicalDevice& device) const;
 
 };

@@ -4,19 +4,19 @@
 CommandSubmitter::CommandSubmitter(VkCommandBuffer vk_buffer)
 : vk_buffer(vk_buffer) {}
 
-CommandSubmitter& CommandSubmitter::awaits(Semaphore& semaphore, VkPipelineStageFlags stage) {
+CommandSubmitter& CommandSubmitter::awaits(const Semaphore& semaphore, VkPipelineStageFlags stage) {
 	wait_semaphores.push_back(semaphore.getHandle());
 	stages.push_back(stage);
 	return *this;
 }
 
-CommandSubmitter& CommandSubmitter::signal(Semaphore& semaphore) {
+CommandSubmitter& CommandSubmitter::signal(const Semaphore& semaphore) {
 	reset_semaphores.push_back(semaphore.getHandle());
 	return *this;
 }
 
-CommandSubmitter& CommandSubmitter::signal(Fence& fence) {
-	finished_fence = fence.vk_fence;
+CommandSubmitter& CommandSubmitter::signal(const Fence& fence) {
+	finished_fence = fence.getHandle();
 	return *this;
 }
 

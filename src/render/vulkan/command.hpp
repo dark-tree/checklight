@@ -24,12 +24,20 @@ class CommandBuffer {
 		VkCommandBuffer getHandle() const;
 
 		/**
+		 * @brief Get new buffer recorder.
 		 *
+		 * Prepares the buffer for recording and returns the buffer
+		 * Command Recorder, for the given usage. After recording submit the buffer
+		 * using Command Submitter.
 		 */
 		CommandRecorder record(VkCommandBufferUsageFlags flags = 0);
 
 		/**
+		 * @brief Get new buffer submitter.
 		 *
+		 * After the buffer was recorded submit it to the Queue using
+		 * Command Submitter. Before the submission is made this object allows
+		 * you to configure synchronization.
 		 */
 		CommandSubmitter submit();
 

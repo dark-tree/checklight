@@ -13,7 +13,6 @@ class ApplicationParameters {
 		int width, height;
 
 		std::string getName() const;
-
 		std::string getTitle() const;
 
 	public:
@@ -22,12 +21,16 @@ class ApplicationParameters {
 
 		static ApplicationParameters begin();
 
+		/// Version, as reported to Vulkan Driver
 		ApplicationParameters& setVersion(int major, int minor, int patch);
 
+		/// Name, as reported to Vulkan Driver
 		ApplicationParameters& setName(const std::string& name);
 
+		/// Initial window dimensions
 		ApplicationParameters& setDimensions(int width, int height);
 
+		/// Initial window title
 		ApplicationParameters& setTitle(const std::string& title);
 
 };

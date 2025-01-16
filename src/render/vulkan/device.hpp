@@ -5,6 +5,10 @@
 #include "queue.hpp"
 #include "swapchain.hpp"
 
+/**
+ * Represents the vulkan driver,
+ * this often corresponds with actual hardware but can include other drivers (e.g. software renderers)
+ */
 class PhysicalDevice {
 
 	private:
@@ -61,6 +65,9 @@ class PhysicalDevice {
 
 };
 
+/**
+ * Represents the vulkan driver instance (connection)
+ */
 class LogicalDevice {
 
 	private:

@@ -28,7 +28,7 @@ void Fence::reset() {
 	vkResetFences(vk_device, 1, &vk_fence);
 }
 
-void Fence::lock(size_t timeout) {
+void Fence::sync(size_t timeout) {
 	wait(timeout);
 	reset();
 }

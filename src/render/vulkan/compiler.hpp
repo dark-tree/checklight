@@ -38,6 +38,10 @@ class Kind {
 
 };
 
+/**
+ * Represents the ShaderC GLSL compiler, can be used to convert
+ * valid GLSL strings (or files) into Vulkan SPIR-V bytecode
+ */
 class Compiler {
 
 	private:
@@ -77,7 +81,10 @@ class Compiler {
 
 		Compiler();
 
+		/// Compile GLSL shader file
 		Shader compileFile(LogicalDevice& device, const std::string& identifier, Kind kind);
+
+		/// Compile GLSL shader string
 		Shader compileString(LogicalDevice& device, const std::string& unit, const std::string& source, Kind kind);
 
 };

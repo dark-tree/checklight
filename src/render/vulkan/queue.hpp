@@ -13,6 +13,10 @@ class Queue {
 		Queue() = default;
 		Queue(VkQueue queue);
 
+		/**
+		 * @brief Submit command buffer for execution
+		 * @see CommandSubmitter
+		 */
 		void submit(VkSubmitInfo& info, VkFence fence);
 
 };

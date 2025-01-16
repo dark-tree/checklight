@@ -20,9 +20,16 @@ class CommandSubmitter {
 
 		CommandSubmitter(VkCommandBuffer vk_buffer);
 
-		CommandSubmitter& awaits(Semaphore& semaphore, VkPipelineStageFlags stage);
-		CommandSubmitter& signal(Semaphore& semaphore);
-		CommandSubmitter& signal(Fence& fence);
+		/// Make the command buffer wait for the given semaphore
+		CommandSubmitter& awaits(const Semaphore& semaphore, VkPipelineStageFlags stage);
+
+		/// Make the command buffer signal the given semaphore upon completion
+		CommandSubmitter& signal(const Semaphore& semaphore);
+
+		/// Make the command buffer signal the given fence upon completion
+		CommandSubmitter& signal(const Fence& fence);
+
+		/// Submit buffer to queue and execute recorded commands
 		void done(Queue queue);
 
 };

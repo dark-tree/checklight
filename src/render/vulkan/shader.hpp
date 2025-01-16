@@ -18,6 +18,11 @@ class Shader {
 		Shader(LogicalDevice& device, const uint32_t* data, uint32_t size, VkShaderStageFlagBits stage);
 
 		void close();
+
+		/**
+		 * @brief Get pipeline shader config
+		 * Returns the config needed to use shader in a pipeline
+		 */
 		VkPipelineShaderStageCreateInfo getConfig() const;
 
 };

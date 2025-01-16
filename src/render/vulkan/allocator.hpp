@@ -55,11 +55,13 @@ class Allocator {
 	public:
 
 		/**
+		 * @brief Allocate buffer of given size
 		 * Allocates a new Vulkan Buffer with the specified memory properties
 		 */
 		Buffer allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags usage);
 
 		/**
+		 * @brief Allocate image of given size
 		 * Allocates a new Vulkan Image with the specified memory properties
 		 */
 		Image allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels);
