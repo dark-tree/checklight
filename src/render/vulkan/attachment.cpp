@@ -1,6 +1,21 @@
 
 #include "attachment.hpp"
 
+/*
+ * Attachment::Ref
+ */
+
+Attachment::Ref::Ref(int index)
+: index(index) {}
+
+Attachment::Ref Attachment::Ref::of(int index) {
+	return Ref {index};
+}
+
+/*
+ * Attachment
+ */
+
 Attachment::Attachment(const TextureDelegate& settings)
 : settings(settings), texture() {
 	if (settings.view_info.format == VK_FORMAT_UNDEFINED) {

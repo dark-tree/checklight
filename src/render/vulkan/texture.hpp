@@ -38,6 +38,7 @@ class TextureDelegate {
 
 	public:
 
+		TextureDelegate() = default;
 		TextureDelegate(VkImageUsageFlags usage, VkClearValue clear, VkImageViewCreateInfo view, VkSamplerCreateInfo sampler);
 
 		Texture buildTexture(LogicalDevice& device, const Image& image) const;
@@ -68,8 +69,8 @@ class TextureBuilder {
 		/// Rebind color channels (eg. .r=b, .g=1, .b=g)
 		TextureBuilder& setSwizzle(VkComponentSwizzle r, VkComponentSwizzle g, VkComponentSwizzle b, VkComponentSwizzle a);
 
-		/// Type of data this will contain (COLOR, DEPTH, STENCIL, etc.)
-		TextureBuilder& setAspectFlags(VkImageAspectFlags aspect);
+		/// Type of data viewed from the image (COLOR, DEPTH, STENCIL, etc.)
+		TextureBuilder& setAspect(VkImageAspectFlags aspect);
 
 		/// Filtering method (NEAREST, LINEAR, etc.)
 		TextureBuilder& setFilter(VkFilter filter);

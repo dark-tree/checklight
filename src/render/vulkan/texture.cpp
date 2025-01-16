@@ -79,7 +79,7 @@ TextureBuilder::TextureBuilder() {
 	setAddressing(VK_SAMPLER_ADDRESS_MODE_REPEAT);
 	setAnisotropy(0.0f);
 	setBorder(VK_BORDER_COLOR_INT_OPAQUE_BLACK);
-	setAspectFlags(VK_IMAGE_ASPECT_COLOR_BIT);
+	setAspect(VK_IMAGE_ASPECT_COLOR_BIT);
 	setFormat(VK_FORMAT_UNDEFINED);
 	setUsage(0);
 }
@@ -97,7 +97,7 @@ TextureBuilder& TextureBuilder::setSwizzle(VkComponentSwizzle r, VkComponentSwiz
 	return *this;
 }
 
-TextureBuilder& TextureBuilder::setAspectFlags(VkImageAspectFlags aspect) {
+TextureBuilder& TextureBuilder::setAspect(VkImageAspectFlags aspect) {
 	view_info.subresourceRange.aspectMask = aspect;
 	return *this;
 }

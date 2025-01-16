@@ -12,6 +12,23 @@ class Attachment {
 
 	public:
 
+		struct Ref {
+
+			private:
+
+				explicit Ref(int index);
+
+			public:
+
+				const uint32_t index;
+
+				static Ref of(int index);
+
+		};
+
+	public:
+
+		Attachment() = default;
 		Attachment(const TextureDelegate& settings);
 
 		VkClearValue getClearValue() const;

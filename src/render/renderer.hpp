@@ -8,6 +8,9 @@
 #include "vulkan/compiler.hpp"
 #include "vulkan/command.hpp"
 #include "render/vulkan/allocator.hpp"
+#include "render/vulkan/attachment.hpp"
+#include "render/vulkan/binding.hpp"
+#include "render/vulkan/pass/render.hpp"
 
 class Renderer {
 
@@ -18,6 +21,7 @@ class Renderer {
 		std::unique_ptr<Window> window;
 
 		// early vulkan objects
+		VkFormat surface_format;
 		VkDebugUtilsMessengerEXT messenger;
 		Instance instance;
 		VkSurfaceKHR surface;
@@ -28,6 +32,15 @@ class Renderer {
 		CommandPool transient_pool;
 		CommandPool graphics_pool;
 		Allocator allocator;
+
+		// attachments
+		Attachment attachment_color;
+
+		// layouts
+		BindingLayout binding_3d;
+
+		// renderpasses
+		RenderPass pass_basic_3d;
 
 		// late vulkan objects
 		Swapchain swapchain;

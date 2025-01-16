@@ -3,6 +3,8 @@
 #include "const.hpp"
 
 #include "vulkan/device.hpp"
+#include "render/vulkan/texture.hpp"
+#include "render/vulkan/pass/render.hpp"
 
 /*
  * Renderer
@@ -195,7 +197,7 @@ void Renderer::createSwapchain() {
 	auto images = info.getImageCount(4);
 	auto transform = info.getTransform();
 
-	const VkFormat format = VK_FORMAT_B8G8R8A8_SRGB;
+	const VkFormat format = attachment_color.getFormat();
 	const VkColorSpaceKHR space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 
 	if (!info.isFormatSupported(format, space)) {
@@ -207,16 +209,52 @@ void Renderer::createSwapchain() {
 	builder.addQueueFamily(family);
 
 	this->swapchain = builder.build(device, surface);
+
 	printf("INFO: Swapchain ready\n");
 
 }
 
 void Renderer::createAttachments() {
-	// TODO
+
+	// this attachment is special - we will never allocate it
+	attachment_color = TextureBuilder::begin()
+		.setFormat(surface_format)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setClearColor(0.0f, 0.0f, 0.0f, 1.0f)
+		.createAttachment();
+
 }
 
 void Renderer::createRenderPasses() {
-	// TODO
+
+	{ // basic 3d pass
+
+		RenderPassBuilder builder;
+
+		Attachment::Ref color = builder.addAttachment(attachment_color)
+			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+			.next();
+
+		builder.addDependency()
+			.first(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0)
+			.then(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+			.next();
+
+		builder.addDependency(VK_DEPENDENCY_BY_REGION_BIT)
+			.first(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+			.then(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_MEMORY_READ_BIT)
+			.next();
+
+		builder.addSubpass()
+			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+			.next();
+
+		pass_basic_3d = builder.build(device);
+
+	}
+
+
 }
 
 void Renderer::createFramebuffers() {
@@ -238,14 +276,14 @@ void Renderer::lateClose() {
 void Renderer::lateInit() {
 	createSwapchain();
 
-	createRenderPasses(); // render pass depends on the format of the color attachment
 	createFramebuffers(); // framebuffers depend on their renderpasses
-	createPipelines(); // pipelines depend on renderpass' subpasses
 	createFrames(); // frames need the whole system to be ready
 }
 
 Renderer::Renderer(ApplicationParameters& parameters)
 : windows(), window(windows.open(parameters.width, parameters.height, parameters.getTitle())) {
+
+	surface_format = VK_FORMAT_B8G8R8A8_SRGB;
 
 	// early init
 	createInstance(parameters, true);
@@ -261,6 +299,14 @@ Renderer::Renderer(ApplicationParameters& parameters)
 
 	allocator = Allocator {device, physical, instance};
 	allocator.print();
+
+	binding_3d = BindingLayoutBuilder::begin()
+		.attribute(0, VK_FORMAT_R32G32B32_SFLOAT) // xyz
+		.attribute(1, VK_FORMAT_R32G32B32_SFLOAT) // rgb
+		.done();
+
+	createAttachments();
+	createRenderPasses();
 
 	// begin late initialization
 	lateInit();
