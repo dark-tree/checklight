@@ -335,8 +335,8 @@ Image ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& recorde
  * Image
  */
 
-Image::Image(VkImage vk_image, VkFormat vk_format, Allocation allocation)
-: vk_image(vk_image), vk_format(vk_format), allocation(allocation) {}
+Image::Image(VkImage vk_image, VkFormat vk_format, Allocation allocation, uint16_t levels, uint16_t layers)
+: vk_image(vk_image), vk_format(vk_format), allocation(allocation), levels(levels), layers(layers) {}
 
 void Image::close() {
 	allocation.closeImage(vk_image);
@@ -356,4 +356,45 @@ int Image::getLayerCount() const {
 
 int Image::getLevelCount() const {
 	return levels;
+}
+
+/*
+ * ImageView
+ */
+
+ImageView ImageView::create(VkDevice device, const Image& image, VkImageViewType type, VkImageAspectFlags aspect) {
+
+	VkImageViewCreateInfo create_info {};
+	create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	create_info.image = image.getHandle();
+
+	create_info.viewType = type;
+	create_info.format = image.getFormat();
+
+	// just hardcode the swizzle
+	create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+	create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+	create_info.subresourceRange.aspectMask = aspect;
+	create_info.subresourceRange.baseMipLevel = 0;
+	create_info.subresourceRange.levelCount = image.getLevelCount();
+	create_info.subresourceRange.baseArrayLayer = 0;
+	create_info.subresourceRange.layerCount = image.getLayerCount();
+
+	VkImageView view;
+
+	if (vkCreateImageView(device, &create_info, nullptr, &view) != VK_SUCCESS) {
+		throw std::runtime_error ("Failed to create image view!");
+	}
+
+	return ImageView {view};
+}
+
+ImageView::ImageView(VkImageView vk_view)
+: vk_view(vk_view) {}
+
+void ImageView::close(VkDevice vk_device) {
+	vkDestroyImageView(vk_device, vk_view, nullptr);
 }

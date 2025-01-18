@@ -9,6 +9,22 @@
 Texture::Texture(VkFormat vk_format, VkImage vk_image, VkImageView vk_view, VkSampler vk_sampler)
 : vk_format(vk_format), vk_image(vk_image), vk_view(vk_view), vk_sampler(vk_sampler) {}
 
+VkFormat Texture::getFormat() const {
+	return vk_format;
+}
+
+VkImage Texture::getImage() const {
+	return vk_image;
+}
+
+VkImageView Texture::getView() const {
+	return vk_view;
+}
+
+VkSampler Texture::getSampler() const {
+	return vk_sampler;
+}
+
 /*
  * TextureDelegate
  */

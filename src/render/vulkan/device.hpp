@@ -3,7 +3,8 @@
 #include "external.hpp"
 #include "family.hpp"
 #include "queue.hpp"
-#include "swapchain.hpp"
+
+class SwapchainInfo;
 
 /**
  * Represents the vulkan driver,

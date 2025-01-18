@@ -3,6 +3,7 @@
 #include "external.hpp"
 #include "render/window.hpp"
 #include "family.hpp"
+#include "image.hpp"
 
 class LogicalDevice;
 
@@ -15,7 +16,7 @@ class Swapchain {
 		VkExtent2D vk_extent;
 		VkDevice vk_device;
 
-		std::vector<VkImage> images;
+		std::vector<ImageView> views;
 
 	public:
 
@@ -23,6 +24,8 @@ class Swapchain {
 		Swapchain(VkSwapchainKHR vk_swapchain, VkSurfaceFormatKHR vk_surface_format, VkExtent2D vk_extent, VkDevice vk_device);
 
 		void close();
+
+		const std::vector<ImageView>& getViews();
 
 };
 

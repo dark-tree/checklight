@@ -18,9 +18,8 @@ class Allocation {
 
 	private:
 
-
-		VmaAllocator vma_allocator;
-		VmaAllocation vma_allocation;
+		VmaAllocator vma_allocator = VK_NULL_HANDLE;
+		VmaAllocation vma_allocation = VK_NULL_HANDLE;
 
 	public:
 
@@ -32,6 +31,8 @@ class Allocation {
 		void flushNonCoherent(size_t offset = 0, size_t size = VK_WHOLE_SIZE);
 		void closeBuffer(VkBuffer buffer);
 		void closeImage(VkImage image);
+
+		bool empty() const;
 
 };
 

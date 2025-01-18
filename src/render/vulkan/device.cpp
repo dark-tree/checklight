@@ -1,6 +1,7 @@
 
 #include "device.hpp"
 #include "proxy.hpp"
+#include "swapchain.hpp"
 
 /*
  * PhysicalDevice

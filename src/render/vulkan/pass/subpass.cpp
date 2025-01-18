@@ -71,28 +71,24 @@ SubpassBuilder::SubpassBuilder(RenderPassBuilder& builder, VkPipelineBindPoint b
 	depth.attachment = VK_ATTACHMENT_UNUSED;
 }
 
-/// attachments that are read from a shader
 SubpassBuilder& SubpassBuilder::addInput(Attachment::Ref attachment, VkImageLayout target_layout) {
 	references.insert(attachment.index);
 	inputs.push_back(getReference(attachment.index, target_layout));
 	return *this;
 }
 
-/// attachment for color data
 SubpassBuilder& SubpassBuilder::addOutput(Attachment::Ref attachment, VkImageLayout target_layout) {
 	references.insert(attachment.index);
 	colors.push_back(getReference(attachment.index, target_layout));
 	return *this;
 }
 
-/// attachment for depth and stencil data
 SubpassBuilder& SubpassBuilder::addDepth(Attachment::Ref attachment, VkImageLayout target_layout) {
 	references.insert(attachment.index);
 	depth = getReference(attachment.index, target_layout);
 	return *this;
 }
 
-/// attachments used for multisampling color attachments
 SubpassBuilder& SubpassBuilder::addResolve(Attachment::Ref attachment, VkImageLayout target_layout) {
 	references.insert(attachment.index);
 	resolves.push_back(getReference(attachment.index, target_layout));

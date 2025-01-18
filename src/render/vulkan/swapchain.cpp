@@ -1,6 +1,7 @@
 
 #include "swapchain.hpp"
 #include "device.hpp"
+#include "image.hpp"
 
 #define SWAPCHAIN_EXTENT_AUTO 0xFFFFFFFF
 
@@ -15,15 +16,31 @@ Swapchain::Swapchain(VkSwapchainKHR vk_swapchain, VkSurfaceFormatKHR vk_surface_
 	vkGetSwapchainImagesKHR(vk_device, vk_swapchain, &count, nullptr);
 
 	if (count > 0) {
-		images.reserve(count);
-		vkGetSwapchainImagesKHR(vk_device, vk_swapchain, &count, images.data());
+		VkImage* images = new VkImage[count];
+		vkGetSwapchainImagesKHR(vk_device, vk_swapchain, &count, images);
+
+		for (int i = 0; i < count; i ++) {
+			VkImage vk_image = images[i];
+
+			Image img {vk_image, vk_surface_format.format, {}};
+			views.push_back(ImageView::create(vk_device, img, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT));
+		}
+
+		delete[] images;
 	}
 
 }
 
 void Swapchain::close() {
-	// TODO close images, yes we DO need to close them ourselves
+	for (ImageView& view : views) {
+		view.close(vk_device);
+	}
+
 	vkDestroySwapchainKHR(vk_device, vk_swapchain, nullptr);
+}
+
+const std::vector<ImageView>& Swapchain::getViews() {
+	return views;
 }
 
 /*

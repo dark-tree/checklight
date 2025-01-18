@@ -218,7 +218,7 @@ class Image {
 	public:
 
 		Image() = default;
-		Image(VkImage vk_image, VkFormat vk_format, Allocation allocation);
+		Image(VkImage vk_image, VkFormat vk_format, Allocation allocation, uint16_t levels = 1, uint16_t layers = 1);
 
 		void close();
 
@@ -226,5 +226,26 @@ class Image {
 		VkFormat getFormat() const;
 		int getLevelCount() const;
 		int getLayerCount() const;
+
+};
+
+/**
+ * In some cases it may be imperative that we create the
+ * Image View manually, this class is here for those cases.
+ */
+class ImageView {
+
+	private:
+
+		VkImageView vk_view;
+
+	public:
+
+		static ImageView create(VkDevice device, const Image& image, VkImageViewType type, VkImageAspectFlags aspect);
+
+		ImageView() = default;
+		ImageView(VkImageView vk_view);
+
+		void close(VkDevice device);
 
 };

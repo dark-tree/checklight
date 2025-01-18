@@ -20,6 +20,11 @@ class Texture {
 		Texture() = default;
 		Texture(VkFormat vk_format, VkImage vk_image, VkImageView vk_view, VkSampler vk_sampler);
 
+		VkFormat getFormat() const;
+		VkImage getImage() const;
+		VkImageView getView() const;
+		VkSampler getSampler() const;
+
 };
 
 class TextureDelegate {

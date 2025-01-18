@@ -11,11 +11,15 @@ Allocation::Allocation(VmaAllocator allocator, VmaAllocation allocation)
 : vma_allocator(allocator), vma_allocation(allocation) {}
 
 void Allocation::closeBuffer(VkBuffer buffer) {
-	vmaDestroyBuffer(vma_allocator, buffer, vma_allocation);
+	if (!empty()) {
+		vmaDestroyBuffer(vma_allocator, buffer, vma_allocation);
+	}
 }
 
 void Allocation::closeImage(VkImage image) {
-	vmaDestroyImage(vma_allocator, image, vma_allocation);
+	if (!empty()) {
+		vmaDestroyImage(vma_allocator, image, vma_allocation);
+	}
 }
 
 void* Allocation::map() {
@@ -30,6 +34,10 @@ void Allocation::unmap() {
 
 void Allocation::flushNonCoherent(size_t offset, size_t size) {
 	vmaFlushAllocation(vma_allocator, vma_allocation, offset, size);
+}
+
+bool Allocation::empty() const {
+	return vma_allocation == VK_NULL_HANDLE;
 }
 
 /*
