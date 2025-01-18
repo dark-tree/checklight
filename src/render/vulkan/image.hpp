@@ -237,7 +237,7 @@ class ImageView {
 
 	private:
 
-		VkImageView vk_view;
+		VkImageView vk_view = VK_NULL_HANDLE;
 
 	public:
 
@@ -247,5 +247,8 @@ class ImageView {
 		ImageView(VkImageView vk_view);
 
 		void close(VkDevice device);
+		bool empty() const;
+
+		VkImageView getHandle() const;
 
 };

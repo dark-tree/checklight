@@ -9,7 +9,7 @@ class LogicalDevice;
 
 class Swapchain {
 
-	public:
+	private:
 
 		VkSwapchainKHR vk_swapchain;
 		VkSurfaceFormatKHR vk_surface_format;
@@ -25,7 +25,8 @@ class Swapchain {
 
 		void close();
 
-		const std::vector<ImageView>& getViews();
+		const std::vector<ImageView>& getViews() const;
+		VkExtent2D getExtend() const;
 
 };
 

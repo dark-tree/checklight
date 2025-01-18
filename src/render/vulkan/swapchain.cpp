@@ -39,8 +39,12 @@ void Swapchain::close() {
 	vkDestroySwapchainKHR(vk_device, vk_swapchain, nullptr);
 }
 
-const std::vector<ImageView>& Swapchain::getViews() {
+const std::vector<ImageView>& Swapchain::getViews() const {
 	return views;
+}
+
+VkExtent2D Swapchain::getExtend() const {
+	return vk_extent;
 }
 
 /*

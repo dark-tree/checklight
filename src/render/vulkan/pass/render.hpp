@@ -4,14 +4,16 @@
 #include "subpass.hpp"
 #include "dependency.hpp"
 #include "attachment.hpp"
-
 #include "render/vulkan/device.hpp"
 #include "util/pyramid.hpp"
+#include "render/vulkan/framebuffer.hpp"
+#include "render/vulkan/swapchain.hpp"
 
 class RenderPass {
 
 	public:
 
+		FramebufferSet framebuffer;
 		VkDevice vk_device;
 		VkRenderPass vk_pass;
 		std::vector<VkClearValue> values;
@@ -20,17 +22,25 @@ class RenderPass {
 	public:
 
 		RenderPass() = default;
-		RenderPass(VkDevice vk_device, VkRenderPass vk_pass, std::vector<VkClearValue>& values, std::vector<Subpass>& subpass_info);
+		RenderPass(VkDevice vk_device, VkRenderPass vk_pass, std::vector<VkClearValue>& values, std::vector<Subpass>& subpass_info, FramebufferSet& framebuffer);
 
 		void close();
 		const Subpass& getSubpass(int subpass) const;
 		int getSubpassCount() const;
+
+		/**
+		 * Allocate (or reallocate if already present) the underlying framebuffers
+		 * to conform to the given parameters.
+		 */
+		void prepareFramebuffers(const Swapchain& swapchain);
 
 };
 
 class RenderPassBuilder {
 
 	private:
+
+		FramebufferSet framebuffer;
 
 		std::vector<VkClearValue> values;
 		std::vector<AttachmentBuilder> attachments;

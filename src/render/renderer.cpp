@@ -210,6 +210,9 @@ void Renderer::createSwapchain() {
 
 	this->swapchain = builder.build(device, surface);
 
+	// create framebuffers
+	pass_basic_3d.prepareFramebuffers(swapchain);
+
 	printf("INFO: Swapchain ready\n");
 
 }
@@ -223,9 +226,17 @@ void Renderer::createAttachments() {
 		.setClearColor(0.0f, 0.0f, 0.0f, 1.0f)
 		.createAttachment();
 
+	// very important UwU
+	attachment_color.markSwapchainBacked();
+
 }
 
 void Renderer::createRenderPasses() {
+
+	/*
+	 * If you are adding a new RenderPass remember to invoke
+	 * prepareFramebuffers() on it at the end of createSwapchain()!
+	 */
 
 	{ // basic 3d pass
 

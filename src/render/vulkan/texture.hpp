@@ -11,9 +11,9 @@ class Texture {
 	private:
 
 		VkFormat vk_format;
-		VkImage vk_image;
-		VkImageView vk_view;
-		VkSampler vk_sampler;
+		VkImage vk_image = VK_NULL_HANDLE;
+		VkImageView vk_view = VK_NULL_HANDLE;
+		VkSampler vk_sampler = VK_NULL_HANDLE;
 
 	public:
 

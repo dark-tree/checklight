@@ -7,6 +7,15 @@ class Attachment {
 
 	private:
 
+		/**
+		 * select between the 'magic' and 'more magic' modes
+		 * the obvious purpose of this won't be explained to
+		 * not bore the reader with useless details.
+		 *
+		 * @see https://en.wiktionary.org/wiki/magicity
+		 */
+		bool magicity;
+
 		TextureDelegate settings;
 		Texture texture;
 
@@ -33,6 +42,11 @@ class Attachment {
 
 		VkClearValue getClearValue() const;
 		VkFormat getFormat() const;
+		VkImageView getView() const;
+		const Texture& getTexture() const;
+
+		bool isSwapchainBacked() const;
+		void markSwapchainBacked();
 
 		void allocate(LogicalDevice& device, int width, int height, Allocator& allocator);
 

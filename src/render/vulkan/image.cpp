@@ -396,5 +396,15 @@ ImageView::ImageView(VkImageView vk_view)
 : vk_view(vk_view) {}
 
 void ImageView::close(VkDevice vk_device) {
-	vkDestroyImageView(vk_device, vk_view, nullptr);
+	if (!empty()) {
+		vkDestroyImageView(vk_device, vk_view, nullptr);
+	}
+}
+
+bool ImageView::empty() const {
+	return vk_view == VK_NULL_HANDLE;
+}
+
+VkImageView ImageView::getHandle() const {
+	return vk_view;
 }

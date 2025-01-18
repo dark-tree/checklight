@@ -10,6 +10,7 @@ class AttachmentBuilder {
 
 	private:
 
+		const Attachment& attachment;
 		RenderPassBuilder& builder;
 		VkAttachmentDescription description {};
 
@@ -21,7 +22,7 @@ class AttachmentBuilder {
 
 	public:
 
-		AttachmentBuilder(RenderPassBuilder& builder, VkFormat format, VkSampleCountFlagBits samples);
+		AttachmentBuilder(RenderPassBuilder& builder, const Attachment& attachment, VkSampleCountFlagBits samples);
 
 		/**
 		 * @brief Specify load operation.

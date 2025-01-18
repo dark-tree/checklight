@@ -5,8 +5,8 @@
  * RenderPass
  */
 
-RenderPass::RenderPass(VkDevice vk_device, VkRenderPass vk_pass, std::vector<VkClearValue>& values, std::vector<Subpass>& subpass_info)
-: vk_device(vk_device), vk_pass(vk_pass), values(values), subpasses(subpass_info) {
+RenderPass::RenderPass(VkDevice vk_device, VkRenderPass vk_pass, std::vector<VkClearValue>& values, std::vector<Subpass>& subpass_info, FramebufferSet& framebuffer)
+: framebuffer(framebuffer), vk_device(vk_device), vk_pass(vk_pass), values(values), subpasses(subpass_info) {
 	values.shrink_to_fit();
 }
 
@@ -22,18 +22,23 @@ int RenderPass::getSubpassCount() const {
 	return subpasses.size();
 }
 
+void RenderPass::prepareFramebuffers(const Swapchain& swapchain) {
+	framebuffer.construct(vk_pass, vk_device, swapchain);
+}
+
 /*
  * RenderPassBuilder
  */
 
 Attachment::Ref RenderPassBuilder::addAttachment(AttachmentBuilder& builder) {
 	attachments.push_back(builder);
+	framebuffer.addAttachment(builder.attachment);
 	return Attachment::Ref::of(attachments.size() - 1);
 }
 
 AttachmentBuilder RenderPassBuilder::addAttachment(const Attachment& attachment, VkSampleCountFlagBits samples) {
 	values.push_back(attachment.getClearValue());
-	return {*this, attachment.getFormat(), samples};
+	return {*this, attachment, samples};
 }
 
 RenderPassBuilder& RenderPassBuilder::addSubpass(SubpassBuilder& builder) {
@@ -107,6 +112,6 @@ RenderPass RenderPassBuilder::build(const LogicalDevice& device) {
 		throw std::runtime_error {"Failed to create render pass!"};
 	}
 
-	return {device.getHandle(), render_pass, values, subpass_info};
+	return {device.getHandle(), render_pass, values, subpass_info, framebuffer};
 
 }
