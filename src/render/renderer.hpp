@@ -107,6 +107,10 @@ class Renderer {
 		/// Perform late initialization, this step needs to re-run each time the swapchain requires to be rebuild
 		void lateInit();
 
+		RenderFrame& getFrame();
+
+		uint32_t acquirePresentationIndex();
+
 	public:
 
 		Renderer(ApplicationParameters& parameters);
@@ -121,5 +125,10 @@ class Renderer {
 		 * @brief Get the Window to which this renderer is attached
 		 */
 		Window& getWindow() const;
+
+		/**
+		 * Render the frame
+		 */
+		void draw();
 
 };

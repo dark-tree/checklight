@@ -4,6 +4,7 @@
 #include "render/window.hpp"
 #include "family.hpp"
 #include "image.hpp"
+#include "semaphore.hpp"
 
 class LogicalDevice;
 
@@ -27,6 +28,7 @@ class Swapchain {
 
 		const std::vector<ImageView>& getViews() const;
 		VkExtent2D getExtend() const;
+		bool getNextImage(Semaphore& semaphore, uint32_t* image_index);
 
 };
 

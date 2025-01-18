@@ -12,8 +12,9 @@ int main() {
 	Renderer& renderer = RenderSystem::getRenderer();
 	Window& window = RenderSystem::getWindow();
 
-	while(!window.shouldClose()) {
+	while (!window.shouldClose()) {
 		window.poll();
+		renderer.draw();
 
 		// TODO: Silnik do gier w oparciu o bibliotekę Vulkan
     }

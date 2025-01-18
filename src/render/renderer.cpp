@@ -324,6 +324,20 @@ void Renderer::lateInit() {
 	createFrames();
 }
 
+RenderFrame& Renderer::getFrame() {
+	return frames.data()[index];
+}
+
+uint32_t Renderer::acquirePresentationIndex() {
+	uint32_t image_index;
+
+	if (swapchain.getNextImage(getFrame().available_semaphore, &image_index)) {
+		throw std::runtime_error {"Swapchain recreation not supported!"};
+	}
+
+	return image_index;
+}
+
 Renderer::Renderer(ApplicationParameters& parameters)
 : windows(), window(windows.open(parameters.width, parameters.height, parameters.getTitle())) {
 
@@ -399,4 +413,29 @@ void Renderer::reload() {
 
 Window& Renderer::getWindow() const {
 	return *window;
+}
+
+void Renderer::draw() {
+	RenderFrame& frame = getFrame();
+
+	frame.wait();
+	frame.execute();
+
+	uint32_t image = acquirePresentationIndex();
+
+	// begin rendering
+	CommandRecorder recorder = frame.buffer.record();
+	recorder.done();
+
+	frame.buffer.submit()
+		.awaits(frame.available_semaphore, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+		.signal(frame.finished_semaphore)
+		.signal(frame.flight_fence)
+		.done(queue);
+
+
+
+	// next frame
+	index = (index + 1) % concurrent;
+
 }

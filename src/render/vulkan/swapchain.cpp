@@ -47,6 +47,10 @@ VkExtent2D Swapchain::getExtend() const {
 	return vk_extent;
 }
 
+bool Swapchain::getNextImage(Semaphore& semaphore, uint32_t* image_index) {
+	return vkAcquireNextImageKHR(vk_device, vk_swapchain, UINT64_MAX, semaphore.getHandle(), VK_NULL_HANDLE, image_index) == VK_ERROR_OUT_OF_DATE_KHR;
+}
+
 /*
  * SwapchainBuilder
  */
