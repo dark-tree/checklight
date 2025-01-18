@@ -12,7 +12,7 @@ void Buffer::close() {
 	allocation.closeBuffer(vk_buffer);
 }
 
-VkBuffer Buffer::getHandle() {
+VkBuffer Buffer::getHandle() const {
 	return vk_buffer;
 }
 

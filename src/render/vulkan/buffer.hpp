@@ -17,7 +17,7 @@ class Buffer {
 
 		void close();
 
-		VkBuffer getHandle();
+		VkBuffer getHandle() const;
 		Allocation& getAllocation();
 
 };

@@ -7,6 +7,7 @@
 #include "vulkan/instance.hpp"
 #include "vulkan/compiler.hpp"
 #include "vulkan/command.hpp"
+#include "vulkan/swapchain.hpp"
 #include "render/vulkan/allocator.hpp"
 #include "render/vulkan/attachment.hpp"
 #include "render/vulkan/binding.hpp"
