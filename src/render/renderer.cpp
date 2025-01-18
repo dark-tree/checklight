@@ -217,6 +217,13 @@ void Renderer::createSwapchain() {
 
 }
 
+void Renderer::createShaders() {
+
+	shader_basic_vertex = compiler.compileFile(device, "assets/shader/basic.vert", Kind::VERTEX);
+	shader_basic_fragment = compiler.compileFile(device, "assets/shader/basic.frag", Kind::FRAGMENT);
+
+}
+
 void Renderer::createAttachments() {
 
 	// this attachment is special - we will never allocate it
@@ -272,27 +279,43 @@ void Renderer::createPipelines() {
 
 	VkExtent2D extent = swapchain.getExtend();
 
-	// TODO we need shaders and layouts first
-	/*
 	pipeline_basic_3d = GraphicsPipelineBuilder::of(device)
 		.withViewport(0, 0, extent.width, extent.height)
 		.withScissors(0, 0, extent.width, extent.height)
 		.withCulling(false)
 		.withRenderPass(pass_basic_3d, 0)
-		.withShaders(vert_3d, frag_3d)
+		.withShaders(shader_basic_vertex, shader_basic_fragment)
 		.withBindingLayout(binding_3d)
-		.withDescriptorSetLayout(geometry_descriptor_layout)
+		.withDescriptorSetLayout(layout_geometry)
 		.build();
-	 */
+
 
 }
 
+void Renderer::closeFrames() {
+	if (!frames.empty()) {
+
+		// execute all pending operations to not leak any memory
+		for (RenderFrame& frame : frames) {
+			frame.execute();
+		}
+
+		frames.clear();
+		descriptor_pool.reset();
+		graphics_pool.reset(true);
+		transient_pool.reset(true);
+	}
+}
+
 void Renderer::createFrames() {
-	// TODO
+	for (int i = 0; i < concurrent; i ++) {
+		frames.emplace_back(*this, graphics_pool, device);
+	}
 }
 
 void Renderer::lateClose() {
 	swapchain.close();
+	closeFrames();
 }
 
 void Renderer::lateInit() {
@@ -304,6 +327,7 @@ void Renderer::lateInit() {
 Renderer::Renderer(ApplicationParameters& parameters)
 : windows(), window(windows.open(parameters.width, parameters.height, parameters.getTitle())) {
 
+	concurrent = 1;
 	surface_format = VK_FORMAT_B8G8R8A8_SRGB;
 
 	// early init
@@ -321,13 +345,24 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	allocator = Allocator {device, physical, instance};
 	allocator.print();
 
+	// create vertex bindings
 	binding_3d = BindingLayoutBuilder::begin()
 		.attribute(0, VK_FORMAT_R32G32B32_SFLOAT) // xyz
 		.attribute(1, VK_FORMAT_R32G32B32_SFLOAT) // rgb
 		.done();
 
+	// create descriptor layouts
+	layout_geometry = DescriptorSetLayoutBuilder::begin()
+		.done(device);
+
+	// add layouts to the pool so that they can be allocated
+	descriptor_pool = DescriptorPoolBuilder::begin()
+		.addDynamic(layout_geometry, 1)
+		.done(device, concurrent);
+
 	createAttachments();
 	createRenderPasses();
+	createShaders();
 
 	// begin late initialization
 	lateInit();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "external.hpp"
+#include "frame.hpp"
 #include "application.hpp"
 #include "window.hpp"
 #include "vulkan/proxy.hpp"
@@ -13,10 +14,27 @@
 #include "render/vulkan/binding.hpp"
 #include "render/vulkan/pass/render.hpp"
 #include "render/vulkan/pass/pipeline.hpp"
+#include "render/vulkan/descriptor/pool.hpp"
 
 class Renderer {
 
 	private:
+
+		/// the number of concurrent frames, this value should no be larger then 4-5 to no cause input delay
+		/// setting it to 1 effectively disables concurrent frames
+		int concurrent; // todo
+
+		/// the index of the next frame to render, this value is kept within
+		/// the size of the frames vector (the vector is used as a ring buffer)
+		int index;
+
+		/// a ring-buffer line holder for the per frame states, utilized for concurrent
+		/// frame rendering (the CPU can "render ahead" of the GPU)
+		std::vector<RenderFrame> frames;
+
+	private:
+
+		friend class RenderFrame;
 
 		Compiler compiler;
 		WindowSystem windows;
@@ -34,9 +52,17 @@ class Renderer {
 		CommandPool transient_pool;
 		CommandPool graphics_pool;
 		Allocator allocator;
+		DescriptorPool descriptor_pool;
+
+		// shaders
+		Shader shader_basic_vertex;
+		Shader shader_basic_fragment;
 
 		// attachments
 		Attachment attachment_color;
+
+		// descriptors
+		DescriptorSetLayout layout_geometry;
 
 		// layouts
 		BindingLayout binding_3d;
@@ -67,10 +93,13 @@ class Renderer {
 		/// Loads the LogicalDevice, and Family
 		void createDevice(PhysicalDevice device, Family queue_family);
 
+		void createShaders();
 		void createAttachments();
 		void createRenderPasses();
 		void createPipelines();
 		void createFrames();
+
+		void closeFrames();
 
 		/// Close resources created during lateInit()
 		void lateClose();
