@@ -12,6 +12,7 @@
 #include "render/vulkan/attachment.hpp"
 #include "render/vulkan/binding.hpp"
 #include "render/vulkan/pass/render.hpp"
+#include "render/vulkan/pass/pipeline.hpp"
 
 class Renderer {
 
@@ -42,6 +43,9 @@ class Renderer {
 
 		// renderpasses
 		RenderPass pass_basic_3d;
+
+		// Pipelines
+		GraphicsPipeline pipeline_basic_3d;
 
 		// late vulkan objects
 		Swapchain swapchain;

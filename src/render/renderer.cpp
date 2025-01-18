@@ -269,7 +269,22 @@ void Renderer::createRenderPasses() {
 }
 
 void Renderer::createPipelines() {
-	// TODO
+
+	VkExtent2D extent = swapchain.getExtend();
+
+	// TODO we need shaders and layouts first
+	/*
+	pipeline_basic_3d = GraphicsPipelineBuilder::of(device)
+		.withViewport(0, 0, extent.width, extent.height)
+		.withScissors(0, 0, extent.width, extent.height)
+		.withCulling(false)
+		.withRenderPass(pass_basic_3d, 0)
+		.withShaders(vert_3d, frag_3d)
+		.withBindingLayout(binding_3d)
+		.withDescriptorSetLayout(geometry_descriptor_layout)
+		.build();
+	 */
+
 }
 
 void Renderer::createFrames() {
@@ -282,6 +297,7 @@ void Renderer::lateClose() {
 
 void Renderer::lateInit() {
 	createSwapchain();
+	createPipelines();
 	createFrames();
 }
 
