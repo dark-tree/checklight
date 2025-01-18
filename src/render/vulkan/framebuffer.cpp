@@ -58,17 +58,21 @@ Framebuffer FramebufferBuilder::build(VkDevice vk_device, uint32_t presentation_
 FramebufferSet::FramebufferSet(const std::vector<Framebuffer>&& framebuffers)
 : framebuffers(framebuffers) {};
 
+void FramebufferSet::close() {
+	for (Framebuffer& framebuffer : framebuffers) {
+		framebuffer.close();
+	}
+
+	framebuffers.clear();
+}
+
 void FramebufferSet::addAttachment(const Attachment& attachment) {
 	attachments.emplace_back(attachment);
 }
 
 void FramebufferSet::construct(VkRenderPass vk_pass, VkDevice vk_device, const Swapchain& swapchain) {
 
-	for (Framebuffer& framebuffer : framebuffers) {
-		framebuffer.close();
-	}
-
-	framebuffers.clear();
+	close();
 
 	std::vector<VkImageView> views;
 	views.reserve(attachments.size());

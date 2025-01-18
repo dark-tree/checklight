@@ -268,10 +268,6 @@ void Renderer::createRenderPasses() {
 
 }
 
-void Renderer::createFramebuffers() {
-	// TODO
-}
-
 void Renderer::createPipelines() {
 	// TODO
 }
@@ -286,9 +282,7 @@ void Renderer::lateClose() {
 
 void Renderer::lateInit() {
 	createSwapchain();
-
-	createFramebuffers(); // framebuffers depend on their renderpasses
-	createFrames(); // frames need the whole system to be ready
+	createFrames();
 }
 
 Renderer::Renderer(ApplicationParameters& parameters)

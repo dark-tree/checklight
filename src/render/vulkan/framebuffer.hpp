@@ -53,6 +53,8 @@ class FramebufferSet {
 		FramebufferSet() = default;
 		FramebufferSet(FramebufferSet& self) = default;
 
+		void close();
+
 		FramebufferSet(const std::vector<Framebuffer>&& framebuffers);
 		void addAttachment(const Attachment& attachment);
 		void construct(VkRenderPass vk_pass, VkDevice vk_device, const Swapchain& swapchain);

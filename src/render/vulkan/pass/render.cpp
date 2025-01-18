@@ -11,6 +11,7 @@ RenderPass::RenderPass(VkDevice vk_device, VkRenderPass vk_pass, std::vector<VkC
 }
 
 void RenderPass::close() {
+	framebuffer.close();
 	vkDestroyRenderPass(vk_device, vk_pass, nullptr);
 }
 

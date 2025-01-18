@@ -65,7 +65,6 @@ class Renderer {
 
 		void createAttachments();
 		void createRenderPasses();
-		void createFramebuffers();
 		void createPipelines();
 		void createFrames();
 
