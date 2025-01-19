@@ -5,6 +5,7 @@
 #include "vulkan/device.hpp"
 #include "render/vulkan/texture.hpp"
 #include "render/vulkan/pass/render.hpp"
+#include "render/vulkan/buffer.hpp"
 
 /*
  * Renderer
@@ -322,6 +323,18 @@ void Renderer::lateInit() {
 	createSwapchain();
 	createPipelines();
 	createFrames();
+
+	float data[] = {
+		 0.0, -0.5,  1.0,  0.0,  0.0,
+		 0.5,  0.5,  0.0,  1.0,  0.0,
+		-0.5,  0.5,  0.0,  0.0,  1.0,
+	};
+
+	vertex_buffer = allocator.allocateBuffer(Memory::SHARED, sizeof(data), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+	void* map = vertex_buffer.getAllocation().map();
+	memcpy(map, data, sizeof(data));
+	vertex_buffer.getAllocation().unmap();
+
 }
 
 RenderFrame& Renderer::getFrame() {
@@ -369,7 +382,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 
 	// create vertex bindings
 	binding_3d = BindingLayoutBuilder::begin()
-		.attribute(0, VK_FORMAT_R32G32B32_SFLOAT) // xyz
+		.attribute(0, VK_FORMAT_R32G32_SFLOAT) // xy
 		.attribute(1, VK_FORMAT_R32G32B32_SFLOAT) // rgb
 		.done();
 
@@ -437,6 +450,8 @@ void Renderer::draw() {
 	recorder.beginRenderPass(pass_basic_3d, image, swapchain.getExtend())
 		.bindPipeline(pipeline_basic_3d)
 		.bindDescriptorSet(frame.set_0)
+		.bindVertexBuffer(vertex_buffer)
+		.draw(3)
 		.endRenderPass();
 
 	recorder.done();

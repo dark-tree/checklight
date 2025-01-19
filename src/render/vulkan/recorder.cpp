@@ -54,24 +54,24 @@ CommandRecorder& CommandRecorder::bindDescriptorSet(DescriptorSet& set) {
 	return *this;
 }
 
-CommandRecorder& CommandRecorder::bindVertexBuffer(const Buffer& buffer, VkDeviceSize offset = 0) {
+CommandRecorder& CommandRecorder::bindVertexBuffer(const Buffer& buffer, VkDeviceSize offset) {
 	VkDeviceSize offsets[] = {offset};
 	VkBuffer buf = buffer.getHandle();
 	vkCmdBindVertexBuffers(vk_buffer, 0, 1, &buf, offsets);
 	return *this;
 }
 
-CommandRecorder& CommandRecorder::bindIndexBuffer(const Buffer& buffer, VkDeviceSize offset = 0) {
+CommandRecorder& CommandRecorder::bindIndexBuffer(const Buffer& buffer, VkDeviceSize offset) {
 	vkCmdBindIndexBuffer(vk_buffer, buffer.getHandle(), offset, VK_INDEX_TYPE_UINT32);
 	return *this;
 }
 
-CommandRecorder& CommandRecorder::draw(uint32_t vertices, uint32_t instances = 1, uint32_t vertexIndexOffset = 0, uint32_t instanceIndexOffset = 0) {
+CommandRecorder& CommandRecorder::draw(uint32_t vertices, uint32_t instances, uint32_t vertexIndexOffset, uint32_t instanceIndexOffset) {
 	vkCmdDraw(vk_buffer, vertices, instances, vertexIndexOffset, instanceIndexOffset);
 	return *this;
 }
 
-CommandRecorder& CommandRecorder::drawIndexed(uint32_t indexes, uint32_t instances = 1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t instanceIndexOffset = 0) {
+CommandRecorder& CommandRecorder::drawIndexed(uint32_t indexes, uint32_t instances, uint32_t firstIndex, int32_t vertexOffset, uint32_t instanceIndexOffset) {
 	vkCmdDrawIndexed(vk_buffer, indexes, instances, firstIndex, vertexOffset, instanceIndexOffset);
 	return *this;
 }

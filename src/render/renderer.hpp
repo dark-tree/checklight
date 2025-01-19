@@ -9,6 +9,7 @@
 #include "vulkan/compiler.hpp"
 #include "vulkan/command.hpp"
 #include "vulkan/swapchain.hpp"
+#include "vulkan/buffer.hpp"
 #include "render/vulkan/allocator.hpp"
 #include "render/vulkan/attachment.hpp"
 #include "render/vulkan/binding.hpp"
@@ -75,6 +76,8 @@ class Renderer {
 
 		// late vulkan objects
 		Swapchain swapchain;
+
+		Buffer vertex_buffer;
 
 	private:
 

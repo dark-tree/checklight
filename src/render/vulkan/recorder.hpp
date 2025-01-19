@@ -43,13 +43,13 @@ class CommandRecorder {
 
 		CommandRecorder& bindDescriptorSet(DescriptorSet& set);
 
-		CommandRecorder& bindVertexBuffer(const Buffer& buffer, VkDeviceSize offset);
+		CommandRecorder& bindVertexBuffer(const Buffer& buffer, VkDeviceSize offset = 0);
 
-		CommandRecorder& bindIndexBuffer(const Buffer& buffer, VkDeviceSize offset);
+		CommandRecorder& bindIndexBuffer(const Buffer& buffer, VkDeviceSize offset = 0);
 
-		CommandRecorder& draw(uint32_t vertices, uint32_t instances, uint32_t vertexIndexOffset, uint32_t instanceIndexOffset);
+		CommandRecorder& draw(uint32_t vertices, uint32_t instances = 1, uint32_t vertexIndexOffset = 0, uint32_t instanceIndexOffset = 0);
 
-		CommandRecorder& drawIndexed(uint32_t indexes, uint32_t instances, uint32_t firstIndex, int32_t vertexOffset, uint32_t instanceIndexOffset);
+		CommandRecorder& drawIndexed(uint32_t indexes, uint32_t instances = 1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t instanceIndexOffset = 0);
 
 		CommandRecorder& endRenderPass();
 };
