@@ -27,6 +27,9 @@ class GraphicsPipeline {
 
 		void close();
 
+		VkPipeline getHandle() const;
+		VkPipelineLayout getLayout() const;
+
 };
 
 class GraphicsPipelineBuilder {

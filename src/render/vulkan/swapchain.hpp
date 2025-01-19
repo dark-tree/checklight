@@ -30,6 +30,8 @@ class Swapchain {
 		VkExtent2D getExtend() const;
 		bool getNextImage(Semaphore& semaphore, uint32_t* image_index);
 
+		bool present(Queue queue, const Semaphore& await, uint32_t image_index);
+
 };
 
 class SwapchainBuilder {

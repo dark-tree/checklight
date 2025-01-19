@@ -37,4 +37,6 @@ class DescriptorSet {
 		 */
 		void sampler(int binding, const Texture& texture);
 
+		VkDescriptorSet getHandle() const;
+
 };

@@ -2,6 +2,9 @@
 #include "recorder.hpp"
 #include "image.hpp"
 #include "buffer.hpp"
+#include "pass/render.hpp"
+#include "render/vulkan/pass/pipeline.hpp"
+#include "render/vulkan/descriptor/descriptor.hpp"
 
 CommandRecorder::CommandRecorder(VkCommandBuffer vk_buffer)
 : vk_buffer(vk_buffer) {}
@@ -10,6 +13,73 @@ void CommandRecorder::done() {
 	if (vkEndCommandBuffer(vk_buffer) != VK_SUCCESS) {
 		throw std::runtime_error {"Failed to record a command buffer!"};
 	}
+}
+
+CommandRecorder& CommandRecorder::beginRenderPass(RenderPass& render_pass, uint32_t image, VkExtent2D extent) {
+
+	tracer.reset(render_pass);
+
+	VkRenderPassBeginInfo info {};
+	info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	info.renderPass = render_pass.vk_pass;
+	info.framebuffer = render_pass.getFramebuffer(image);
+
+	info.renderArea.offset = {0, 0};
+	info.renderArea.extent = extent;
+
+	// attachments define their own clear values
+	const std::vector<VkClearValue>& values = render_pass.values;
+	info.clearValueCount = values.size();
+	info.pClearValues = values.data();
+
+	vkCmdBeginRenderPass(vk_buffer, &info, VK_SUBPASS_CONTENTS_INLINE);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::nextSubpass() {
+	tracer.advance();
+	vkCmdNextSubpass(vk_buffer, VK_SUBPASS_CONTENTS_INLINE);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::bindPipeline(GraphicsPipeline& pipeline) {
+	this->vk_layout = pipeline.getLayout();
+	vkCmdBindPipeline(vk_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getHandle());
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::bindDescriptorSet(DescriptorSet& set) {
+	VkDescriptorSet vk_set = set.getHandle();
+	vkCmdBindDescriptorSets(vk_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_layout, 0, 1, &vk_set, 0, nullptr);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::bindVertexBuffer(const Buffer& buffer, VkDeviceSize offset = 0) {
+	VkDeviceSize offsets[] = {offset};
+	VkBuffer buf = buffer.getHandle();
+	vkCmdBindVertexBuffers(vk_buffer, 0, 1, &buf, offsets);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::bindIndexBuffer(const Buffer& buffer, VkDeviceSize offset = 0) {
+	vkCmdBindIndexBuffer(vk_buffer, buffer.getHandle(), offset, VK_INDEX_TYPE_UINT32);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::draw(uint32_t vertices, uint32_t instances = 1, uint32_t vertexIndexOffset = 0, uint32_t instanceIndexOffset = 0) {
+	vkCmdDraw(vk_buffer, vertices, instances, vertexIndexOffset, instanceIndexOffset);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::drawIndexed(uint32_t indexes, uint32_t instances = 1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t instanceIndexOffset = 0) {
+	vkCmdDrawIndexed(vk_buffer, indexes, instances, firstIndex, vertexOffset, instanceIndexOffset);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::endRenderPass() {
+	tracer.end();
+	vkCmdEndRenderPass(vk_buffer);
+	return *this;
 }
 
 CommandRecorder& CommandRecorder::copyBufferToBuffer(Buffer dst, Buffer src, size_t size) {

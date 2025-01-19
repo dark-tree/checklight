@@ -338,6 +338,14 @@ uint32_t Renderer::acquirePresentationIndex() {
 	return image_index;
 }
 
+void Renderer::presentFramebuffer(uint32_t index) {
+	auto semaphore = getFrame().finished_semaphore;
+
+	if (swapchain.present(queue, semaphore, index)) {
+		throw std::runtime_error {"Swapchain recreation not supported!"};
+	}
+}
+
 Renderer::Renderer(ApplicationParameters& parameters)
 : windows(), window(windows.open(parameters.width, parameters.height, parameters.getTitle())) {
 
@@ -425,6 +433,12 @@ void Renderer::draw() {
 
 	// begin rendering
 	CommandRecorder recorder = frame.buffer.record();
+
+	recorder.beginRenderPass(pass_basic_3d, image, swapchain.getExtend())
+		.bindPipeline(pipeline_basic_3d)
+		.bindDescriptorSet(frame.set_0)
+		.endRenderPass();
+
 	recorder.done();
 
 	frame.buffer.submit()
@@ -433,7 +447,7 @@ void Renderer::draw() {
 		.signal(frame.flight_fence)
 		.done(queue);
 
-
+	presentFramebuffer(image);
 
 	// next frame
 	index = (index + 1) % concurrent;

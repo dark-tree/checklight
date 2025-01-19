@@ -10,3 +10,7 @@ void Queue::submit(VkSubmitInfo& info, VkFence fence) {
 		throw std::runtime_error {"Failed to submit command buffer!"};
 	}
 }
+
+bool Queue::present(VkPresentInfoKHR& info) {
+	return vkQueuePresentKHR(vk_queue, &info) != VK_SUCCESS;
+}

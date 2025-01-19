@@ -12,6 +12,10 @@ void Framebuffer::close() {
 	vkDestroyFramebuffer(vk_device, vk_buffer, nullptr);
 }
 
+VkFramebuffer Framebuffer::getHandle() const {
+	return vk_buffer;
+}
+
 /*
  * FramebufferBuilder
  */
@@ -140,4 +144,8 @@ void FramebufferSet::construct(VkRenderPass vk_pass, VkDevice vk_device, const S
 
 		framebuffers.push_back(builder.build(vk_device, i));
 	}
+}
+
+Framebuffer& FramebufferSet::byPresentationIndex(uint32_t index) {
+	return framebuffers.at(index % framebuffers.size());
 }

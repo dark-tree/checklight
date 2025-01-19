@@ -21,6 +21,7 @@ class Framebuffer {
 
 		void close();
 
+		VkFramebuffer getHandle() const;
 };
 
 class FramebufferBuilder {
@@ -58,5 +59,6 @@ class FramebufferSet {
 		FramebufferSet(const std::vector<Framebuffer>&& framebuffers);
 		void addAttachment(const Attachment& attachment);
 		void construct(VkRenderPass vk_pass, VkDevice vk_device, const Swapchain& swapchain);
+		Framebuffer& byPresentationIndex(uint32_t index);
 
 };

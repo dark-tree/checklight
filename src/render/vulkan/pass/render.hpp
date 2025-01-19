@@ -34,6 +34,7 @@ class RenderPass {
 		 */
 		void prepareFramebuffers(const Swapchain& swapchain);
 
+		VkFramebuffer getFramebuffer(uint32_t i);
 };
 
 class RenderPassBuilder {

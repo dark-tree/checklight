@@ -54,3 +54,7 @@ void DescriptorSet::sampler(int binding, const Texture& texture) {
 	vkUpdateDescriptorSets(vk_device, 1, &write, 0, nullptr);
 
 }
+
+VkDescriptorSet DescriptorSet::getHandle() const {
+	return vk_set;
+}

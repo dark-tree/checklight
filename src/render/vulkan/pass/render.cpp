@@ -27,6 +27,10 @@ void RenderPass::prepareFramebuffers(const Swapchain& swapchain) {
 	framebuffer.construct(vk_pass, vk_device, swapchain);
 }
 
+VkFramebuffer RenderPass::getFramebuffer(uint32_t i) {
+	return framebuffer.byPresentationIndex(i).getHandle();
+}
+
 /*
  * RenderPassBuilder
  */

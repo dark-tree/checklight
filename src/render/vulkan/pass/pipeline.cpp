@@ -18,6 +18,14 @@ void GraphicsPipeline::close() {
 	vkDestroyPipelineLayout(vk_device, vk_layout, nullptr);
 }
 
+VkPipeline GraphicsPipeline::getHandle() const {
+	return vk_pipeline;
+}
+
+VkPipelineLayout GraphicsPipeline::getLayout() const {
+	return vk_layout;
+}
+
 /*
  * GraphicsPipelineBuilder
  */

@@ -110,6 +110,7 @@ class Renderer {
 		RenderFrame& getFrame();
 
 		uint32_t acquirePresentationIndex();
+		void presentFramebuffer(uint32_t index);
 
 	public:
 

@@ -51,6 +51,23 @@ bool Swapchain::getNextImage(Semaphore& semaphore, uint32_t* image_index) {
 	return vkAcquireNextImageKHR(vk_device, vk_swapchain, UINT64_MAX, semaphore.getHandle(), VK_NULL_HANDLE, image_index) == VK_ERROR_OUT_OF_DATE_KHR;
 }
 
+bool Swapchain::present(Queue queue, const Semaphore& await, uint32_t image_index) {
+
+	VkPresentInfoKHR info {};
+	info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+	VkSemaphore semaphore = await.getHandle();
+	info.waitSemaphoreCount = 1;
+	info.pWaitSemaphores = &semaphore;
+
+	info.swapchainCount = 1;
+	info.pSwapchains = &vk_swapchain;
+	info.pImageIndices = &image_index;
+	info.pResults = nullptr;
+
+	return queue.present(info);
+}
+
 /*
  * SwapchainBuilder
  */

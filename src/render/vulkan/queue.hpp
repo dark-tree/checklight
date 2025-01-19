@@ -19,4 +19,5 @@ class Queue {
 		 */
 		void submit(VkSubmitInfo& info, VkFence fence);
 
+		bool present(VkPresentInfoKHR& info);
 };
