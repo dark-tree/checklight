@@ -1,7 +1,7 @@
 
 #include "compiler.hpp"
 #include "shader.hpp"
-#include "device.hpp"
+#include "render/vulkan/setup/device.hpp"
 
 const Kind Kind::VERTEX = {shaderc_vertex_shader, VK_SHADER_STAGE_VERTEX_BIT};
 const Kind Kind::FRAGMENT = {shaderc_fragment_shader, VK_SHADER_STAGE_FRAGMENT_BIT};

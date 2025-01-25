@@ -1,8 +1,8 @@
 #pragma once
 
 #include "external.hpp"
-#include "render/vulkan/operation.hpp"
-#include "render/vulkan/attachment.hpp"
+#include "operation.hpp"
+#include "render/vulkan/buffer/attachment.hpp"
 
 class RenderPassBuilder;
 

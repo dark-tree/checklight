@@ -1,7 +1,7 @@
 #pragma once
 
 #include "external.hpp"
-#include "allocator.hpp"
+#include "render/vulkan/setup/allocator.hpp"
 
 class Buffer {
 

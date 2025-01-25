@@ -1,6 +1,5 @@
 
 #include "queue.hpp"
-#include "command.hpp"
 
 Queue::Queue(VkQueue queue)
 : vk_queue(queue) {}

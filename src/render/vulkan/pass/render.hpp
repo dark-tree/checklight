@@ -4,10 +4,10 @@
 #include "subpass.hpp"
 #include "dependency.hpp"
 #include "attachment.hpp"
-#include "render/vulkan/device.hpp"
+#include "render/vulkan/setup/device.hpp"
 #include "util/pyramid.hpp"
-#include "render/vulkan/framebuffer.hpp"
-#include "render/vulkan/swapchain.hpp"
+#include "render/vulkan/setup/framebuffer.hpp"
+#include "render/vulkan/setup/swapchain.hpp"
 
 class RenderPass {
 

@@ -1,8 +1,8 @@
 
 #include "descriptor.hpp"
 #include "layout.hpp"
-#include "render/vulkan/buffer.hpp"
-#include "render/vulkan/texture.hpp"
+#include "render/vulkan/buffer/buffer.hpp"
+#include "render/vulkan/buffer/texture.hpp"
 
 /*
  * DescriptorSet

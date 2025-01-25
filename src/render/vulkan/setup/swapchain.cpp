@@ -1,7 +1,7 @@
 
 #include "swapchain.hpp"
 #include "device.hpp"
-#include "image.hpp"
+#include "render/vulkan/buffer/image.hpp"
 
 #define SWAPCHAIN_EXTENT_AUTO 0xFFFFFFFF
 

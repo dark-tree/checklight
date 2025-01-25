@@ -2,8 +2,8 @@
 
 #include "external.hpp"
 #include "device.hpp"
-#include "attachment.hpp"
 #include "swapchain.hpp"
+#include "render/vulkan/buffer/attachment.hpp"
 
 class Framebuffer {
 

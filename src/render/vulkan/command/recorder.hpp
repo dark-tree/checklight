@@ -1,7 +1,7 @@
 #pragma once
 
 #include "external.hpp"
-#include "pass/tracer.hpp"
+#include "render/vulkan/pass/tracer.hpp"
 
 class Buffer;
 class Image;

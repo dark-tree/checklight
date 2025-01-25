@@ -3,7 +3,7 @@
 #include "external.hpp"
 #include "descriptor.hpp"
 #include "layout.hpp"
-#include "render/vulkan/device.hpp"
+#include "render/vulkan/setup/device.hpp"
 
 /*
  * DescriptorPool

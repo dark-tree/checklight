@@ -1,9 +1,9 @@
 #pragma once
 
 #include "external.hpp"
-#include "semaphore.hpp"
-#include "fence.hpp"
-#include "queue.hpp"
+#include "render/vulkan/sync/semaphore.hpp"
+#include "render/vulkan/sync/fence.hpp"
+#include "render/vulkan/setup/queue.hpp"
 
 class CommandSubmitter {
 

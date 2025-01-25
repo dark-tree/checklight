@@ -1,7 +1,7 @@
 
 #include "allocator.hpp"
-#include "buffer.hpp"
-#include "image.hpp"
+#include "render/vulkan/buffer/buffer.hpp"
+#include "render/vulkan/buffer/image.hpp"
 
 /*
  * Allocation

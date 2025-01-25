@@ -1,10 +1,10 @@
 #pragma once
 
 #include "external.hpp"
-#include "render/vulkan/shader.hpp"
-#include "render/vulkan/binding.hpp"
+#include "render.hpp"
+#include "render/vulkan/shader/shader.hpp"
+#include "render/vulkan/descriptor/vertex.hpp"
 #include "render/vulkan/descriptor/layout.hpp"
-#include "render/vulkan/pass/render.hpp"
 
 // concept used for dynamic states
 template<typename T>

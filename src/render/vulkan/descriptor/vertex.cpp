@@ -1,5 +1,5 @@
 
-#include "binding.hpp"
+#include "vertex.hpp"
 
 /*
  * BindingLayout

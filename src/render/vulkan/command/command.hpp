@@ -1,10 +1,10 @@
 #pragma once
 
 #include "external.hpp"
-#include "device.hpp"
+#include "render/vulkan/setup/device.hpp"
 #include "recorder.hpp"
-#include "semaphore.hpp"
-#include "fence.hpp"
+#include "render/vulkan/sync/semaphore.hpp"
+#include "render/vulkan/sync/fence.hpp"
 #include "submitter.hpp"
 
 class CommandBuffer {

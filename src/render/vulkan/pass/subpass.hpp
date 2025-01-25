@@ -2,7 +2,7 @@
 
 #include "external.hpp"
 #include "util/pyramid.hpp"
-#include "render/vulkan/attachment.hpp"
+#include "render/vulkan/buffer/attachment.hpp"
 
 class RenderPassBuilder;
 

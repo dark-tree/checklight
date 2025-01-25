@@ -2,7 +2,7 @@
 
 #include "external.hpp"
 #include "image.hpp"
-#include "device.hpp"
+#include "render/vulkan/setup/device.hpp"
 
 class Attachment;
 

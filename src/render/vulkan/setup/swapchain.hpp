@@ -1,10 +1,10 @@
 #pragma once
 
 #include "external.hpp"
-#include "render/window.hpp"
 #include "family.hpp"
-#include "image.hpp"
-#include "semaphore.hpp"
+#include "render/window.hpp"
+#include "render/vulkan/buffer/image.hpp"
+#include "render/vulkan/sync/semaphore.hpp"
 
 class LogicalDevice;
 

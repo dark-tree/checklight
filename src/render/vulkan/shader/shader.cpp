@@ -1,6 +1,6 @@
 
 #include "shader.hpp"
-#include "device.hpp"
+#include "render/vulkan/setup/device.hpp"
 
 Shader::Shader(LogicalDevice& device, const uint32_t* data, uint32_t size, VkShaderStageFlagBits stage)
 :  vk_device(device.getHandle()), vk_stage(stage) {

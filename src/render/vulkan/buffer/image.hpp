@@ -1,8 +1,8 @@
 #pragma once
 
 #include "external.hpp"
-#include "recorder.hpp"
-#include "allocator.hpp"
+#include "render/vulkan/command/recorder.hpp"
+#include "render/vulkan/setup/allocator.hpp"
 #include "util/queue.hpp"
 
 enum struct ImageScaling {

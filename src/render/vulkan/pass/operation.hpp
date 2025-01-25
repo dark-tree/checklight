@@ -51,15 +51,33 @@ struct AttachmentOp {
 };
 
 struct ColorOp {
+
+	/// Clear color data at the start of the pass
 	static AttachmentOp<ColorOp, AttachmentOpType::Load> CLEAR;
+
+	/// Load color data at the start of the pass
 	static AttachmentOp<ColorOp, AttachmentOpType::Load> LOAD;
+
+	/// Store color data at the end of the pass
 	static AttachmentOp<ColorOp, AttachmentOpType::Store> STORE;
+
+	/// Leave color data in a undefined, unusable, state
 	static AttachmentOp<ColorOp, AttachmentOpType::Both> IGNORE;
+
 };
 
 struct StencilOp {
+
+	/// Clear stencil data at the start of the pass
 	static AttachmentOp<StencilOp, AttachmentOpType::Load> CLEAR;
+
+	/// Load stencil data at the start of the pass
 	static AttachmentOp<StencilOp, AttachmentOpType::Load> LOAD;
+
+	/// Store stencil data at the end of the pass
 	static AttachmentOp<StencilOp, AttachmentOpType::Store> STORE;
+
+	/// Leave stencil data in a undefined, unusable, state
 	static AttachmentOp<StencilOp, AttachmentOpType::Both> IGNORE;
+
 };

@@ -1,8 +1,8 @@
 
 #include "recorder.hpp"
-#include "image.hpp"
-#include "buffer.hpp"
-#include "pass/render.hpp"
+#include "render/vulkan/buffer/image.hpp"
+#include "render/vulkan/buffer/buffer.hpp"
+#include "render/vulkan/pass/render.hpp"
 #include "render/vulkan/pass/pipeline.hpp"
 #include "render/vulkan/descriptor/descriptor.hpp"
 

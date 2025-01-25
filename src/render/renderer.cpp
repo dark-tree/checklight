@@ -2,10 +2,10 @@
 #include "renderer.hpp"
 #include "const.hpp"
 
-#include "vulkan/device.hpp"
-#include "render/vulkan/texture.hpp"
+#include "render/vulkan/setup/device.hpp"
+#include "render/vulkan/buffer/texture.hpp"
 #include "render/vulkan/pass/render.hpp"
-#include "render/vulkan/buffer.hpp"
+#include "render/vulkan/buffer/buffer.hpp"
 
 /*
  * Renderer
