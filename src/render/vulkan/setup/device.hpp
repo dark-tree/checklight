@@ -92,6 +92,11 @@ class LogicalDevice {
 		}
 
 		/**
+		 * Waits (blocks) for the Device (GPU) to finish all pending work
+		 */
+		 void wait();
+
+		/**
 		 * @brief Deletes the underlying vulkan object, must be called after all
 		 *        descending objects have been already closed
 		 */

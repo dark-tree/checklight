@@ -46,6 +46,7 @@ class Compiler {
 
 	private:
 
+		std::vector<Shader> shaders;
 		const shaderc::Compiler compiler;
 		shaderc::CompileOptions options;
 
@@ -80,6 +81,9 @@ class Compiler {
 	public:
 
 		Compiler();
+
+		/// Closes this compiler and all the shaders created with it
+		void close();
 
 		/// Compile GLSL shader file
 		Shader compileFile(LogicalDevice& device, const std::string& identifier, Kind kind);

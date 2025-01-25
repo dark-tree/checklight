@@ -98,10 +98,14 @@ class Renderer {
 
 		void createShaders();
 		void createAttachments();
-		void createRenderPasses();
-		void createPipelines();
-		void createFrames();
 
+		void createRenderPasses();
+		void closeRenderPasses();
+
+		void createPipelines();
+		void closePipelines();
+
+		void createFrames();
 		void closeFrames();
 
 		/// Close resources created during lateInit()
@@ -134,5 +138,10 @@ class Renderer {
 		 * Render the frame
 		 */
 		void draw();
+
+		/**
+		 * Synchronize all operations and wait for the GPU to idle
+		 */
+		void wait();
 
 };

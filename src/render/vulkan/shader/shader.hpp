@@ -17,6 +17,7 @@ class Shader {
 		Shader() = default;
 		Shader(LogicalDevice& device, const uint32_t* data, uint32_t size, VkShaderStageFlagBits stage);
 
+		/// Shader live time is managed by the compiler, don't free them yourself!
 		void close();
 
 		/**

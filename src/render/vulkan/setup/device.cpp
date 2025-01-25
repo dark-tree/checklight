@@ -86,6 +86,10 @@ LogicalDevice::LogicalDevice(VkDevice device) {
 	this->vk_device = device;
 }
 
+void LogicalDevice::wait() {
+	vkDeviceWaitIdle(vk_device);
+}
+
 void LogicalDevice::close() {
 	vkDestroyDevice(vk_device, nullptr);
 }

@@ -276,6 +276,10 @@ void Renderer::createRenderPasses() {
 
 }
 
+void Renderer::closeRenderPasses() {
+	pass_basic_3d.close();
+}
+
 void Renderer::createPipelines() {
 
 	VkExtent2D extent = swapchain.getExtend();
@@ -291,6 +295,10 @@ void Renderer::createPipelines() {
 		.build();
 
 
+}
+
+void Renderer::closePipelines() {
+	pipeline_basic_3d.close();
 }
 
 void Renderer::closeFrames() {
@@ -317,6 +325,8 @@ void Renderer::createFrames() {
 void Renderer::lateClose() {
 	swapchain.close();
 	closeFrames();
+	closePipelines();
+	vertex_buffer.close();
 }
 
 void Renderer::lateInit() {
@@ -407,9 +417,15 @@ Renderer::Renderer(ApplicationParameters& parameters)
 
 Renderer::~Renderer() {
 
+	wait();
+
 	// late close is actually first :)
 	lateClose();
 
+	// close all the descriptor layouts here
+	layout_geometry.close();
+
+	descriptor_pool.close();
 	transient_pool.close();
 	graphics_pool.close();
 
@@ -421,6 +437,9 @@ Renderer::~Renderer() {
 	vkDestroySurfaceKHR(instance.getHandle(), surface, nullptr);
 
 	// It's important to maintain the correct order
+	closeRenderPasses();
+	compiler.close();
+	allocator.close();
 	device.close();
 	instance.close();
 
@@ -468,4 +487,8 @@ void Renderer::draw() {
 	// next frame
 	index = (index + 1) % concurrent;
 
+}
+
+void Renderer::wait() {
+	device.wait();
 }

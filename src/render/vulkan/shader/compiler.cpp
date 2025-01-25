@@ -46,6 +46,10 @@ Compiler::Compiler() {
 	#endif
 }
 
+void Compiler::close() {
+	for (Shader& shader : shaders) shader.close();
+}
+
 Shader Compiler::compileFile(LogicalDevice& device, const std::string& identifier, Kind kind) {
 	std::ifstream stream {identifier};
 
@@ -82,5 +86,7 @@ Shader Compiler::compileString(LogicalDevice& device, const std::string& unit, c
 	}
 
 	builder.copyOutput(compile_result);
-	return builder.build(device, true);
+	Shader shader = builder.build(device, true);
+	shaders.emplace_back(shader);
+	return shader;
 }
