@@ -69,6 +69,7 @@ SubpassBuilder::SubpassBuilder(RenderPassBuilder& builder, VkPipelineBindPoint b
 : builder(builder), attachment_count(attachment_count), preserve(preserve) {
 	description.pipelineBindPoint = bind_point;
 	depth.attachment = VK_ATTACHMENT_UNUSED;
+	depth.layout = VK_IMAGE_LAYOUT_UNDEFINED;
 }
 
 SubpassBuilder& SubpassBuilder::addInput(Attachment::Ref attachment, VkImageLayout target_layout) {

@@ -362,6 +362,7 @@ void Renderer::presentFramebuffer(uint32_t index) {
 Renderer::Renderer(ApplicationParameters& parameters)
 : windows(), window(windows.open(parameters.width, parameters.height, parameters.getTitle())) {
 
+	index = 0;
 	concurrent = 1;
 	surface_format = VK_FORMAT_B8G8R8A8_SRGB;
 
