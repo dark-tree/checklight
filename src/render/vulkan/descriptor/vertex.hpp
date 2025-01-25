@@ -46,7 +46,6 @@ class BindingLayoutBuilder {
 	public:
 
 		BindingLayoutBuilder(VkVertexInputRate rate);
-
 		static BindingLayoutBuilder begin(VkVertexInputRate rate = VK_VERTEX_INPUT_RATE_VERTEX);
 
 	public:
