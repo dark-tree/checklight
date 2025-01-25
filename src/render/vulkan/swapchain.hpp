@@ -26,10 +26,16 @@ class Swapchain {
 
 		void close();
 
+		/// Get a list of views into the screen color buffer images
 		const std::vector<ImageView>& getViews() const;
+
+		/// Get swapchain (screen) dimensions
 		VkExtent2D getExtend() const;
+
+		/// Acquire next, currently unused, screen color buffer
 		bool getNextImage(Semaphore& semaphore, uint32_t* image_index);
 
+		/// Push image to be shown on screen in line with specified refresh policy
 		bool present(Queue queue, const Semaphore& await, uint32_t image_index);
 
 };
@@ -73,9 +79,6 @@ class SwapchainInfo {
 
 		SwapchainInfo() = default;
 		SwapchainInfo(VkPhysicalDevice vk_device, VkSurfaceKHR vk_surface);
-
-		/// Check if the swapchain is usable
-		bool isValid() const;
 
 		/// Get supported format list
 		const std::vector<VkSurfaceFormatKHR>& getFormats() const;

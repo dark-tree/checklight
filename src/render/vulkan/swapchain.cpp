@@ -162,10 +162,6 @@ SwapchainInfo::SwapchainInfo(VkPhysicalDevice vk_device, VkSurfaceKHR vk_surface
 	}
 }
 
-bool SwapchainInfo::isValid() const {
-	return !formats.empty() && !modes.empty();
-}
-
 const std::vector<VkSurfaceFormatKHR>& SwapchainInfo::getFormats() const {
 	return formats;
 }

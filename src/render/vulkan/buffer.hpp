@@ -17,7 +17,10 @@ class Buffer {
 
 		void close();
 
+		/// Get underlying vulkan handle
 		VkBuffer getHandle() const;
+
+		/// Get memory region control object
 		Allocation& getAllocation();
 
 };

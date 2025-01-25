@@ -21,16 +21,17 @@ class Attachment {
 
 	public:
 
+		/**
+		 * Attachment reference used during pipeline creation
+		 * it is used to ensure reference correctness at compile time.
+		 */
 		struct Ref {
 
 			private:
-
 				explicit Ref(int index);
 
 			public:
-
 				const uint32_t index;
-
 				static Ref of(int index);
 
 		};

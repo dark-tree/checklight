@@ -2,6 +2,10 @@
 
 #include "external.hpp"
 
+/**
+ * Represents the Vulkan concept of a Queue Family, it can be roughly explained as this:
+ * family is a "class", while the queue is the "object".
+ */
 class Family {
 
 	private:

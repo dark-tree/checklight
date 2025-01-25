@@ -122,7 +122,7 @@ GraphicsPipelineBuilder& GraphicsPipelineBuilder::withScissors(int x, int y, uin
 }
 
 GraphicsPipelineBuilder& GraphicsPipelineBuilder::withBindingLayout(BindingLayout& layout) {
-	const uint32_t binding = (uint32_t) bindings.size();
+	const auto binding = (uint32_t) bindings.size();
 
 	// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkVertexInputBindingDescription.html
 	VkVertexInputBindingDescription description {};
@@ -195,8 +195,6 @@ GraphicsPipelineBuilder& GraphicsPipelineBuilder::withDepthTest(VkCompareOp func
 	return *this;
 }
 
-// blend configuration
-
 GraphicsPipelineBuilder& GraphicsPipelineBuilder::withBlendConstants(float r, float g, float b, float a) {
 	blending.blendConstants[0] = r;
 	blending.blendConstants[1] = g;
@@ -205,7 +203,6 @@ GraphicsPipelineBuilder& GraphicsPipelineBuilder::withBlendConstants(float r, fl
 	return *this;
 }
 
-// finalColor = finalColor & writeMask;
 GraphicsPipelineBuilder& GraphicsPipelineBuilder::withBlendWriteMask(VkColorComponentFlags flags) {
 	attachment.colorWriteMask = flags;
 	return *this;

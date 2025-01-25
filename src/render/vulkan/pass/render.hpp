@@ -34,6 +34,9 @@ class RenderPass {
 		 */
 		void prepareFramebuffers(const Swapchain& swapchain);
 
+		/**
+		 * Get the framebuffer handle at the specified index
+		 */
 		VkFramebuffer getFramebuffer(uint32_t i);
 };
 

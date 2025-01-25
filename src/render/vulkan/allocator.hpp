@@ -14,6 +14,10 @@ enum struct Memory {
 	STAGED
 };
 
+/**
+ * Represents a single memory region, but no necessarily
+ * a single Vulkan Allocation.
+ */
 class Allocation {
 
 	private:
@@ -36,6 +40,10 @@ class Allocation {
 
 };
 
+/**
+ * Wrapped around the vulkan memory allocation library, can be used
+ * to create buffers and images.
+ */
 class Allocator {
 
 	private:
