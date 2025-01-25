@@ -96,13 +96,13 @@ include_directories(
 		${vma_SOURCE_DIR}/include                # Headers in ./
 )
 
-file(GLOB_RECURSE CHECKLIGHT_SOURCES
-		"src/*.cpp"
-)
+add_library(checklight_common INTERFACE)
 
-# basic unit test are build as a separate target
-list(FILTER VLT3D_SOURCES EXCLUDE REGEX "src[\\/]test\\.cpp$")
-list(FILTER VLT3D_SOURCES EXCLUDE REGEX "src[\\/]main\\.cpp$")
+file(GLOB_RECURSE CHECKLIGHT_RENDER_SOURCES "src/render/*.cpp")
+add_library(checklight_render_system ${CHECKLIGHT_RENDER_SOURCES})
+
+file(GLOB_RECURSE CHECKLIGHT_UTIL_SOURCES "src/util/*.cpp")
+add_library(checklight_util_system ${CHECKLIGHT_UTIL_SOURCES})
 
 add_library(external
 		lib/stb_image.cpp
@@ -111,28 +111,34 @@ add_library(external
 		lib/vk_mem_alloc.cpp
 )
 
-add_executable(main
-		"src/main.cpp"
-		${CHECKLIGHT_SOURCES}
-)
+add_executable(checklight "src/main.cpp")
 
-set(CHECKLIGHT_LIBS
-		Threads::Threads
+target_link_libraries(checklight_render_system PRIVATE
+		checklight_common
 		Vulkan::Vulkan
 		glfw
 		shaderc
 		external
 )
 
-target_link_libraries(main PRIVATE ${CHECKLIGHT_LIBS})
-target_compile_definitions(main PRIVATE "SOURCE_ROOT=\"${CMAKE_SOURCE_DIR}\"")
+target_link_libraries(checklight_util_system PRIVATE
+		checklight_common
+		Threads::Threads
+		external
+)
+
+target_link_libraries(checklight PRIVATE
+		checklight_common
+		checklight_render_system
+		checklight_util_system
+)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
 	# GCC debugging doodads
 	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 		message(STATUS "Compiling with debugging symbols")
-		target_compile_options(main PRIVATE -g)
+		target_compile_options(checklight_common INTERFACE -g)
 	endif()
 
 	set(CHECKLIGHT_WARNING_FLAGS
@@ -143,13 +149,13 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	)
 
 	target_compile_options(external PRIVATE -Wno-volatile)
-	target_compile_options(main PRIVATE ${CHECKLIGHT_WARNING_FLAGS})
+	target_compile_options(checklight_common INTERFACE ${CHECKLIGHT_WARNING_FLAGS})
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 
 	# we4715 - treat missing return statement as error
-	target_compile_options(main PRIVATE /W4 /we4715)
+	target_compile_options(checklight_common INTERFACE /W4 /we4715)
 endif()
 
 # Copy assets if any exist
@@ -163,5 +169,5 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
 			"${CMAKE_BINARY_DIR}/assets"
 	)
 
-	add_dependencies(main copy-assets)
+	add_dependencies(checklight_common copy-assets)
 endif()
