@@ -326,25 +326,12 @@ void Renderer::lateClose() {
 	swapchain.close();
 	closeFrames();
 	closePipelines();
-	vertex_buffer.close();
 }
 
 void Renderer::lateInit() {
 	createSwapchain();
 	createPipelines();
 	createFrames();
-
-	float data[] = {
-		 0.0, -0.5,  1.0,  0.0,  0.0,
-		 0.5,  0.5,  0.0,  1.0,  0.0,
-		-0.5,  0.5,  0.0,  0.0,  1.0,
-	};
-
-	vertex_buffer = allocator.allocateBuffer(Memory::SHARED, sizeof(data), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-	void* map = vertex_buffer.getAllocation().map();
-	memcpy(map, data, sizeof(data));
-	vertex_buffer.getAllocation().unmap();
-
 }
 
 RenderFrame& Renderer::getFrame() {
@@ -367,6 +354,14 @@ void Renderer::presentFramebuffer(uint32_t index) {
 	if (swapchain.present(queue, semaphore, index)) {
 		throw std::runtime_error {"Swapchain recreation not supported!"};
 	}
+}
+
+Fence Renderer::createFence(bool signaled) {
+	return {device.getHandle(), signaled};
+}
+
+Semaphore Renderer::createSemaphore() {
+	return {device.getHandle()};
 }
 
 Renderer::Renderer(ApplicationParameters& parameters)
@@ -467,12 +462,7 @@ void Renderer::draw() {
 	// begin rendering
 	CommandRecorder recorder = frame.buffer.record();
 
-	recorder.beginRenderPass(pass_basic_3d, image, swapchain.getExtend())
-		.bindPipeline(pipeline_basic_3d)
-		.bindDescriptorSet(frame.set_0)
-		.bindVertexBuffer(vertex_buffer)
-		.draw(3)
-		.endRenderPass();
+	drawFrame(frame, recorder, image);
 
 	recorder.done();
 

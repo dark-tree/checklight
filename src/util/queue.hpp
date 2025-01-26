@@ -22,6 +22,9 @@ class TaskQueue {
 			enqueue(std::bind(func, arg, args...));
 		}
 
+		std::vector<std::function<void()>> toVector();
+		void addAll(TaskQueue& queue);
+
 	public:
 
 		/**

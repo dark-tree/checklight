@@ -16,10 +16,9 @@ void TaskQueue::enqueue(const std::function<void()>& task) {
 	tasks.emplace(task);
 }
 
-int TaskQueue::execute() {
+std::vector<std::function<void()>> TaskQueue::toVector() {
 	std::vector<std::function<void()>> locals;
 	locals.reserve(tasks.size());
-	int count = tasks.size();
 
 	{
 		std::lock_guard lock(queue_mutex);
@@ -29,6 +28,22 @@ int TaskQueue::execute() {
 			tasks.pop();
 		}
 	}
+
+	return locals;
+}
+
+void TaskQueue::addAll(TaskQueue& queue) {
+	auto locals = queue.toVector();
+
+	std::lock_guard lock(queue_mutex);
+	for (const auto& task : locals) {
+		enqueue(task);
+	}
+}
+
+int TaskQueue::execute() {
+	auto locals = toVector();
+	int count = locals.size();
 
 	for (std::function<void()>& task : locals) {
 		task();

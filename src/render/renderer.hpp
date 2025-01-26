@@ -7,7 +7,7 @@
 #include "render/vulkan/setup/proxy.hpp"
 #include "render/vulkan/setup/instance.hpp"
 #include "render/vulkan/shader/compiler.hpp"
-#include "render/vulkan/command/command.hpp"
+#include "render/vulkan/command/buffer.hpp"
 #include "render/vulkan/setup/swapchain.hpp"
 #include "render/vulkan/buffer/buffer.hpp"
 #include "render/vulkan/setup/allocator.hpp"
@@ -33,9 +33,11 @@ class Renderer {
 		/// frame rendering (the CPU can "render ahead" of the GPU)
 		std::vector<RenderFrame> frames;
 
-	private:
+	protected:
 
 		friend class RenderFrame;
+		friend class RenderMesh;
+		friend class RenderCommander;
 
 		Compiler compiler;
 		WindowSystem windows;
@@ -77,8 +79,6 @@ class Renderer {
 		// late vulkan objects
 		Swapchain swapchain;
 
-		Buffer vertex_buffer;
-
 	private:
 
 		friend VKAPI_ATTR VkBool32 VKAPI_CALL VulkanMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT*, void*);
@@ -119,10 +119,18 @@ class Renderer {
 		uint32_t acquirePresentationIndex();
 		void presentFramebuffer(uint32_t index);
 
+	protected:
+
+		Fence createFence(bool signaled = false);
+		Semaphore createSemaphore();
+
+		virtual void drawFrame(RenderFrame& frame, CommandRecorder& recorder, uint32_t image) = 0;
+
 	public:
 
+		Renderer() = default;
 		Renderer(ApplicationParameters& parameters);
-		~Renderer();
+		virtual ~Renderer();
 
 		/**
 		 * @brief Recreate swapchain, this operation is extremely slow

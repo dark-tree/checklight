@@ -2,7 +2,7 @@
 
 #include "external.hpp"
 #include "util/queue.hpp"
-#include "render/vulkan/command/command.hpp"
+#include "render/vulkan/command/buffer.hpp"
 #include "render/vulkan/descriptor/descriptor.hpp"
 
 class Renderer;

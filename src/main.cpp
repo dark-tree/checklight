@@ -1,6 +1,7 @@
 
-#define GLFW_INCLUDE_VULKAN
 #include "render/system.hpp"
+#include "render/api/vertex.hpp"
+#include "render/api/mesh.hpp"
 
 int main() {
 
@@ -8,16 +9,32 @@ int main() {
 	parameters.setName("My Checklight Game");
 	parameters.setDimensions(200, 200);
 
-	RenderSystem::initialize(parameters);
-	Renderer& renderer = RenderSystem::getRenderer();
-	Window& window = RenderSystem::getWindow();
+	RenderSystem::init(parameters);
+
+	RenderSystem& system = *RenderSystem::system;
+	Window& window = system.getWindow();
+
+	std::vector<Vertex2D> vertices = {
+		{0.0, -0.5,  1.0,  0.0,  0.0},
+		{0.5,  0.5,  0.0,  1.0,  0.0},
+		{-0.5,  0.5,  0.0,  0.0,  1.0},
+	};
+
+	auto commander = system.createTransientCommander();
+	auto mesh = system.createMesh();
+
+	mesh->upload(*commander, vertices);
+	commander->complete();
+
+	// this will change later
+	system.addForRendering(mesh);
 
 	while (!window.shouldClose()) {
 		window.poll();
-		renderer.draw();
+		system.draw();
 
 		// TODO: Silnik do gier w oparciu o bibliotekę Vulkan
     }
 
-	RenderSystem::terminate();
+	system.close();
 }
