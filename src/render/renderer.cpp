@@ -342,7 +342,9 @@ uint32_t Renderer::acquirePresentationIndex() {
 	uint32_t image_index;
 
 	if (swapchain.getNextImage(getFrame().available_semaphore, &image_index)) {
-		throw std::runtime_error {"Swapchain recreation not supported!"};
+		wait();
+		lateClose();
+		lateInit();
 	}
 
 	return image_index;
@@ -352,7 +354,9 @@ void Renderer::presentFramebuffer(uint32_t index) {
 	auto semaphore = getFrame().finished_semaphore;
 
 	if (swapchain.present(queue, semaphore, index)) {
-		throw std::runtime_error {"Swapchain recreation not supported!"};
+		wait();
+		lateClose();
+		lateInit();
 	}
 }
 

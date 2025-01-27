@@ -108,10 +108,7 @@ class Renderer {
 		void createFrames();
 		void closeFrames();
 
-		/// Close resources created during lateInit()
 		void lateClose();
-
-		/// Perform late initialization, this step needs to re-run each time the swapchain requires to be rebuild
 		void lateInit();
 
 		RenderFrame& getFrame();
