@@ -4,22 +4,130 @@
 
 namespace obj {
 
-	using index = uint32_t;
-
 	struct Vertex {
-		glm::vec3 position;
-		glm::vec3 normal;
-		glm::vec2 uv;
+		glm::vec3 position = glm::vec3(0.0f);
+		glm::vec3 normal = glm::vec3(0.0f);
+		glm::vec2 uv = glm::vec2(0.0f);
 	};
 
 	struct Material {
 		std::string name;
+
+		glm::vec3 ambient = glm::vec3(0.0f);
+		glm::vec3 diffuse = glm::vec3(0.0f);
+		glm::vec3 specular = glm::vec3(0.0f);
+		float shininess = 0.0f;
+		float alpha = 1.0f;
+
+		std::string ambientMap = "";
+		std::string diffuseMap = "";
+		std::string specularMap = "";
+		std::string shininessMap = "";
+		std::string normalMap = "";
+		std::string alphaMap = "";
+
+		int illuminationModel = 0;
+
+		static std::map<std::string, std::shared_ptr<Material>> open(std::string path) {
+			std::map<std::string, std::shared_ptr<Material>> materials;
+
+			std::ifstream file(path);
+			if (!file.is_open()) {
+				throw std::runtime_error("Failed to open file: " + path);
+			}
+
+			std::string line;
+			while (std::getline(file, line)) {
+
+				std::istringstream stream(line);
+				std::string token;
+				stream >> token;
+
+				if (token == "newmtl") {
+					auto material = std::make_shared<Material>();
+					stream >> material->name;
+					materials.insert({ material->name, material });
+				}
+				else if (token == "Ka") {
+					glm::vec3 ambient;
+					stream >> ambient.r >> ambient.g >> ambient.b;
+					materials.rbegin()->second->ambient = ambient;
+				}
+				else if (token == "Kd") {
+					glm::vec3 diffuse;
+					stream >> diffuse.r >> diffuse.g >> diffuse.b;
+					materials.rbegin()->second->diffuse = diffuse;
+				}
+				else if (token == "Ks") {
+					glm::vec3 specular;
+					stream >> specular.r >> specular.g >> specular.b;
+					materials.rbegin()->second->specular = specular;
+				}
+				else if (token == "Ns") {
+					float shininess;
+					stream >> shininess;
+					materials.rbegin()->second->shininess = shininess;
+				}
+				else if (token == "d") {
+					float alpha;
+					stream >> alpha;
+					materials.rbegin()->second->alpha = alpha;
+				}
+				else if (token == "Tr") {
+					float alpha;
+					stream >> alpha;
+					materials.rbegin()->second->alpha = 1.0f - alpha;
+				}
+				else if (token == "map_Ka") {
+					std::string ambientMap;
+					stream >> ambientMap;
+					materials.rbegin()->second->ambientMap = ambientMap;
+				}
+				else if (token == "map_Kd") {
+					std::string diffuseMap;
+					stream >> diffuseMap;
+					materials.rbegin()->second->diffuseMap = diffuseMap;
+				}
+				else if (token == "map_Ks" || token == "map_refl" || token == "map_Pm") {
+					// TODO: refl and Pm are metalness maps, not specular maps
+					std::string specularMap;
+					stream >> specularMap;
+					materials.rbegin()->second->specularMap = specularMap;
+				}
+				else if (token == "map_Ns" || token == "map_Pr") {
+					// TODO: Pr is roughness maps, not shininess maps
+					std::string shininessMap;
+					stream >> shininessMap;
+					materials.rbegin()->second->shininessMap = shininessMap;
+				}
+				else if (token == "map_Bump" || token == "map_bump") {
+					std::string normalMap;
+					stream >> normalMap;
+					if (!normalMap.empty() && normalMap[0] == '-') {
+						stream >> normalMap;
+					}
+					materials.rbegin()->second->normalMap = normalMap;
+				}
+				else if (token == "map_d") {
+					std::string alphaMap;
+					stream >> alphaMap;
+					materials.rbegin()->second->alphaMap = alphaMap;
+				}
+				else if (token == "illum") {
+					int illuminationModel;
+					stream >> illuminationModel;
+					materials.rbegin()->second->illuminationModel = illuminationModel;
+				}
+			}
+
+			return materials;
+		}
 	};
 
 	struct Group {
 		std::string name = "";
-		std::vector<index> indices;
-		std::shared_ptr<Material> material;
+		std::vector<int> indices;
+		std::shared_ptr<Material> material = nullptr;
 	};
 
 	struct Object {
@@ -45,25 +153,31 @@ namespace obj {
 			std::vector<Vertex> vertices;
 			std::vector<Group> groups;
 
-			friend class ObjScene;
+			static std::string getMtllib(std::string path) {
+				std::ifstream file(path);
+				if (!file.is_open()) {
+					throw std::runtime_error("Failed to open file: " + path);
+				}
 
-	};
+				std::string line;
+				while (std::getline(file, line)) {
+					std::istringstream stream(line);
+					std::string token;
+					stream >> token;
 
-	class ObjScene {
+					if (token == "mtllib") {
+						std::string mtllib;
+						stream >> mtllib;
+						return mtllib;
+					}
+				}
 
-		private:
-
-			std::vector<Object> objects;
-
-		public:
-
-			ObjScene() = default;
-
-			ObjScene(std::string path) {
-				open(path);
+				return "";
 			}
 
-			void open(std::string path) {
+			static std::vector<Object> open(std::string path, const std::map<std::string, std::shared_ptr<Material>>& materials) {
+				std::vector<Object> objects;
+
 				std::ifstream file(path);
 				if (!file.is_open()) {
 					throw std::runtime_error("Failed to open file: " + path);
@@ -118,8 +232,12 @@ namespace obj {
 
 						std::string name;
 						stream >> name;
-						// TODO: Find material by name from .mtl
-						objects.back().groups.back().material = std::make_shared<Material>(Material{ name });
+
+						auto material = materials.find(name);
+
+						if (material != materials.end()) {
+							objects.back().groups.back().material = material->second;
+						}
 					}
 					else if (token == "f") {
 						if (objects.back().groups.empty()) {
@@ -134,7 +252,7 @@ namespace obj {
 						while (stream >> vertexString) {
 							vertexCount++;
 							int vertexIndex = std::stoi(vertexString);
-							
+
 							// vertexIndex can be negative, which means it is relative to the end of the list
 							if (vertexIndex < 0) {
 								vertexIndex = (objects.back().vertices.size() - objects.back().extraVertexCount) + vertexIndex + 1;
@@ -212,13 +330,13 @@ namespace obj {
 									}
 								}
 							}
-
 						}
+						// TODO: Handle polygons with more than 3 vertices
 					}
 
 				}
+
+				return objects;
 			}
-
 	};
-
 }

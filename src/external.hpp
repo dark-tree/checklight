@@ -15,6 +15,7 @@
 #include <queue>
 #include <mutex>
 #include <set>
+#include <map>
 
 // GLFW
 #define GLFW_INCLUDE_VULKAN
