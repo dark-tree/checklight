@@ -398,6 +398,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 
 	// create descriptor layouts
 	layout_geometry = DescriptorSetLayoutBuilder::begin()
+		.descriptor(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 		.done(device);
 
 	// add layouts to the pool so that they can be allocated

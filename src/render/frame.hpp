@@ -4,8 +4,14 @@
 #include "util/queue.hpp"
 #include "render/vulkan/command/buffer.hpp"
 #include "render/vulkan/descriptor/descriptor.hpp"
+#include "render/vulkan/buffer/buffer.hpp"
 
 class Renderer;
+
+struct SceneUniform {
+	glm::mat4 model;
+	glm::mat4 view_projection;
+};
 
 class RenderFrame {
 
@@ -29,8 +35,13 @@ class RenderFrame {
 		/// and waited on using `wait()` before starting the rendering of a frame, it is used to keep CPU and GPU in sync
 		Fence flight_fence;
 
+		/// Small buffer used to store uniform variables
+		/// after writing data to `uniforms` call uploadUniformBuffer()
+		Buffer uniform_buffer;
+
 	public:
 
+		SceneUniform* uniform_map;
 		DescriptorSet set_0;
 
 	public:
@@ -42,6 +53,13 @@ class RenderFrame {
 		 * a destructor not a standard close() method
 		 */
 		~RenderFrame();
+
+		/**
+		 * Sends the updated uniform buffer content to the GPU mapped
+		 * memory block, call this method when you want to change the uniforms
+		 * and don't modify the mapped block yourself!
+		 */
+		void flushUniformBuffer(const SceneUniform& uniforms);
 
 		/**
 		 * Wait before starting to render this frame
