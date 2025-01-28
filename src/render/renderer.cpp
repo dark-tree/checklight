@@ -374,6 +374,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	index = 0;
 	concurrent = 1;
 	surface_format = VK_FORMAT_B8G8R8A8_SRGB;
+	frames.reserve(concurrent);
 
 	// early init
 	createInstance(parameters, true);
