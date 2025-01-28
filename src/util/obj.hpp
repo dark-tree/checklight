@@ -36,6 +36,8 @@ namespace obj {
 				throw std::runtime_error("Failed to open file: " + path);
 			}
 
+			std::shared_ptr<Material> material = std::make_shared<Material>();
+
 			std::string line;
 			while (std::getline(file, line)) {
 
@@ -44,61 +46,61 @@ namespace obj {
 				stream >> token;
 
 				if (token == "newmtl") {
-					auto material = std::make_shared<Material>();
+					material = std::make_shared<Material>();
 					stream >> material->name;
 					materials.insert({ material->name, material });
 				}
 				else if (token == "Ka") {
 					glm::vec3 ambient;
 					stream >> ambient.r >> ambient.g >> ambient.b;
-					materials.rbegin()->second->ambient = ambient;
+					material->ambient = ambient;
 				}
 				else if (token == "Kd") {
 					glm::vec3 diffuse;
 					stream >> diffuse.r >> diffuse.g >> diffuse.b;
-					materials.rbegin()->second->diffuse = diffuse;
+					material->diffuse = diffuse;
 				}
 				else if (token == "Ks") {
 					glm::vec3 specular;
 					stream >> specular.r >> specular.g >> specular.b;
-					materials.rbegin()->second->specular = specular;
+					material->specular = specular;
 				}
 				else if (token == "Ns") {
 					float shininess;
 					stream >> shininess;
-					materials.rbegin()->second->shininess = shininess;
+					material->shininess = shininess;
 				}
 				else if (token == "d") {
 					float alpha;
 					stream >> alpha;
-					materials.rbegin()->second->alpha = alpha;
+					material->alpha = alpha;
 				}
 				else if (token == "Tr") {
 					float alpha;
 					stream >> alpha;
-					materials.rbegin()->second->alpha = 1.0f - alpha;
+					material->alpha = 1.0f - alpha;
 				}
 				else if (token == "map_Ka") {
 					std::string ambientMap;
 					stream >> ambientMap;
-					materials.rbegin()->second->ambientMap = ambientMap;
+					material->ambientMap = ambientMap;
 				}
 				else if (token == "map_Kd") {
 					std::string diffuseMap;
 					stream >> diffuseMap;
-					materials.rbegin()->second->diffuseMap = diffuseMap;
+					material->diffuseMap = diffuseMap;
 				}
 				else if (token == "map_Ks" || token == "map_refl" || token == "map_Pm") {
 					// TODO: refl and Pm are metalness maps, not specular maps
 					std::string specularMap;
 					stream >> specularMap;
-					materials.rbegin()->second->specularMap = specularMap;
+					material->specularMap = specularMap;
 				}
 				else if (token == "map_Ns" || token == "map_Pr") {
 					// TODO: Pr is roughness maps, not shininess maps
 					std::string shininessMap;
 					stream >> shininessMap;
-					materials.rbegin()->second->shininessMap = shininessMap;
+					material->shininessMap = shininessMap;
 				}
 				else if (token == "map_Bump" || token == "map_bump") {
 					std::string normalMap;
@@ -106,17 +108,17 @@ namespace obj {
 					if (!normalMap.empty() && normalMap[0] == '-') {
 						stream >> normalMap;
 					}
-					materials.rbegin()->second->normalMap = normalMap;
+					material->normalMap = normalMap;
 				}
 				else if (token == "map_d") {
 					std::string alphaMap;
 					stream >> alphaMap;
-					materials.rbegin()->second->alphaMap = alphaMap;
+					material->alphaMap = alphaMap;
 				}
 				else if (token == "illum") {
 					int illuminationModel;
 					stream >> illuminationModel;
-					materials.rbegin()->second->illuminationModel = illuminationModel;
+					material->illuminationModel = illuminationModel;
 				}
 			}
 
@@ -134,18 +136,12 @@ namespace obj {
 
 		private:
 
-			std::vector<glm::vec3> tempNormals;
-			std::vector<glm::vec2> tempUVs;
-
 			// offset of the first vertex of the object in the global vertices array
 			int vertexOffset = 0;
 
 			// number of vertices that have been added to the global vertices array due to duplicates
 			// duplicates are vertices that have the same position but different texture or normal
 			int extraVertexCount = 0;
-
-			// linked list of duplicates
-			std::vector<int> duplicates;
 
 		public:
 
@@ -183,6 +179,12 @@ namespace obj {
 					throw std::runtime_error("Failed to open file: " + path);
 				}
 
+				std::vector<glm::vec3> globalNormals;
+				std::vector<glm::vec2> globalUVs;
+
+				// linked list of duplicates
+				std::vector<int> duplicates;
+
 				std::string line;
 				while (std::getline(file, line)) {
 
@@ -195,10 +197,8 @@ namespace obj {
 						stream >> object.name;
 
 						if (!objects.empty()) {
-							objects.back().tempNormals.clear();
-							objects.back().tempUVs.clear();
-							objects.back().duplicates.clear();
-							object.vertexOffset = objects.back().vertices.size() - objects.back().extraVertexCount;
+							duplicates.clear();
+							object.vertexOffset = objects.back().vertices.size() - objects.back().extraVertexCount + objects.back().vertexOffset;
 						}
 
 						objects.push_back(object);
@@ -208,17 +208,17 @@ namespace obj {
 						stream >> vertex.position.x >> vertex.position.y >> vertex.position.z;
 
 						objects.back().vertices.push_back(vertex);
-						objects.back().duplicates.push_back(-1);
+						duplicates.push_back(-1);
 					}
 					else if (token == "vn") {
 						glm::vec3 normal;
 						stream >> normal.x >> normal.y >> normal.z;
-						objects.back().tempNormals.push_back(normal);
+						globalNormals.push_back(normal);
 					}
 					else if (token == "vt") {
 						glm::vec2 uv;
 						stream >> uv.x >> uv.y;
-						objects.back().tempUVs.push_back(uv);
+						globalUVs.push_back(uv);
 					}
 					else if (token == "g") {
 						Group group;
@@ -267,7 +267,7 @@ namespace obj {
 								if (vertexString[0] != '/') {
 									uvIndex = std::stoi(vertexString);
 									if (uvIndex < 0) {
-										uvIndex = objects.back().tempUVs.size() + uvIndex + 1;
+										uvIndex = globalUVs.size() + uvIndex + 1;
 									}
 								}
 
@@ -275,7 +275,7 @@ namespace obj {
 								if (separatorIndex != std::string::npos) {
 									normalIndex = std::stoi(vertexString.substr(separatorIndex + 1));
 									if (normalIndex < 0) {
-										normalIndex = objects.back().tempNormals.size() + normalIndex + 1;
+										normalIndex = globalNormals.size() + normalIndex + 1;
 									}
 								}
 							}
@@ -286,10 +286,10 @@ namespace obj {
 							Vertex newVertex = vert;
 
 							if (uvIndex > 0) {
-								newVertex.uv = objects.back().tempUVs[uvIndex - 1];
+								newVertex.uv = globalUVs[uvIndex - 1];
 							}
 							if (normalIndex > 0) {
-								newVertex.normal = objects.back().tempNormals[normalIndex - 1];
+								newVertex.normal = globalNormals[normalIndex - 1];
 							}
 
 							if (vert.normal == glm::vec3(0.0f) && vert.uv == glm::vec2(0.0f)) {
@@ -306,13 +306,13 @@ namespace obj {
 									while (true) {
 										// this vertex has been processed and is different from the new one
 										// check if there is a vertex with the same position and uv
-										int duplicateVertexIndex = objects.back().duplicates[localVertexIndex];
+										int duplicateVertexIndex = duplicates[localVertexIndex];
 										if (duplicateVertexIndex == -1) {
 											// there is no vertex with the same position and texture
 											// create a new vertex
 											objects.back().vertices.push_back(newVertex);
-											objects.back().duplicates.push_back(-1);
-											objects.back().duplicates[localVertexIndex] = objects.back().vertices.size() - 1;
+											duplicates.push_back(-1);
+											duplicates[localVertexIndex] = objects.back().vertices.size() - 1;
 											objects.back().groups.back().indices.push_back(objects.back().vertices.size() - 1);
 											objects.back().extraVertexCount++;
 											break;
