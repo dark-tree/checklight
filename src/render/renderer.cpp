@@ -460,9 +460,15 @@ void Renderer::beginDraw() {
 
 	// begin rendering
 	recorder = frame.buffer.record();
+
+	recorder.beginRenderPass(pass_basic_3d, current_image, swapchain.getExtend());
+	recorder.bindPipeline(pipeline_basic_3d);
+	recorder.bindDescriptorSet(frame.set_0);
 }
 
 void Renderer::endDraw() {
+
+	recorder.endRenderPass();
 	recorder.done();
 
 	RenderFrame& frame = getFrame();
