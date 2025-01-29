@@ -143,20 +143,17 @@ TextureBuilder& TextureBuilder::setBorder(VkBorderColor border) {
 }
 
 TextureBuilder& TextureBuilder::setClearColor(float r, float g, float b, float a) {
-	VkClearValue value;
-	value.color = {.float32 = {r, g, b, a}};
+	vk_clear.color = {.float32 = {r, g, b, a}};
 	return *this;
 }
 
 TextureBuilder& TextureBuilder::setClearColor(int r, int g, int b, int a) {
-	VkClearValue value;
-	value.color = {.int32 = {r, g, b, a}};
+	vk_clear.color = {.int32 = {r, g, b, a}};
 	return *this;
 }
 
 TextureBuilder& TextureBuilder::setClearDepth(float depth, uint32_t stencil) {
-	VkClearValue value;
-	value.depthStencil = {depth, stencil};
+	vk_clear.depthStencil = {depth, stencil};
 	return *this;
 }
 

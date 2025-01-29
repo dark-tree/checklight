@@ -174,3 +174,9 @@ CommandRecorder& CommandRecorder::bufferTransferBarrier(VkPipelineStageFlags dst
 	vkCmdPipelineBarrier(vk_buffer, src, dst, flags, 1, &barrier, 0, nullptr, 0, nullptr);
 	return *this;
 }
+
+CommandRecorder& CommandRecorder::writePushConstant(const PushConstant& constant, const void* data) {
+	VkPushConstantRange range = constant.getRange();
+	vkCmdPushConstants(vk_buffer, vk_layout, range.stageFlags, range.offset, range.size, data);
+	return *this;
+}

@@ -43,8 +43,8 @@ void GraphicsPipelineBuilder::finalize() {
 
 	layout.setLayoutCount = sets.size();
 	layout.pSetLayouts = sets.data();
-	layout.pushConstantRangeCount = 0;
-	layout.pPushConstantRanges = nullptr;
+	layout.pushConstantRangeCount = (vk_constant.size != 0);
+	layout.pPushConstantRanges = &vk_constant;
 
 	view.viewportCount = 1;
 	view.pViewports = &vk_viewport;
@@ -142,6 +142,11 @@ GraphicsPipelineBuilder& GraphicsPipelineBuilder::withBindingLayout(BindingLayou
 
 GraphicsPipelineBuilder& GraphicsPipelineBuilder::withDescriptorSetLayout(const DescriptorSetLayout& layout) {
 	sets.push_back(layout.getHandle());
+	return *this;
+}
+
+GraphicsPipelineBuilder& GraphicsPipelineBuilder::withPushConstant(const PushConstant& constant) {
+	this->vk_constant = constant.getRange();
 	return *this;
 }
 

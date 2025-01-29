@@ -108,7 +108,7 @@ void Renderer::pickDevice() {
 	auto devices = instance.getDevices();
 	printf("INFO: Detected %d physical devices\n", (int) devices.size());
 
-	for (PhysicalDevice device : devices) {
+	for (const auto& device : devices) {
 
 		// we need the device to be able to render to our window
 		if (!device.canUseSurface(surface)) {
@@ -143,7 +143,7 @@ void Renderer::pickDevice() {
 	throw std::runtime_error {"No device could have been selected!"};
 }
 
-void Renderer::createDevice(PhysicalDevice physical, Family queue_family) {
+void Renderer::createDevice(const PhysicalDevice& physical, Family queue_family) {
 	printf("INFO: Selected '%s' (queue #%d)\n", physical.getName(), queue_family.getIndex());
 
 	// list device extensions we need
@@ -183,7 +183,7 @@ void Renderer::createDevice(PhysicalDevice physical, Family queue_family) {
 	}
 
 	// load all device functions
-	this->physical = physical;
+	this->physical = std::make_unique<PhysicalDevice>(physical);
 	this->device = vk_device;
 	this->family = queue_family;
 
@@ -193,7 +193,7 @@ void Renderer::createDevice(PhysicalDevice physical, Family queue_family) {
 
 void Renderer::createSwapchain() {
 
-	SwapchainInfo info = physical.getSwapchainInfo(this->surface);
+	SwapchainInfo info = physical->getSwapchainInfo(this->surface);
 	auto extent = info.getExtent(*window);
 	auto images = info.getImageCount(4);
 	auto transform = info.getTransform();
@@ -291,6 +291,7 @@ void Renderer::createPipelines() {
 		.withRenderPass(pass_basic_3d, 0)
 		.withShaders(shader_basic_vertex, shader_basic_fragment)
 		.withBindingLayout(binding_3d)
+		.withPushConstant(mesh_constant)
 		.withDescriptorSetLayout(layout_geometry)
 		.build();
 
@@ -360,6 +361,14 @@ Semaphore Renderer::createSemaphore() {
 	return {device.getHandle()};
 }
 
+PushConstant Renderer::createPushConstant(VkShaderStageFlags stages, uint32_t bytes) {
+	if (bytes > physical->getLimits().maxPushConstantsSize) {
+		throw std::runtime_error {"The reqested push constant is too large!"};
+	}
+
+	return {stages, bytes};
+}
+
 Renderer::Renderer(ApplicationParameters& parameters)
 : windows(), window(windows.open(parameters.width, parameters.height, parameters.getTitle())) {
 
@@ -380,7 +389,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	transient_pool = CommandPool::create(device, family, true);
 	graphics_pool = CommandPool::create(device, family, false);
 
-	allocator = Allocator {device, physical, instance};
+	allocator = Allocator {device, *physical, instance};
 	allocator.print();
 
 	// create vertex bindings
@@ -398,6 +407,9 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	descriptor_pool = DescriptorPoolBuilder::begin()
 		.addDynamic(layout_geometry, 1)
 		.done(device, concurrent);
+
+	// render pass used during mesh rendering
+	mesh_constant = createPushConstant(VK_SHADER_STAGE_VERTEX_BIT, sizeof(MeshConstant));
 
 	createAttachments();
 	createRenderPasses();

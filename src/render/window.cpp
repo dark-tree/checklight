@@ -23,6 +23,7 @@ WindowSystem::WindowSystem() {
 
 WindowSystem::~WindowSystem() {
 	glfwTerminate();
+	printf("INFO: GLFW terminated\n");
 }
 
 std::vector<const char*> WindowSystem::getRequiredExtensions() const {

@@ -64,6 +64,16 @@ class PhysicalDevice {
 		 */
 		SwapchainInfo getSwapchainInfo(VkSurfaceKHR surface);
 
+		/**
+		 * TODO
+		 */
+		const VkPhysicalDeviceProperties& getProperties() const;
+
+		/**
+		 * TODO
+		 */
+		const VkPhysicalDeviceLimits& getLimits() const;
+
 };
 
 /**

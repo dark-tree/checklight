@@ -31,26 +31,31 @@ std::shared_ptr<RenderMesh> RenderSystem::createMesh() {
 }
 
 void RenderSystem::setProjectionMatrix(glm::mat4 projection) {
-	this->projection = projection;
+	uniforms.projection = projection;
 }
 
 void RenderSystem::setViewMatrix(glm::mat4 view) {
-	this->view = view;
+	uniforms.view = view;
 }
 
-void RenderSystem::setModelMatrix(glm::mat4 model) {
-	this->model = model;
+void RenderSystem::bindMaterial() {
+	// TODO
 }
 
-void RenderSystem::drawMesh(std::shared_ptr<RenderMesh>& mesh) {
+void RenderSystem::updateUniforms() {
+	getFrame().flushUniformBuffer(uniforms);
+}
 
-	RenderFrame& frame = getFrame();
+void RenderSystem::bindMesh(std::shared_ptr<RenderMesh>& mesh) {
+	this->mesh = mesh;
+}
 
-	SceneUniform uniform;
-	uniform.view_projection = projection * view;
-	uniform.model = model;
+void RenderSystem::draw(glm::mat4 model) {
 
-	frame.flushUniformBuffer(uniform);
-	mesh->draw(recorder);
+	MeshConstant constant;
+	constant.model = model;
+	constant.material = 0;
 
+	recorder.writePushConstant(mesh_constant, &constant);
+	this->mesh->draw(recorder);
 }
