@@ -51,13 +51,6 @@ void RenderSystem::drawMesh(std::shared_ptr<RenderMesh>& mesh) {
 	uniform.model = model;
 
 	frame.flushUniformBuffer(uniform);
-
-	recorder.beginRenderPass(pass_basic_3d, current_image, swapchain.getExtend())
-		.bindPipeline(pipeline_basic_3d)
-		.bindDescriptorSet(frame.set_0);
-
 	mesh->draw(recorder);
-
-	recorder.endRenderPass();
 
 }
