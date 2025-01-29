@@ -211,6 +211,8 @@ void Renderer::createSwapchain() {
 
 	this->swapchain = builder.build(device, surface);
 
+	attachment_depth.allocate(device, extent.width, extent.height, allocator);
+
 	// create framebuffers
 	pass_basic_3d.prepareFramebuffers(swapchain);
 
@@ -231,11 +233,18 @@ void Renderer::createAttachments() {
 	attachment_color = TextureBuilder::begin()
 		.setFormat(surface_format)
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
-		.setClearColor(0.0f, 0.0f, 0.0f, 1.0f)
+		.setClearColor(3 / 255.0f, 169 / 255.0f, 252 / 255.0f, 1.0f)
 		.createAttachment();
 
 	// very important UwU
 	attachment_color.markSwapchainBacked();
+
+	attachment_depth = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_D32_SFLOAT)
+		.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT)
+		.setClearDepth(1.0f)
+		.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+		.createAttachment();
 
 }
 
@@ -255,6 +264,11 @@ void Renderer::createRenderPasses() {
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
 			.next();
 
+		Attachment::Ref depth = builder.addAttachment(attachment_depth)
+			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+			.next();
+
 		builder.addDependency()
 			.first(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0)
 			.then(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
@@ -267,6 +281,7 @@ void Renderer::createRenderPasses() {
 
 		builder.addSubpass()
 			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.next();
 
 		pass_basic_3d = builder.build(device);
@@ -293,6 +308,7 @@ void Renderer::createPipelines() {
 		.withBindingLayout(binding_3d)
 		.withPushConstant(mesh_constant)
 		.withDescriptorSetLayout(layout_geometry)
+		.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
 		.build();
 
 

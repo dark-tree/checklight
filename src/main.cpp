@@ -25,14 +25,12 @@ int main() {
 
 		glm::mat4 model = glm::identity<glm::mat4>();
 		glm::mat4 projection = glm::perspective(glm::radians(40.0f), width / height, 0.1f, 1000.0f);
-		projection[1][1] *= -1;
-		glm::mat4 view = glm::lookAt(glm::vec3(20.0f, 1.0f, 4.0f), glm::vec3(-3.0f, 1.0f, 8.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		// OpenGL correction (don't touch)
 		projection[1][1] *= -1;
 
 		// view is based on player/editor camera
-		glm::mat4 view = glm::lookAt(glm::vec3(0), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f));;
+		glm::mat4 view = glm::lookAt(glm::vec3(18.0f, 1.0f, 4.0f), glm::vec3(-3.0f, 1.0f, 8.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		// update uniforms, do this once
 		// at the beginning of frame rendering
@@ -44,7 +42,8 @@ int main() {
 		system.beginDraw();
 
 		for (auto& mesh : meshes) {
-			system.drawMesh(mesh);
+			system.bindMesh(mesh);
+			system.draw(model);
 		}
 
 		system.endDraw();
