@@ -385,7 +385,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 
 	// create vertex bindings
 	binding_3d = BindingLayoutBuilder::begin()
-		.attribute(0, VK_FORMAT_R32G32_SFLOAT) // xy
+		.attribute(0, VK_FORMAT_R32G32B32_SFLOAT) // xyz
 		.attribute(1, VK_FORMAT_R32G32B32_SFLOAT) // rgb
 		.done();
 

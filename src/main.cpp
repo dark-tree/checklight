@@ -2,6 +2,7 @@
 #include "render/system.hpp"
 #include "render/api/vertex.hpp"
 #include "render/api/mesh.hpp"
+#include "render/api/importer.hpp"
 
 int main() {
 
@@ -14,24 +15,7 @@ int main() {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
-	std::vector<Vertex2D> vertices = {
-		{0.0, -0.5,  1.0,  0.0,  0.0},
-		{0.5,  0.5,  0.0,  1.0,  0.0},
-		{-0.5,  0.5,  0.0,  0.0,  1.0},
-	};
-
-	std::vector<int> indices = {
-		0,
-		1,
-		2,
-	};
-
-	auto commander = system.createTransientCommander();
-	auto mesh = system.createMesh();
-
-	mesh->uploadVertices(*commander, vertices);
-	mesh->uploadIndices(*commander, indices);
-	commander->complete();
+	auto meshes = Importer::importObj(system, "assets/models/checklight.obj");
 
 	while (!window.shouldClose()) {
 		window.poll();
@@ -40,15 +24,20 @@ int main() {
 		float height = system.height();
 
 		glm::mat4 model = glm::identity<glm::mat4>();
-		glm::mat4 projection = glm::perspective(glm::radians(65.0f), width / height, 0.1f, 1000.0f);
-		glm::mat4 view = glm::lookAt(glm::vec3(0), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));;
+		glm::mat4 projection = glm::perspective(glm::radians(40.0f), width / height, 0.1f, 1000.0f);
+		projection[1][1] *= -1;
+		glm::mat4 view = glm::lookAt(glm::vec3(20.0f, 1.0f, 4.0f), glm::vec3(-3.0f, 1.0f, 8.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		system.setProjectionMatrix(projection);
 		system.setViewMatrix(view);
 		system.setModelMatrix(model);
 
 		system.beginDraw();
-		system.drawMesh(mesh);
+
+		for (auto& mesh : meshes) {
+			system.drawMesh(mesh);
+		}
+
 		system.endDraw();
 
 		// TODO: Silnik do gier w oparciu o bibliotekę Vulkan
@@ -56,6 +45,9 @@ int main() {
 
 	// close mesh before render systems dies
 	system.wait();
-	mesh.reset();
+
+	for (auto& mesh : meshes) {
+		mesh.reset();
+	}
 
 }
