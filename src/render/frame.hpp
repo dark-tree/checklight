@@ -9,8 +9,13 @@
 class Renderer;
 
 struct SceneUniform {
+	glm::mat4 view;
+	glm::mat4 projection;
+};
+
+struct MeshConstant {
 	glm::mat4 model;
-	glm::mat4 view_projection;
+	int material;
 };
 
 class RenderFrame {

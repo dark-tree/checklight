@@ -7,17 +7,18 @@ RenderMesh::~RenderMesh() {
 }
 
 bool RenderMesh::hasIndexData() const {
-	return index_count != 0;
+	return !index.isEmpty();
 }
 
 void RenderMesh::draw(CommandRecorder& recorder) {
-	recorder.bindVertexBuffer(vertex);
+	recorder.bindVertexBuffer(vertex.getBuffer());
 
 	if (hasIndexData()) {
-		recorder.bindIndexBuffer(index);
-		recorder.drawIndexed(index_count);
+		recorder.bindIndexBuffer(index.getBuffer());
+		recorder.drawIndexed(index.getCount());
 		return;
 	}
 
-	recorder.draw(vertex_count);
+	// if no index data just draw the vertices
+	recorder.draw(vertex.getCount());
 }

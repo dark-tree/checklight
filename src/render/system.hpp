@@ -12,9 +12,8 @@ class RenderSystem : public Renderer {
 
 	private:
 
-		glm::mat4 model;
-		glm::mat4 view;
-		glm::mat4 projection;
+		std::shared_ptr<RenderMesh> mesh;
+		SceneUniform uniforms;
 
 	public:
 
@@ -30,8 +29,11 @@ class RenderSystem : public Renderer {
 
 		void setProjectionMatrix(glm::mat4 projection);
 		void setViewMatrix(glm::mat4 projection);
-		void setModelMatrix(glm::mat4 projection);
+		void updateUniforms();
 
-		void drawMesh(std::shared_ptr<RenderMesh>& mesh);
+		void bindMaterial();
+		void bindMesh(std::shared_ptr<RenderMesh>& mesh);
+
+		void draw(glm::mat4 model);
 
 };

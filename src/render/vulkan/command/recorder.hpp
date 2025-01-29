@@ -2,6 +2,7 @@
 
 #include "external.hpp"
 #include "render/vulkan/pass/tracer.hpp"
+#include "render/vulkan/descriptor/push.hpp"
 
 class Buffer;
 class Image;
@@ -62,4 +63,7 @@ class CommandRecorder {
 
 		/// Ends the render pass, requires the render pass to be bound the the subpass index to point to the last subpass in that renderpass
 		CommandRecorder& endRenderPass();
+
+		/// Writes data to the pipeline's push constant, the data is immediately available to the subsequent draw calls
+		CommandRecorder& writePushConstant(const PushConstant& constant, const void* data);
 };

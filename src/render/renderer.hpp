@@ -16,10 +16,13 @@
 #include "render/vulkan/pass/render.hpp"
 #include "render/vulkan/pass/pipeline.hpp"
 #include "render/vulkan/descriptor/pool.hpp"
+#include "render/vulkan/descriptor/push.hpp"
 
 class Renderer {
 
 	private:
+
+		std::unique_ptr<PhysicalDevice> physical;
 
 		/// the number of concurrent frames, this value should no be larger then 4-5 to no cause input delay
 		/// setting it to 1 effectively disables concurrent frames
@@ -38,6 +41,7 @@ class Renderer {
 		friend class RenderFrame;
 		friend class RenderMesh;
 		friend class RenderCommander;
+		friend class ReusableBuffer;
 
 		/// The last image index acquired from the driver,
 		/// this is used as an offset into a framebuffer set
@@ -52,7 +56,6 @@ class Renderer {
 		VkDebugUtilsMessengerEXT messenger;
 		Instance instance;
 		VkSurfaceKHR surface;
-		PhysicalDevice physical;
 		LogicalDevice device;
 		Family family;
 		Queue queue;
@@ -86,6 +89,9 @@ class Renderer {
 		// primary rendering recorder
 		CommandRecorder recorder;
 
+		// push constants
+		PushConstant mesh_constant;
+
 	private:
 
 		friend VKAPI_ATTR VkBool32 VKAPI_CALL VulkanMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT*, void*);
@@ -101,7 +107,7 @@ class Renderer {
 		void pickDevice();
 
 		/// Loads the LogicalDevice, and Family
-		void createDevice(PhysicalDevice device, Family queue_family);
+		void createDevice(const PhysicalDevice& device, Family queue_family);
 
 		void createShaders();
 		void createAttachments();
@@ -126,6 +132,7 @@ class Renderer {
 		RenderFrame& getFrame();
 		Fence createFence(bool signaled = false);
 		Semaphore createSemaphore();
+		PushConstant createPushConstant(VkShaderStageFlags stages, uint32_t bytes);
 
 	public:
 

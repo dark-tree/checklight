@@ -5,6 +5,7 @@
 #include "render/vulkan/shader/shader.hpp"
 #include "render/vulkan/descriptor/vertex.hpp"
 #include "render/vulkan/descriptor/layout.hpp"
+#include "render/vulkan/descriptor/push.hpp"
 
 // concept used for dynamic states
 template<typename T>
@@ -66,6 +67,7 @@ class GraphicsPipelineBuilder {
 		VkPipelineColorBlendStateCreateInfo blending {};
 		VkPipelineDepthStencilStateCreateInfo depth {};
 
+		VkPushConstantRange vk_constant {};
 		VkViewport vk_viewport {};
 		VkRect2D vk_scissor {};
 		VkRenderPass vk_pass;
@@ -132,6 +134,14 @@ class GraphicsPipelineBuilder {
 		 * @param[in] layout Descriptor layout created using DescriptorSetLayoutBuilder
 		 */
 		GraphicsPipelineBuilder& withDescriptorSetLayout(const DescriptorSetLayout& layout);
+
+		/**
+		 * TODO
+		 *
+		 * @section Descriptor
+		 * @param constant
+		 */
+		GraphicsPipelineBuilder& withPushConstant(const PushConstant& constant);
 
 		/**
 		 * Describes how the vertices will be interpreted be assembled into rendering primitives,

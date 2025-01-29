@@ -7,7 +7,7 @@
  * PhysicalDevice
  */
 
-PhysicalDevice::PhysicalDevice(VkPhysicalDevice device) {
+PhysicalDevice::PhysicalDevice(VkPhysicalDevice device)  {
 	vkGetPhysicalDeviceProperties(device, &properties);
 
 	// for future use
@@ -76,6 +76,14 @@ std::vector<Family> PhysicalDevice::getFamilies() const {
 
 SwapchainInfo PhysicalDevice::getSwapchainInfo(VkSurfaceKHR surface) {
 	return {vk_device, surface};
+}
+
+const VkPhysicalDeviceProperties& PhysicalDevice::getProperties() const {
+	return properties;
+}
+
+const VkPhysicalDeviceLimits& PhysicalDevice::getLimits() const {
+	return getProperties().limits;
 }
 
 /*

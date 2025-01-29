@@ -28,10 +28,19 @@ int main() {
 		projection[1][1] *= -1;
 		glm::mat4 view = glm::lookAt(glm::vec3(20.0f, 1.0f, 4.0f), glm::vec3(-3.0f, 1.0f, 8.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
+		// OpenGL correction (don't touch)
+		projection[1][1] *= -1;
+
+		// view is based on player/editor camera
+		glm::mat4 view = glm::lookAt(glm::vec3(0), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f));;
+
+		// update uniforms, do this once
+		// at the beginning of frame rendering
 		system.setProjectionMatrix(projection);
 		system.setViewMatrix(view);
-		system.setModelMatrix(model);
+		system.updateUniforms();
 
+		// all rendering must be done between beginDraw and endDraw
 		system.beginDraw();
 
 		for (auto& mesh : meshes) {
@@ -39,11 +48,9 @@ int main() {
 		}
 
 		system.endDraw();
-
-		// TODO: Silnik do gier w oparciu o bibliotekę Vulkan
     }
 
-	// close mesh before render systems dies
+	// close mesh *before* render systems dies
 	system.wait();
 
 	for (auto& mesh : meshes) {
