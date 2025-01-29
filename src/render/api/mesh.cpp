@@ -3,6 +3,7 @@
 
 RenderMesh::~RenderMesh() {
 	vertex.close();
+	index.close();
 }
 
 bool RenderMesh::hasIndexData() const {
