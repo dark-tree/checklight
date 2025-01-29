@@ -5,10 +5,18 @@ RenderMesh::~RenderMesh() {
 	vertex.close();
 }
 
-Buffer& RenderMesh::getVertexBuffer() {
-	return vertex;
+bool RenderMesh::hasIndexData() const {
+	return index_count != 0;
 }
 
-size_t RenderMesh::getVertexCount() {
-	return vertex_count;
+void RenderMesh::draw(CommandRecorder& recorder) {
+	recorder.bindVertexBuffer(vertex);
+
+	if (hasIndexData()) {
+		recorder.bindIndexBuffer(index);
+		recorder.drawIndexed(index_count);
+		return;
+	}
+
+	recorder.draw(vertex_count);
 }

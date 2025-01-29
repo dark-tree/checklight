@@ -34,9 +34,10 @@ void RenderSystem::drawMesh(std::shared_ptr<RenderMesh>& mesh) {
 
 	recorder.beginRenderPass(pass_basic_3d, current_image, swapchain.getExtend())
 		.bindPipeline(pipeline_basic_3d)
-		.bindDescriptorSet(getFrame().set_0)
-		.bindVertexBuffer(mesh->getVertexBuffer())
-		.draw(mesh->getVertexCount())
-		.endRenderPass();
+		.bindDescriptorSet(getFrame().set_0);
+
+	mesh->draw(recorder);
+
+	recorder.endRenderPass();
 
 }

@@ -20,10 +20,17 @@ int main() {
 		{-0.5,  0.5,  0.0,  0.0,  1.0},
 	};
 
+	std::vector<int> indices = {
+		0,
+		1,
+		2,
+	};
+
 	auto commander = system.createTransientCommander();
 	auto mesh = system.createMesh();
 
-	mesh->upload(*commander, vertices);
+	mesh->uploadVertices(*commander, vertices);
+	mesh->uploadIndices(*commander, indices);
 	commander->complete();
 
 	while (!window.shouldClose()) {
@@ -36,6 +43,7 @@ int main() {
 		// TODO: Silnik do gier w oparciu o bibliotekę Vulkan
     }
 
+	// close mesh before render systems dies
 	system.wait();
 	mesh.reset();
 
