@@ -1,5 +1,5 @@
 
-#include "command.hpp"
+#include "buffer.hpp"
 
 /*
  * CommandBuffer
@@ -57,7 +57,7 @@ CommandBuffer CommandPool::allocate(VkCommandBufferLevel level) const {
 	VkCommandBufferAllocateInfo create_info {};
 	create_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	create_info.commandPool = vk_pool;
-	create_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	create_info.level = level;
 	create_info.commandBufferCount = 1;
 
 	VkCommandBuffer buffer;

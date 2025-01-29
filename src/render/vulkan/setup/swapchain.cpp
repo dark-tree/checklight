@@ -19,7 +19,7 @@ Swapchain::Swapchain(VkSwapchainKHR vk_swapchain, VkSurfaceFormatKHR vk_surface_
 		VkImage* images = new VkImage[count];
 		vkGetSwapchainImagesKHR(vk_device, vk_swapchain, &count, images);
 
-		for (int i = 0; i < count; i ++) {
+		for (uint32_t i = 0; i < count; i ++) {
 			VkImage vk_image = images[i];
 
 			Image img {vk_image, vk_surface_format.format, {}};

@@ -326,47 +326,38 @@ void Renderer::lateClose() {
 	swapchain.close();
 	closeFrames();
 	closePipelines();
-	vertex_buffer.close();
 }
 
 void Renderer::lateInit() {
 	createSwapchain();
 	createPipelines();
 	createFrames();
-
-	float data[] = {
-		 0.0, -0.5,  1.0,  0.0,  0.0,
-		 0.5,  0.5,  0.0,  1.0,  0.0,
-		-0.5,  0.5,  0.0,  0.0,  1.0,
-	};
-
-	vertex_buffer = allocator.allocateBuffer(Memory::SHARED, sizeof(data), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-	void* map = vertex_buffer.getAllocation().map();
-	memcpy(map, data, sizeof(data));
-	vertex_buffer.getAllocation().unmap();
-
 }
 
 RenderFrame& Renderer::getFrame() {
 	return frames.data()[index];
 }
 
-uint32_t Renderer::acquirePresentationIndex() {
-	uint32_t image_index;
-
-	if (swapchain.getNextImage(getFrame().available_semaphore, &image_index)) {
-		throw std::runtime_error {"Swapchain recreation not supported!"};
+void Renderer::acquirePresentationIndex() {
+	if (swapchain.getNextImage(getFrame().available_semaphore, &this->current_image)) {
+		reload();
 	}
-
-	return image_index;
 }
 
-void Renderer::presentFramebuffer(uint32_t index) {
+void Renderer::presentFramebuffer() {
 	auto semaphore = getFrame().finished_semaphore;
 
-	if (swapchain.present(queue, semaphore, index)) {
-		throw std::runtime_error {"Swapchain recreation not supported!"};
+	if (swapchain.present(queue, semaphore, this->current_image)) {
+		reload();
 	}
+}
+
+Fence Renderer::createFence(bool signaled) {
+	return {device.getHandle(), signaled};
+}
+
+Semaphore Renderer::createSemaphore() {
+	return {device.getHandle()};
 }
 
 Renderer::Renderer(ApplicationParameters& parameters)
@@ -375,6 +366,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	index = 0;
 	concurrent = 1;
 	surface_format = VK_FORMAT_B8G8R8A8_SRGB;
+	frames.reserve(concurrent);
 
 	// early init
 	createInstance(parameters, true);
@@ -399,6 +391,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 
 	// create descriptor layouts
 	layout_geometry = DescriptorSetLayoutBuilder::begin()
+		.descriptor(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 		.done(device);
 
 	// add layouts to the pool so that they can be allocated
@@ -448,6 +441,7 @@ Renderer::~Renderer() {
 }
 
 void Renderer::reload() {
+	wait();
 	lateClose();
 	lateInit();
 }
@@ -456,25 +450,22 @@ Window& Renderer::getWindow() const {
 	return *window;
 }
 
-void Renderer::draw() {
+void Renderer::beginDraw() {
 	RenderFrame& frame = getFrame();
 
 	frame.wait();
 	frame.execute();
 
-	uint32_t image = acquirePresentationIndex();
+	acquirePresentationIndex();
 
 	// begin rendering
-	CommandRecorder recorder = frame.buffer.record();
+	recorder = frame.buffer.record();
+}
 
-	recorder.beginRenderPass(pass_basic_3d, image, swapchain.getExtend())
-		.bindPipeline(pipeline_basic_3d)
-		.bindDescriptorSet(frame.set_0)
-		.bindVertexBuffer(vertex_buffer)
-		.draw(3)
-		.endRenderPass();
-
+void Renderer::endDraw() {
 	recorder.done();
+
+	RenderFrame& frame = getFrame();
 
 	frame.buffer.submit()
 		.awaits(frame.available_semaphore, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
@@ -482,7 +473,7 @@ void Renderer::draw() {
 		.signal(frame.flight_fence)
 		.done(queue);
 
-	presentFramebuffer(image);
+	presentFramebuffer();
 
 	// next frame
 	index = (index + 1) % concurrent;
@@ -491,4 +482,12 @@ void Renderer::draw() {
 
 void Renderer::wait() {
 	device.wait();
+}
+
+int Renderer::width() {
+	return swapchain.getExtend().width;
+}
+
+int Renderer::height() {
+	return swapchain.getExtend().height;
 }

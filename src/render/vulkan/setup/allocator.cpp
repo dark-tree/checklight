@@ -109,7 +109,7 @@ void Allocator::print() {
 
 	size_t free = 0;
 
-	for (int i = 0; i < vk_properties.memoryHeapCount; i ++) {
+	for (uint32_t i = 0; i < vk_properties.memoryHeapCount; i ++) {
 		VkMemoryHeap heap = vk_properties.memoryHeaps[i];
 
 		if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {

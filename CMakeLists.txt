@@ -85,18 +85,17 @@ set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
 add_subdirectory(${shaderc_SOURCE_DIR} ${shaderc_BINARY_DIR})
 FetchContent_MakeAvailable(glfw stb glm vma)
 
-include_directories(
+add_library(checklight_common INTERFACE)
+target_include_directories(checklight_common INTERFACE
 		src/
 		lib/
+		${glm_SOURCE_DIR}                        # Headers in ./glm
 		${glfw_SOURCE_DIR}/include               # Headers in ./GLFW
 		${stb_SOURCE_DIR}                        # Headers in ./
-		${glm_SOURCE_DIR}                        # Headers in ./glm
 		${shaderc_SOURCE_DIR}/libshaderc/include # Headers in ./shaderc
 		${Vulkan_INCLUDE_DIRS}                   # Headers in ./vulcan
 		${vma_SOURCE_DIR}/include                # Headers in ./
 )
-
-add_library(checklight_common INTERFACE)
 
 file(GLOB_RECURSE CHECKLIGHT_RENDER_SOURCES "src/render/*.cpp")
 add_library(checklight_render_system ${CHECKLIGHT_RENDER_SOURCES})
@@ -104,7 +103,7 @@ add_library(checklight_render_system ${CHECKLIGHT_RENDER_SOURCES})
 file(GLOB_RECURSE CHECKLIGHT_UTIL_SOURCES "src/util/*.cpp")
 add_library(checklight_util_system ${CHECKLIGHT_UTIL_SOURCES})
 
-add_library(external
+add_library(checklight_external
 		lib/stb_image.cpp
 		lib/stb_image_write.cpp
 		lib/stb_vorbis.cpp
@@ -113,18 +112,22 @@ add_library(external
 
 add_executable(checklight "src/main.cpp")
 
+target_link_libraries(checklight_external PRIVATE
+		checklight_common
+)
+
 target_link_libraries(checklight_render_system PRIVATE
 		checklight_common
 		Vulkan::Vulkan
 		glfw
 		shaderc
-		external
+		checklight_external
 )
 
 target_link_libraries(checklight_util_system PRIVATE
 		checklight_common
 		Threads::Threads
-		external
+		checklight_external
 )
 
 target_link_libraries(checklight PRIVATE
@@ -148,7 +151,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 			-Werror=return-local-addr
 	)
 
-	target_compile_options(external PRIVATE -Wno-volatile)
+	target_compile_options(checklight_external PRIVATE -Wno-volatile)
 	target_compile_options(checklight_common INTERFACE ${CHECKLIGHT_WARNING_FLAGS})
 endif()
 

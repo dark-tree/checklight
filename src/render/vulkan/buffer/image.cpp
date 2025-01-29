@@ -336,7 +336,7 @@ Image ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& recorde
  */
 
 Image::Image(VkImage vk_image, VkFormat vk_format, Allocation allocation, uint16_t levels, uint16_t layers)
-: vk_image(vk_image), vk_format(vk_format), allocation(allocation), levels(levels), layers(layers) {}
+: levels(levels), layers(layers), vk_image(vk_image), vk_format(vk_format), allocation(allocation) {}
 
 void Image::close() {
 	allocation.closeImage(vk_image);

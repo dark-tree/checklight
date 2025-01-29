@@ -7,7 +7,7 @@
 #include "render/vulkan/setup/proxy.hpp"
 #include "render/vulkan/setup/instance.hpp"
 #include "render/vulkan/shader/compiler.hpp"
-#include "render/vulkan/command/command.hpp"
+#include "render/vulkan/command/buffer.hpp"
 #include "render/vulkan/setup/swapchain.hpp"
 #include "render/vulkan/buffer/buffer.hpp"
 #include "render/vulkan/setup/allocator.hpp"
@@ -33,9 +33,15 @@ class Renderer {
 		/// frame rendering (the CPU can "render ahead" of the GPU)
 		std::vector<RenderFrame> frames;
 
-	private:
+	protected:
 
 		friend class RenderFrame;
+		friend class RenderMesh;
+		friend class RenderCommander;
+
+		/// The last image index acquired from the driver,
+		/// this is used as an offset into a framebuffer set
+		uint32_t current_image;
 
 		Compiler compiler;
 		WindowSystem windows;
@@ -77,7 +83,8 @@ class Renderer {
 		// late vulkan objects
 		Swapchain swapchain;
 
-		Buffer vertex_buffer;
+		// primary rendering recorder
+		CommandRecorder recorder;
 
 	private:
 
@@ -108,40 +115,43 @@ class Renderer {
 		void createFrames();
 		void closeFrames();
 
-		/// Close resources created during lateInit()
 		void lateClose();
-
-		/// Perform late initialization, this step needs to re-run each time the swapchain requires to be rebuild
 		void lateInit();
 
-		RenderFrame& getFrame();
+		void acquirePresentationIndex();
+		void presentFramebuffer();
 
-		uint32_t acquirePresentationIndex();
-		void presentFramebuffer(uint32_t index);
+	protected:
+
+		RenderFrame& getFrame();
+		Fence createFence(bool signaled = false);
+		Semaphore createSemaphore();
 
 	public:
 
+		Renderer() = default;
 		Renderer(ApplicationParameters& parameters);
-		~Renderer();
+		virtual ~Renderer();
 
-		/**
-		 * @brief Recreate swapchain, this operation is extremely slow
-		 */
+		/// Recreate swapchain, this operation is extremely slow
 		void reload();
 
-		/**
-		 * @brief Get the Window to which this renderer is attached
-		 */
+		/// Get the Window to which this renderer is attached
 		Window& getWindow() const;
 
-		/**
-		 * Render the frame
-		 */
-		void draw();
+		/// Begins the next frame, all rendering should happen after this call
+		void beginDraw();
 
-		/**
-		 * Synchronize all operations and wait for the GPU to idle
-		 */
+		/// End the frame, all rendering should happen before this call
+		void endDraw();
+
+		/// Synchronize all operations and wait for the GPU to idle
 		void wait();
+
+		/// Get current screen width, in pixels
+		int width();
+
+		/// Get current screen height, in pixels
+		int height();
 
 };

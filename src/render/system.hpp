@@ -5,32 +5,33 @@
 #include "application.hpp"
 #include "window.hpp"
 
-class RenderSystem {
+class RenderCommander;
+class RenderMesh;
+
+class RenderSystem : public Renderer {
 
 	private:
 
-		static std::unique_ptr<Renderer> renderer;
+		glm::mat4 model;
+		glm::mat4 view;
+		glm::mat4 projection;
 
 	public:
 
-		/**
-		 * TODO
-		 */
-		static Renderer& getRenderer();
+		static std::unique_ptr<RenderSystem> system;
+		static void init(ApplicationParameters& parameters);
 
-		/**
-		 * TODO
-		 */
-		static Window& getWindow();
+	public:
 
-		/**
-		 * TODO
-		 */
-		static void initialize(ApplicationParameters& parameters);
+		RenderSystem(ApplicationParameters& parameters);
 
-		/**
-		 * TODO
-		 */
-		static void terminate();
+		std::unique_ptr<RenderCommander> createTransientCommander();
+		std::shared_ptr<RenderMesh> createMesh();
+
+		void setProjectionMatrix(glm::mat4 projection);
+		void setViewMatrix(glm::mat4 projection);
+		void setModelMatrix(glm::mat4 projection);
+
+		void drawMesh(std::shared_ptr<RenderMesh>& mesh);
 
 };
