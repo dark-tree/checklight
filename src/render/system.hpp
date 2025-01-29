@@ -10,11 +10,6 @@ class RenderMesh;
 
 class RenderSystem : public Renderer {
 
-	private:
-
-		std::vector<std::shared_ptr<RenderMesh>> meshes;
-		void drawFrame(RenderFrame& frame, CommandRecorder& recorder, uint32_t image) override;
-
 	public:
 
 		static std::unique_ptr<RenderSystem> system;
@@ -24,11 +19,9 @@ class RenderSystem : public Renderer {
 
 		RenderSystem(ApplicationParameters& parameters);
 
-		void close();
-
 		std::unique_ptr<RenderCommander> createTransientCommander();
 		std::shared_ptr<RenderMesh> createMesh();
 
-		void addForRendering(std::shared_ptr<RenderMesh>& mesh);
+		void drawMesh(std::shared_ptr<RenderMesh>& mesh);
 
 };

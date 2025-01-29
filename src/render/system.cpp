@@ -13,28 +13,8 @@ void RenderSystem::init(ApplicationParameters& parameters) {
 	RenderSystem::system = std::make_unique<RenderSystem>(parameters);
 }
 
-void RenderSystem::drawFrame(RenderFrame& frame, CommandRecorder& recorder, uint32_t image) {
-
-	for (auto& mesh : meshes) {
-
-		recorder.beginRenderPass(pass_basic_3d, image, swapchain.getExtend())
-			.bindPipeline(pipeline_basic_3d)
-			.bindDescriptorSet(frame.set_0)
-			.bindVertexBuffer(mesh->getVertexBuffer())
-			.draw(mesh->getVertexCount())
-			.endRenderPass();
-
-	}
-
-}
-
 RenderSystem::RenderSystem(ApplicationParameters& parameters)
 : Renderer(parameters) {}
-
-void RenderSystem::close() {
-	wait();
-	meshes.clear();
-}
 
 std::unique_ptr<RenderCommander> RenderSystem::createTransientCommander() {
 
@@ -50,6 +30,13 @@ std::shared_ptr<RenderMesh> RenderSystem::createMesh() {
 	return std::make_shared<RenderMesh>();
 }
 
-void RenderSystem::addForRendering(std::shared_ptr<RenderMesh>& mesh) {
-	meshes.emplace_back(mesh);
+void RenderSystem::drawMesh(std::shared_ptr<RenderMesh>& mesh) {
+
+	recorder.beginRenderPass(pass_basic_3d, current_image, swapchain.getExtend())
+		.bindPipeline(pipeline_basic_3d)
+		.bindDescriptorSet(getFrame().set_0)
+		.bindVertexBuffer(mesh->getVertexBuffer())
+		.draw(mesh->getVertexCount())
+		.endRenderPass();
+
 }

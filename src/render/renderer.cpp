@@ -338,25 +338,17 @@ RenderFrame& Renderer::getFrame() {
 	return frames.data()[index];
 }
 
-uint32_t Renderer::acquirePresentationIndex() {
-	uint32_t image_index;
-
-	if (swapchain.getNextImage(getFrame().available_semaphore, &image_index)) {
-		wait();
-		lateClose();
-		lateInit();
+void Renderer::acquirePresentationIndex() {
+	if (swapchain.getNextImage(getFrame().available_semaphore, &this->current_image)) {
+		reload();
 	}
-
-	return image_index;
 }
 
-void Renderer::presentFramebuffer(uint32_t index) {
+void Renderer::presentFramebuffer() {
 	auto semaphore = getFrame().finished_semaphore;
 
-	if (swapchain.present(queue, semaphore, index)) {
-		wait();
-		lateClose();
-		lateInit();
+	if (swapchain.present(queue, semaphore, this->current_image)) {
+		reload();
 	}
 }
 
@@ -449,6 +441,7 @@ Renderer::~Renderer() {
 }
 
 void Renderer::reload() {
+	wait();
 	lateClose();
 	lateInit();
 }
@@ -457,20 +450,22 @@ Window& Renderer::getWindow() const {
 	return *window;
 }
 
-void Renderer::draw() {
+void Renderer::beginDraw() {
 	RenderFrame& frame = getFrame();
 
 	frame.wait();
 	frame.execute();
 
-	uint32_t image = acquirePresentationIndex();
+	acquirePresentationIndex();
 
 	// begin rendering
-	CommandRecorder recorder = frame.buffer.record();
+	recorder = frame.buffer.record();
+}
 
-	drawFrame(frame, recorder, image);
-
+void Renderer::endDraw() {
 	recorder.done();
+
+	RenderFrame& frame = getFrame();
 
 	frame.buffer.submit()
 		.awaits(frame.available_semaphore, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
@@ -478,7 +473,7 @@ void Renderer::draw() {
 		.signal(frame.flight_fence)
 		.done(queue);
 
-	presentFramebuffer(image);
+	presentFramebuffer();
 
 	// next frame
 	index = (index + 1) % concurrent;

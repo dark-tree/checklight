@@ -26,15 +26,17 @@ int main() {
 	mesh->upload(*commander, vertices);
 	commander->complete();
 
-	// this will change later
-	system.addForRendering(mesh);
-
 	while (!window.shouldClose()) {
 		window.poll();
-		system.draw();
+
+		system.beginDraw();
+		system.drawMesh(mesh);
+		system.endDraw();
 
 		// TODO: Silnik do gier w oparciu o bibliotekę Vulkan
     }
 
-	system.close();
+	system.wait();
+	mesh.reset();
+
 }

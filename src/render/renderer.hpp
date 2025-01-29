@@ -39,6 +39,10 @@ class Renderer {
 		friend class RenderMesh;
 		friend class RenderCommander;
 
+		/// The last image index acquired from the driver,
+		/// this is used as an offset into a framebuffer set
+		uint32_t current_image;
+
 		Compiler compiler;
 		WindowSystem windows;
 		std::unique_ptr<Window> window;
@@ -79,6 +83,9 @@ class Renderer {
 		// late vulkan objects
 		Swapchain swapchain;
 
+		// primary rendering recorder
+		CommandRecorder recorder;
+
 	private:
 
 		friend VKAPI_ATTR VkBool32 VKAPI_CALL VulkanMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT*, void*);
@@ -111,17 +118,14 @@ class Renderer {
 		void lateClose();
 		void lateInit();
 
-		RenderFrame& getFrame();
-
-		uint32_t acquirePresentationIndex();
-		void presentFramebuffer(uint32_t index);
+		void acquirePresentationIndex();
+		void presentFramebuffer();
 
 	protected:
 
+		RenderFrame& getFrame();
 		Fence createFence(bool signaled = false);
 		Semaphore createSemaphore();
-
-		virtual void drawFrame(RenderFrame& frame, CommandRecorder& recorder, uint32_t image) = 0;
 
 	public:
 
@@ -140,9 +144,14 @@ class Renderer {
 		Window& getWindow() const;
 
 		/**
-		 * Render the frame
+		 * Begins the next frame, all rendering should happen after this call
 		 */
-		void draw();
+		void beginDraw();
+
+		/**
+		 * End the frame, all rendering should happen before this call
+		 */
+		void endDraw();
 
 		/**
 		 * Synchronize all operations and wait for the GPU to idle

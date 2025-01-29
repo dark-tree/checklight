@@ -89,7 +89,7 @@ void FramebufferSet::construct(VkRenderPass vk_pass, VkDevice vk_device, const S
 	int screen = -1;
 
 	// extract vulkan image views
-	for (int i = 0; i < attachments.size(); i ++) {
+	for (uint32_t i = 0; i < attachments.size(); i ++) {
 		const Attachment& attachment = attachments[i];
 		VkImageView view = attachment.getView();
 
@@ -129,10 +129,10 @@ void FramebufferSet::construct(VkRenderPass vk_pass, VkDevice vk_device, const S
 	framebuffers.reserve(surfaces.size());
 
 	// create framebuffers
-	for (int i = 0; i < surfaces.size(); i ++) {
+	for (int i = 0; i < (int) surfaces.size(); i ++) {
 		FramebufferBuilder builder {vk_pass, swapchain.getExtend()};
 
-		for (int j = 0; j < views.size(); j ++) {
+		for (int j = 0; j < (int) views.size(); j ++) {
 			VkImageView view = views[j];
 
 			if (j == screen) {

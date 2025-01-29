@@ -18,6 +18,7 @@ class CommandRecorder {
 
 	public:
 
+		CommandRecorder() = default;
 		CommandRecorder(VkCommandBuffer vk_buffer);
 
 		/// Buffer recording must always end with a done() call
