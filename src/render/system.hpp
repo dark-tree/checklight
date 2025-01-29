@@ -10,6 +10,12 @@ class RenderMesh;
 
 class RenderSystem : public Renderer {
 
+	private:
+
+		glm::mat4 model;
+		glm::mat4 view;
+		glm::mat4 projection;
+
 	public:
 
 		static std::unique_ptr<RenderSystem> system;
@@ -21,6 +27,10 @@ class RenderSystem : public Renderer {
 
 		std::unique_ptr<RenderCommander> createTransientCommander();
 		std::shared_ptr<RenderMesh> createMesh();
+
+		void setProjectionMatrix(glm::mat4 projection);
+		void setViewMatrix(glm::mat4 projection);
+		void setModelMatrix(glm::mat4 projection);
 
 		void drawMesh(std::shared_ptr<RenderMesh>& mesh);
 

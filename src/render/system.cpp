@@ -30,11 +30,31 @@ std::shared_ptr<RenderMesh> RenderSystem::createMesh() {
 	return std::make_shared<RenderMesh>();
 }
 
+void RenderSystem::setProjectionMatrix(glm::mat4 projection) {
+	this->projection = projection;
+}
+
+void RenderSystem::setViewMatrix(glm::mat4 view) {
+	this->view = view;
+}
+
+void RenderSystem::setModelMatrix(glm::mat4 model) {
+	this->model = model;
+}
+
 void RenderSystem::drawMesh(std::shared_ptr<RenderMesh>& mesh) {
+
+	RenderFrame& frame = getFrame();
+
+	SceneUniform uniform;
+	uniform.view_projection = projection * view;
+	uniform.model = model;
+
+	frame.flushUniformBuffer(uniform);
 
 	recorder.beginRenderPass(pass_basic_3d, current_image, swapchain.getExtend())
 		.bindPipeline(pipeline_basic_3d)
-		.bindDescriptorSet(getFrame().set_0);
+		.bindDescriptorSet(frame.set_0);
 
 	mesh->draw(recorder);
 

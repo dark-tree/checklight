@@ -133,29 +133,25 @@ class Renderer {
 		Renderer(ApplicationParameters& parameters);
 		virtual ~Renderer();
 
-		/**
-		 * @brief Recreate swapchain, this operation is extremely slow
-		 */
+		/// Recreate swapchain, this operation is extremely slow
 		void reload();
 
-		/**
-		 * @brief Get the Window to which this renderer is attached
-		 */
+		/// Get the Window to which this renderer is attached
 		Window& getWindow() const;
 
-		/**
-		 * Begins the next frame, all rendering should happen after this call
-		 */
+		/// Begins the next frame, all rendering should happen after this call
 		void beginDraw();
 
-		/**
-		 * End the frame, all rendering should happen before this call
-		 */
+		/// End the frame, all rendering should happen before this call
 		void endDraw();
 
-		/**
-		 * Synchronize all operations and wait for the GPU to idle
-		 */
+		/// Synchronize all operations and wait for the GPU to idle
 		void wait();
+
+		/// Get current screen width, in pixels
+		int width();
+
+		/// Get current screen height, in pixels
+		int height();
 
 };

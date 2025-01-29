@@ -483,3 +483,11 @@ void Renderer::endDraw() {
 void Renderer::wait() {
 	device.wait();
 }
+
+int Renderer::width() {
+	return swapchain.getExtend().width;
+}
+
+int Renderer::height() {
+	return swapchain.getExtend().height;
+}

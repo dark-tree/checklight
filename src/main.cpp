@@ -7,7 +7,7 @@ int main() {
 
 	ApplicationParameters parameters;
 	parameters.setName("My Checklight Game");
-	parameters.setDimensions(200, 200);
+	parameters.setDimensions(1200, 800);
 
 	RenderSystem::init(parameters);
 
@@ -35,6 +35,17 @@ int main() {
 
 	while (!window.shouldClose()) {
 		window.poll();
+
+		float width = system.width();
+		float height = system.height();
+
+		glm::mat4 model = glm::identity<glm::mat4>();
+		glm::mat4 projection = glm::perspective(glm::radians(65.0f), width / height, 0.1f, 1000.0f);
+		glm::mat4 view = glm::lookAt(glm::vec3(0), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));;
+
+		system.setProjectionMatrix(projection);
+		system.setViewMatrix(view);
+		system.setModelMatrix(model);
 
 		system.beginDraw();
 		system.drawMesh(mesh);

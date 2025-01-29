@@ -11,6 +11,8 @@ layout(binding = 0) uniform SceneUniform {
 layout(location = 0) out vec4 vColor;
 
 void main() {
-    gl_Position = vec4(iPosition, 0.0, 1.0);
+    mat4 matrix = uSceneObject.view_projection;
+
+    gl_Position = matrix * vec4(iPosition, 1.0, 1.0);
     vColor = vec4(iColor, 1.0f);
 }
