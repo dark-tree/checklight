@@ -137,7 +137,7 @@ Buffer Allocator::allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags
 		throw std::runtime_error {"Failed to allocate buffer!"};
 	}
 
-	return {buffer, {vma_allocator, allocation}};
+	return {buffer, {vma_allocator, allocation}, bytes};
 }
 
 Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels) {

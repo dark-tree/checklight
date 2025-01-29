@@ -136,10 +136,15 @@ class GraphicsPipelineBuilder {
 		GraphicsPipelineBuilder& withDescriptorSetLayout(const DescriptorSetLayout& layout);
 
 		/**
-		 * TODO
+		 * Adds the specified push constant to the pipeline, you can only add one push
+		 * constant to a pipeline. Push constants are the fastest way to pass per-draw call
+		 * data to the driver (other than instance buffers, but those can't be changed once
+		 * render pass begins). The only limiting factor of push constants is that they come in very
+		 * small sizes (only 128 bytes guaranteed by Vulkan 1.0 standard) and can't contains buffer
+		 * or texture references.
 		 *
 		 * @section Descriptor
-		 * @param constant
+		 * @param[in] constant The push constant to add to the pipeline
 		 */
 		GraphicsPipelineBuilder& withPushConstant(const PushConstant& constant);
 

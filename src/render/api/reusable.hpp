@@ -9,16 +9,28 @@ class ReusableBuffer {
 
 	private:
 
+		VkBufferUsageFlags usage = 0;
 		size_t count = 0;
-		Buffer buffer;
+		std::shared_ptr<Buffer> buffer;
+
+		void* stage = nullptr;
+		std::shared_ptr<Buffer> staging;
 
 	public:
 
 		ReusableBuffer() = default;
+		ReusableBuffer(VkBufferUsageFlags flags);
 
 		void close();
+		void closeBuffer();
+		void closeStaging();
 
-		void upload(RenderCommander& commander, const void* data, int elements, int size, VkBufferUsageFlags flags);
+		void allocateBuffers(size_t elements, size_t size);
+		void writeToStaging(const void* data, size_t elements, size_t size, size_t offset = 0);
+		void flushStaging(RenderCommander& commander);
+
+		void resize(RenderCommander& commander, int elements, int size);
+		void upload(RenderCommander& commander, const void* data, int elements, int size);
 
 		bool isEmpty() const;
 		Buffer getBuffer() const;

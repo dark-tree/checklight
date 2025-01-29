@@ -1,6 +1,10 @@
 
 #include "mesh.hpp"
 
+/*
+ * RenderMesh
+ */
+
 RenderMesh::~RenderMesh() {
 	vertex.close();
 	index.close();

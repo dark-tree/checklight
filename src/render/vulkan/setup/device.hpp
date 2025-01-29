@@ -65,12 +65,12 @@ class PhysicalDevice {
 		SwapchainInfo getSwapchainInfo(VkSurfaceKHR surface);
 
 		/**
-		 * TODO
+		 * @brief Get the cached device properties
 		 */
 		const VkPhysicalDeviceProperties& getProperties() const;
 
 		/**
-		 * TODO
+		 * @brief Get the cached device limits
 		 */
 		const VkPhysicalDeviceLimits& getLimits() const;
 

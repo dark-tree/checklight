@@ -82,9 +82,11 @@ CommandRecorder& CommandRecorder::endRenderPass() {
 	return *this;
 }
 
-CommandRecorder& CommandRecorder::copyBufferToBuffer(Buffer dst, Buffer src, size_t size) {
+CommandRecorder& CommandRecorder::copyBufferToBuffer(Buffer dst, Buffer src, size_t size, size_t dst_offset, size_t src_offset) {
 	VkBufferCopy region {};
 	region.size = size;
+//	region.dstOffset = dst_offset;
+//	region.srcOffset = src_offset;
 
 	vkCmdCopyBuffer(vk_buffer, src.getHandle(), dst.getHandle(), 1, &region);
 	return *this;

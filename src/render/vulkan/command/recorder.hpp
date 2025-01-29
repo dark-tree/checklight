@@ -26,7 +26,7 @@ class CommandRecorder {
 		void done();
 
 		/// Copy data between two buffers
-		CommandRecorder& copyBufferToBuffer(Buffer dst, Buffer src, size_t size);
+		CommandRecorder& copyBufferToBuffer(Buffer dst, Buffer src, size_t size, size_t dst_offset, size_t src_offset);
 
 		/// Copy data from buffer to image
 		CommandRecorder& copyBufferToImage(Image dst, Buffer src, size_t offset, size_t width, size_t height, size_t layers, size_t level);

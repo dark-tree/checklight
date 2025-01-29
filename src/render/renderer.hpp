@@ -22,11 +22,13 @@ class Renderer {
 
 	private:
 
+		/// This object is quite large so to limit the size of this already huge class
+		/// we put it behind a pointer, that class requires no close() call anyway
 		std::unique_ptr<PhysicalDevice> physical;
 
 		/// the number of concurrent frames, this value should no be larger then 4-5 to no cause input delay
 		/// setting it to 1 effectively disables concurrent frames
-		int concurrent; // todo
+		int concurrent;
 
 		/// the index of the next frame to render, this value is kept within
 		/// the size of the frames vector (the vector is used as a ring buffer)

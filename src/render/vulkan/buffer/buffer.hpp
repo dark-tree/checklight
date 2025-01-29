@@ -7,13 +7,14 @@ class Buffer {
 
 	private:
 
+		size_t bytes;
 		VkBuffer vk_buffer;
 		Allocation allocation;
 
 	public:
 
 		Buffer() = default;
-		Buffer(VkBuffer vk_buffer, Allocation allocation);
+		Buffer(VkBuffer vk_buffer, Allocation allocation, size_t bytes);
 
 		void close();
 
@@ -22,5 +23,11 @@ class Buffer {
 
 		/// Get memory region control object
 		Allocation& getAllocation();
+
+		/// Checks if this buffer is allocated
+		bool allocated() const;
+
+		/// get buffer size, in bytes
+		size_t size() const;
 
 };
