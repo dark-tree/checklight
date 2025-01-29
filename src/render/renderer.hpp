@@ -72,6 +72,7 @@ class Renderer {
 
 		// attachments
 		Attachment attachment_color;
+		Attachment attachment_depth;
 
 		// descriptors
 		DescriptorSetLayout layout_geometry;
