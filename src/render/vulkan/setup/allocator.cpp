@@ -2,6 +2,7 @@
 #include "allocator.hpp"
 #include "render/vulkan/buffer/buffer.hpp"
 #include "render/vulkan/buffer/image.hpp"
+#include "debug.hpp"
 
 /*
  * Allocation
@@ -12,12 +13,14 @@ Allocation::Allocation(VmaAllocator allocator, VmaAllocation allocation)
 
 void Allocation::closeBuffer(VkBuffer buffer) {
 	if (!empty()) {
+		VulkanDebug::endLifetime(buffer);
 		vmaDestroyBuffer(vma_allocator, buffer, vma_allocation);
 	}
 }
 
 void Allocation::closeImage(VkImage image) {
 	if (!empty()) {
+		VulkanDebug::endLifetime(image);
 		vmaDestroyImage(vma_allocator, image, vma_allocation);
 	}
 }
@@ -81,6 +84,9 @@ void Allocator::fromMemoryGroup(VmaAllocationCreateInfo* create_info, Memory gro
 }
 
 Allocator::Allocator(LogicalDevice& logical, PhysicalDevice& physical, Instance& instance) {
+
+	vk_device = logical.getHandle();
+
 	VmaVulkanFunctions functions = {};
 	functions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
 	functions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
@@ -120,7 +126,7 @@ void Allocator::print() {
 	printf("INFO: Found %lu MiB of device local free memory\n", free);
 }
 
-Buffer Allocator::allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags usage) {
+Buffer Allocator::allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags usage, const char* name) {
 	VmaAllocationCreateInfo allocation_info {};
 	fromMemoryGroup(&allocation_info, memory);
 
@@ -137,10 +143,12 @@ Buffer Allocator::allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags
 		throw std::runtime_error {"Failed to allocate buffer!"};
 	}
 
+	VulkanDebug::beginLifetime(buffer, name);
+	VulkanDebug::setDebugName(vk_device, VK_OBJECT_TYPE_BUFFER, buffer, name);
 	return {buffer, {vma_allocator, allocation}, bytes};
 }
 
-Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels) {
+Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels, const char* name) {
 	VmaAllocationCreateInfo allocation_info {};
 	fromMemoryGroup(&allocation_info, memory);
 
@@ -167,5 +175,7 @@ Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat fo
 		throw std::runtime_error {"Failed to allocate image!"};
 	}
 
+	VulkanDebug::beginLifetime(image, name);
+	VulkanDebug::setDebugName(vk_device, VK_OBJECT_TYPE_IMAGE, image, name);
 	return {image, format, {vma_allocator, allocation}};
 }

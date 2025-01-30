@@ -10,6 +10,11 @@ RenderMesh::~RenderMesh() {
 	index.close();
 }
 
+void RenderMesh::setDebugName(const std::string& name) {
+	vertex.setDebugName("Vertex " + name);
+	index.setDebugName("Index " + name);
+}
+
 bool RenderMesh::hasIndexData() const {
 	return !index.isEmpty();
 }

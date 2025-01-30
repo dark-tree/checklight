@@ -1,6 +1,7 @@
 
 #include "texture.hpp"
 #include "attachment.hpp"
+#include "render/vulkan/setup/debug.hpp"
 
 /*
  * Texture
@@ -39,8 +40,8 @@ void TextureDelegate::checkImageFormat(VkFormat provided) const {
 	}
 }
 
-TextureDelegate::TextureDelegate(VkImageUsageFlags usage, VkClearValue clear, VkImageViewCreateInfo view, VkSamplerCreateInfo sampler)
-: vk_usage(usage), vk_clear(clear), view_info(view), sampler_info(sampler) {}
+TextureDelegate::TextureDelegate(VkImageUsageFlags usage, VkClearValue clear, VkImageViewCreateInfo view, VkSamplerCreateInfo sampler, const std::string& debug_name)
+: debug_name(debug_name), vk_usage(usage), vk_clear(clear), view_info(view), sampler_info(sampler) {}
 
 Texture TextureDelegate::buildTexture(LogicalDevice& device, const Image& image) const {
 
@@ -66,6 +67,8 @@ Texture TextureDelegate::buildTexture(LogicalDevice& device, const Image& image)
 		throw std::runtime_error {"Failed to create image sampler!"};
 	}
 
+	VulkanDebug::setDebugName(device.getHandle(), VK_OBJECT_TYPE_IMAGE_VIEW, view, debug_name.c_str());
+	VulkanDebug::setDebugName(device.getHandle(), VK_OBJECT_TYPE_SAMPLER, sampler, debug_name.c_str());
 	return {image.getFormat(), image.getHandle(), view, sampler};
 
 }
@@ -137,6 +140,11 @@ TextureBuilder& TextureBuilder::setAnisotropy(float anisotropy) {
 	return *this;
 }
 
+TextureBuilder& TextureBuilder::setDebugName(const std::string& name) {
+	debug_name = name;
+	return *this;
+}
+
 TextureBuilder& TextureBuilder::setBorder(VkBorderColor border) {
 	sampler_info.borderColor = border;
 	return *this;
@@ -168,7 +176,7 @@ TextureBuilder& TextureBuilder::setUsage(VkImageUsageFlags usage) {
 }
 
 TextureDelegate TextureBuilder::createDelegate() const {
-	return {vk_usage, vk_clear, view_info, sampler_info};
+	return {vk_usage, vk_clear, view_info, sampler_info, debug_name};
 }
 
 Texture TextureBuilder::createTexture(LogicalDevice& device, const Image& image) const {

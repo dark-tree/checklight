@@ -48,6 +48,7 @@ class Allocator {
 
 	private:
 
+		VkDevice vk_device;
 		VmaAllocator vma_allocator;
 		VkPhysicalDeviceMemoryProperties vk_properties;
 
@@ -67,12 +68,12 @@ class Allocator {
 		 * @brief Allocate buffer of given size
 		 * Allocates a new Vulkan Buffer with the specified memory properties
 		 */
-		Buffer allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags usage);
+		Buffer allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags usage, const char* name);
 
 		/**
 		 * @brief Allocate image of given size
 		 * Allocates a new Vulkan Image with the specified memory properties
 		 */
-		Image allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels);
+		Image allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels, const char* name);
 
 };

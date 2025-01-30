@@ -10,6 +10,10 @@
 ReusableBuffer::ReusableBuffer(VkBufferUsageFlags usage)
 : usage(usage) {}
 
+void ReusableBuffer::setDebugName(const std::string& name) {
+	this->debug_name = name;
+}
+
 void ReusableBuffer::close() {
 	closeBuffer();
 	closeStaging();
@@ -41,10 +45,11 @@ void ReusableBuffer::allocateBuffers(size_t elements, size_t size) {
 	}
 
 	size_t bytes = elements * size;
+	std::string staging_name = debug_name + std::string (" Staging");
 
 	close();
-	buffer = std::make_shared<Buffer>(RenderSystem::system->allocator.allocateBuffer(Memory::DEVICE, bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage));
-	staging = std::make_shared<Buffer>(RenderSystem::system->allocator.allocateBuffer(Memory::STAGED, bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT));
+	buffer = std::make_shared<Buffer>(RenderSystem::system->allocator.allocateBuffer(Memory::DEVICE, bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage, debug_name.c_str()));
+	staging = std::make_shared<Buffer>(RenderSystem::system->allocator.allocateBuffer(Memory::STAGED, bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, staging_name.c_str()));
 	stage = staging->getAllocation().map();
 	count = elements;
 }
@@ -67,9 +72,10 @@ void ReusableBuffer::resize(RenderCommander& commander, int elements, int size) 
 
 	this->count = elements;
 	size_t bytes = elements * size;
+	std::string staging_name = debug_name + std::string (" Staging");
 
-	buffer = std::make_shared<Buffer>(RenderSystem::system->allocator.allocateBuffer(Memory::DEVICE, bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage));
-	staging = std::make_shared<Buffer>(RenderSystem::system->allocator.allocateBuffer(Memory::STAGED, bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT));
+	buffer = std::make_shared<Buffer>(RenderSystem::system->allocator.allocateBuffer(Memory::DEVICE, bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage, debug_name.c_str()));
+	staging = std::make_shared<Buffer>(RenderSystem::system->allocator.allocateBuffer(Memory::STAGED, bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, staging_name.c_str()));
 
 	commander.getRecorder()
 		.copyBufferToBuffer(*buffer, *staging_ptr, staging_ptr->size(), 0, 0)

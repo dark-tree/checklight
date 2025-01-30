@@ -10,22 +10,23 @@ struct Proxy {
 	static PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT;
 	static PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT;
 	static PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR;
+	static PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT;
+	static PFN_vkCmdBeginDebugUtilsLabelEXT vkCmdBeginDebugUtilsLabelEXT;
+	static PFN_vkCmdEndDebugUtilsLabelEXT vkCmdEndDebugUtilsLabelEXT;
+	static PFN_vkCmdInsertDebugUtilsLabelEXT vkCmdInsertDebugUtilsLabelEXT;
 
 	public:
 
-		/**
-		 * @brief Load functions only needed in debug mode
-		 */
-		static void loadDebugFunctions(Instance& instance);
+		/// Load debug messenger functions only needed in debug mode
+		static void loadMessengerFunctions(Instance& instance);
 
-		/**
-		 * @brief Load functions through the Vulkan Instance
-		 */
+		/// Load device functions only needed in debug mode
+		static void loadDebugDeviceFunctions(LogicalDevice& device);
+
+		/// Load functions through the Vulkan Instance
 		static void loadInstanceFunctions(Instance& instance);
 
-		/**
-		 * @brief Load functions through the Vulkan Logical Device
-		 */
+		/// Load functions through the Vulkan Logical Device
 		static void loadDeviceFunctions(LogicalDevice& device);
 
 };

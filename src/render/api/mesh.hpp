@@ -15,6 +15,8 @@ class RenderMesh {
 
 		~RenderMesh();
 
+		void setDebugName(const std::string& name);
+
 		template <typename V>
 		void uploadVertices(RenderCommander& commander, const std::vector<V>& vertices) {
 			vertex.upload(commander, vertices.data(), vertices.size(), sizeof(V));

@@ -31,6 +31,7 @@ class TextureDelegate {
 
 	private:
 
+		std::string debug_name;
 		VkImageUsageFlags vk_usage {};
 		VkClearValue vk_clear {};
 		VkImageViewCreateInfo view_info {};
@@ -44,7 +45,7 @@ class TextureDelegate {
 	public:
 
 		TextureDelegate() = default;
-		TextureDelegate(VkImageUsageFlags usage, VkClearValue clear, VkImageViewCreateInfo view, VkSamplerCreateInfo sampler);
+		TextureDelegate(VkImageUsageFlags usage, VkClearValue clear, VkImageViewCreateInfo view, VkSamplerCreateInfo sampler, const std::string& debug_name);
 
 		Texture buildTexture(LogicalDevice& device, const Image& image) const;
 		Attachment buildAttachment();
@@ -55,6 +56,7 @@ class TextureBuilder {
 
 	private:
 
+		std::string debug_name;
 		VkImageUsageFlags vk_usage {};
 		VkClearValue vk_clear {};
 		VkImageViewCreateInfo view_info {};
@@ -85,6 +87,9 @@ class TextureBuilder {
 
 		/// @see https://en.wikipedia.org/wiki/Anisotropy
 		TextureBuilder& setAnisotropy(float anisotropy);
+
+		/// Set the texture's debug name, visible in renderdoc
+		TextureBuilder& setDebugName(const std::string& name);
 
 		/// Set border color (ignored is addressing is not 'border')
 		TextureBuilder& setBorder(VkBorderColor border);

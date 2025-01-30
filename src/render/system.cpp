@@ -34,6 +34,12 @@ void RenderSystem::setProjectionMatrix(glm::mat4 projection) {
 	uniforms.projection = projection;
 }
 
+void RenderSystem::setProjectionMatrix(float fov, float near_plane, float far_plane) {
+	glm::mat4 projection = glm::perspective(glm::radians(fov), (float) width() / (float) height(), near_plane, far_plane);
+	projection[1][1] *= -1;
+	setProjectionMatrix(projection);
+}
+
 void RenderSystem::setViewMatrix(glm::mat4 view) {
 	uniforms.view = view;
 }

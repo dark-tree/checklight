@@ -9,6 +9,8 @@ class ReusableBuffer {
 
 	private:
 
+		std::string debug_name;
+
 		VkBufferUsageFlags usage = 0;
 		size_t count = 0;
 		std::shared_ptr<Buffer> buffer;
@@ -20,6 +22,8 @@ class ReusableBuffer {
 
 		ReusableBuffer() = default;
 		ReusableBuffer(VkBufferUsageFlags flags);
+
+		void setDebugName(const std::string& name);
 
 		void close();
 		void closeBuffer();

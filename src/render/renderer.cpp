@@ -6,6 +6,7 @@
 #include "render/vulkan/buffer/texture.hpp"
 #include "render/vulkan/pass/render.hpp"
 #include "render/vulkan/buffer/buffer.hpp"
+#include "render/vulkan/setup/debug.hpp"
 
 /*
  * Renderer
@@ -29,7 +30,7 @@ VkBool32 Renderer::onMessage(VkDebugUtilsMessageSeverityFlagBitsEXT severity, co
 	return VK_FALSE;
 }
 
-void Renderer::createInstance(ApplicationParameters& parameters, bool debug) {
+void Renderer::createInstance(ApplicationParameters& parameters) {
 	this->instance.close();
 	this->messenger = nullptr;
 
@@ -51,11 +52,11 @@ void Renderer::createInstance(ApplicationParameters& parameters, bool debug) {
 	// use any extensions or new vulkan features
 	extension.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
-	if (debug) {
+	#ifdef ENGINE_DEBUG
 		layers.push_back("VK_LAYER_KHRONOS_validation");
 		extension.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		printf("INFO: Starting renderer in debug mode, performance will be affected!\n");
-	}
+	#endif
 
 	// configure the messenger, this will later be used during instance creation and right after it
 	VkDebugUtilsMessengerCreateInfoEXT messenger_info {};
@@ -75,9 +76,9 @@ void Renderer::createInstance(ApplicationParameters& parameters, bool debug) {
 	create_info.ppEnabledLayerNames = layers.data();
 
 	// attach debug messenger during instance creation
-	if (debug) {
+	#ifdef ENGINE_DEBUG
 		create_info.pNext = &messenger_info;
-	}
+	#endif
 
 	VkInstance vk_instance;
 
@@ -89,15 +90,15 @@ void Renderer::createInstance(ApplicationParameters& parameters, bool debug) {
 	this->instance = vk_instance;
 
 	// attach debug messenger for all calls after instance creation
-	if (debug) {
+	#ifdef ENGINE_DEBUG
 		// load functions from debug utils extension
-		Proxy::loadDebugFunctions(instance);
+		Proxy::loadMessengerFunctions(instance);
 
 		// create the messenger
 		if (Proxy::vkCreateDebugUtilsMessengerEXT(vk_instance, &messenger_info, nullptr, &messenger) != VK_SUCCESS) {
 			throw std::runtime_error {"Failed to create debug messenger!"};
 		}
-	}
+	#endif
 
 	// load all other instance extension functions
 	Proxy::loadInstanceFunctions(instance);
@@ -187,6 +188,10 @@ void Renderer::createDevice(const PhysicalDevice& physical, Family queue_family)
 	this->device = vk_device;
 	this->family = queue_family;
 
+	#ifdef ENGINE_DEBUG
+		Proxy::loadDebugDeviceFunctions(this->device);
+	#endif
+
 	Proxy::loadDeviceFunctions(this->device);
 
 }
@@ -234,6 +239,7 @@ void Renderer::createAttachments() {
 		.setFormat(surface_format)
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 		.setClearColor(3 / 255.0f, 169 / 255.0f, 252 / 255.0f, 1.0f)
+		.setDebugName("Color")
 		.createAttachment();
 
 	// very important UwU
@@ -244,6 +250,7 @@ void Renderer::createAttachments() {
 		.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT)
 		.setClearDepth(1.0f)
 		.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+		.setDebugName("Depth")
 		.createAttachment();
 
 }
@@ -394,7 +401,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	frames.reserve(concurrent);
 
 	// early init
-	createInstance(parameters, true);
+	createInstance(parameters);
 	glfwCreateWindowSurface(instance.getHandle(), window->getHandle(), nullptr, &surface);
 	pickDevice();
 
@@ -456,6 +463,8 @@ Renderer::~Renderer() {
 	}
 
 	vkDestroySurfaceKHR(instance.getHandle(), surface, nullptr);
+
+	VulkanDebug::assertAllDead();
 
 	// It's important to maintain the correct order
 	closeRenderPasses();

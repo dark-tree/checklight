@@ -20,32 +20,39 @@ int main() {
 	while (!window.shouldClose()) {
 		window.poll();
 
-		float width = system.width();
-		float height = system.height();
-
-		glm::mat4 model = glm::identity<glm::mat4>();
-		glm::mat4 projection = glm::perspective(glm::radians(40.0f), width / height, 0.1f, 1000.0f);
-
-		// OpenGL correction (don't touch)
-		projection[1][1] *= -1;
-
 		// view is based on player/editor camera
-		glm::mat4 view = glm::lookAt(glm::vec3(18.0f, 1.0f, 4.0f), glm::vec3(-3.0f, 1.0f, 8.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 view = glm::lookAt(
+			glm::vec3(18.0f, 1.0f, 4.0f), // camera 'eye' position
+			glm::vec3(-3.0f, 1.0f, 8.0f), // camera target (facing is along the eye->target vector)
+			glm::vec3(0.0f, 1.0f, 0.0f)   // the up vector, don't change
+		);
 
-		// update uniforms, do this once
-		// at the beginning of frame rendering
-		system.setProjectionMatrix(projection);
+		// update uniforms
+		// do this once at the beginning of frame rendering
+		system.setProjectionMatrix(40.0f, 0.1f, 1000.0f);
 		system.setViewMatrix(view);
 		system.updateUniforms();
 
-		// all rendering must be done between beginDraw and endDraw
+		// all rendering must be done between beginDraw() and endDraw()
 		system.beginDraw();
 
+		// this does nothing for now, this operation will most likely be expensive later
+		system.bindMaterial();
+
 		for (auto& mesh : meshes) {
+			glm::mat4 model = glm::identity<glm::mat4>();
+
+			// first bind the mesh
 			system.bindMesh(mesh);
+
+			// then you can draw it multiple times
 			system.draw(model);
+
+			// later using a precomputed position vector may be reqired by the renderer
+			// take that into account
 		}
 
+		// each frame must end with this call or the engine will deadlock
 		system.endDraw();
     }
 

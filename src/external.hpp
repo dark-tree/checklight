@@ -1,4 +1,6 @@
 
+#include "const.hpp"
+
 // C libs
 #define _USE_MATH_DEFINES
 #include <cmath>

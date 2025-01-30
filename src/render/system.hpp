@@ -28,6 +28,7 @@ class RenderSystem : public Renderer {
 		std::shared_ptr<RenderMesh> createMesh();
 
 		void setProjectionMatrix(glm::mat4 projection);
+		void setProjectionMatrix(float fov, float near_plane, float far_plane);
 		void setViewMatrix(glm::mat4 projection);
 		void updateUniforms();
 

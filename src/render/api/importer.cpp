@@ -43,8 +43,15 @@ std::vector<std::shared_ptr<RenderMesh>> Importer::importObj(RenderSystem& syste
 			vertices.push_back(Vertex3D(vertex.position.x, vertex.position.y, vertex.position.z, colorR, colorG, colorB));
 		}
 
-		for (auto& group : object.groups) {
+		for (int i = 0; i < object.groups.size(); i ++) {
+			const auto& group = object.groups[i];
 			std::shared_ptr<RenderMesh> mesh = system.createMesh();
+
+			#if ENGINE_DEBUG
+			std::string debug_name = "Mesh " + object.name + " #" + std::to_string(i) + " from " + path;
+			mesh->setDebugName(debug_name.c_str());
+			#endif
+
 			mesh->uploadVertices(*commander, vertices);
 			mesh->uploadIndices(*commander, group.indices);
 			meshes.push_back(mesh);

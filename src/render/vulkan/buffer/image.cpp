@@ -296,7 +296,7 @@ Image ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& recorde
 		throw std::runtime_error {"The specified image format doesn't match pixel size!"};
 	}
 
-	Buffer staging = allocator.allocateBuffer(Memory::STAGED, total, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+	Buffer staging = allocator.allocateBuffer(Memory::STAGED, total, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, "Image Staging");
 	std::vector<size_t> offsets;
 	offsets.reserve(levels());
 
@@ -314,7 +314,7 @@ Image ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& recorde
 	allocation.flushNonCoherent();
 	allocation.unmap();
 
-	Image image = allocator.allocateImage(Memory::DEVICE, layer_width, layer_height, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, layer_count, levels());
+	Image image = allocator.allocateImage(Memory::DEVICE, layer_width, layer_height, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, layer_count, levels(), "Untitled");
 	recorder.transitionLayout(image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_UNDEFINED, layer_count, levels());
 
 	// transfer the image level by level

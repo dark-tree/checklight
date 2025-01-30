@@ -104,7 +104,7 @@ class Renderer {
 		void createSwapchain();
 
 		/// Loads the VkDebugUtilsMessengerEXT, and Instance
-		void createInstance(ApplicationParameters& parameters, bool debug);
+		void createInstance(ApplicationParameters& parameters);
 
 		/// Selects a compatible driver and passes control to createDevice
 		void pickDevice();
