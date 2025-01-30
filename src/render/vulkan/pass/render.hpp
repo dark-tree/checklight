@@ -5,7 +5,7 @@
 #include "dependency.hpp"
 #include "attachment.hpp"
 #include "render/vulkan/setup/device.hpp"
-#include "util/pyramid.hpp"
+#include "shared/pyramid.hpp"
 #include "render/vulkan/setup/framebuffer.hpp"
 #include "render/vulkan/setup/swapchain.hpp"
 

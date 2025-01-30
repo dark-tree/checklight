@@ -4,7 +4,7 @@
 #include "render/system.hpp"
 #include "render/api/vertex.hpp"
 #include "render/api/mesh.hpp"
-#include "util/obj.hpp"
+#include "render/model/obj.hpp"
 
 class Importer {
 

@@ -2,7 +2,7 @@
 
 #include "render/vulkan/command/recorder.hpp"
 #include "render/vulkan/command/buffer.hpp"
-#include "util/queue.hpp"
+#include "shared/queue.hpp"
 
 class RenderCommander {
 

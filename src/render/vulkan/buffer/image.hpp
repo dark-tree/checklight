@@ -3,7 +3,7 @@
 #include "external.hpp"
 #include "render/vulkan/command/recorder.hpp"
 #include "render/vulkan/setup/allocator.hpp"
-#include "util/queue.hpp"
+#include "shared/queue.hpp"
 
 enum struct ImageScaling {
 	IGNORE_CONTENT,

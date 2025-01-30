@@ -1,7 +1,7 @@
 #pragma once
 
 #include "external.hpp"
-#include "util/queue.hpp"
+#include "shared/queue.hpp"
 #include "render/vulkan/command/buffer.hpp"
 #include "render/vulkan/descriptor/descriptor.hpp"
 #include "render/vulkan/buffer/buffer.hpp"

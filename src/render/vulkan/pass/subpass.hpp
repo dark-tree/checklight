@@ -1,7 +1,7 @@
 #pragma once
 
 #include "external.hpp"
-#include "util/pyramid.hpp"
+#include "shared/pyramid.hpp"
 #include "render/vulkan/buffer/attachment.hpp"
 
 class RenderPassBuilder;

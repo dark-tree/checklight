@@ -100,8 +100,8 @@ target_include_directories(checklight_common INTERFACE
 file(GLOB_RECURSE CHECKLIGHT_RENDER_SOURCES "src/render/*.cpp")
 add_library(checklight_render_system ${CHECKLIGHT_RENDER_SOURCES})
 
-file(GLOB_RECURSE CHECKLIGHT_UTIL_SOURCES "src/util/*.cpp")
-add_library(checklight_util_system ${CHECKLIGHT_UTIL_SOURCES})
+file(GLOB_RECURSE CHECKLIGHT_SHARED_SOURCES "src/shared/*.cpp")
+add_library(checklight_shared_system ${CHECKLIGHT_SHARED_SOURCES})
 
 add_library(checklight_external
 		lib/stb_image.cpp
@@ -124,7 +124,7 @@ target_link_libraries(checklight_render_system PRIVATE
 		checklight_external
 )
 
-target_link_libraries(checklight_util_system PRIVATE
+target_link_libraries(checklight_shared_system PRIVATE
 		checklight_common
 		Threads::Threads
 		checklight_external
@@ -133,7 +133,7 @@ target_link_libraries(checklight_util_system PRIVATE
 target_link_libraries(checklight PRIVATE
 		checklight_common
 		checklight_render_system
-		checklight_util_system
+		checklight_shared_system
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
