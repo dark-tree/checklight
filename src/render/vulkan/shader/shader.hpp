@@ -15,7 +15,7 @@ class Shader {
 	public:
 
 		Shader() = default;
-		Shader(LogicalDevice& device, const uint32_t* data, uint32_t size, VkShaderStageFlagBits stage);
+		Shader(LogicalDevice& device, const uint32_t* data, uint32_t size, VkShaderStageFlagBits stage, const std::string& unit);
 
 		/// Shader live time is managed by the compiler, don't free them yourself!
 		void close();

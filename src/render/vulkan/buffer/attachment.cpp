@@ -18,7 +18,7 @@ Attachment::Ref Attachment::Ref::of(int index) {
 
 Attachment::Attachment(const TextureDelegate& settings)
 : magicity(false), settings(settings), texture() {
-	this->settings.debug_name = "Attachment " + this->settings.debug_name;
+	this->settings.debug_name += " Attachment";
 
 	if (settings.view_info.format == VK_FORMAT_UNDEFINED) {
 		throw std::runtime_error {"Attachment format can't be left undefined!"};
@@ -52,4 +52,8 @@ void Attachment::markSwapchainBacked(){
 void Attachment::allocate(LogicalDevice& device, int width, int height, Allocator& allocator) {
 	Image image = allocator.allocateImage(Memory::DEVICE, width, height, getFormat(), settings.vk_usage, 1, 1, settings.debug_name.c_str());
 	texture = settings.buildTexture(device, image);
+}
+
+void Attachment::close(LogicalDevice device) {
+	texture.closeImageViewSampler(device.getHandle());
 }

@@ -46,23 +46,32 @@ const char* VulkanDebug::getObjectName(VkObjectType type) {
 	if (type == VK_OBJECT_TYPE_COMMAND_POOL) return "Command Pool";
 	#endif
 
-	return "Unknown";
+	return "Unknown Object";
 }
 
-void VulkanDebug::beginLifetime(void* object, const char* debug_name) {
+std::string VulkanDebug::getObjectFullname(VkObjectType type, const char* name) {
+	std::string fullname = getObjectName(type);
+	fullname.push_back(' ');
+	fullname.push_back('\'');
+	fullname += name;
+	fullname.push_back('\'');
+
+	return fullname;
+}
+
+void VulkanDebug::beginLifetime(VkObjectType type, void* object, const char* debug_name) {
 	#if ENGINE_DEBUG
 	if (objects->contains(object)) {
 		throw std::runtime_error {"Can't begin lifetime, object already alive!"};
 	}
 
-	(*objects)[object] = debug_name;
+	(*objects)[object] = getObjectFullname(type, debug_name);
 	#endif
 }
 
 void VulkanDebug::endLifetime(void* object) {
 	#if ENGINE_DEBUG
 	if (!objects->contains(object)) {
-		printf("DEBUG: Failed to kill %p\n", object);
 		throw std::runtime_error {"Can't end lifetime, object already dead!"};
 	}
 
@@ -84,7 +93,7 @@ void VulkanDebug::assertAllDead() {
 		printf("ERROR: An 'All Dead' assertion reached but:\n");
 
 		for (auto& pair : *objects) {
-			printf(" * Object %s is still alive!\n", pair.second.c_str());
+			printf(" * 0x%016lx: %s is still alive!\n", (std::intptr_t) pair.first, pair.second.c_str());
 		}
 
 		throw std::runtime_error {"Some object still live!"};
@@ -98,11 +107,7 @@ void VulkanDebug::setDebugName(VkDevice vk_device, VkObjectType type, void* obje
 		return;
 	}
 
-	std::string fullname = getObjectName(type);
-	fullname.push_back(' ');
-	fullname.push_back('\'');
-	fullname += debug_name;
-	fullname.push_back('\'');
+	std::string fullname = getObjectFullname(type, debug_name);
 
 	VkDebugUtilsObjectNameInfoEXT name_info {};
 	name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;

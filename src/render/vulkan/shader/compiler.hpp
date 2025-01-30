@@ -62,7 +62,7 @@ class Compiler {
 			public:
 
 				ResultBuilder(Kind kind, const char* name);
-				Shader build(LogicalDevice& device, bool successful);
+				Shader build(LogicalDevice& device, bool successful, const std::string& unit);
 
 			public:
 

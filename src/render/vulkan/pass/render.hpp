@@ -84,6 +84,6 @@ class RenderPassBuilder {
 		 * Complete the building process and acquire the
 		 * constructed RenderPass object.
 		 */
-		RenderPass build(const LogicalDevice& device);
+		RenderPass build(const LogicalDevice& device, const char* name);
 
 };

@@ -10,15 +10,17 @@ class Texture {
 
 	private:
 
-		VkFormat vk_format;
-		VkImage vk_image = VK_NULL_HANDLE;
+		Image image;
 		VkImageView vk_view = VK_NULL_HANDLE;
 		VkSampler vk_sampler = VK_NULL_HANDLE;
 
 	public:
 
 		Texture() = default;
-		Texture(VkFormat vk_format, VkImage vk_image, VkImageView vk_view, VkSampler vk_sampler);
+		Texture(const Image& image, VkImageView vk_view, VkSampler vk_sampler);
+
+		void closeImageViewSampler(VkDevice vk_device);
+		void closeViewSampler(VkDevice vk_device);
 
 		VkFormat getFormat() const;
 		VkImage getImage() const;

@@ -7,15 +7,32 @@
  * Texture
  */
 
-Texture::Texture(VkFormat vk_format, VkImage vk_image, VkImageView vk_view, VkSampler vk_sampler)
-: vk_format(vk_format), vk_image(vk_image), vk_view(vk_view), vk_sampler(vk_sampler) {}
+Texture::Texture(const Image& image, VkImageView vk_view, VkSampler vk_sampler)
+: image(image), vk_view(vk_view), vk_sampler(vk_sampler) {}
+
+void Texture::closeImageViewSampler(VkDevice vk_device) {
+	image.close();
+	closeViewSampler(vk_device);
+}
+
+void Texture::closeViewSampler(VkDevice vk_device) {
+	if (vk_sampler != VK_NULL_HANDLE) {
+		VulkanDebug::endLifetime(vk_sampler);
+		vkDestroySampler(vk_device, vk_sampler, nullptr);
+	}
+
+	if (vk_view != VK_NULL_HANDLE) {
+		VulkanDebug::endLifetime(vk_view);
+		vkDestroyImageView(vk_device, vk_view, nullptr);
+	}
+}
 
 VkFormat Texture::getFormat() const {
-	return vk_format;
+	return image.getFormat();
 }
 
 VkImage Texture::getImage() const {
-	return vk_image;
+	return image.getHandle();
 }
 
 VkImageView Texture::getView() const {
@@ -67,9 +84,12 @@ Texture TextureDelegate::buildTexture(LogicalDevice& device, const Image& image)
 		throw std::runtime_error {"Failed to create image sampler!"};
 	}
 
+	VulkanDebug::beginLifetime(VK_OBJECT_TYPE_IMAGE_VIEW, view, debug_name.c_str());
 	VulkanDebug::setDebugName(device.getHandle(), VK_OBJECT_TYPE_IMAGE_VIEW, view, debug_name.c_str());
+
+	VulkanDebug::beginLifetime(VK_OBJECT_TYPE_SAMPLER, sampler, debug_name.c_str());
 	VulkanDebug::setDebugName(device.getHandle(), VK_OBJECT_TYPE_SAMPLER, sampler, debug_name.c_str());
-	return {image.getFormat(), image.getHandle(), view, sampler};
+	return {image, view, sampler};
 
 }
 

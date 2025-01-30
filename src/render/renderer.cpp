@@ -216,6 +216,7 @@ void Renderer::createSwapchain() {
 
 	this->swapchain = builder.build(device, surface);
 
+	// allocate all attachments (except for color)
 	attachment_depth.allocate(device, extent.width, extent.height, allocator);
 
 	// create framebuffers
@@ -234,6 +235,12 @@ void Renderer::createShaders() {
 
 void Renderer::createAttachments() {
 
+	/*
+	 * When adding a new attachment create it here, then invoke .allocate()
+	 * on in the createSwapchain in the designated location, finally invoke close()
+	 * on it at the start of lateClose().
+	 */
+
 	// this attachment is special - we will never allocate it
 	attachment_color = TextureBuilder::begin()
 		.setFormat(surface_format)
@@ -242,9 +249,6 @@ void Renderer::createAttachments() {
 		.setDebugName("Color")
 		.createAttachment();
 
-	// very important UwU
-	attachment_color.markSwapchainBacked();
-
 	attachment_depth = TextureBuilder::begin()
 		.setFormat(VK_FORMAT_D32_SFLOAT)
 		.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT)
@@ -252,6 +256,9 @@ void Renderer::createAttachments() {
 		.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
 		.setDebugName("Depth")
 		.createAttachment();
+
+	// very important UwU
+	attachment_color.markSwapchainBacked();
 
 }
 
@@ -291,7 +298,7 @@ void Renderer::createRenderPasses() {
 			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.next();
 
-		pass_basic_3d = builder.build(device);
+		pass_basic_3d = builder.build(device, "Basic 3D");
 
 	}
 
@@ -347,6 +354,10 @@ void Renderer::createFrames() {
 }
 
 void Renderer::lateClose() {
+
+	// close all attachments
+	attachment_depth.close(device);
+
 	swapchain.close();
 	closeFrames();
 	closePipelines();

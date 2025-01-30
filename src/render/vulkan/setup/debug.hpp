@@ -12,12 +12,14 @@ class VulkanDebug {
 		/// Converts the VkObjectType enum into a human readable string
 		static const char* getObjectName(VkObjectType type);
 
+		static std::string getObjectFullname(VkObjectType type, const char* name);
+
 	public:
 
 		/**
 		 * Mark the given object as alive
 		 */
-		static void beginLifetime(void* object, const char* debug_name);
+		static void beginLifetime(VkObjectType type, void* object, const char* debug_name);
 
 		/**
 		 * Mark the given object as dead

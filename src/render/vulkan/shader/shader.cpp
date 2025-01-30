@@ -1,8 +1,9 @@
 
 #include "shader.hpp"
 #include "render/vulkan/setup/device.hpp"
+#include "render/vulkan/setup/debug.hpp"
 
-Shader::Shader(LogicalDevice& device, const uint32_t* data, uint32_t size, VkShaderStageFlagBits stage)
+Shader::Shader(LogicalDevice& device, const uint32_t* data, uint32_t size, VkShaderStageFlagBits stage, const std::string& unit)
 :  vk_device(device.getHandle()), vk_stage(stage) {
 
 	VkShaderModuleCreateInfo create_info {};
@@ -13,6 +14,8 @@ Shader::Shader(LogicalDevice& device, const uint32_t* data, uint32_t size, VkSha
 	if (vkCreateShaderModule(vk_device, &create_info, nullptr, &vk_module) != VK_SUCCESS) {
 		throw std::runtime_error {"Failed to create shader module!"};
 	}
+
+	VulkanDebug::setDebugName(device.getHandle(), VK_OBJECT_TYPE_SHADER_MODULE, vk_module, unit.c_str());
 
 }
 

@@ -13,6 +13,7 @@ Allocation::Allocation(VmaAllocator allocator, VmaAllocation allocation)
 
 void Allocation::closeBuffer(VkBuffer buffer) {
 	if (!empty()) {
+		vma_allocation = VK_NULL_HANDLE;
 		VulkanDebug::endLifetime(buffer);
 		vmaDestroyBuffer(vma_allocator, buffer, vma_allocation);
 	}
@@ -20,6 +21,7 @@ void Allocation::closeBuffer(VkBuffer buffer) {
 
 void Allocation::closeImage(VkImage image) {
 	if (!empty()) {
+		vma_allocation = VK_NULL_HANDLE;
 		VulkanDebug::endLifetime(image);
 		vmaDestroyImage(vma_allocator, image, vma_allocation);
 	}
@@ -143,7 +145,7 @@ Buffer Allocator::allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags
 		throw std::runtime_error {"Failed to allocate buffer!"};
 	}
 
-	VulkanDebug::beginLifetime(buffer, name);
+	VulkanDebug::beginLifetime(VK_OBJECT_TYPE_BUFFER, buffer, name);
 	VulkanDebug::setDebugName(vk_device, VK_OBJECT_TYPE_BUFFER, buffer, name);
 	return {buffer, {vma_allocator, allocation}, bytes};
 }
@@ -175,7 +177,7 @@ Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat fo
 		throw std::runtime_error {"Failed to allocate image!"};
 	}
 
-	VulkanDebug::beginLifetime(image, name);
+	VulkanDebug::beginLifetime(VK_OBJECT_TYPE_IMAGE, image, name);
 	VulkanDebug::setDebugName(vk_device, VK_OBJECT_TYPE_IMAGE, image, name);
 	return {image, format, {vma_allocator, allocation}};
 }

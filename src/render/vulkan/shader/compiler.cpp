@@ -25,13 +25,13 @@ const Kind Kind::CALLABLE {shaderc_callable_shader, VK_SHADER_STAGE_CALLABLE_BIT
 Compiler::ResultBuilder::ResultBuilder(Kind kind, const char* name)
 : kind(kind), name(name) {}
 
-Shader Compiler::ResultBuilder::build(LogicalDevice& device, bool successful) {
+Shader Compiler::ResultBuilder::build(LogicalDevice& device, bool successful, const std::string& unit) {
 	if (!successful) {
 		printf("ERROR: %s\n", errors.c_str());
 		throw std::runtime_error {"Unable to create shader module!"};
 	}
 
-	return {device, output.data(), (uint32_t) (output.size() * sizeof(uint32_t)), kind.vulkan};
+	return {device, output.data(), (uint32_t) (output.size() * sizeof(uint32_t)), kind.vulkan, unit};
 }
 
 /*
@@ -39,10 +39,10 @@ Shader Compiler::ResultBuilder::build(LogicalDevice& device, bool successful) {
  */
 
 Compiler::Compiler() {
-	#if defined(NDEBUG)
-	options.SetOptimizationLevel(shaderc_optimization_level_performance);
-	#else
+	#if ENGINE_DEBUG
 	options.SetGenerateDebugInfo();
+	#else
+	options.SetOptimizationLevel(shaderc_optimization_level_performance);
 	#endif
 }
 
@@ -71,7 +71,7 @@ Shader Compiler::compileString(LogicalDevice& device, const std::string& unit, c
 	builder.copyMessages(pre_result);
 
 	if (pre_result.GetCompilationStatus() != shaderc_compilation_status_success) {
-		return builder.build(device, false);
+		return builder.build(device, false, unit);
 	}
 
 	// the code after the preprocessor stage
@@ -82,11 +82,11 @@ Shader Compiler::compileString(LogicalDevice& device, const std::string& unit, c
 	builder.copyMessages(compile_result);
 
 	if (compile_result.GetCompilationStatus() != shaderc_compilation_status_success) {
-		return builder.build(device, false);
+		return builder.build(device, false, unit);
 	}
 
 	builder.copyOutput(compile_result);
-	Shader shader = builder.build(device, true);
+	Shader shader = builder.build(device, true, unit);
 	shaders.emplace_back(shader);
 	return shader;
 }

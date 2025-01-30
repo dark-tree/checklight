@@ -56,11 +56,6 @@ int main() {
 		system.endDraw();
     }
 
-	// close mesh *before* render systems dies
 	system.wait();
-
-	for (auto& mesh : meshes) {
-		mesh.reset();
-	}
 
 }

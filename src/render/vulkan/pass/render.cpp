@@ -1,5 +1,6 @@
 
 #include "render.hpp"
+#include "render/vulkan/setup/debug.hpp"
 
 /*
  * RenderPass
@@ -65,7 +66,7 @@ DependencyBuilder RenderPassBuilder::addDependency(VkDependencyFlags flags) {
 	return {*this, flags};
 }
 
-RenderPass RenderPassBuilder::build(const LogicalDevice& device) {
+RenderPass RenderPassBuilder::build(const LogicalDevice& device, const char* name) {
 
 	std::vector<VkAttachmentDescription> attachment_descriptions;
 	std::vector<VkSubpassDescription> subpass_descriptions;
@@ -113,9 +114,13 @@ RenderPass RenderPassBuilder::build(const LogicalDevice& device) {
 	create_info.pDependencies = dependency_descriptions.data();
 
 	VkRenderPass render_pass;
+
 	if (vkCreateRenderPass(device.getHandle(), &create_info, nullptr, &render_pass) != VK_SUCCESS) {
 		throw std::runtime_error {"Failed to create render pass!"};
 	}
+
+	VulkanDebug::setDebugName(device.getHandle(), VK_OBJECT_TYPE_RENDER_PASS, render_pass, name);
+	framebuffer.setDebugName(name);
 
 	return {device.getHandle(), render_pass, values, subpass_info, framebuffer};
 

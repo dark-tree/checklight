@@ -51,4 +51,5 @@ class Attachment {
 
 		void allocate(LogicalDevice& device, int width, int height, Allocator& allocator);
 
+		void close(LogicalDevice device);
 };

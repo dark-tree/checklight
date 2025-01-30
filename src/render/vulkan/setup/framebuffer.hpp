@@ -46,6 +46,7 @@ class FramebufferSet {
 
 	private:
 
+		std::string debug_name;
 		std::vector<Framebuffer> framebuffers;
 		std::vector<std::reference_wrapper<const Attachment>> attachments;
 
@@ -54,6 +55,7 @@ class FramebufferSet {
 		FramebufferSet() = default;
 		FramebufferSet(FramebufferSet& self) = default;
 
+		void setDebugName(const std::string& name);
 		void close();
 
 		FramebufferSet(const std::vector<Framebuffer>&& framebuffers);

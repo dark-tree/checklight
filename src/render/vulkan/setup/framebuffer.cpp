@@ -1,5 +1,6 @@
 
 #include "framebuffer.hpp"
+#include "debug.hpp"
 
 /*
  * Framebuffer
@@ -61,6 +62,10 @@ Framebuffer FramebufferBuilder::build(VkDevice vk_device, uint32_t presentation_
 
 FramebufferSet::FramebufferSet(const std::vector<Framebuffer>&& framebuffers)
 : framebuffers(framebuffers) {};
+
+void FramebufferSet::setDebugName(const std::string& name) {
+	debug_name = name;
+}
 
 void FramebufferSet::close() {
 	for (Framebuffer& framebuffer : framebuffers) {
@@ -142,7 +147,9 @@ void FramebufferSet::construct(VkRenderPass vk_pass, VkDevice vk_device, const S
 			builder.addAttachment(view);
 		}
 
-		framebuffers.push_back(builder.build(vk_device, i));
+		Framebuffer framebuffer = builder.build(vk_device, i);
+		VulkanDebug::setDebugName(vk_device, VK_OBJECT_TYPE_FRAMEBUFFER, framebuffer.getHandle(), debug_name.c_str());
+		framebuffers.push_back(framebuffer);
 	}
 }
 
