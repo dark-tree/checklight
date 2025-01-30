@@ -51,4 +51,10 @@ int main() {
 
 	system.wait();
 
+	for (auto& mesh : meshes) {
+		mesh.reset();
+	}
+
+	RenderSystem::system.reset();
+
 }

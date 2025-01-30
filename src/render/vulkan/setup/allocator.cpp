@@ -13,17 +13,17 @@ Allocation::Allocation(VmaAllocator allocator, VmaAllocation allocation)
 
 void Allocation::closeBuffer(VkBuffer buffer) {
 	if (!empty()) {
-		vma_allocation = VK_NULL_HANDLE;
 		VulkanDebug::endLifetime(buffer);
 		vmaDestroyBuffer(vma_allocator, buffer, vma_allocation);
+		vma_allocation = VK_NULL_HANDLE;
 	}
 }
 
 void Allocation::closeImage(VkImage image) {
 	if (!empty()) {
-		vma_allocation = VK_NULL_HANDLE;
 		VulkanDebug::endLifetime(image);
 		vmaDestroyImage(vma_allocator, image, vma_allocation);
+		vma_allocation = VK_NULL_HANDLE;
 	}
 }
 

@@ -32,7 +32,7 @@ endif()
 FetchContent_Declare(
 		vma
 		GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-		GIT_TAG v3.0.1
+		GIT_TAG v3.2.0
 )
 
 FetchContent_Declare(

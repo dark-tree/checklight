@@ -475,11 +475,11 @@ Renderer::~Renderer() {
 
 	vkDestroySurfaceKHR(instance.getHandle(), surface, nullptr);
 
-	VulkanDebug::assertAllDead();
-
 	// It's important to maintain the correct order
 	closeRenderPasses();
 	compiler.close();
+
+	VulkanDebug::assertAllDead();
 	allocator.close();
 	device.close();
 	instance.close();
