@@ -40,6 +40,10 @@ void RenderSystem::setProjectionMatrix(float fov, float near_plane, float far_pl
 	setProjectionMatrix(projection);
 }
 
+void RenderSystem::setViewMatrix(glm::vec3 eye, glm::vec3 direction) {
+	setViewMatrix(glm::lookAt(eye, eye + direction, glm::vec3(0.0f, 1.0f, 0.0f)));
+}
+
 void RenderSystem::setViewMatrix(glm::mat4 view) {
 	uniforms.view = view;
 }

@@ -20,17 +20,10 @@ int main() {
 	while (!window.shouldClose()) {
 		window.poll();
 
-		// view is based on player/editor camera
-		glm::mat4 view = glm::lookAt(
-			glm::vec3(18.0f, 1.0f, 4.0f), // camera 'eye' position
-			glm::vec3(-3.0f, 1.0f, 8.0f), // camera target (facing is along the eye->target vector)
-			glm::vec3(0.0f, 1.0f, 0.0f)   // the up vector, don't change
-		);
-
 		// update uniforms
 		// do this once at the beginning of frame rendering
 		system.setProjectionMatrix(40.0f, 0.1f, 1000.0f);
-		system.setViewMatrix(view);
+		system.setViewMatrix({18.0f, 1.0f, 4.0f}, {-21.0f, 0.0f, 4.0f});
 		system.updateUniforms();
 
 		// all rendering must be done between beginDraw() and endDraw()

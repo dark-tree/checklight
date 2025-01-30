@@ -27,6 +27,10 @@ class RenderCommander {
 		CommandRecorder& getRecorder();
 		TaskQueue& getTaskQueue();
 
+		/**
+		 * After you are done using the commander ALWAYS call
+		 * this method, any other action is INVALID!
+		 */
 		void complete();
 
 };
