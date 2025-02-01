@@ -1,1 +1,2 @@
 lunarg_api_dump.no_addr = true
+khronos_validation.validate_best_practices = true

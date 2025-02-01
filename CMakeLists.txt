@@ -30,31 +30,33 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 FetchContent_Declare(
+		vma
+		GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+		GIT_TAG v3.2.0
+)
+
+FetchContent_Declare(
 		glfw
 		GIT_REPOSITORY https://github.com/glfw/glfw.git
 		GIT_TAG 3.4
-		GIT_PROGRESS TRUE
 )
 
 FetchContent_Declare(
 		stb
 		GIT_REPOSITORY https://github.com/nothings/stb
 		GIT_TAG 5736b15f7ea0ffb08dd38af21067c314d6a3aae9
-		GIT_PROGRESS TRUE
 )
 
 FetchContent_Declare(
 		glm
 		GIT_REPOSITORY https://github.com/g-truc/glm
 		GIT_TAG 0.9.9.8
-		GIT_PROGRESS TRUE
 )
 
 FetchContent_Declare(
 		shaderc
 		GIT_REPOSITORY https://github.com/google/shaderc
 		GIT_TAG v2023.4
-		GIT_PROGRESS TRUE
 )
 
 # Time for some mental gymnastics for shaderc ...
@@ -81,53 +83,65 @@ set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
 
 # ... And finally add shaderc!
 add_subdirectory(${shaderc_SOURCE_DIR} ${shaderc_BINARY_DIR})
-FetchContent_MakeAvailable(glfw stb glm)
+FetchContent_MakeAvailable(glfw stb glm vma)
 
-include_directories(
+add_library(checklight_common INTERFACE)
+target_include_directories(checklight_common INTERFACE
 		src/
+		lib/
+		${glm_SOURCE_DIR}                        # Headers in ./glm
 		${glfw_SOURCE_DIR}/include               # Headers in ./GLFW
 		${stb_SOURCE_DIR}                        # Headers in ./
-		${glm_SOURCE_DIR}                        # Headers in ./glm
 		${shaderc_SOURCE_DIR}/libshaderc/include # Headers in ./shaderc
 		${Vulkan_INCLUDE_DIRS}                   # Headers in ./vulcan
+		${vma_SOURCE_DIR}/include                # Headers in ./
 )
 
-file(GLOB_RECURSE CHECKLIGHT_SOURCES
-		"src/*.cpp"
-)
+file(GLOB_RECURSE CHECKLIGHT_RENDER_SOURCES "src/render/*.cpp")
+add_library(checklight_render_system ${CHECKLIGHT_RENDER_SOURCES})
 
-# basic unit test are build as a separate target
-list(FILTER VLT3D_SOURCES EXCLUDE REGEX "src[\\/]test\\.cpp$")
-list(FILTER VLT3D_SOURCES EXCLUDE REGEX "src[\\/]main\\.cpp$")
+file(GLOB_RECURSE CHECKLIGHT_SHARED_SOURCES "src/shared/*.cpp")
+add_library(checklight_shared_system ${CHECKLIGHT_SHARED_SOURCES})
 
-add_library(external
+add_library(checklight_external
 		lib/stb_image.cpp
 		lib/stb_image_write.cpp
 		lib/stb_vorbis.cpp
+		lib/vk_mem_alloc.cpp
 )
 
-add_executable(main
-		"src/main.cpp"
-		${CHECKLIGHT_SOURCES}
+add_executable(checklight "src/main.cpp")
+
+target_link_libraries(checklight_external PRIVATE
+		checklight_common
 )
 
-set(CHECKLIGHT_LIBS
-		Threads::Threads
+target_link_libraries(checklight_render_system PRIVATE
+		checklight_common
 		Vulkan::Vulkan
 		glfw
 		shaderc
-		external
+		checklight_external
 )
 
-target_link_libraries(main PRIVATE ${CHECKLIGHT_LIBS})
-target_compile_definitions(main PRIVATE "SOURCE_ROOT=\"${CMAKE_SOURCE_DIR}\"")
+target_link_libraries(checklight_shared_system PRIVATE
+		checklight_common
+		Threads::Threads
+		checklight_external
+)
+
+target_link_libraries(checklight PRIVATE
+		checklight_common
+		checklight_render_system
+		checklight_shared_system
+)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
 	# GCC debugging doodads
 	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 		message(STATUS "Compiling with debugging symbols")
-		target_compile_options(main PRIVATE -g)
+		target_compile_options(checklight_common INTERFACE -g)
 	endif()
 
 	set(CHECKLIGHT_WARNING_FLAGS
@@ -137,14 +151,14 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 			-Werror=return-local-addr
 	)
 
-	target_compile_options(external PRIVATE -Wno-volatile)
-	target_compile_options(main PRIVATE ${CHECKLIGHT_WARNING_FLAGS})
+	target_compile_options(checklight_external PRIVATE -Wno-volatile)
+	target_compile_options(checklight_common INTERFACE ${CHECKLIGHT_WARNING_FLAGS})
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 
 	# we4715 - treat missing return statement as error
-	target_compile_options(main PRIVATE /W4 /we4715)
+	target_compile_options(checklight_common INTERFACE /W4 /we4715)
 endif()
 
 # Copy assets if any exist
@@ -158,5 +172,5 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
 			"${CMAKE_BINARY_DIR}/assets"
 	)
 
-	add_dependencies(main copy-assets)
+	add_dependencies(checklight_common copy-assets)
 endif()
