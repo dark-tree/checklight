@@ -15,7 +15,7 @@ class Subpass {
 	public:
 
 		Subpass() = default;
-		Subpass(uint32_t attachments);
+		Subpass(uint32_t attachments) noexcept;
 
 		uint32_t getAttachmentCount() const;
 

@@ -6,7 +6,7 @@
  * Subpass
  */
 
-Subpass::Subpass(uint32_t attachments)
+Subpass::Subpass(uint32_t attachments) noexcept
 : attachments(attachments) {}
 
 uint32_t Subpass::getAttachmentCount() const {

@@ -43,7 +43,7 @@ std::vector<std::shared_ptr<RenderMesh>> Importer::importObj(RenderSystem& syste
 			vertices.push_back(Vertex3D(vertex.position.x, vertex.position.y, vertex.position.z, colorR, colorG, colorB));
 		}
 
-		for (int i = 0; i < object.groups.size(); i ++) {
+		for (int i = 0; i < (int) object.groups.size(); i ++) {
 			const auto& group = object.groups[i];
 			std::shared_ptr<RenderMesh> mesh = system.createMesh();
 

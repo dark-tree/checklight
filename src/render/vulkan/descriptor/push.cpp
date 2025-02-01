@@ -6,7 +6,7 @@
  */
 
 PushConstant::PushConstant()
-: range(0) {}
+: range({}) {}
 
 PushConstant::PushConstant(VkShaderStageFlags stages, uint32_t bytes) {
 	range.size = bytes;
