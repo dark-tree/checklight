@@ -1,8 +1,7 @@
 
 #include "render/system.hpp"
-#include "render/api/vertex.hpp"
-#include "render/api/mesh.hpp"
 #include "render/model/importer.hpp"
+#include "input/input.hpp"
 
 int main() {
 
@@ -14,6 +13,8 @@ int main() {
 
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
+
+	window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 
 	auto meshes = Importer::importObj(system, "assets/models/checklight.obj");
 

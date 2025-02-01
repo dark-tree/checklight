@@ -1,5 +1,6 @@
 
 #include "window.hpp"
+#include "input/input.hpp"
 
 /*
  * WindowSystem
@@ -41,33 +42,58 @@ std::unique_ptr<Window> WindowSystem::open(uint32_t w, uint32_t h, const std::st
  */
 
 void Window::glfwKeyCallback(GLFWwindow* glfw_window, int key, int scancode, int action, int mods) {
-	Window* window = (Window*) glfwGetWindowUserPointer(glfw_window);
+	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
 
 	if (window) {
-		// TODO: dispatch event
+		glm::vec2 mouse = window->getCursor();
+		window->getInputDispatcher().onEvent(KeyboardEvent {key, scancode, action, mods, mouse.x, mouse.y});
 	}
 }
 
 void Window::glfwButtonCallback(GLFWwindow* glfw_window, int button, int action, int mods) {
-	Window* window = (Window*) glfwGetWindowUserPointer(glfw_window);
+	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
 
 	if (window) {
-		// TODO: dispatch event
+		glm::vec2 mouse = window->getCursor();
+		window->getInputDispatcher().onEvent(ButtonEvent {button, action, mods, mouse.x, mouse.y});
 	}
 }
 
-void Window::glfwScrollCallback(GLFWwindow* glfw_window, double x_scroll, double y_scroll) {
-	Window* window = (Window*) glfwGetWindowUserPointer(glfw_window);
+void Window::glfwScrollCallback(GLFWwindow* glfw_window, double horizontal, double vertical) {
+	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
 
 	if (window) {
-		// TODO: dispatch event
+		glm::vec2 mouse = window->getCursor();
+		window->getInputDispatcher().onEvent(ScrollEvent {horizontal, vertical, mouse.x, mouse.y});
 	}
+}
+
+void Window::glfwCursorCallback(GLFWwindow* glfw_window, double x, double y) {
+	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
+
+	if (window) {
+		window->getInputDispatcher().onEvent(MouseEvent {x, y});
+	}
+}
+
+void Window::glfwUnicodeCallback(GLFWwindow* glfw_window, unsigned int unicode) {
+	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
+
+	if (window) {
+		glm::vec2 mouse = window->getCursor();
+		window->getInputDispatcher().onEvent(UnicodeEvent {unicode, mouse.x, mouse.y});
+	}
+}
+
+void Window::glfwErrorCallback(int error_code, const char* description) {
+	printf("ERROR: GLFW [%d]: %s\n", error_code, description);
 }
 
 Window::Window(uint32_t w, uint32_t h, std::string title_string) {
 
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE);
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	glfwSetErrorCallback(glfwErrorCallback);
 
 	#if !defined(NDEBUG)
 	title_string += " (Debug Build)";
@@ -85,6 +111,8 @@ Window::Window(uint32_t w, uint32_t h, std::string title_string) {
 	glfwSetKeyCallback(handle, glfwKeyCallback);
 	glfwSetMouseButtonCallback(handle, glfwButtonCallback);
 	glfwSetScrollCallback(handle, glfwScrollCallback);
+	glfwSetCursorPosCallback(handle, glfwCursorCallback);
+	glfwSetCharCallback(handle, glfwUnicodeCallback);
 }
 
 Window::~Window() {
@@ -107,6 +135,10 @@ void Window::getFramebufferSize(int* width, int* height) const {
 	glfwGetFramebufferSize(handle, width, height);
 }
 
+InputDispatcher& Window::getInputDispatcher() {
+	return dispatcher;
+}
+
 bool Window::isKeyPressed(int key) const {
 	return glfwGetKey(handle, key) == GLFW_PRESS;
 }
@@ -115,8 +147,11 @@ bool Window::isButtonPressed(int button) const {
 	return glfwGetMouseButton(handle, button) == GLFW_PRESS;
 }
 
-void Window::getCursor(double* x, double* y) const {
-	glfwGetCursorPos(handle, x, y);
+glm::vec2 Window::getCursor() const {
+	double x, y;
+	glfwGetCursorPos(handle, &x, &y);
+
+	return {x, y};
 }
 
 void Window::setMouseCapture(bool capture) {

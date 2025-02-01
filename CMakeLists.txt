@@ -103,6 +103,9 @@ add_library(checklight_render_system ${CHECKLIGHT_RENDER_SOURCES})
 file(GLOB_RECURSE CHECKLIGHT_SHARED_SOURCES "src/shared/*.cpp")
 add_library(checklight_shared_system ${CHECKLIGHT_SHARED_SOURCES})
 
+file(GLOB_RECURSE CHECKLIGHT_INPUT_SOURCES "src/input/*.cpp")
+add_library(checklight_input_system ${CHECKLIGHT_INPUT_SOURCES})
+
 add_library(checklight_external
 		lib/stb_image.cpp
 		lib/stb_image_write.cpp
@@ -130,10 +133,15 @@ target_link_libraries(checklight_shared_system PRIVATE
 		checklight_external
 )
 
+target_link_libraries(checklight_input_system PRIVATE
+		checklight_common
+)
+
 target_link_libraries(checklight PRIVATE
 		checklight_common
 		checklight_render_system
 		checklight_shared_system
+		checklight_input_system
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
