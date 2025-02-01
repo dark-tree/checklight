@@ -2,10 +2,10 @@
 
 #include "external.hpp"
 
-//class InputEvent;
+class InputEvent;
 
 template <class T>
-concept InputEventDerived = std::derived_from<T, class InputEvent>;
+concept InputEventDerived = std::derived_from<T, InputEvent>;
 
 class InputEvent {
 
