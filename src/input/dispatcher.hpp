@@ -11,13 +11,19 @@ class InputDispatcher : public InputListener {
 
 	public:
 
+		/**
+		 * Passes the event from the first to the last registered listener,
+		 * as long as the event is not blocked, or consumed.
+		 *
+		 * @param event The event to process
+		 */
 		InputResult onEvent(const InputEvent &event) override;
 
 	public:
 
 		/**
-		 * Adds a new listener to the dispatcher, listeners added later will only get
-		 * triggered if all previously added listeners PASS the event
+		 * Adds a new listener to the dispatcher, listeners added earlier will only get
+		 * triggered if all listeners added later PASS the event
 		 *
 		 * @param listener The input listener to register
 		 */

@@ -7,9 +7,9 @@
  * on the state of the InputEvent handling
  */
 enum struct InputResult {
-	BLOCK,
-	CONSUME,
-	PASS,
+	BLOCK,   ///< Return if (for example) some UI elements blocks all events (like inventory blocking movement)
+	CONSUME, ///< Return if the event was acted on (some action was taken), blocks further processing
+	PASS,    ///< Return if the event was ignored and should continue listener traversal
 };
 
 /**

@@ -21,14 +21,14 @@ int main() {
 	// You can access root InputDispatcher from RenderSystem::system->getWindow().getInputDispatcher()
 	InputDispatcher& dispatcher = /* ... */;
 
-	// first register the DebugInputListener to log all input (except for mouse movement)
+	// first register the DebugInputListener to log all input (except for mouse movement) PASSed by MyInputListener
 	dispatcher.registerListener(std::make_shared<DebugInputListener>());
 	
 	// then register your own listener (impl shown in the next example)
 	dispatcher.registerListener(std::make_shared<MyInputListener>());
 	
 	// you can also remove a listener from a dispatcher
-	// dispatcher.registerListener(/* shared_ptr */);
+	// dispatcher.removeListener(/* shared_ptr */);
 	
 }
 
@@ -55,6 +55,7 @@ class MyInputListener : public InputListener {
 			}
 			
 			// ignore all other events
+			// in our setup all of those will be routed to DebugInputListener
 			return InputResult::PASS;
 		}
 		

@@ -6,7 +6,7 @@
  */
 
 void InputDispatcher::registerListener(const std::shared_ptr<InputListener>& listener) {
-	listeners.push_back(listener);
+	listeners.push_front(listener);
 }
 
 void InputDispatcher::removeListener(const std::shared_ptr<InputListener>& listener) {
