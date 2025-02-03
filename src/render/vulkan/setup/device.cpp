@@ -14,6 +14,10 @@ PhysicalDevice::PhysicalDevice(VkPhysicalDevice device)  {
 	features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 	features.pNext = nullptr;
 
+	VkPhysicalDeviceRayTracingPipelineFeaturesKHR ray_tracing_feature {};
+	ray_tracing_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+	features.pNext = &ray_tracing_feature;
+
 	Proxy::vkGetPhysicalDeviceFeatures2KHR(device, &features);
 	this->vk_device = device;
 }

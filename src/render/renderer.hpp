@@ -110,7 +110,7 @@ class Renderer {
 		void pickDevice();
 
 		/// Loads the LogicalDevice, and Family
-		void createDevice(const PhysicalDevice& device, Family queue_family);
+		void createDevice(const PhysicalDevice& device, Family queue_family, const std::vector<const char*>& extensions);
 
 		void createShaders();
 		void createAttachments();

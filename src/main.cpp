@@ -41,7 +41,7 @@ int main() {
 			// then you can draw it multiple times
 			system.draw(model);
 
-			// later using a precomputed position vector may be reqired by the renderer
+			// later using a precomputed position vector may be required by the renderer
 			// take that into account
 		}
 

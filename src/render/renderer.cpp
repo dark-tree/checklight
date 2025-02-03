@@ -43,7 +43,7 @@ void Renderer::createInstance(ApplicationParameters& parameters) {
 	app_info.applicationVersion = VK_MAKE_VERSION(parameters.major, parameters.minor, parameters.patch);
 	app_info.pEngineName = ENGINE_NAME;
 	app_info.engineVersion = ENGINE_VERSION;
-	app_info.apiVersion = VK_API_VERSION_1_0;
+	app_info.apiVersion = VK_API_VERSION_1_2;
 
 	std::vector<const char*> extension = windows.getRequiredExtensions();
 	std::vector<const char*> layers;
@@ -109,6 +109,13 @@ void Renderer::pickDevice() {
 	auto devices = instance.getDevices();
 	printf("INFO: Detected %d physical devices\n", (int) devices.size());
 
+	std::vector<const char*> required_extensions = {
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+		VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+		VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+		VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+	};
+
 	for (const auto& device : devices) {
 
 		// we need the device to be able to render to our window
@@ -117,8 +124,10 @@ void Renderer::pickDevice() {
 		}
 
 		// check for support of required extensions
-		if (!device.hasExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)) {
-			continue;
+		for (auto name : required_extensions) {
+			if (!device.hasExtension(name)) {
+				continue;
+			}
 		}
 
 		// find a queue family of our liking
@@ -135,7 +144,7 @@ void Renderer::pickDevice() {
 			}
 
 			// we found the one, continue with this device and family
-			createDevice(device, queue_family);
+			createDevice(device, queue_family, required_extensions);
 			return;
 		}
 
@@ -144,12 +153,8 @@ void Renderer::pickDevice() {
 	throw std::runtime_error {"No device could have been selected!"};
 }
 
-void Renderer::createDevice(const PhysicalDevice& physical, Family queue_family) {
+void Renderer::createDevice(const PhysicalDevice& physical, Family queue_family, const std::vector<const char*>& extensions) {
 	printf("INFO: Selected '%s' (queue #%d)\n", physical.getName(), queue_family.getIndex());
-
-	// list device extensions we need
-	std::vector<const char*> extensions;
-	extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
 	// we use only one queue at this time
 	const float priority = 1.0f;
@@ -193,6 +198,7 @@ void Renderer::createDevice(const PhysicalDevice& physical, Family queue_family)
 	#endif
 
 	Proxy::loadDeviceFunctions(this->device);
+	Proxy::loadRaytraceFunctions(this->device);
 
 }
 
