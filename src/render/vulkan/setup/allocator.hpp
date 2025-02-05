@@ -4,6 +4,7 @@
 #include "device.hpp"
 #include "instance.hpp"
 
+class AccelerationStructure;
 class Buffer;
 class Image;
 
@@ -75,5 +76,11 @@ class Allocator {
 		 * Allocates a new Vulkan Image with the specified memory properties
 		 */
 		Image allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels, const char* name);
+
+		/**
+		 * @brief Allocate raytracing acceleration structure of given size
+		 * Allocates a new Vulkan Acceleration Structure, either Top or Bottom, and it's corresponding buffer
+		 */
+		AccelerationStructure allocateAcceleration(VkAccelerationStructureTypeKHR type, size_t bytes, const char* name);
 
 };

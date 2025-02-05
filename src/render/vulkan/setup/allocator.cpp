@@ -2,6 +2,8 @@
 #include "allocator.hpp"
 #include "render/vulkan/buffer/buffer.hpp"
 #include "render/vulkan/buffer/image.hpp"
+#include "render/vulkan/raytrace/struct.hpp"
+#include "render/vulkan/setup/proxy.hpp"
 #include "debug.hpp"
 
 /*
@@ -180,4 +182,28 @@ Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat fo
 	VulkanDebug::beginLifetime(VK_OBJECT_TYPE_IMAGE, image, name);
 	VulkanDebug::setDebugName(vk_device, VK_OBJECT_TYPE_IMAGE, image, name);
 	return {image, format, {vma_allocator, allocation}};
+}
+
+AccelerationStructure Allocator::allocateAcceleration(VkAccelerationStructureTypeKHR type, size_t bytes, const char* name) {
+
+	// the second flag is needed by TLAS to link with BLASes
+	VkBufferUsageFlags flags = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+	Buffer backing = allocateBuffer(Memory::DEVICE, bytes, flags, name);
+
+	VkAccelerationStructureCreateInfoKHR create_info {};
+	create_info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR;
+	create_info.type = type;
+	create_info.size = bytes;
+	create_info.offset = 0; // offset into buffer
+	create_info.buffer = backing.getHandle();
+	create_info.deviceAddress = 0;
+
+	VkAccelerationStructureKHR structure;
+
+	if (Proxy::vkCreateAccelerationStructureKHR(vk_device, &create_info, nullptr, &structure) != VK_SUCCESS) {
+		throw std::runtime_error {"Failed to allocate acceleration structure!"};
+	}
+
+	return {backing, structure};
+
 }

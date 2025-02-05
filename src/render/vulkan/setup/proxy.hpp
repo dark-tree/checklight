@@ -22,6 +22,9 @@ struct Proxy {
 	static PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR;
 	static PFN_vkCreateRayTracingPipelinesKHR vkCreateRayTracingPipelinesKHR;
 
+	// VK_KHR_acceleration_structure
+	static PFN_vkCreateAccelerationStructureKHR vkCreateAccelerationStructureKHR;
+
 	public:
 
 		/// Load debug messenger functions only needed in debug mode

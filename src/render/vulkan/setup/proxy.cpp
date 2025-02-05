@@ -17,6 +17,9 @@ PFN_vkCmdInsertDebugUtilsLabelEXT Proxy::vkCmdInsertDebugUtilsLabelEXT = nullptr
 PFN_vkCmdTraceRaysKHR Proxy::vkCmdTraceRaysKHR = nullptr;
 PFN_vkCreateRayTracingPipelinesKHR Proxy::vkCreateRayTracingPipelinesKHR = nullptr;
 
+// VK_KHR_acceleration_structure
+PFN_vkCreateAccelerationStructureKHR Proxy::vkCreateAccelerationStructureKHR = nullptr;
+
 void Proxy::loadMessengerFunctions(Instance& instance) {
 	vkCreateDebugUtilsMessengerEXT = instance.getFunction<PFN_vkCreateDebugUtilsMessengerEXT>("vkCreateDebugUtilsMessengerEXT");
 	vkDestroyDebugUtilsMessengerEXT = instance.getFunction<PFN_vkDestroyDebugUtilsMessengerEXT>("vkDestroyDebugUtilsMessengerEXT");
@@ -40,4 +43,5 @@ void Proxy::loadDeviceFunctions(LogicalDevice& device) {
 void Proxy::loadRaytraceFunctions(LogicalDevice& device) {
 	vkCmdTraceRaysKHR = device.getFunction<PFN_vkCmdTraceRaysKHR>("vkCmdTraceRaysKHR");
 	vkCreateRayTracingPipelinesKHR = device.getFunction<PFN_vkCreateRayTracingPipelinesKHR>("vkCreateRayTracingPipelinesKHR");
+	vkCreateAccelerationStructureKHR = device.getFunction<PFN_vkCreateAccelerationStructureKHR>("vkCreateAccelerationStructureKHR");
 }
