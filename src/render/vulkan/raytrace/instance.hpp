@@ -19,7 +19,7 @@ class InstanceDelegate {
 
 		InstanceDelegate(size_t index);
 
-		void setMatrix(const glm::mat3x4& model);
+		void setMatrix(const glm::mat4x3& model);
 		void setShader(uint32_t index);
 		void setTraits(VkGeometryInstanceFlagsKHR flags);
 		void setObject();

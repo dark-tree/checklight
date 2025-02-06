@@ -12,7 +12,7 @@ InstanceDelegate::InstanceDelegate(size_t index)
 	instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
 }
 
-void InstanceDelegate::setMatrix(const glm::mat3x4& model) {
+void InstanceDelegate::setMatrix(const glm::mat4x3& model) {
 	VkTransformMatrixKHR& transform = instance.transform;
 
 	for (int row = 0; row < 3; row ++) {
@@ -20,6 +20,8 @@ void InstanceDelegate::setMatrix(const glm::mat3x4& model) {
 			transform.matrix[row][column] = model[column][row];
 		}
 	}
+
+	instance.transform = transform;
 }
 
 void InstanceDelegate::setShader(uint32_t offset) {
