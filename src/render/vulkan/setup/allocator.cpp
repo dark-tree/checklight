@@ -97,6 +97,7 @@ Allocator::Allocator(LogicalDevice& logical, PhysicalDevice& physical, Instance&
 
 	VmaAllocatorCreateInfo create_info {};
 	create_info.physicalDevice = physical.getHandle();
+	create_info.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 	create_info.device = logical.getHandle();
 	create_info.pVulkanFunctions = &functions;
 	create_info.instance = instance.getHandle();

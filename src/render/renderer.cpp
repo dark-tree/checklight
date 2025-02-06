@@ -116,22 +116,28 @@ void Renderer::pickDevice() {
 		VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
 	};
 
-	for (const auto& device : devices) {
+	for (auto& device : devices) {
 
 		// we need the device to be able to render to our window
-		if (!device.canUseSurface(surface)) {
+		if (!device->canUseSurface(surface)) {
 			continue;
 		}
 
 		// check for support of required extensions
 		for (auto name : required_extensions) {
-			if (!device.hasExtension(name)) {
+			if (!device->hasExtension(name)) {
 				continue;
 			}
 		}
 
+		auto* vk12_features = (const VkPhysicalDeviceVulkan12Features*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES);
+
+		if (!vk12_features->bufferDeviceAddress) {
+			continue;
+		}
+
 		// find a queue family of our liking
-		for (Family queue_family : device.getFamilies()) {
+		for (Family queue_family : device->getFamilies()) {
 
 			// needs to be able to present to our window...
 			if (!queue_family.hasPresentation(surface)) {
@@ -144,7 +150,7 @@ void Renderer::pickDevice() {
 			}
 
 			// we found the one, continue with this device and family
-			createDevice(device, queue_family, required_extensions);
+			createDevice(std::move(device), queue_family, required_extensions);
 			return;
 		}
 
@@ -153,8 +159,8 @@ void Renderer::pickDevice() {
 	throw std::runtime_error {"No device could have been selected!"};
 }
 
-void Renderer::createDevice(const PhysicalDevice& physical, Family queue_family, const std::vector<const char*>& extensions) {
-	printf("INFO: Selected '%s' (queue #%d)\n", physical.getName(), queue_family.getIndex());
+void Renderer::createDevice(std::unique_ptr<PhysicalDevice> physical, Family queue_family, const std::vector<const char*>& extensions) {
+	printf("INFO: Selected '%s' (queue #%d)\n", physical->getName(), queue_family.getIndex());
 
 	// we use only one queue at this time
 	const float priority = 1.0f;
@@ -165,9 +171,15 @@ void Renderer::createDevice(const PhysicalDevice& physical, Family queue_family,
 	queue_info.queueCount = 1;
 	queue_info.pQueuePriorities = &priority;
 
-	// features we want to enable
+	// Vulkan 1.2 features
+	VkPhysicalDeviceVulkan12Features features_vk12 {};
+	features_vk12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+	features_vk12.bufferDeviceAddress = true; // need for raytracing, allow creating the funny universal pointers
+
+	// Basic device features
 	VkPhysicalDeviceFeatures2KHR features {};
 	features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+	features.pNext = &features_vk12;
 
 	// we will now connect with the selected driver
 	VkDeviceCreateInfo create_info {};
@@ -184,12 +196,12 @@ void Renderer::createDevice(const PhysicalDevice& physical, Family queue_family,
 
 	VkDevice vk_device;
 
-	if (vkCreateDevice(physical.getHandle(), &create_info, nullptr, &vk_device) != VK_SUCCESS) {
+	if (vkCreateDevice(physical->getHandle(), &create_info, nullptr, &vk_device) != VK_SUCCESS) {
 		throw std::runtime_error {"Failed to create logical device!"};
 	}
 
 	// load all device functions
-	this->physical = std::make_unique<PhysicalDevice>(physical);
+	this->physical = std::move(physical);
 	this->device = vk_device;
 	this->family = queue_family;
 
@@ -416,6 +428,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	concurrent = 1;
 	surface_format = VK_FORMAT_B8G8R8A8_SRGB;
 	frames.reserve(concurrent);
+	instances = std::make_unique<InstanceManager>();
 
 	// early init
 	createInstance(parameters);
@@ -480,6 +493,7 @@ Renderer::~Renderer() {
 	}
 
 	vkDestroySurfaceKHR(instance.getHandle(), surface, nullptr);
+	instances.reset();
 
 	// It's important to maintain the correct order
 	closeRenderPasses();

@@ -17,6 +17,7 @@
 #include "render/vulkan/pass/pipeline.hpp"
 #include "render/vulkan/descriptor/pool.hpp"
 #include "render/vulkan/descriptor/push.hpp"
+#include "render/vulkan/raytrace/instance.hpp"
 
 class Renderer {
 
@@ -65,6 +66,7 @@ class Renderer {
 		CommandPool graphics_pool;
 		Allocator allocator;
 		DescriptorPool descriptor_pool;
+		std::unique_ptr<InstanceManager> instances;
 
 		// shaders
 		Shader shader_basic_vertex;
@@ -110,7 +112,7 @@ class Renderer {
 		void pickDevice();
 
 		/// Loads the LogicalDevice, and Family
-		void createDevice(const PhysicalDevice& device, Family queue_family, const std::vector<const char*>& extensions);
+		void createDevice(std::unique_ptr<PhysicalDevice> device, Family queue_family, const std::vector<const char*>& extensions);
 
 		void createShaders();
 		void createAttachments();

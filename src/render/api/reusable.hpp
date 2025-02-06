@@ -3,6 +3,7 @@
 #include "external.hpp"
 #include "render/vulkan/buffer/buffer.hpp"
 
+class CommandRecorder;
 class RenderCommander;
 
 class ReusableBuffer {
@@ -37,7 +38,7 @@ class ReusableBuffer {
 		void upload(RenderCommander& commander, const void* data, int elements, int size);
 
 		bool isEmpty() const;
-		Buffer getBuffer() const;
+		Buffer& getBuffer() const;
 		size_t getCount() const;
 
 };

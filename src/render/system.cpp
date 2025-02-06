@@ -69,3 +69,11 @@ void RenderSystem::draw(glm::mat4 model) {
 	recorder.writePushConstant(mesh_constant, &constant);
 	this->mesh->draw(recorder);
 }
+
+std::shared_ptr<InstanceDelegate> RenderSystem::createRenderDelegate() {
+	return instances->create();
+}
+
+void RenderSystem::flushRenderDelegates(RenderCommander& commander) {
+	instances->flush(commander);
+}

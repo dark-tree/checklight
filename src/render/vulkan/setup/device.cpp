@@ -10,13 +10,14 @@
 PhysicalDevice::PhysicalDevice(VkPhysicalDevice device)  {
 	vkGetPhysicalDeviceProperties(device, &properties);
 
-	// for future use
 	features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-	features.pNext = nullptr;
+	features.pNext = &vk12_features;
 
-	VkPhysicalDeviceRayTracingPipelineFeaturesKHR ray_tracing_feature {};
-	ray_tracing_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
-	features.pNext = &ray_tracing_feature;
+	vk12_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+	vk12_features.pNext = &ray_feature;
+
+	ray_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+	ray_feature.pNext = nullptr;
 
 	Proxy::vkGetPhysicalDeviceFeatures2KHR(device, &features);
 	this->vk_device = device;
@@ -88,6 +89,22 @@ const VkPhysicalDeviceProperties& PhysicalDevice::getProperties() const {
 
 const VkPhysicalDeviceLimits& PhysicalDevice::getLimits() const {
 	return getProperties().limits;
+}
+
+const void* PhysicalDevice::getFeatures(VkStructureType type) const {
+	const VkBaseInStructure* current = (VkBaseInStructure*) &features;
+
+	while (true) {
+		if (current->sType == type) {
+			return current;
+		}
+
+		if (current->pNext == nullptr) {
+			return nullptr;
+		}
+
+		current = current->pNext;
+	}
 }
 
 /*

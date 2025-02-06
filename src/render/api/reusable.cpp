@@ -56,7 +56,7 @@ void ReusableBuffer::allocateBuffers(size_t elements, size_t size) {
 
 void ReusableBuffer::writeToStaging(const void* data, size_t elements, size_t size, size_t offset) {
 	size_t bytes = elements * size;
-	std::memcpy(static_cast<char*>(stage) + offset, data, bytes);
+	std::memcpy(static_cast<char*>(stage) + offset * size, data, bytes);
 }
 
 void ReusableBuffer::flushStaging(RenderCommander& commander) {
@@ -66,6 +66,13 @@ void ReusableBuffer::flushStaging(RenderCommander& commander) {
 }
 
 void ReusableBuffer::resize(RenderCommander& commander, int elements, int size) {
+
+	// if the buffers have not yet been used just allocate
+	if (!this->staging) {
+		close();
+		allocateBuffers(elements, size);
+		return;
+	}
 
 	auto staging_ptr = this->staging;
 	closeBuffer();
@@ -103,7 +110,7 @@ bool ReusableBuffer::isEmpty() const {
 	return getCount() == 0;
 }
 
-Buffer ReusableBuffer::getBuffer() const {
+Buffer& ReusableBuffer::getBuffer() const {
 	return *buffer;
 }
 

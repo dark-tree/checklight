@@ -9,7 +9,7 @@ Instance::Instance(VkInstance instance) {
 	this->vk_instance = instance;
 }
 
-std::vector<PhysicalDevice> Instance::getDevices() const {
+std::vector<std::unique_ptr<PhysicalDevice>> Instance::getDevices() const {
 	uint32_t count = 0;
 	vkEnumeratePhysicalDevices(vk_instance, &count, nullptr);
 
@@ -17,11 +17,11 @@ std::vector<PhysicalDevice> Instance::getDevices() const {
 	vkEnumeratePhysicalDevices(vk_instance, &count, devices.data());
 
 	// copy devices into a custom wrapper type
-	std::vector<PhysicalDevice> entries;
+	std::vector<std::unique_ptr<PhysicalDevice>> entries;
 	entries.reserve(count);
 
 	for (VkPhysicalDevice device : devices) {
-		entries.emplace_back(device);
+		entries.emplace_back(std::make_unique<PhysicalDevice>(device));
 	}
 
 	return entries;

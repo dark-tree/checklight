@@ -14,6 +14,9 @@ class PhysicalDevice {
 
 	private:
 
+		VkPhysicalDeviceRayTracingPipelineFeaturesKHR ray_feature {};
+		VkPhysicalDeviceVulkan12Features vk12_features {};
+
 		VkPhysicalDeviceProperties properties;
 		VkPhysicalDeviceFeatures2KHR features;
 		VkPhysicalDevice vk_device;
@@ -73,6 +76,11 @@ class PhysicalDevice {
 		 * @brief Get the cached device limits
 		 */
 		const VkPhysicalDeviceLimits& getLimits() const;
+
+		/**
+		 * @brief Get the cached device feature chain entry
+		 */
+		const void* getFeatures(VkStructureType type) const;
 
 };
 

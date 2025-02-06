@@ -29,7 +29,7 @@ class Instance {
 		 * @brief Get a list of physical devices,
 		 * @note  note that this refers to the Vulkan VKPhysicalDevice not real hardware elements
 		 */
-		std::vector<PhysicalDevice> getDevices() const;
+		std::vector<std::unique_ptr<PhysicalDevice>> getDevices() const;
 
 		/**
 		 * @brief Get the underlying vulkan object handle

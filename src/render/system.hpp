@@ -96,4 +96,21 @@ class RenderSystem : public Renderer {
 		 */
 		void draw(glm::mat4 model);
 
+		/**
+		 * Create new InstanceDelegate, each delegate represents one object int the world
+		 * each game object can be made from many render objects (delegates)
+		 * each delegate contains an affine transformation matrix you can access and modify to move the object
+		 * in the world space.
+		 */
+		std::shared_ptr<InstanceDelegate> createRenderDelegate();
+
+		/**
+		 * Update underling instance buffers
+		 *
+		 * @note
+		 * This function will later be removed and merged
+		 * into beginFrame()
+		 */
+		void flushRenderDelegates(RenderCommander& commander);
+
 };

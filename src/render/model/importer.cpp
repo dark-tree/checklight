@@ -31,6 +31,8 @@ std::vector<std::shared_ptr<RenderMesh>> Importer::importObj(RenderSystem& syste
 
 	auto scene = ObjObject::open(path, materials);
 
+	// FIXME you should not create the commander multiple times
+	//       create one and reuse, this is very slow
 	auto commander = system.createTransientCommander();
 
 	for (auto& object : scene) {
@@ -43,7 +45,7 @@ std::vector<std::shared_ptr<RenderMesh>> Importer::importObj(RenderSystem& syste
 			vertices.push_back(Vertex3D(vertex.position.x, vertex.position.y, vertex.position.z, colorR, colorG, colorB));
 		}
 
-		for (int i = 0; i < object.groups.size(); i ++) {
+		for (size_t i = 0; i < object.groups.size(); i ++) {
 			const auto& group = object.groups[i];
 			std::shared_ptr<RenderMesh> mesh = system.createMesh();
 
