@@ -5,6 +5,7 @@
 #include "render/vulkan/pass/render.hpp"
 #include "render/vulkan/pass/pipeline.hpp"
 #include "render/vulkan/descriptor/descriptor.hpp"
+#include "render/api/vertex.hpp"
 
 CommandRecorder::CommandRecorder(VkCommandBuffer vk_buffer)
 : vk_buffer(vk_buffer) {}
@@ -62,7 +63,7 @@ CommandRecorder& CommandRecorder::bindVertexBuffer(const Buffer& buffer, VkDevic
 }
 
 CommandRecorder& CommandRecorder::bindIndexBuffer(const Buffer& buffer, VkDeviceSize offset) {
-	vkCmdBindIndexBuffer(vk_buffer, buffer.getHandle(), offset, VK_INDEX_TYPE_UINT32);
+	vkCmdBindIndexBuffer(vk_buffer, buffer.getHandle(), offset, Index3D::format);
 	return *this;
 }
 

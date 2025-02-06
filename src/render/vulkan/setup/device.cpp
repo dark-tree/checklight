@@ -2,6 +2,7 @@
 #include "device.hpp"
 #include "proxy.hpp"
 #include "swapchain.hpp"
+#include "render/vulkan/buffer/buffer.hpp"
 
 /*
  * PhysicalDevice
@@ -131,4 +132,13 @@ Queue LogicalDevice::getQueue(const Family& family) const {
 	VkQueue queue;
 	vkGetDeviceQueue(vk_device, family.getIndex(), 0, &queue);
 	return {queue};
+}
+
+VkDeviceAddress LogicalDevice::getAddress(const Buffer& buffer) const {
+	VkBufferDeviceAddressInfo info {};
+	info.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+	info.pNext = nullptr;
+	info.buffer = buffer.getHandle();
+
+	return vkGetBufferDeviceAddressKHR(vk_device, &info);
 }

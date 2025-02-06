@@ -15,17 +15,6 @@ int main() {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
-	// BEGIN INSTANCE TEST
-	auto commander = system.createTransientCommander();
-	auto d1 = system.createRenderDelegate();
-	auto d2 = system.createRenderDelegate();
-	d1.reset();
-	auto d3 = system.createRenderDelegate();
-	auto d4 = system.createRenderDelegate();
-	system.flushRenderDelegates(*commander);
-	commander->complete();
-	// END INSTANCE TEST
-
 	auto meshes = Importer::importObj(system, "assets/models/checklight.obj");
 
 	while (!window.shouldClose()) {

@@ -7,6 +7,7 @@
 #include "render/vulkan/pass/render.hpp"
 #include "render/vulkan/buffer/buffer.hpp"
 #include "render/vulkan/setup/debug.hpp"
+#include "render/api/vertex.hpp"
 
 /*
  * Renderer
@@ -447,8 +448,8 @@ Renderer::Renderer(ApplicationParameters& parameters)
 
 	// create vertex bindings
 	binding_3d = BindingLayoutBuilder::begin()
-		.attribute(0, VK_FORMAT_R32G32B32_SFLOAT) // xyz
-		.attribute(1, VK_FORMAT_R32G32B32_SFLOAT) // rgb
+		.attribute(0, Vertex3D::position)
+		.attribute(1, Vertex3D::color)
 		.done();
 
 	// create descriptor layouts

@@ -3,6 +3,7 @@
 #include "external.hpp"
 #include "commander.hpp"
 #include "reusable.hpp"
+#include "vertex.hpp"
 
 class RenderMesh {
 
@@ -17,18 +18,14 @@ class RenderMesh {
 
 		void setDebugName(const std::string& name);
 
-		template <typename V>
-		void uploadVertices(RenderCommander& commander, const std::vector<V>& vertices) {
-			vertex.upload(commander, vertices.data(), vertices.size(), sizeof(V));
-		}
-
-		template <typename I>
-		void uploadIndices(RenderCommander& commander, const std::vector<I>& indices) {
-			index.upload(commander, indices.data(), indices.size(), sizeof(I));
-		}
+		void uploadVertices(RenderCommander& commander, const std::vector<Vertex3D>& vertices);
+		void uploadIndices(RenderCommander& commander, const std::vector<Index3D::type>& indices);
 
 		bool hasIndexData() const;
 		void draw(CommandRecorder& recorder);
+		size_t getCount() const;
 
+		const ReusableBuffer& getVertexData() const;
+		const ReusableBuffer& getIndexData() const;
 
 };

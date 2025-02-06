@@ -4,6 +4,7 @@
 #include "family.hpp"
 #include "queue.hpp"
 
+class Buffer;
 class SwapchainInfo;
 
 /**
@@ -131,5 +132,11 @@ class LogicalDevice {
 		 *        Family used during device creation
 		 */
 		Queue getQueue(const Family& family) const;
+
+		/**
+		 * @brief Get device address of this buffer
+		 * @note  Device addresses are a type of a universal pointer
+		 */
+		VkDeviceAddress getAddress(const Buffer& buffer) const;
 
 };

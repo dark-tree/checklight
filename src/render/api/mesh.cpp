@@ -15,6 +15,14 @@ void RenderMesh::setDebugName(const std::string& name) {
 	index.setDebugName("Index " + name);
 }
 
+void RenderMesh::uploadVertices(RenderCommander& commander, const std::vector<Vertex3D>& vertices) {
+	vertex.upload(commander, vertices.data(), vertices.size(), sizeof(Vertex3D));
+}
+
+void RenderMesh::uploadIndices(RenderCommander& commander, const std::vector<Index3D::type>& indices) {
+	index.upload(commander, indices.data(), indices.size(), sizeof(Index3D::type));
+}
+
 bool RenderMesh::hasIndexData() const {
 	return !index.isEmpty();
 }
@@ -30,4 +38,16 @@ void RenderMesh::draw(CommandRecorder& recorder) {
 
 	// if no index data just draw the vertices
 	recorder.draw(vertex.getCount());
+}
+
+size_t RenderMesh::getCount() const {
+	return hasIndexData() ? index.getCount() : vertex.getCount();
+}
+
+const ReusableBuffer& RenderMesh::getVertexData() const {
+	return vertex;
+}
+
+const ReusableBuffer& RenderMesh::getIndexData() const {
+	return index;
 }
