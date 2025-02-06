@@ -2,6 +2,7 @@
 #include "render/system.hpp"
 #include "render/model/importer.hpp"
 #include "input/input.hpp"
+#include "sound/sound.hpp"
 
 int main() {
 

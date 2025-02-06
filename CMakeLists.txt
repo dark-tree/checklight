@@ -10,6 +10,7 @@ set(FETCHCONTENT_QUIET OFF)
 find_package(Python REQUIRED COMPONENTS Interpreter)
 find_package(Threads REQUIRED)
 find_package(Vulkan REQUIRED)
+find_package(OpenAL)
 
 # Try: cmake . -B build && cmake --build build/
 if (CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
@@ -27,6 +28,19 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	else()
 		message(STATUS "The MOLD linker was NOT found, consider installing it!")
 	endif()
+endif()
+
+if (NOT OpenAL_FOUND)
+    message(STATUS "OpenAL was NOT found, falling back to OpenAL-Soft!")
+
+    FetchContent_Declare(
+            openal-soft
+            GIT_REPOSITORY https://github.com/kcat/openal-soft
+            GIT_TAG 1.23.1
+            GIT_PROGRESS TRUE
+    )
+
+    FetchContent_MakeAvailable(openal-soft)
 endif()
 
 FetchContent_Declare(
@@ -85,6 +99,11 @@ set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
 add_subdirectory(${shaderc_SOURCE_DIR} ${shaderc_BINARY_DIR})
 FetchContent_MakeAvailable(glfw stb glm vma)
 
+if(NOT DEFINED OpenAL_INCLUDE_DIRS)
+	set(OpenAL_INCLUDE_DIRS "${OpenAL_SOURCE_DIR}/include")
+	message("Apply OpenAL")
+endif()
+
 set(CHECKLIGHT_LIBRARIES
 		${glm_SOURCE_DIR}                        # Headers in ./glm
 		${glfw_SOURCE_DIR}/include               # Headers in ./GLFW
@@ -92,6 +111,7 @@ set(CHECKLIGHT_LIBRARIES
 		${shaderc_SOURCE_DIR}/libshaderc/include # Headers in ./shaderc
 		${Vulkan_INCLUDE_DIRS}                   # Headers in ./vulcan
 		${vma_SOURCE_DIR}/include                # Headers in ./
+		${OpenAL_INCLUDE_DIRS}					 # Headers in ./AL
 )
 
 add_library(checklight_common INTERFACE)
@@ -109,6 +129,9 @@ add_library(checklight_shared_system ${CHECKLIGHT_SHARED_SOURCES})
 
 file(GLOB_RECURSE CHECKLIGHT_INPUT_SOURCES "src/input/*.cpp")
 add_library(checklight_input_system ${CHECKLIGHT_INPUT_SOURCES})
+
+file(GLOB_RECURSE CHECKLIGHT_SOUND_SOURCES "src/sound/*.cpp")
+add_library(checklight_sound_system ${CHECKLIGHT_SOUND_SOURCES})
 
 add_library(checklight_external
 		lib/stb_image.cpp
@@ -141,12 +164,20 @@ target_link_libraries(checklight_input_system PRIVATE
 		checklight_common
 )
 
+target_link_libraries(checklight_sound_system PRIVATE
+		checklight_common
+		OpenAL::OpenAL
+		checklight_external
+)
+
 target_link_libraries(checklight PRIVATE
 		checklight_common
 		checklight_render_system
 		checklight_shared_system
 		checklight_input_system
 )
+
+
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
