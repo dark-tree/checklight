@@ -1,6 +1,7 @@
 #pragma once
 
 #include "external.hpp"
+#include "input/dispatcher.hpp"
 
 class Window;
 
@@ -25,11 +26,15 @@ class Window {
 
 	private:
 
+		InputDispatcher dispatcher;
 		GLFWwindow* handle;
 
 		static void glfwKeyCallback(GLFWwindow* glfw_window, int key, int scancode, int action, int mods);
 		static void glfwButtonCallback(GLFWwindow* glfw_window, int button, int action, int mods);
-		static void glfwScrollCallback(GLFWwindow* glfw_window, double x_scroll, double y_scroll);
+		static void glfwScrollCallback(GLFWwindow* glfw_window, double x, double y);
+		static void glfwCursorCallback(GLFWwindow* glfw_window, double x, double y);
+		static void glfwUnicodeCallback(GLFWwindow* glfw_window, unsigned int unicode);
+		static void glfwErrorCallback(int error_code, const char* description);
 
 		friend class WindowSystem;
 		Window(uint32_t w, uint32_t h, std::string title);
@@ -43,9 +48,11 @@ class Window {
 		bool shouldClose() const;
 		void getFramebufferSize(int* width, int* height) const;
 
+		InputDispatcher& getInputDispatcher();
+
 		bool isKeyPressed(int key) const;
 		bool isButtonPressed(int button) const;
-		void getCursor(double* x, double* y) const;
+		glm::vec2 getCursor() const;
 		void setMouseCapture(bool capture);
 
 };

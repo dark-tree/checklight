@@ -1,0 +1,25 @@
+#pragma once
+
+#include "coded.hpp"
+
+class ButtonEvent : public CodedEvent {
+
+	public:
+
+		static constexpr Type type = InputEvent::BUTTON;
+
+		Type getType() const override;
+
+	public:
+
+		int button;
+
+		ButtonEvent(int button, int action, int mods, double x, double y);
+
+		/// Check if the given GLFW_MOUSE_BUTTON_* was pressed
+		bool wasPressed(int button) const;
+
+		/// Check if the given GLFW_MOUSE_BUTTON_* was released
+		bool wasReleased(int button) const;
+
+};

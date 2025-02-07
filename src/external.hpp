@@ -16,6 +16,7 @@
 #include <sstream>
 #include <queue>
 #include <mutex>
+#include <numeric>
 #include <set>
 #include <map>
 

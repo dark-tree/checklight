@@ -8,7 +8,7 @@ struct DescriptorType {
 	VkDescriptorType vk_type;
 	bool enabled;
 
-	inline DescriptorType()
+	inline DescriptorType() noexcept
 	: enabled(false) {}
 };
 

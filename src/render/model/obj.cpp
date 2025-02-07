@@ -220,7 +220,7 @@ std::vector<ObjObject> ObjObject::open(std::string path, const std::map<std::str
 				int uvIndex = 0;
 				int normalIndex = 0;
 
-				int separatorIndex = vertexString.find('/');
+				auto separatorIndex = vertexString.find('/');
 				if (separatorIndex != std::string::npos) {
 					vertexString = vertexString.substr(separatorIndex + 1);
 					if (vertexString[0] != '/') {

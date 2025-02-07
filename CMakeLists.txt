@@ -85,10 +85,7 @@ set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
 add_subdirectory(${shaderc_SOURCE_DIR} ${shaderc_BINARY_DIR})
 FetchContent_MakeAvailable(glfw stb glm vma)
 
-add_library(checklight_common INTERFACE)
-target_include_directories(checklight_common INTERFACE
-		src/
-		lib/
+set(CHECKLIGHT_LIBRARIES
 		${glm_SOURCE_DIR}                        # Headers in ./glm
 		${glfw_SOURCE_DIR}/include               # Headers in ./GLFW
 		${stb_SOURCE_DIR}                        # Headers in ./
@@ -97,11 +94,21 @@ target_include_directories(checklight_common INTERFACE
 		${vma_SOURCE_DIR}/include                # Headers in ./
 )
 
+add_library(checklight_common INTERFACE)
+target_include_directories(checklight_common INTERFACE
+		src/
+		lib/
+		${CHECKLIGHT_LIBRARIES}
+)
+
 file(GLOB_RECURSE CHECKLIGHT_RENDER_SOURCES "src/render/*.cpp")
 add_library(checklight_render_system ${CHECKLIGHT_RENDER_SOURCES})
 
 file(GLOB_RECURSE CHECKLIGHT_SHARED_SOURCES "src/shared/*.cpp")
 add_library(checklight_shared_system ${CHECKLIGHT_SHARED_SOURCES})
+
+file(GLOB_RECURSE CHECKLIGHT_INPUT_SOURCES "src/input/*.cpp")
+add_library(checklight_input_system ${CHECKLIGHT_INPUT_SOURCES})
 
 add_library(checklight_external
 		lib/stb_image.cpp
@@ -110,11 +117,11 @@ add_library(checklight_external
 		lib/vk_mem_alloc.cpp
 )
 
-add_executable(checklight "src/main.cpp")
-
-target_link_libraries(checklight_external PRIVATE
-		checklight_common
+target_include_directories(checklight_external PRIVATE
+		${CHECKLIGHT_LIBRARIES}
 )
+
+add_executable(checklight "src/main.cpp")
 
 target_link_libraries(checklight_render_system PRIVATE
 		checklight_common
@@ -130,10 +137,15 @@ target_link_libraries(checklight_shared_system PRIVATE
 		checklight_external
 )
 
+target_link_libraries(checklight_input_system PRIVATE
+		checklight_common
+)
+
 target_link_libraries(checklight PRIVATE
 		checklight_common
 		checklight_render_system
 		checklight_shared_system
+		checklight_input_system
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -144,15 +156,33 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 		target_compile_options(checklight_common INTERFACE -g)
 	endif()
 
-	set(CHECKLIGHT_WARNING_FLAGS
-			-Wno-volatile
+	target_compile_options(checklight_common INTERFACE
 			-Wall
-			-Werror=return-type
-			-Werror=return-local-addr
-	)
+			-Wextra
+			-pedantic
 
-	target_compile_options(checklight_external PRIVATE -Wno-volatile)
-	target_compile_options(checklight_common INTERFACE ${CHECKLIGHT_WARNING_FLAGS})
+			# Errors
+			-Werror=return-type       # Fail if when return in non-void function is missing
+			-Werror=return-local-addr # Fail if a pointer to a local variable is returned
+			-Werror=init-self         # Fail if a class member is initialized with itself
+			-Werror=uninitialized     # Fail if a uninitialized variables is used
+			-Werror=cast-qual         # Fail when you try to cast the const away
+
+			# Warnings
+			-Wnoexcept                # Warn if the lack of noexcept disables some optimizations
+			-Wunreachable-code        # Warn if a section of code is unreachable
+			-Wparentheses             # Warn if there is a high chance we forgot about some parentheses
+			-Wlogical-op              # Warn if there is a high chance we messed up the logical operator
+			-Wdisabled-optimization   # Warn if you managed to confuse the compiler :skull:
+			-Wswitch-default          # Warn whenever a switch statement does not have a default case
+			-Wredundant-decls         # Warn if anything is declared more than once in the same scope
+			-Wmissing-declarations    # Warn if a global function is defined without a previous declaration
+
+			# Ignore some warnings that I deemed stupid
+			-Wno-unused-parameter     # Not really an error to ignore something, we may enable it later
+			-Wno-volatile             # GLM does this, so unless we want hundreds of warnings we need to disable this
+			-Wno-variadic-macros      # Allow so called 'variadic macros'
+	)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
