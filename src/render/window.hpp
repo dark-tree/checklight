@@ -39,13 +39,26 @@ class Window {
 		~Window();
 
 		GLFWwindow* getHandle() const;
+
+		/// Ask the OS for input events and invoke handlers
 		void poll() const;
+
+		/// Check if the user wants to close this window
 		bool shouldClose() const;
+
+		/// Get the current size of the window's "paintable" area
 		void getFramebufferSize(int* width, int* height) const;
 
-		bool isKeyPressed(int key) const;
-		bool isButtonPressed(int button) const;
-		void getCursor(double* x, double* y) const;
+		/// Enable or disable mouse capture, a captured mouse can't leave the window and is invisible
 		void setMouseCapture(bool capture);
+
+		/// Check if a key is pressed, for debug use only!
+		bool isKeyPressed(int key) const;
+
+		/// Check if a mouse button is pressed, for debug use only!
+		bool isButtonPressed(int button) const;
+
+		/// Get mouse cursor position, for debug use only!
+		void getCursor(double* x, double* y) const;
 
 };
