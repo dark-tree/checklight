@@ -140,5 +140,5 @@ VkDeviceAddress LogicalDevice::getAddress(const Buffer& buffer) const {
 	info.pNext = nullptr;
 	info.buffer = buffer.getHandle();
 
-	return vkGetBufferDeviceAddressKHR(vk_device, &info);
+	return Proxy::vkGetBufferDeviceAddressKHR(vk_device, &info);
 }

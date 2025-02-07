@@ -25,6 +25,9 @@ struct Proxy {
 	// VK_KHR_acceleration_structure
 	static PFN_vkCreateAccelerationStructureKHR vkCreateAccelerationStructureKHR;
 
+	// VK_EXT_buffer_device_address
+	static PFN_vkGetBufferDeviceAddressKHR vkGetBufferDeviceAddressKHR;
+
 	public:
 
 		/// Load debug messenger functions only needed in debug mode
