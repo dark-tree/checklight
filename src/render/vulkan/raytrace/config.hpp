@@ -7,6 +7,7 @@
 class LogicalDevice;
 class RenderMesh;
 class ReusableBuffer;
+class TraceStructBakedConfig;
 
 class TraceStructConfig {
 
@@ -20,9 +21,6 @@ class TraceStructConfig {
 		std::vector<VkAccelerationStructureGeometryKHR> geometries;
 
 		void addEntry(const TraceStructEntry& entry);
-
-		VkAccelerationStructureBuildGeometryInfoKHR getBuildInfo() const;
-		VkAccelerationStructureBuildSizesInfoKHR getSizeInfo(const LogicalDevice& device) const;
 
 	public:
 
@@ -43,5 +41,17 @@ class TraceStructConfig {
 
 		TraceStructConfig& setOperation(Operation operation, Type type);
 		TraceStructConfig& setParent(const TraceStruct& structure);
+
+		TraceStructBakedConfig bake(const LogicalDevice& device) const;
+
+};
+
+struct TraceStructBakedConfig {
+
+	VkAccelerationStructureBuildGeometryInfoKHR build_info;
+	VkAccelerationStructureBuildSizesInfoKHR size_info;
+	std::vector<VkAccelerationStructureBuildRangeInfoKHR> ranges;
+
+	uint32_t getScratchSize() const;
 
 };

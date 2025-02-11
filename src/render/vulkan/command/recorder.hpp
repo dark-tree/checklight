@@ -4,10 +4,12 @@
 #include "render/vulkan/pass/tracer.hpp"
 #include "render/vulkan/descriptor/push.hpp"
 
+class TraceStructBakedConfig;
 class Buffer;
 class Image;
 class GraphicsPipeline;
 class DescriptorSet;
+class TraceStruct;
 
 class CommandRecorder {
 
@@ -66,4 +68,12 @@ class CommandRecorder {
 
 		/// Writes data to the pipeline's push constant, the data is immediately available to the subsequent draw calls
 		CommandRecorder& writePushConstant(const PushConstant& constant, const void* data);
+
+		/// Builds or updates an acceleration structure given a preconfigured struct
+		CommandRecorder& buildAccelerationStructure(const TraceStructBakedConfig& config);
+
+		/// Copy data from one acceleration structure to another, potentially compacting the data during the operation
+		CommandRecorder& copyAccelerationStructure(TraceStruct& dst, TraceStruct& src, bool compact);
+
+
 };

@@ -6,6 +6,8 @@
 #include "render/vulkan/pass/pipeline.hpp"
 #include "render/vulkan/descriptor/descriptor.hpp"
 #include "render/api/vertex.hpp"
+#include "render/vulkan/setup/proxy.hpp"
+#include "render/vulkan/raytrace/config.hpp"
 
 CommandRecorder::CommandRecorder(VkCommandBuffer vk_buffer)
 : vk_buffer(vk_buffer) {}
@@ -181,5 +183,22 @@ CommandRecorder& CommandRecorder::bufferTransferBarrier(VkPipelineStageFlags dst
 CommandRecorder& CommandRecorder::writePushConstant(const PushConstant& constant, const void* data) {
 	VkPushConstantRange range = constant.getRange();
 	vkCmdPushConstants(vk_buffer, vk_layout, range.stageFlags, range.offset, range.size, data);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::buildAccelerationStructure(const TraceStructBakedConfig& config) {
+	const auto* buffer = config.ranges.data();
+	Proxy::vkCmdBuildAccelerationStructuresKHR(vk_buffer, 1, &config.build_info, &buffer);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::copyAccelerationStructure(TraceStruct& dst, TraceStruct& src, bool compact) {
+	VkCopyAccelerationStructureInfoKHR copy_info {};
+	copy_info.sType = VK_STRUCTURE_TYPE_COPY_ACCELERATION_STRUCTURE_INFO_KHR;
+	copy_info.pNext = nullptr;
+	copy_info.dst = dst.getHandle();
+	copy_info.src = src.getHandle();
+	copy_info.mode = (compact ? VK_COPY_ACCELERATION_STRUCTURE_MODE_COMPACT_KHR : VK_COPY_ACCELERATION_STRUCTURE_MODE_CLONE_KHR);
+	Proxy::vkCmdCopyAccelerationStructureKHR(vk_buffer, &copy_info);
 	return *this;
 }

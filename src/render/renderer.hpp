@@ -45,6 +45,7 @@ class Renderer {
 		friend class RenderMesh;
 		friend class RenderCommander;
 		friend class ReusableBuffer;
+		friend class TraceStructFactory;
 
 		/// The last image index acquired from the driver,
 		/// this is used as an offset into a framebuffer set

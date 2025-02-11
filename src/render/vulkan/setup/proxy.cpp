@@ -20,6 +20,8 @@ IMPL_FUNCTION(vkCmdTraceRaysKHR);
 IMPL_FUNCTION(vkCreateRayTracingPipelinesKHR);
 IMPL_FUNCTION(vkCreateAccelerationStructureKHR);
 IMPL_FUNCTION(vkGetAccelerationStructureBuildSizesKHR);
+IMPL_FUNCTION(vkCmdBuildAccelerationStructuresKHR);
+IMPL_FUNCTION(vkCmdCopyAccelerationStructureKHR);
 IMPL_FUNCTION(vkGetBufferDeviceAddressKHR);
 
 void Proxy::loadMessengerFunctions(Instance& instance) {
@@ -48,4 +50,6 @@ void Proxy::loadRaytraceFunctions(LogicalDevice& device) {
 	LOAD_FUNCTION(device, vkCreateAccelerationStructureKHR);
 	LOAD_FUNCTION(device, vkGetBufferDeviceAddressKHR);
 	LOAD_FUNCTION(device, vkGetAccelerationStructureBuildSizesKHR);
+	LOAD_FUNCTION(device, vkCmdBuildAccelerationStructuresKHR);
+	LOAD_FUNCTION(device, vkCmdCopyAccelerationStructureKHR);
 }
