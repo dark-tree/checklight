@@ -7,18 +7,20 @@
  */
 
 #define LOAD_FUNCTION(source, name) Proxy::name = source.getFunction<PFN_##name>(#name)
+#define IMPL_FUNCTION(name) PFN_##name Proxy::name = nullptr
 
-PFN_vkGetPhysicalDeviceFeatures2KHR Proxy::vkGetPhysicalDeviceFeatures2KHR = nullptr;
-PFN_vkCreateDebugUtilsMessengerEXT Proxy::vkCreateDebugUtilsMessengerEXT = nullptr;
-PFN_vkDestroyDebugUtilsMessengerEXT Proxy::vkDestroyDebugUtilsMessengerEXT = nullptr;
-PFN_vkSetDebugUtilsObjectNameEXT Proxy::vkSetDebugUtilsObjectNameEXT = nullptr;
-PFN_vkCmdBeginDebugUtilsLabelEXT Proxy::vkCmdBeginDebugUtilsLabelEXT = nullptr;
-PFN_vkCmdEndDebugUtilsLabelEXT Proxy::vkCmdEndDebugUtilsLabelEXT = nullptr;
-PFN_vkCmdInsertDebugUtilsLabelEXT Proxy::vkCmdInsertDebugUtilsLabelEXT = nullptr;
-PFN_vkCmdTraceRaysKHR Proxy::vkCmdTraceRaysKHR = nullptr;
-PFN_vkCreateRayTracingPipelinesKHR Proxy::vkCreateRayTracingPipelinesKHR = nullptr;
-PFN_vkCreateAccelerationStructureKHR Proxy::vkCreateAccelerationStructureKHR = nullptr;
-PFN_vkGetBufferDeviceAddressKHR Proxy::vkGetBufferDeviceAddressKHR = nullptr;
+IMPL_FUNCTION(vkGetPhysicalDeviceFeatures2KHR);
+IMPL_FUNCTION(vkCreateDebugUtilsMessengerEXT);
+IMPL_FUNCTION(vkDestroyDebugUtilsMessengerEXT);
+IMPL_FUNCTION(vkSetDebugUtilsObjectNameEXT);
+IMPL_FUNCTION(vkCmdBeginDebugUtilsLabelEXT);
+IMPL_FUNCTION(vkCmdEndDebugUtilsLabelEXT);
+IMPL_FUNCTION(vkCmdInsertDebugUtilsLabelEXT);
+IMPL_FUNCTION(vkCmdTraceRaysKHR);
+IMPL_FUNCTION(vkCreateRayTracingPipelinesKHR);
+IMPL_FUNCTION(vkCreateAccelerationStructureKHR);
+IMPL_FUNCTION(vkGetAccelerationStructureBuildSizesKHR);
+IMPL_FUNCTION(vkGetBufferDeviceAddressKHR);
 
 void Proxy::loadMessengerFunctions(Instance& instance) {
 	LOAD_FUNCTION(instance, vkCreateDebugUtilsMessengerEXT);
@@ -45,4 +47,5 @@ void Proxy::loadRaytraceFunctions(LogicalDevice& device) {
 	LOAD_FUNCTION(device, vkCreateRayTracingPipelinesKHR);
 	LOAD_FUNCTION(device, vkCreateAccelerationStructureKHR);
 	LOAD_FUNCTION(device, vkGetBufferDeviceAddressKHR);
+	LOAD_FUNCTION(device, vkGetAccelerationStructureBuildSizesKHR);
 }

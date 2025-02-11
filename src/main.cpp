@@ -29,9 +29,6 @@ int main() {
 		// all rendering must be done between beginDraw() and endDraw()
 		system.beginDraw();
 
-		// this does nothing for now, this operation will most likely be expensive later
-		system.bindMaterial();
-
 		for (auto& mesh : meshes) {
 			glm::mat4 model = glm::identity<glm::mat4>();
 

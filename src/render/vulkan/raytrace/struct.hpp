@@ -2,9 +2,8 @@
 
 #include "external.hpp"
 #include "render/vulkan/buffer/buffer.hpp"
-#include "render/api/mesh.hpp"
 
-class AccelerationStructure {
+class TraceStruct {
 
 	private:
 
@@ -13,22 +12,9 @@ class AccelerationStructure {
 
 	public:
 
-		AccelerationStructure(const Buffer& buffer, VkAccelerationStructureKHR vk_structure);
+		TraceStruct(const Buffer& buffer, VkAccelerationStructureKHR vk_structure);
+
+		VkAccelerationStructureKHR getHandle() const;
 
 };
 
-class AccelerationStructureEntry {
-
-	private:
-
-		VkAccelerationStructureBuildRangeInfoKHR range;
-		VkAccelerationStructureGeometryKHR geometry;
-
-		AccelerationStructureEntry(VkAccelerationStructureBuildRangeInfoKHR range, VkAccelerationStructureGeometryKHR geometry);
-
-	public:
-
-		static AccelerationStructureEntry ofTriangles(LogicalDevice& device, const RenderMesh& mesh, bool opaque);
-		static AccelerationStructureEntry ofInstances(LogicalDevice& device, const ReusableBuffer& buffer, bool opaque);
-
-};

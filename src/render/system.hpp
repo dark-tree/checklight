@@ -72,15 +72,6 @@ class RenderSystem : public Renderer {
 		void updateUniforms();
 
 		/**
-		 * Changes the currently used material, this can be a VERY slow operation,
-		 * so try to avoid needlessly calling it (for example, try to group
-		 * all meshes that use the same material and draw them one after another)
-		 *
-		 * @note This currently does nothing.
-		 */
-		void bindMaterial();
-
-		/**
 		 * Changes the currently used mesh, this can be a QUITE slow operation,
 		 * so try to avoid needlessly calling it (for example, try to group
 		 * all object that use the same mesh and draw them one after another)

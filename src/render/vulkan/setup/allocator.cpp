@@ -185,7 +185,7 @@ Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat fo
 	return {image, format, {vma_allocator, allocation}};
 }
 
-AccelerationStructure Allocator::allocateAcceleration(VkAccelerationStructureTypeKHR type, size_t bytes, const char* name) {
+TraceStruct Allocator::allocateAcceleration(VkAccelerationStructureTypeKHR type, size_t bytes, const char* name) {
 
 	// the second flag is needed by TLAS to link with BLASes
 	VkBufferUsageFlags flags = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;

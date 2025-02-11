@@ -48,10 +48,6 @@ void RenderSystem::setViewMatrix(glm::mat4 view) {
 	uniforms.view = view;
 }
 
-void RenderSystem::bindMaterial() {
-	// TODO
-}
-
 void RenderSystem::updateUniforms() {
 	getFrame().flushUniformBuffer(uniforms);
 }
