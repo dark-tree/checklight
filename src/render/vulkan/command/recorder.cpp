@@ -165,6 +165,17 @@ CommandRecorder& CommandRecorder::transitionLayout(Image image, VkImageLayout ds
 	return *this;
 }
 
+CommandRecorder& CommandRecorder::memoryBarrier(VkPipelineStageFlags dst_stage, VkAccessFlags dst_access, VkPipelineStageFlags src_stage, VkAccessFlags src_access) {
+	VkMemoryBarrier barrier {};
+	barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+	barrier.pNext = nullptr;
+	barrier.srcAccessMask = src_access;
+	barrier.dstAccessMask = dst_access;
+
+	vkCmdPipelineBarrier(vk_buffer, src_stage, dst_stage, 0, 1, &barrier, 0, nullptr, 0, nullptr);
+	return *this;
+}
+
 CommandRecorder& CommandRecorder::bufferTransferBarrier(VkPipelineStageFlags dst) {
 	VkMemoryBarrier barrier {};
 	barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
@@ -187,6 +198,10 @@ CommandRecorder& CommandRecorder::writePushConstant(const PushConstant& constant
 }
 
 CommandRecorder& CommandRecorder::buildAccelerationStructure(const AccelStructBakedConfig& config) {
+	if (!config.ready) {
+		throw std::runtime_error {"Unable to build unfinalized baked config!"};
+	}
+
 	const auto* buffer = config.ranges.data();
 	Proxy::vkCmdBuildAccelerationStructuresKHR(vk_buffer, 1, &config.build_info, &buffer);
 	return *this;

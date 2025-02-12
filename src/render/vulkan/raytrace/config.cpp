@@ -66,3 +66,9 @@ uint32_t AccelStructBakedConfig::getScratchSize() const {
 
 	return size_info.updateScratchSize;
 }
+
+void AccelStructBakedConfig::finalize(AccelStruct& structure, VkDeviceAddress scratch) {
+	build_info.scratchData.deviceAddress = scratch;
+	build_info.dstAccelerationStructure = structure.getHandle();
+	ready = true;
+}

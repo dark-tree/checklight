@@ -19,8 +19,11 @@ void AccelStructFactory::reserveScratchSpace(Allocator& allocator, uint32_t byte
 std::vector<AccelStruct> AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator, CommandRecorder& recorder, const std::vector<AccelStructConfig>& configs) {
 
 	std::vector<AccelStructBakedConfig> elements;
+	std::vector<AccelStruct> structures;
+
 	size_t batch_max_scratch = 0;
 	elements.reserve(configs.size());
+	structures.reserve(configs.size());
 
 	for (const AccelStructConfig& config : configs) {
 		AccelStructBakedConfig baked = config.bake(device);
@@ -38,12 +41,16 @@ std::vector<AccelStruct> AccelStructFactory::bake(const LogicalDevice& device, A
 
 	// prepare all acceleration structures for building
 	for (auto& baked : elements) {
-		std::string name = "Unnamed TraceStruct";
-		AccelStruct structure = allocator.allocateAcceleration(baked.build_info.type, baked.size_info.accelerationStructureSize, name.c_str());
+		AccelStruct structure = allocator.allocateAcceleration(baked.build_info.type, baked.size_info.accelerationStructureSize, "Unnamed AccelStruct");
+		baked.finalize(structure, address);
+		recorder.buildAccelerationStructure(baked);
+		structures.emplace_back(structure);
 
-		baked.build_info.scratchData.deviceAddress = address;
-		baked.build_info.dstAccelerationStructure = structure.getHandle();
+		VkPipelineStageFlags stage = VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR;
+		VkAccessFlags first = VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR;
+		VkAccessFlags then = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR;
+		recorder.memoryBarrier(stage, first, stage, then);
 	}
 
-	UNREACHABLE;
+	return structures;
 }

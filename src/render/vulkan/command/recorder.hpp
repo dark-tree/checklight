@@ -37,6 +37,9 @@ class CommandRecorder {
 		CommandRecorder& transitionLayout(Image image, VkImageLayout dst, VkImageLayout src, size_t layers, size_t levels);
 
 		/// Insert pipeline barrier that waits for the given stage
+		CommandRecorder& memoryBarrier(VkPipelineStageFlags dst_stage, VkAccessFlags dst_access, VkPipelineStageFlags src_stage, VkAccessFlags src_access);
+
+		/// Insert pipeline barrier that waits for a WRITE before a READ access
 		CommandRecorder& bufferTransferBarrier(VkPipelineStageFlags dst);
 
 		/// Begins the first subpass in the given render pass

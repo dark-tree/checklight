@@ -69,6 +69,9 @@ struct AccelStructBakedConfig {
 	VkAccelerationStructureBuildSizesInfoKHR size_info;
 	std::vector<VkAccelerationStructureBuildRangeInfoKHR> ranges;
 
+	bool ready = false;
+
 	uint32_t getScratchSize() const;
+	void finalize(AccelStruct& structure, VkDeviceAddress scratch);
 
 };
