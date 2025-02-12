@@ -200,3 +200,6 @@ CommandRecorder& CommandRecorder::copyAccelerationStructure(AccelStruct& dst, Ac
 	Proxy::vkCmdCopyAccelerationStructureKHR(vk_buffer, &copy_info);
 	return *this;
 }
+
+void CommandRecorder::traceRays() {
+}

@@ -431,18 +431,22 @@ void Renderer::presentFramebuffer() {
 }
 
 void Renderer::rebuildTopLevel(CommandRecorder& recorder) {
-	std::vector<AccelStructConfig> configs = {
-		AccelStructConfig::create(AccelStructConfig::BUILD, AccelStructConfig::TOP).addInstances(device, instances->getBuffer(), true)
-	};
+	AccelStructConfig config = AccelStructConfig::create(AccelStructConfig::BUILD, AccelStructConfig::TOP);
+	config.addInstances(device, instances->getBuffer(), true);
 
-	// this barrier is sussy, i based it on the NVIDIA tutorial but i don't trust their barrier code
+	instances->flush(recorder);
+
+	// wait for object transfer
 	recorder.memoryBarrier()
 		.first(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_MEMORY_WRITE_BIT)
 		.then(VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR, VK_ACCESS_MEMORY_READ_BIT)
 		.done();
 
+	bakery.bake(device, allocator, recorder);
+
 	tlas.close(device);
-	tlas = bakery.bake(device, allocator, recorder, configs).at(0);
+	tlas = bakery.submit(device, allocator, config);
+	bakery.bake(device, allocator, recorder);
 
 	recorder.memoryBarrier()
 		.first(VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR, VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR)
@@ -585,6 +589,8 @@ void Renderer::beginDraw() {
 }
 
 void Renderer::endDraw() {
+
+	recorder.traceRays();
 
 	recorder.endRenderPass();
 	recorder.done();

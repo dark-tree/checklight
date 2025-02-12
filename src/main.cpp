@@ -17,6 +17,17 @@ int main() {
 
 	auto meshes = Importer::importObj(system, "assets/models/checklight.obj");
 
+	auto model = system.createRenderModel(meshes);
+
+	// free meshes
+	for (auto& mesh : meshes) {
+		mesh.reset();
+	}
+
+	auto object = system.createRenderObject();
+	object->setMatrix(glm::identity<glm::mat4x3>());
+	object->setModel(model);
+
 	while (!window.shouldClose()) {
 		window.poll();
 
@@ -29,28 +40,11 @@ int main() {
 		// all rendering must be done between beginDraw() and endDraw()
 		system.beginDraw();
 
-		for (auto& mesh : meshes) {
-			glm::mat4 model = glm::identity<glm::mat4>();
-
-			// first bind the mesh
-			system.bindMesh(mesh);
-
-			// then you can draw it multiple times
-			system.draw(model);
-
-			// later using a precomputed position vector may be required by the renderer
-			// take that into account
-		}
-
 		// each frame must end with this call or the engine will deadlock
 		system.endDraw();
     }
 
 	system.wait();
-
-	for (auto& mesh : meshes) {
-		mesh.reset();
-	}
 
 	RenderSystem::system.reset();
 

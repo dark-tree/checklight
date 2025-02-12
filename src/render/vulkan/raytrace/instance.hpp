@@ -2,7 +2,9 @@
 
 #include "external.hpp"
 #include "render/api/reusable.hpp"
-#include "render/vulkan/command/recorder.hpp"
+
+class RenderModel;
+class RenderCommander;
 
 class RenderObject {
 
@@ -24,7 +26,7 @@ class RenderObject {
 		void setMatrix(const glm::mat4x3& model);
 		void setShader(uint32_t index);
 		void setTraits(VkGeometryInstanceFlagsKHR flags);
-		void setObject();
+		void setModel(const std::shared_ptr<RenderModel>& model);
 
 };
 
@@ -47,7 +49,7 @@ class InstanceManager {
 		~InstanceManager();
 
 		std::shared_ptr<RenderObject> create();
-		void flush(RenderCommander& recorder);
+		void flush(CommandRecorder& recorder);
 
 		const ReusableBuffer& getBuffer() const;
 

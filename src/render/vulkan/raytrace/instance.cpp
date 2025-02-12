@@ -2,6 +2,7 @@
 #include "instance.hpp"
 #include "shared/math.hpp"
 #include "render/api/commander.hpp"
+#include "render/api/model.hpp"
 
 /*
  * RenderObject
@@ -33,8 +34,8 @@ void RenderObject::setTraits(VkGeometryInstanceFlagsKHR flags) {
 	instance.flags = flags;
 }
 
-void RenderObject::setObject() {
-	// TODO set BLAS address in instance.accelerationStructureReference
+void RenderObject::setModel(const std::shared_ptr<RenderModel>& model) {
+	instance.accelerationStructureReference = model->getAddress();
 }
 
 /*
@@ -99,12 +100,12 @@ std::shared_ptr<RenderObject> InstanceManager::create() {
 	return delegate;
 }
 
-void InstanceManager::flush(RenderCommander& commander) {
+void InstanceManager::flush(CommandRecorder& recorder) {
 	for (const std::shared_ptr<RenderObject>& delegate : delegates) {
 		write(*delegate);
 	}
 
-	buffer.flushStaging(commander);
+	buffer.flushStaging(recorder);
 }
 
 const ReusableBuffer& InstanceManager::getBuffer() const {

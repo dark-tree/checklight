@@ -8,6 +8,7 @@
 class RenderCommander;
 class RenderMesh;
 class RenderObject;
+class RenderModel;
 
 class RenderSystem : public Renderer {
 
@@ -27,6 +28,8 @@ class RenderSystem : public Renderer {
 	public:
 
 		RenderSystem(ApplicationParameters& parameters);
+
+		std::shared_ptr<RenderModel> createRenderModel(std::vector<std::shared_ptr<RenderMesh>> meshes);
 
 		/**
 		 * Commanders are used to command the GPU to perform actions, like
@@ -95,14 +98,5 @@ class RenderSystem : public Renderer {
 		 * in the world space.
 		 */
 		std::shared_ptr<RenderObject> createRenderObject();
-
-		/**
-		 * Update underling instance buffers
-		 *
-		 * @note
-		 * This function will later be removed and merged
-		 * into beginFrame()
-		 */
-		void flushRenderObjects(RenderCommander& commander);
 
 };

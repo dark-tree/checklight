@@ -3,6 +3,7 @@
 #include "proxy.hpp"
 #include "swapchain.hpp"
 #include "render/vulkan/buffer/buffer.hpp"
+#include "render/vulkan/raytrace/struct.hpp"
 
 /*
  * PhysicalDevice
@@ -144,4 +145,13 @@ VkDeviceAddress LogicalDevice::getAddress(const Buffer& buffer) const {
 	info.buffer = buffer.getHandle();
 
 	return Proxy::vkGetBufferDeviceAddressKHR(vk_device, &info);
+}
+
+VkDeviceAddress LogicalDevice::getAddress(const AccelStruct& structure) const {
+	VkAccelerationStructureDeviceAddressInfoKHR info {};
+	info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR;
+	info.pNext = nullptr;
+	info.accelerationStructure = structure.getHandle();
+
+	return Proxy::vkGetAccelerationStructureDeviceAddressKHR(vk_device, &info);
 }

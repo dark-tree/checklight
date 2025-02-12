@@ -203,13 +203,10 @@ std::vector<ObjObject> ObjObject::open(std::string path, const std::map<std::str
 				objects.back().groups.push_back(ObjGroup{});
 			}
 
-			int vertexCount = 0;
-
 			// vertexString is a string of the form "vertexIndex/textureIndex/normalIndex"
 			std::string vertexString;
 
 			while (stream >> vertexString) {
-				vertexCount++;
 				int vertexIndex = std::stoi(vertexString);
 
 				// vertexIndex can be negative, which means it is relative to the end of the list
@@ -291,6 +288,7 @@ std::vector<ObjObject> ObjObject::open(std::string path, const std::map<std::str
 				}
 			}
 			// TODO: Handle polygons with more than 3 vertices
+			//       or at least throw an error
 		}
 
 	}

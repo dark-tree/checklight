@@ -9,8 +9,8 @@ class RenderMesh {
 
 	private:
 
-		ReusableBuffer vertex {VK_BUFFER_USAGE_VERTEX_BUFFER_BIT};
-		ReusableBuffer index {VK_BUFFER_USAGE_INDEX_BUFFER_BIT};
+		ReusableBuffer vertex {VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT};
+		ReusableBuffer index {VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT};
 
 	public:
 

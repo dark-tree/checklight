@@ -38,7 +38,7 @@ AccelStructConfig& AccelStructConfig::setParent(const AccelStruct& structure) {
 	return *this;
 }
 
-AccelStructBakedConfig AccelStructConfig::bake(const LogicalDevice& device) const {
+AccelStructBakedConfig AccelStructConfig::bake(const LogicalDevice& device, Allocator& allocator) {
 	VkAccelerationStructureBuildGeometryInfoKHR build_info {};
 	build_info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
 	build_info.pNext = nullptr;
@@ -61,7 +61,10 @@ AccelStructBakedConfig AccelStructConfig::bake(const LogicalDevice& device) cons
 
 	Proxy::vkGetAccelerationStructureBuildSizesKHR(device.getHandle(), VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &build_info, primitives.data(), &size_info);
 
-	return {build_info, size_info, ranges};
+	AccelStruct structure = allocator.allocateAcceleration(build_info.type, size_info.accelerationStructureSize, "Unnamed AccelStruct");
+	build_info.dstAccelerationStructure = structure.getHandle();
+
+	return {structure, build_info, size_info, std::move(ranges), std::move(geometries)};
 }
 
 /*
@@ -76,8 +79,7 @@ uint32_t AccelStructBakedConfig::getScratchSize() const {
 	return size_info.updateScratchSize;
 }
 
-void AccelStructBakedConfig::finalize(AccelStruct& structure, VkDeviceAddress scratch) {
+void AccelStructBakedConfig::setScratch(VkDeviceAddress scratch) {
 	build_info.scratchData.deviceAddress = scratch;
-	build_info.dstAccelerationStructure = structure.getHandle();
 	ready = true;
 }

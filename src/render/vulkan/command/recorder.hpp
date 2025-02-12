@@ -80,4 +80,5 @@ class CommandRecorder {
 		CommandRecorder& copyAccelerationStructure(AccelStruct& dst, AccelStruct& src, bool compact);
 
 
+		void traceRays();
 };

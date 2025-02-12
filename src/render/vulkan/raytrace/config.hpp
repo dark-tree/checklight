@@ -12,7 +12,7 @@ class AccelStructBakedConfig;
 /**
  * Represents the configuration of a single acceleration
  * structure, feed this config to a AccelStructFactory to
- * create the corresponding AccelStruct
+ * create the corresponding AccelStruct. Config can only be used (baked) once!
  */
 class AccelStructConfig {
 
@@ -56,7 +56,7 @@ class AccelStructConfig {
 		AccelStructConfig& setParent(const AccelStruct& structure);
 
 		/// This method should not be used, it's used internally by AccelStructFactory
-		AccelStructBakedConfig bake(const LogicalDevice& device) const;
+		AccelStructBakedConfig bake(const LogicalDevice& device, Allocator& allocator);
 
 };
 
@@ -67,13 +67,16 @@ class AccelStructConfig {
  */
 struct AccelStructBakedConfig {
 
+	AccelStruct structure;
 	VkAccelerationStructureBuildGeometryInfoKHR build_info;
 	VkAccelerationStructureBuildSizesInfoKHR size_info;
+
 	std::vector<VkAccelerationStructureBuildRangeInfoKHR> ranges;
+	std::vector<VkAccelerationStructureGeometryKHR> geometries;
 
 	bool ready = false;
 
 	uint32_t getScratchSize() const;
-	void finalize(AccelStruct& structure, VkDeviceAddress scratch);
+	void setScratch(VkDeviceAddress scratch);
 
 };

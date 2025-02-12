@@ -32,7 +32,7 @@ class ReusableBuffer {
 
 		void allocateBuffers(size_t elements, size_t size);
 		void writeToStaging(const void* data, size_t elements, size_t size, size_t offset = 0);
-		void flushStaging(RenderCommander& commander);
+		void flushStaging(CommandRecorder& recorder);
 
 		void resize(RenderCommander& commander, int elements, int size);
 		void upload(RenderCommander& commander, const void* data, int elements, int size);

@@ -9,7 +9,10 @@ class AccelStructFactory {
 
 	private:
 
+		std::mutex mutex;
+		size_t batch_scratch;
 		Buffer scratch;
+		std::vector<AccelStructBakedConfig> elements;
 
 		void reserveScratchSpace(Allocator& allocator, uint32_t bytes);
 
@@ -18,6 +21,7 @@ class AccelStructFactory {
 		AccelStructFactory() = default;
 		void close();
 
-		std::vector<AccelStruct> bake(const LogicalDevice& device, Allocator& allocator, CommandRecorder& recorder, const std::vector<AccelStructConfig>& configs);
+		AccelStruct submit(const LogicalDevice& device, Allocator& allocator, AccelStructConfig& config);
+		void bake(const LogicalDevice& device, Allocator& allocator, CommandRecorder& recorder);
 
 };

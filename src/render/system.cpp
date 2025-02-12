@@ -2,6 +2,7 @@
 #include "system.hpp"
 #include "api/commander.hpp"
 #include "api/mesh.hpp"
+#include "api/model.hpp"
 
 /*
  * RenderSystem
@@ -15,6 +16,16 @@ void RenderSystem::init(ApplicationParameters& parameters) {
 
 RenderSystem::RenderSystem(ApplicationParameters& parameters)
 : Renderer(parameters) {}
+
+std::shared_ptr<RenderModel> RenderSystem::createRenderModel(std::vector<std::shared_ptr<RenderMesh>> meshes) {
+	AccelStructConfig config = AccelStructConfig::create(AccelStructConfig::BUILD, AccelStructConfig::BOTTOM);
+
+	for (auto& mesh : meshes) {
+		config.addTriangles(device, *mesh, true);
+	}
+
+	return std::make_shared<RenderModel>(device, bakery.submit(device, allocator, config));
+}
 
 std::unique_ptr<RenderCommander> RenderSystem::createTransientCommander() {
 
@@ -68,8 +79,4 @@ void RenderSystem::draw(glm::mat4 model) {
 
 std::shared_ptr<RenderObject> RenderSystem::createRenderObject() {
 	return {instances->create()};
-}
-
-void RenderSystem::flushRenderObjects(RenderCommander& commander) {
-	instances->flush(commander);
 }

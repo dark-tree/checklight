@@ -6,6 +6,7 @@
 
 class Buffer;
 class SwapchainInfo;
+class AccelStruct;
 
 /**
  * Represents the vulkan driver,
@@ -139,5 +140,11 @@ class LogicalDevice {
 		 * @note  Device addresses are a type of a universal pointer
 		 */
 		VkDeviceAddress getAddress(const Buffer& buffer) const;
+
+		/**
+		 * @brief Get device address of this acceleration structure
+		 * @note  Device addresses are a type of a universal pointer
+		 */
+		VkDeviceAddress getAddress(const AccelStruct& structure) const;
 
 };

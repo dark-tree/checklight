@@ -59,10 +59,9 @@ void ReusableBuffer::writeToStaging(const void* data, size_t elements, size_t si
 	std::memcpy(static_cast<char*>(stage) + offset * size, data, bytes);
 }
 
-void ReusableBuffer::flushStaging(RenderCommander& commander) {
+void ReusableBuffer::flushStaging(CommandRecorder& recorder) {
 	staging->getAllocation().flushNonCoherent();
-	commander.getRecorder().copyBufferToBuffer(*buffer, *staging, staging->size(), 0, 0);
-
+	recorder.copyBufferToBuffer(*buffer, *staging, staging->size(), 0, 0);
 }
 
 void ReusableBuffer::resize(RenderCommander& commander, int elements, int size) {
@@ -99,7 +98,7 @@ void ReusableBuffer::resize(RenderCommander& commander, int elements, int size) 
 void ReusableBuffer::upload(RenderCommander& commander, const void* data, int elements, int size) {
 	allocateBuffers(elements, size);
 	writeToStaging(data, elements, size);
-	flushStaging(commander);
+	flushStaging(commander.getRecorder());
 
 	commander.getTaskQueue().enqueue([this] () mutable {
 		closeStaging();
