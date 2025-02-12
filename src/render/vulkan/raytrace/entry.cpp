@@ -8,10 +8,10 @@
  * TraceStructEntry
  */
 
-TraceStructEntry::TraceStructEntry(VkAccelerationStructureBuildRangeInfoKHR range, VkAccelerationStructureGeometryKHR geometry)
+AccelStructEntry::AccelStructEntry(VkAccelerationStructureBuildRangeInfoKHR range, VkAccelerationStructureGeometryKHR geometry)
 : range(range), geometry(geometry) {}
 
-TraceStructEntry TraceStructEntry::ofTriangles(LogicalDevice& device, const RenderMesh& mesh, bool opaque) {
+AccelStructEntry AccelStructEntry::ofTriangles(LogicalDevice& device, const RenderMesh& mesh, bool opaque) {
 
 	VkAccelerationStructureGeometryKHR geometry {};
 	geometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
@@ -44,7 +44,7 @@ TraceStructEntry TraceStructEntry::ofTriangles(LogicalDevice& device, const Rend
 
 }
 
-TraceStructEntry TraceStructEntry::ofInstances(LogicalDevice& device, const ReusableBuffer& buffer, bool opaque) {
+AccelStructEntry AccelStructEntry::ofInstances(LogicalDevice& device, const ReusableBuffer& buffer, bool opaque) {
 
 	VkAccelerationStructureGeometryKHR geometry {};
 	geometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
@@ -68,10 +68,10 @@ TraceStructEntry TraceStructEntry::ofInstances(LogicalDevice& device, const Reus
 
 }
 
-const VkAccelerationStructureBuildRangeInfoKHR& TraceStructEntry::getRange() const {
+const VkAccelerationStructureBuildRangeInfoKHR& AccelStructEntry::getRange() const {
 	return range;
 }
 
-const VkAccelerationStructureGeometryKHR& TraceStructEntry::getGeometry() const {
+const VkAccelerationStructureGeometryKHR& AccelStructEntry::getGeometry() const {
 	return geometry;
 }

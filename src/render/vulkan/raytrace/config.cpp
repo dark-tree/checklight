@@ -3,36 +3,36 @@
 #include "render/vulkan/setup/proxy.hpp"
 
 /*
- * TraceStructConfig
+ * AccelStructConfig
  */
 
-void TraceStructConfig::addEntry(const TraceStructEntry& entry) {
+void AccelStructConfig::addEntry(const AccelStructEntry& entry) {
 	ranges.emplace_back(entry.getRange());
 	geometries.emplace_back(entry.getGeometry());
 }
 
-TraceStructConfig& TraceStructConfig::addTriangles(LogicalDevice& device, const RenderMesh& mesh, bool opaque) {
-	addEntry(TraceStructEntry::ofTriangles(device, mesh, opaque));
+AccelStructConfig& AccelStructConfig::addTriangles(LogicalDevice& device, const RenderMesh& mesh, bool opaque) {
+	addEntry(AccelStructEntry::ofTriangles(device, mesh, opaque));
 	return *this;
 }
 
-TraceStructConfig& TraceStructConfig::addInstances(LogicalDevice& device, const ReusableBuffer& instances, bool opaque) {
-	addEntry(TraceStructEntry::ofInstances(device, instances, opaque));
+AccelStructConfig& AccelStructConfig::addInstances(LogicalDevice& device, const ReusableBuffer& instances, bool opaque) {
+	addEntry(AccelStructEntry::ofInstances(device, instances, opaque));
 	return *this;
 }
 
-TraceStructConfig& TraceStructConfig::setOperation(Operation operation, Type type) {
+AccelStructConfig& AccelStructConfig::setOperation(Operation operation, Type type) {
 	this->vk_mode = static_cast<VkBuildAccelerationStructureModeKHR>(operation);
 	this->vk_type = static_cast<VkAccelerationStructureTypeKHR>(type);
 	return *this;
 }
 
-TraceStructConfig& TraceStructConfig::setParent(const TraceStruct& structure) {
+AccelStructConfig& AccelStructConfig::setParent(const AccelStruct& structure) {
 	this->vk_struct = structure.getHandle();
 	return *this;
 }
 
-TraceStructBakedConfig TraceStructConfig::bake(const LogicalDevice& device) const {
+AccelStructBakedConfig AccelStructConfig::bake(const LogicalDevice& device) const {
 	VkAccelerationStructureBuildGeometryInfoKHR build_info {};
 	build_info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
 	build_info.pNext = nullptr;
@@ -56,10 +56,10 @@ TraceStructBakedConfig TraceStructConfig::bake(const LogicalDevice& device) cons
 }
 
 /*
- * TraceStructBakedConfig
+ * AccelStructBakedConfig
  */
 
-uint32_t TraceStructBakedConfig::getScratchSize() const {
+uint32_t AccelStructBakedConfig::getScratchSize() const {
 	if (build_info.mode == VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR) {
 		return size_info.buildScratchSize;
 	}

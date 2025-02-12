@@ -186,13 +186,13 @@ CommandRecorder& CommandRecorder::writePushConstant(const PushConstant& constant
 	return *this;
 }
 
-CommandRecorder& CommandRecorder::buildAccelerationStructure(const TraceStructBakedConfig& config) {
+CommandRecorder& CommandRecorder::buildAccelerationStructure(const AccelStructBakedConfig& config) {
 	const auto* buffer = config.ranges.data();
 	Proxy::vkCmdBuildAccelerationStructuresKHR(vk_buffer, 1, &config.build_info, &buffer);
 	return *this;
 }
 
-CommandRecorder& CommandRecorder::copyAccelerationStructure(TraceStruct& dst, TraceStruct& src, bool compact) {
+CommandRecorder& CommandRecorder::copyAccelerationStructure(AccelStruct& dst, AccelStruct& src, bool compact) {
 	VkCopyAccelerationStructureInfoKHR copy_info {};
 	copy_info.sType = VK_STRUCTURE_TYPE_COPY_ACCELERATION_STRUCTURE_INFO_KHR;
 	copy_info.pNext = nullptr;

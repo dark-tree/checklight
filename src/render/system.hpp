@@ -7,6 +7,7 @@
 
 class RenderCommander;
 class RenderMesh;
+class RenderObject;
 
 class RenderSystem : public Renderer {
 
@@ -93,7 +94,7 @@ class RenderSystem : public Renderer {
 		 * each delegate contains an affine transformation matrix you can access and modify to move the object
 		 * in the world space.
 		 */
-		std::shared_ptr<InstanceDelegate> createRenderDelegate();
+		std::shared_ptr<RenderObject> createRenderObject();
 
 		/**
 		 * Update underling instance buffers
@@ -102,6 +103,6 @@ class RenderSystem : public Renderer {
 		 * This function will later be removed and merged
 		 * into beginFrame()
 		 */
-		void flushRenderDelegates(RenderCommander& commander);
+		void flushRenderObjects(RenderCommander& commander);
 
 };

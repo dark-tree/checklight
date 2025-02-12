@@ -5,7 +5,7 @@
 
 class CommandRecorder;
 
-class TraceStructFactory {
+class AccelStructFactory {
 
 	private:
 
@@ -15,6 +15,6 @@ class TraceStructFactory {
 
 	public:
 
-		std::vector<TraceStruct> bake(const LogicalDevice& device, Allocator& allocator, CommandRecorder& recorder, const std::vector<TraceStructConfig>& configs);
+		std::vector<AccelStruct> bake(const LogicalDevice& device, Allocator& allocator, CommandRecorder& recorder, const std::vector<AccelStructConfig>& configs);
 
 };

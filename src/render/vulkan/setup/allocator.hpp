@@ -4,7 +4,7 @@
 #include "device.hpp"
 #include "instance.hpp"
 
-class TraceStruct;
+class AccelStruct;
 class Buffer;
 class Image;
 
@@ -81,6 +81,6 @@ class Allocator {
 		 * @brief Allocate raytracing acceleration structure of given size
 		 * Allocates a new Vulkan Acceleration Structure, either Top or Bottom, and it's corresponding buffer
 		 */
-		TraceStruct allocateAcceleration(VkAccelerationStructureTypeKHR type, size_t bytes, const char* name);
+		AccelStruct allocateAcceleration(VkAccelerationStructureTypeKHR type, size_t bytes, const char* name);
 
 };

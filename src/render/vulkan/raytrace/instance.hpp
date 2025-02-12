@@ -4,28 +4,28 @@
 #include "render/api/reusable.hpp"
 #include "render/vulkan/command/recorder.hpp"
 
-class InstanceManager;
-
-class InstanceDelegate {
+class RenderObject {
 
 	private:
 
-		friend InstanceManager;
+		uint32_t index;
+
+	protected:
 
 		VkAccelerationStructureInstanceKHR instance;
-		size_t index;
 
 	public:
 
-		InstanceDelegate(size_t index);
+		RenderObject(uint32_t index);
+
+		const VkAccelerationStructureInstanceKHR* getData() const;
+		uint32_t getIndex() const;
 
 		void setMatrix(const glm::mat4x3& model);
 		void setShader(uint32_t index);
 		void setTraits(VkGeometryInstanceFlagsKHR flags);
 		void setObject();
 
-		void flush() const;
-		void close();
 };
 
 class InstanceManager {
@@ -36,9 +36,9 @@ class InstanceManager {
 		size_t freed = 0;
 
 		ReusableBuffer buffer;
-		std::vector<std::shared_ptr<InstanceDelegate>> delegates;
+		std::vector<std::shared_ptr<RenderObject>> delegates;
 
-		void write(const InstanceDelegate& delegate);
+		void write(const RenderObject& delegate);
 		void trim();
 
 	public:
@@ -46,7 +46,7 @@ class InstanceManager {
 		InstanceManager();
 		~InstanceManager();
 
-		std::shared_ptr<InstanceDelegate> create();
+		std::shared_ptr<RenderObject> create();
 		void flush(RenderCommander& recorder);
 
 		Buffer& getBuffer();

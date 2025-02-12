@@ -3,7 +3,25 @@
 #include "external.hpp"
 #include "render/vulkan/buffer/buffer.hpp"
 
-class TraceStruct {
+/**
+ * Represents a single vulkan Acceleration Structure
+ * you create an empty one using the Allocator, or a TLAS/BLAS using the
+ * AccelStructFactory and related classes.
+ *
+ * @verbatim
+ *                     ┌──────────────────────────┐
+ *                     │    AccelStructFactory    │
+ *                     │                          │
+ * ┌─────────────────┐ │ ┌──────────────────────┐ │ ┌──────────────────┐
+ * │AccelStructConfig├─┼►│AccelStructBakedConfig├─┼►│AccelStruct (BLAS)│
+ * └─────────────────┘ │ └──────────────────────┘ │ └──────────────────┘
+ * ┌─────────────────┐ │ ┌──────────────────────┐ │ ┌──────────────────┐
+ * │AccelStructConfig├─┼►│AccelStructBakedConfig├─┼►│AccelStruct (TLAS)│
+ * └─────────────────┘ │ └──────────────────────┘ │ └──────────────────┘
+ *                     │           ...            │
+ *                     └──────────────────────────┘
+ */
+class AccelStruct {
 
 	private:
 
@@ -12,7 +30,7 @@ class TraceStruct {
 
 	public:
 
-		TraceStruct(const Buffer& buffer, VkAccelerationStructureKHR vk_structure);
+		AccelStruct(const Buffer& buffer, VkAccelerationStructureKHR vk_structure);
 
 		VkAccelerationStructureKHR getHandle() const;
 

@@ -2,7 +2,7 @@
 #include "factory.hpp"
 #include "render/vulkan/command/recorder.hpp"
 
-void TraceStructFactory::reserveScratchSpace(Allocator& allocator, uint32_t bytes) {
+void AccelStructFactory::reserveScratchSpace(Allocator& allocator, uint32_t bytes) {
 
 	// make sure we allocate some buffer even if not asked to
 	if (bytes < 16) {
@@ -16,14 +16,14 @@ void TraceStructFactory::reserveScratchSpace(Allocator& allocator, uint32_t byte
 	}
 }
 
-std::vector<TraceStruct> TraceStructFactory::bake(const LogicalDevice& device, Allocator& allocator, CommandRecorder& recorder, const std::vector<TraceStructConfig>& configs) {
+std::vector<AccelStruct> AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator, CommandRecorder& recorder, const std::vector<AccelStructConfig>& configs) {
 
-	std::vector<TraceStructBakedConfig> elements;
+	std::vector<AccelStructBakedConfig> elements;
 	size_t batch_max_scratch = 0;
 	elements.reserve(configs.size());
 
-	for (const TraceStructConfig& config : configs) {
-		TraceStructBakedConfig baked = config.bake(device);
+	for (const AccelStructConfig& config : configs) {
+		AccelStructBakedConfig baked = config.bake(device);
 		uint32_t required = baked.getScratchSize();
 		elements.emplace_back(std::move(baked));
 
@@ -37,9 +37,9 @@ std::vector<TraceStruct> TraceStructFactory::bake(const LogicalDevice& device, A
 	VkDeviceAddress address = device.getAddress(scratch);
 
 	// prepare all acceleration structures for building
-	for (TraceStructBakedConfig& baked : elements) {
+	for (auto& baked : elements) {
 		std::string name = "Unnamed TraceStruct";
-		TraceStruct structure = allocator.allocateAcceleration(baked.build_info.type, baked.size_info.accelerationStructureSize, name.c_str());
+		AccelStruct structure = allocator.allocateAcceleration(baked.build_info.type, baked.size_info.accelerationStructureSize, name.c_str());
 
 		baked.build_info.scratchData.deviceAddress = address;
 		baked.build_info.dstAccelerationStructure = structure.getHandle();

@@ -7,9 +7,14 @@
 class LogicalDevice;
 class RenderMesh;
 class ReusableBuffer;
-class TraceStructBakedConfig;
+class AccelStructBakedConfig;
 
-class TraceStructConfig {
+/**
+ * Represents the configuration of a single acceleration
+ * structure, feed this config to a AccelStructFactory to
+ * create the corresponding AccelStruct
+ */
+class AccelStructConfig {
 
 	private:
 
@@ -20,7 +25,7 @@ class TraceStructConfig {
 		std::vector<VkAccelerationStructureBuildRangeInfoKHR> ranges;
 		std::vector<VkAccelerationStructureGeometryKHR> geometries;
 
-		void addEntry(const TraceStructEntry& entry);
+		void addEntry(const AccelStructEntry& entry);
 
 	public:
 
@@ -36,17 +41,29 @@ class TraceStructConfig {
 
 	public:
 
-		TraceStructConfig& addTriangles(LogicalDevice& device, const RenderMesh& mesh, bool opaque);
-		TraceStructConfig& addInstances(LogicalDevice& device, const ReusableBuffer& instances, bool opaque);
+		/// Add triangle geometry buffer to the config, used by BLASes
+		AccelStructConfig& addTriangles(LogicalDevice& device, const RenderMesh& mesh, bool opaque);
 
-		TraceStructConfig& setOperation(Operation operation, Type type);
-		TraceStructConfig& setParent(const TraceStruct& structure);
+		/// Add instance buffer to the config, used by TLASes
+		AccelStructConfig& addInstances(LogicalDevice& device, const ReusableBuffer& instances, bool opaque);
 
-		TraceStructBakedConfig bake(const LogicalDevice& device) const;
+		/// Set the operation that should be performed during baking in the AccelStructFactory
+		AccelStructConfig& setOperation(Operation operation, Type type);
+
+		/// In some cases (e.g. performing an UPDATE) an additional, parental AccelStruct can be supplied
+		AccelStructConfig& setParent(const AccelStruct& structure);
+
+		/// This method should not be used, it's used internally by AccelStructFactory
+		AccelStructBakedConfig bake(const LogicalDevice& device) const;
 
 };
 
-struct TraceStructBakedConfig {
+/**
+ * Intermediate baked version of the config with
+ * semi-prepared vulkan structures, used internally
+ * by the AccelStructFactory
+ */
+struct AccelStructBakedConfig {
 
 	VkAccelerationStructureBuildGeometryInfoKHR build_info;
 	VkAccelerationStructureBuildSizesInfoKHR size_info;

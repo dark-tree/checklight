@@ -9,23 +9,29 @@ class ReusableBuffer;
 /**
  * Represents a single acceleration structure geometry entry - that is
  * a single mesh or instance buffer. Multiple entries come together in a
- * AccelerationStructureBuilder
+ * AccelStructConfig to form a single BLAS or TLAS
  */
-class TraceStructEntry {
+class AccelStructEntry {
 
 	private:
 
 		VkAccelerationStructureBuildRangeInfoKHR range;
 		VkAccelerationStructureGeometryKHR geometry;
 
-		TraceStructEntry(VkAccelerationStructureBuildRangeInfoKHR range, VkAccelerationStructureGeometryKHR geometry);
+		AccelStructEntry(VkAccelerationStructureBuildRangeInfoKHR range, VkAccelerationStructureGeometryKHR geometry);
 
 	public:
 
-		static TraceStructEntry ofTriangles(LogicalDevice& device, const RenderMesh& mesh, bool opaque);
-		static TraceStructEntry ofInstances(LogicalDevice& device, const ReusableBuffer& buffer, bool opaque);
+		/// Create an entry of a triangle geometry buffer, used by BLASes
+		static AccelStructEntry ofTriangles(LogicalDevice& device, const RenderMesh& mesh, bool opaque);
 
+		/// Create an entry of an instance buffer, used by TLASes
+		static AccelStructEntry ofInstances(LogicalDevice& device, const ReusableBuffer& buffer, bool opaque);
+
+		/// Get the vulkan range info of this entry
 		const VkAccelerationStructureBuildRangeInfoKHR& getRange() const;
+
+		/// Get the vulkan geometry info of this entry
 		const VkAccelerationStructureGeometryKHR& getGeometry() const;
 
 };

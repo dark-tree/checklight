@@ -1,38 +1,39 @@
 
 #include "instance.hpp"
+#include "shared/math.hpp"
 #include "render/api/commander.hpp"
 
 /*
- * InstanceDelegate
+ * RenderObject
  */
 
-InstanceDelegate::InstanceDelegate(size_t index)
+RenderObject::RenderObject(uint32_t index)
 : instance({}), index(index) {
 	instance.instanceCustomIndex = index;
 	instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
 }
 
-void InstanceDelegate::setMatrix(const glm::mat4x3& model) {
-	VkTransformMatrixKHR& transform = instance.transform;
-
-	for (int row = 0; row < 3; row ++) {
-		for (int column = 0; column < 4; column ++) {
-			transform.matrix[row][column] = model[column][row];
-		}
-	}
-
-	instance.transform = transform;
+const VkAccelerationStructureInstanceKHR* RenderObject::getData() const {
+	return &instance;
 }
 
-void InstanceDelegate::setShader(uint32_t offset) {
+uint32_t RenderObject::getIndex() const {
+	return index;
+}
+
+void RenderObject::setMatrix(const glm::mat4x3& model) {
+	instance.transform = math::toVulkanAffine(model);
+}
+
+void RenderObject::setShader(uint32_t offset) {
 	instance.instanceShaderBindingTableRecordOffset = offset;
 }
 
-void InstanceDelegate::setTraits(VkGeometryInstanceFlagsKHR flags) {
+void RenderObject::setTraits(VkGeometryInstanceFlagsKHR flags) {
 	instance.flags = flags;
 }
 
-void InstanceDelegate::setObject() {
+void RenderObject::setObject() {
 	// TODO set BLAS address in instance.accelerationStructureReference
 }
 
@@ -40,15 +41,16 @@ void InstanceDelegate::setObject() {
  * InstanceManager
  */
 
-void InstanceManager::write(const InstanceDelegate& delegate) {
-	buffer.writeToStaging(&delegate.instance, 1, sizeof(VkAccelerationStructureInstanceKHR), delegate.index);
+void InstanceManager::write(const RenderObject& delegate) {
+	buffer.writeToStaging(delegate.getData(), 1, sizeof(VkAccelerationStructureInstanceKHR), delegate.getIndex());
 }
 
 void InstanceManager::trim() {
-	for (std::shared_ptr<InstanceDelegate>& delegate : delegates) {
+	for (std::shared_ptr<RenderObject>& delegate : delegates) {
 
 		// get rid of unused references
-		if (delegate.unique()) {
+		// https://en.cppreference.com/w/cpp/memory/shared_ptr/use_count#Notes
+		if (delegate.use_count() <= 1) {
 			delegate.reset();
 			freed ++;
 		}
@@ -65,7 +67,7 @@ InstanceManager::~InstanceManager() {
 	buffer.close();
 }
 
-std::shared_ptr<InstanceDelegate> InstanceManager::create() {
+std::shared_ptr<RenderObject> InstanceManager::create() {
 
 	// maybe not the best idea, but we can change it later
 	if (freed == 0) {
@@ -84,21 +86,21 @@ std::shared_ptr<InstanceDelegate> InstanceManager::create() {
 			buffer.allocateBuffers(capacity, sizeof(VkAccelerationStructureInstanceKHR));
 		}
 
-		return delegates.emplace_back(std::make_shared<InstanceDelegate>(offset));
+		return delegates.emplace_back(std::make_shared<RenderObject>(offset));
 	}
 
 	freed --;
 	const auto it = std::find(delegates.begin(), delegates.end(), nullptr);
 	const size_t offset = std::distance(delegates.begin(), it);
 
-	auto delegate = std::make_shared<InstanceDelegate>(offset);
+	auto delegate = std::make_shared<RenderObject>(offset);
 	(*it) = delegate;
 
 	return delegate;
 }
 
 void InstanceManager::flush(RenderCommander& commander) {
-	for (const std::shared_ptr<InstanceDelegate>& delegate : delegates) {
+	for (const std::shared_ptr<RenderObject>& delegate : delegates) {
 		write(*delegate);
 	}
 

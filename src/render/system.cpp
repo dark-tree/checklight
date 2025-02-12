@@ -66,10 +66,10 @@ void RenderSystem::draw(glm::mat4 model) {
 	this->mesh->draw(recorder);
 }
 
-std::shared_ptr<InstanceDelegate> RenderSystem::createRenderDelegate() {
-	return instances->create();
+std::shared_ptr<RenderObject> RenderSystem::createRenderObject() {
+	return {instances->create()};
 }
 
-void RenderSystem::flushRenderDelegates(RenderCommander& commander) {
+void RenderSystem::flushRenderObjects(RenderCommander& commander) {
 	instances->flush(commander);
 }
