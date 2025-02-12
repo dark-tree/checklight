@@ -9,9 +9,27 @@
 #include "render/vulkan/setup/proxy.hpp"
 #include "render/vulkan/raytrace/config.hpp"
 #include "render/vulkan/buffer/query.hpp"
+#include "submitter.hpp"
 
-CommandRecorder::CommandRecorder(VkCommandBuffer vk_buffer)
-: vk_buffer(vk_buffer) {}
+/*
+ * CommandRecorder
+ */
+
+CommandRecorder::CommandRecorder(VkCommandBuffer vk_buffer, VkCommandBufferUsageFlags flags)
+: vk_buffer(vk_buffer), flags(flags) {
+
+	vkResetCommandBuffer(vk_buffer, 0);
+
+	VkCommandBufferBeginInfo info {};
+	info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	info.flags = flags;
+	info.pInheritanceInfo = nullptr;
+
+	if (vkBeginCommandBuffer(vk_buffer, &info) != VK_SUCCESS) {
+		throw std::runtime_error {"Failed to begin recording a command buffer!"};
+	}
+
+}
 
 void CommandRecorder::done() {
 	if (vkEndCommandBuffer(vk_buffer) != VK_SUCCESS) {
@@ -204,6 +222,19 @@ CommandRecorder& CommandRecorder::copyAccelerationStructure(AccelStruct& dst, Ac
 
 CommandRecorder& CommandRecorder::queryAccelStructProperties(QueryPool& pool, const std::vector<VkAccelerationStructureKHR>& structures, VkQueryType type) {
 	Proxy::vkCmdWriteAccelerationStructuresPropertiesKHR(vk_buffer, structures.size(), structures.data(), type, pool.getHandle(), 1);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::quickFenceSubmit(Fence& fence, Queue& queue) {
+	done();
+	CommandSubmitter {vk_buffer} .signal(fence).done(queue);
+	fence.wait();
+	CommandRecorder {vk_buffer, flags};
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::resetQueryPool(QueryPool& pool) {
+	vkCmdResetQueryPool(vk_buffer, pool.getHandle(), 0, pool.size());
 	return *this;
 }
 

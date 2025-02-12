@@ -12,6 +12,8 @@ class GraphicsPipeline;
 class DescriptorSet;
 class AccelStruct;
 class QueryPool;
+class Queue;
+class Fence;
 
 class CommandRecorder {
 
@@ -20,11 +22,12 @@ class CommandRecorder {
 		VkCommandBuffer vk_buffer;
 		VkPipelineLayout vk_layout;
 		RenderPassTracer tracer;
+		VkCommandBufferUsageFlags flags;
 
 	public:
 
 		CommandRecorder() = default;
-		CommandRecorder(VkCommandBuffer vk_buffer);
+		CommandRecorder(VkCommandBuffer vk_buffer, VkCommandBufferUsageFlags flags);
 
 		/// Buffer recording must always end with a done() call
 		void done();
@@ -82,6 +85,12 @@ class CommandRecorder {
 
 		/// Used to get some post-creation detail about a acceleration structure
 		CommandRecorder& queryAccelStructProperties(QueryPool& pool, const std::vector<VkAccelerationStructureKHR>& structures, VkQueryType type);
+
+		/// Please don't use this command :skull:
+		CommandRecorder& quickFenceSubmit(Fence& fence, Queue& queue);
+
+		/// Resets the given query pool, pools need to be reset after creation and between uses
+		CommandRecorder& resetQueryPool(QueryPool& pool);
 
 		void traceRays();
 };

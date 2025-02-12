@@ -63,6 +63,12 @@ std::shared_ptr<RenderModel> AccelStructFactory::submit(const LogicalDevice& dev
 void AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator, CommandRecorder& recorder) {
 	std::lock_guard lock (mutex);
 
+	std::vector<VkAccelerationStructureKHR> structures;
+	structures.reserve(elements.size());
+
+	std::vector<AccelStructBakedConfig*> linkages;
+	linkages.reserve(elements.size());
+
 	// prepare scratch buffer
 	reserveScratchSpace(allocator, batch_scratch);
 	reserveQueryPool(device, elements.size());
@@ -73,10 +79,43 @@ void AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator,
 		baked.setScratch(address);
 		recorder.buildAccelerationStructure(baked);
 
+		if (baked.build_info.flags & VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_KHR) {
+			structures.push_back(baked.model->structure.getHandle());
+			linkages.push_back(&baked);
+		}
+
 		recorder.memoryBarrier()
 			.first(VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR, VK_ACCESS_MEMORY_WRITE_BIT)
 			.then(VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR, VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR)
 			.done();
+	}
+
+	if (!structures.empty()) {
+		recorder.resetQueryPool(query);
+		recorder.queryAccelStructProperties(query, structures, VK_QUERY_TYPE_ACCELERATION_STRUCTURE_COMPACTED_SIZE_KHR);
+
+		std::vector<uint64_t> results;
+		results.resize(structures.size());
+
+		// :cursed:
+		Fence fence = RenderSystem::system->createFence();
+		recorder.quickFenceSubmit(fence, RenderSystem::system->queue);
+		fence.wait();
+
+		query.loadAll(results);
+
+		for (size_t i = 0; i < structures.size(); i ++) {
+
+			const uint64_t size = results.at(i);
+			AccelStructBakedConfig* config = linkages.at(i);
+
+			auto& previous = config->model->structure;
+			AccelStruct compacted = allocator.allocateAcceleration(config->build_info.type, size, "Compacted AccelStruct");
+			recorder.copyAccelerationStructure(compacted, previous, true);
+
+			// FIXME old structure is leaked here
+			previous = compacted;
+		}
 	}
 
 	elements.clear();
