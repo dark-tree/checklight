@@ -1,6 +1,9 @@
 
 #include "factory.hpp"
 #include "render/vulkan/command/recorder.hpp"
+#include "render/vulkan/buffer/query.hpp"
+#include "render/api/model.hpp"
+#include "render/system.hpp"
 
 /*
  * AccelStructFactory
@@ -8,6 +11,7 @@
 
 void AccelStructFactory::close() {
 	scratch.close();
+	query.close();
 }
 
 void AccelStructFactory::reserveScratchSpace(Allocator& allocator, uint32_t bytes) {
@@ -24,12 +28,28 @@ void AccelStructFactory::reserveScratchSpace(Allocator& allocator, uint32_t byte
 	}
 }
 
-AccelStruct AccelStructFactory::submit(const LogicalDevice& device, Allocator& allocator, AccelStructConfig& config) {
+void AccelStructFactory::reserveQueryPool(const LogicalDevice& device, int size) {
+
+	// make sure we allocate some query pool even if not asked to
+	if (size < 16) {
+		size = 16;
+	}
+
+	if (static_cast<int>(query.size()) < size) {
+		query.close();
+
+		query = QueryPool {device, VK_QUERY_TYPE_ACCELERATION_STRUCTURE_COMPACTED_SIZE_KHR, size};
+		query.setDebugName("Compaction Query Pool");
+		printf("INFO: Reallocated compaction query pool, now using %d slots\n", size);
+	}
+}
+
+std::shared_ptr<RenderModel> AccelStructFactory::submit(const LogicalDevice& device, Allocator& allocator, AccelStructConfig& config) {
 	std::lock_guard lock (mutex);
 
 	AccelStructBakedConfig baked = config.bake(device, allocator);
 	uint32_t required = baked.getScratchSize();
-	AccelStruct structure = baked.structure;
+	auto model = baked.model;
 
 	elements.emplace_back(std::move(baked));
 
@@ -37,7 +57,7 @@ AccelStruct AccelStructFactory::submit(const LogicalDevice& device, Allocator& a
 		batch_scratch = required;
 	}
 
-	return structure;
+	return model;
 }
 
 void AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator, CommandRecorder& recorder) {
@@ -45,6 +65,7 @@ void AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator,
 
 	// prepare scratch buffer
 	reserveScratchSpace(allocator, batch_scratch);
+	reserveQueryPool(device, elements.size());
 	VkDeviceAddress address = device.getAddress(scratch);
 
 	// prepare all acceleration structures for building

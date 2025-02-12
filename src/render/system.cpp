@@ -22,9 +22,10 @@ std::shared_ptr<RenderModel> RenderSystem::createRenderModel(std::vector<std::sh
 
 	for (auto& mesh : meshes) {
 		config.addTriangles(device, *mesh, true);
+		config.setFlags(VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_KHR);
 	}
 
-	return std::make_shared<RenderModel>(device, bakery.submit(device, allocator, config));
+	return bakery.submit(device, allocator, config);
 }
 
 std::unique_ptr<RenderCommander> RenderSystem::createTransientCommander() {

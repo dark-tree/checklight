@@ -8,6 +8,7 @@
 #include "render/vulkan/buffer/buffer.hpp"
 #include "render/vulkan/setup/debug.hpp"
 #include "render/api/vertex.hpp"
+#include "render/api/model.hpp"
 
 /*
  * Renderer
@@ -431,8 +432,9 @@ void Renderer::presentFramebuffer() {
 }
 
 void Renderer::rebuildTopLevel(CommandRecorder& recorder) {
-	AccelStructConfig config = AccelStructConfig::create(AccelStructConfig::BUILD, AccelStructConfig::TOP);
-	config.addInstances(device, instances->getBuffer(), true);
+	AccelStructConfig config = AccelStructConfig::create(AccelStructConfig::BUILD, AccelStructConfig::TOP)
+		.addInstances(device, instances->getBuffer(), true)
+		.setFlags(VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_KHR);
 
 	instances->flush(recorder);
 
@@ -445,7 +447,7 @@ void Renderer::rebuildTopLevel(CommandRecorder& recorder) {
 	bakery.bake(device, allocator, recorder);
 
 	tlas.close(device);
-	tlas = bakery.submit(device, allocator, config);
+	tlas = bakery.submit(device, allocator, config)->structure;
 	bakery.bake(device, allocator, recorder);
 
 	recorder.memoryBarrier()

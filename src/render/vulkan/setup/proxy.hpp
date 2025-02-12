@@ -31,6 +31,7 @@ struct Proxy {
 		DEF_FUNCTION(vkCmdCopyAccelerationStructureKHR);
 		DEF_FUNCTION(vkDestroyAccelerationStructureKHR);
 		DEF_FUNCTION(vkGetAccelerationStructureDeviceAddressKHR);
+		DEF_FUNCTION(vkCmdWriteAccelerationStructuresPropertiesKHR);
 
 		// VK_EXT_buffer_device_address
 		DEF_FUNCTION(vkGetBufferDeviceAddressKHR);

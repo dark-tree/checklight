@@ -33,31 +33,33 @@ class QueryPool {
 
 	private:
 
-		std::vector<Query> results;
+		size_t length;
+		VkDevice vk_device = VK_NULL_HANDLE;
+		VkQueryPool vk_pool = VK_NULL_HANDLE;
 
-	public:
-
-		VkDevice vk_device;
-		VkQueryPool vk_pool;
+		void load(size_t count, void* buffer, VkQueryResultFlags flags);
 
 	public:
 
 		QueryPool() = default;
-		QueryPool(LogicalDevice& device, VkQueryType type, int count, VkQueryPipelineStatisticFlags statistics = 0);
+		QueryPool(const LogicalDevice& device, VkQueryType type, int count, VkQueryPipelineStatisticFlags statistics = 0);
 
 		/// Free the underlying vulkan object
 		void close();
 
-		/// Copies all the queries into a local buffer
-		void load();
+		/// Copies all the queries into the given buffer
+		void loadAvailable(std::vector<Query>& results);
 
-		/// Return the specified query
-		Query read(int index) const;
+		/// Wait for all queries to become available and write them to the given buffer
+		void loadAll(std::vector<uint64_t>& results);
 
 		/// Get the number of queries in this pool
 		size_t size() const;
 
 		/// Sets a human readable name visible in external debuggers
 		void setDebugName(const char* name) const;
+
+		/// Get the underlying vulkan object
+		VkQueryPool getHandle() const;
 
 };

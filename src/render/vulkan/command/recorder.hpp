@@ -11,6 +11,7 @@ class Image;
 class GraphicsPipeline;
 class DescriptorSet;
 class AccelStruct;
+class QueryPool;
 
 class CommandRecorder {
 
@@ -79,6 +80,8 @@ class CommandRecorder {
 		/// Copy data from one acceleration structure to another, potentially compacting the data during the operation
 		CommandRecorder& copyAccelerationStructure(AccelStruct& dst, AccelStruct& src, bool compact);
 
+		/// Used to get some post-creation detail about a acceleration structure
+		CommandRecorder& queryAccelStructProperties(QueryPool& pool, const std::vector<VkAccelerationStructureKHR>& structures, VkQueryType type);
 
 		void traceRays();
 };

@@ -141,7 +141,7 @@ class Renderer {
 
 	protected:
 
-		RenderFrame& getFrame();
+
 		Fence createFence(bool signaled = false);
 		Semaphore createSemaphore();
 		PushConstant createPushConstant(VkShaderStageFlags stages, uint32_t bytes);
@@ -151,6 +151,9 @@ class Renderer {
 		Renderer() = default;
 		Renderer(ApplicationParameters& parameters);
 		virtual ~Renderer();
+
+		/// Get the currently selected frame
+		RenderFrame& getFrame();
 
 		/// Recreate swapchain, this operation is extremely slow
 		void reload();

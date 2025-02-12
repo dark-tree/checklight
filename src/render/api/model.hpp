@@ -6,6 +6,9 @@ class RenderModel {
 
 	private:
 
+		friend class AccelStructFactory;
+		friend class Renderer;
+
 		AccelStruct structure;
 		VkDeviceAddress address;
 

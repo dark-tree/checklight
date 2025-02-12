@@ -19,7 +19,7 @@ bool Query::present() const {
  * QueryPool
  */
 
-QueryPool::QueryPool(LogicalDevice& device, VkQueryType type, int count, VkQueryPipelineStatisticFlags statistics) {
+QueryPool::QueryPool(const LogicalDevice& device, VkQueryType type, int count, VkQueryPipelineStatisticFlags statistics) {
 	VkQueryPoolCreateInfo create_info {};
 	create_info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
 	create_info.pNext = nullptr;
@@ -29,31 +29,48 @@ QueryPool::QueryPool(LogicalDevice& device, VkQueryType type, int count, VkQuery
 	create_info.queryType = type;
 	create_info.pipelineStatistics = statistics;
 
-	results.resize(count);
+	this->length = count;
 	this->vk_device = device.getHandle();
 
 	vkCreateQueryPool(this->vk_device, &create_info, nullptr, &vk_pool);
 }
 
 void QueryPool::close() {
-	vkDestroyQueryPool(vk_device, vk_pool, nullptr);
+	if (vk_pool != VK_NULL_HANDLE) {
+		vkDestroyQueryPool(vk_device, vk_pool, nullptr);
+	}
 }
 
-void QueryPool::load() {
-	const size_t count = size();
+void QueryPool::load(size_t count, void* buffer, VkQueryResultFlags flags) {
+	size_t entry = sizeof(uint64_t);
 
-	VkQueryResultFlags flags = VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT;
-	vkGetQueryPoolResults(vk_device, vk_pool, 0, count, sizeof(Query) * count, results.data(), sizeof(Query), flags);
+	if (flags & VK_QUERY_RESULT_WITH_AVAILABILITY_BIT) {
+		entry = sizeof(Query);
+	}
+
+	if (count > length) {
+		throw std::runtime_error {"Incompatible query result buffer!"};
+	}
+
+	vkGetQueryPoolResults(vk_device, vk_pool, 0, count, entry * count, buffer, entry, flags | VK_QUERY_RESULT_64_BIT);
 }
 
-Query QueryPool::read(int index) const {
-	return results[index];
+void QueryPool::loadAvailable(std::vector<Query>& results) {
+	load(results.size(), results.data(), VK_QUERY_RESULT_WITH_AVAILABILITY_BIT);
+}
+
+void QueryPool::loadAll(std::vector<uint64_t>& results) {
+	load(results.size(), results.data(), VK_QUERY_RESULT_WAIT_BIT);
 }
 
 size_t QueryPool::size() const {
-	return results.size();
+	return length;
 }
 
 void QueryPool::setDebugName(const char* name) const {
 	VulkanDebug::setDebugName(vk_device, VK_OBJECT_TYPE_QUERY_POOL, vk_pool, name);
+}
+
+VkQueryPool QueryPool::getHandle() const {
+	return vk_pool;
 }

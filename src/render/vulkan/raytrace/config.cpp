@@ -1,6 +1,7 @@
 
 #include "config.hpp"
 #include "render/vulkan/setup/proxy.hpp"
+#include "render/api/model.hpp"
 
 /*
  * AccelStructConfig
@@ -33,6 +34,11 @@ AccelStructConfig& AccelStructConfig::setOperation(Operation operation, Type typ
 	return *this;
 }
 
+AccelStructConfig& AccelStructConfig::setFlags(VkBuildAccelerationStructureFlagsKHR flags) {
+	this->vk_flags = flags;
+	return *this;
+}
+
 AccelStructConfig& AccelStructConfig::setParent(const AccelStruct& structure) {
 	this->vk_struct = structure.getHandle();
 	return *this;
@@ -44,6 +50,7 @@ AccelStructBakedConfig AccelStructConfig::bake(const LogicalDevice& device, Allo
 	build_info.pNext = nullptr;
 	build_info.type = vk_type;
 	build_info.mode = vk_mode;
+	build_info.flags = vk_flags;
 	build_info.srcAccelerationStructure = vk_struct;
 	build_info.geometryCount = geometries.size();
 	build_info.pGeometries = geometries.data();
@@ -64,7 +71,7 @@ AccelStructBakedConfig AccelStructConfig::bake(const LogicalDevice& device, Allo
 	AccelStruct structure = allocator.allocateAcceleration(build_info.type, size_info.accelerationStructureSize, "Unnamed AccelStruct");
 	build_info.dstAccelerationStructure = structure.getHandle();
 
-	return {structure, build_info, size_info, std::move(ranges), std::move(geometries)};
+	return {std::make_shared<RenderModel>(device, structure), build_info, size_info, std::move(ranges), std::move(geometries)};
 }
 
 /*

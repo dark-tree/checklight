@@ -8,6 +8,7 @@
 #include "render/api/vertex.hpp"
 #include "render/vulkan/setup/proxy.hpp"
 #include "render/vulkan/raytrace/config.hpp"
+#include "render/vulkan/buffer/query.hpp"
 
 CommandRecorder::CommandRecorder(VkCommandBuffer vk_buffer)
 : vk_buffer(vk_buffer) {}
@@ -198,6 +199,11 @@ CommandRecorder& CommandRecorder::copyAccelerationStructure(AccelStruct& dst, Ac
 	copy_info.src = src.getHandle();
 	copy_info.mode = (compact ? VK_COPY_ACCELERATION_STRUCTURE_MODE_COMPACT_KHR : VK_COPY_ACCELERATION_STRUCTURE_MODE_CLONE_KHR);
 	Proxy::vkCmdCopyAccelerationStructureKHR(vk_buffer, &copy_info);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::queryAccelStructProperties(QueryPool& pool, const std::vector<VkAccelerationStructureKHR>& structures, VkQueryType type) {
+	Proxy::vkCmdWriteAccelerationStructuresPropertiesKHR(vk_buffer, structures.size(), structures.data(), type, pool.getHandle(), 1);
 	return *this;
 }
 

@@ -8,6 +8,7 @@ class LogicalDevice;
 class RenderMesh;
 class ReusableBuffer;
 class AccelStructBakedConfig;
+class RenderModel;
 
 /**
  * Represents the configuration of a single acceleration
@@ -21,6 +22,7 @@ class AccelStructConfig {
 		VkAccelerationStructureKHR vk_struct = VK_NULL_HANDLE;
 		VkBuildAccelerationStructureModeKHR vk_mode;
 		VkAccelerationStructureTypeKHR vk_type;
+		VkBuildAccelerationStructureFlagsKHR vk_flags;
 
 		std::vector<VkAccelerationStructureBuildRangeInfoKHR> ranges;
 		std::vector<VkAccelerationStructureGeometryKHR> geometries;
@@ -52,6 +54,9 @@ class AccelStructConfig {
 		/// Set the operation that should be performed during baking in the AccelStructFactory
 		AccelStructConfig& setOperation(Operation operation, Type type);
 
+		/// Set additional flags
+		AccelStructConfig& setFlags(VkBuildAccelerationStructureFlagsKHR flags);
+
 		/// In some cases (e.g. performing an UPDATE) an additional, parental AccelStruct can be supplied
 		AccelStructConfig& setParent(const AccelStruct& structure);
 
@@ -67,7 +72,7 @@ class AccelStructConfig {
  */
 struct AccelStructBakedConfig {
 
-	AccelStruct structure;
+	std::shared_ptr<RenderModel> model;
 	VkAccelerationStructureBuildGeometryInfoKHR build_info;
 	VkAccelerationStructureBuildSizesInfoKHR size_info;
 
