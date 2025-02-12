@@ -17,6 +17,7 @@ class PhysicalDevice {
 
 		VkPhysicalDeviceRayTracingPipelineFeaturesKHR ray_feature {};
 		VkPhysicalDeviceVulkan12Features vk12_features {};
+		VkPhysicalDeviceAccelerationStructureFeaturesKHR accel_features {};
 
 		VkPhysicalDeviceProperties properties;
 		VkPhysicalDeviceFeatures2KHR features;

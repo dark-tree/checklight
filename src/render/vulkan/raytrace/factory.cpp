@@ -19,7 +19,7 @@ void AccelStructFactory::reserveScratchSpace(Allocator& allocator, uint32_t byte
 
 	if (scratch.size() < bytes) {
 		scratch.close();
-		scratch = allocator.allocateBuffer(Memory::DEVICE, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, bytes, "Scratch");
+		scratch = allocator.allocateBuffer(Memory::DEVICE, bytes, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, "Scratch");
 		printf("INFO: Reallocated scratch buffer, now using %d bytes of device memory\n", bytes);
 	}
 }

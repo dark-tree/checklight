@@ -56,6 +56,9 @@ AccelStructBakedConfig AccelStructConfig::bake(const LogicalDevice& device) cons
 	}
 
 	VkAccelerationStructureBuildSizesInfoKHR size_info;
+	size_info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
+	size_info.pNext = nullptr;
+
 	Proxy::vkGetAccelerationStructureBuildSizesKHR(device.getHandle(), VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &build_info, primitives.data(), &size_info);
 
 	return {build_info, size_info, ranges};

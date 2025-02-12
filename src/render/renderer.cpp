@@ -132,9 +132,19 @@ void Renderer::pickDevice() {
 			}
 		}
 
-		auto* vk12_features = (const VkPhysicalDeviceVulkan12Features*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES);
+		auto* features_vk12 = (const VkPhysicalDeviceVulkan12Features*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES);
+		auto* features_ray = (const VkPhysicalDeviceRayTracingPipelineFeaturesKHR*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR);
+		auto* features_accel = (const VkPhysicalDeviceAccelerationStructureFeaturesKHR*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR);
 
-		if (!vk12_features->bufferDeviceAddress) {
+		if (!features_vk12->bufferDeviceAddress) {
+			continue;
+		}
+
+		if (!features_ray->rayTracingPipeline) {
+			continue;
+		}
+
+		if (!features_accel->accelerationStructure) {
 			continue;
 		}
 
@@ -173,9 +183,22 @@ void Renderer::createDevice(std::unique_ptr<PhysicalDevice> physical, Family que
 	queue_info.queueCount = 1;
 	queue_info.pQueuePriorities = &priority;
 
+	// AccelStruct features
+	VkPhysicalDeviceAccelerationStructureFeaturesKHR feature_accel {};
+	feature_accel.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+	feature_accel.pNext = nullptr;
+	feature_accel.accelerationStructure = true;
+
+	// Raytracing features
+	VkPhysicalDeviceRayTracingPipelineFeaturesKHR features_ray {};
+	features_ray.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+	features_ray.pNext = &feature_accel;
+	features_ray.rayTracingPipeline = true;
+
 	// Vulkan 1.2 features
 	VkPhysicalDeviceVulkan12Features features_vk12 {};
 	features_vk12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+	features_vk12.pNext = &features_ray;
 	features_vk12.bufferDeviceAddress = true; // need for raytracing, allow creating the funny universal pointers
 
 	// Basic device features
