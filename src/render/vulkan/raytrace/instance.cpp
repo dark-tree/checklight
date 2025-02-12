@@ -8,7 +8,7 @@
  */
 
 RenderObject::RenderObject(uint32_t index)
-: instance({}), index(index) {
+: index(index), instance({}) {
 	instance.instanceCustomIndex = index;
 	instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
 }
@@ -107,6 +107,6 @@ void InstanceManager::flush(RenderCommander& commander) {
 	buffer.flushStaging(commander);
 }
 
-Buffer& InstanceManager::getBuffer() {
-	return buffer.getBuffer();
+const ReusableBuffer& InstanceManager::getBuffer() const {
+	return buffer;
 }

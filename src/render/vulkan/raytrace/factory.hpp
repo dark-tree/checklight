@@ -15,6 +15,9 @@ class AccelStructFactory {
 
 	public:
 
+		AccelStructFactory() = default;
+		void close();
+
 		std::vector<AccelStruct> bake(const LogicalDevice& device, Allocator& allocator, CommandRecorder& recorder, const std::vector<AccelStructConfig>& configs);
 
 };

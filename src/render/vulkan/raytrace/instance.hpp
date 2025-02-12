@@ -49,6 +49,6 @@ class InstanceManager {
 		std::shared_ptr<RenderObject> create();
 		void flush(RenderCommander& recorder);
 
-		Buffer& getBuffer();
+		const ReusableBuffer& getBuffer() const;
 
 };

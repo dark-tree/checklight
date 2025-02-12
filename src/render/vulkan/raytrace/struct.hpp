@@ -30,7 +30,10 @@ class AccelStruct {
 
 	public:
 
+		AccelStruct() = default;
 		AccelStruct(const Buffer& buffer, VkAccelerationStructureKHR vk_structure);
+
+		void close(const LogicalDevice& device);
 
 		VkAccelerationStructureKHR getHandle() const;
 

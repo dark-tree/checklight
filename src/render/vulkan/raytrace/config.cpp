@@ -11,6 +11,12 @@ void AccelStructConfig::addEntry(const AccelStructEntry& entry) {
 	geometries.emplace_back(entry.getGeometry());
 }
 
+AccelStructConfig AccelStructConfig::create(Operation operation, Type type) {
+	AccelStructConfig config {};
+	config.setOperation(operation, type);
+	return config;
+}
+
 AccelStructConfig& AccelStructConfig::addTriangles(LogicalDevice& device, const RenderMesh& mesh, bool opaque) {
 	addEntry(AccelStructEntry::ofTriangles(device, mesh, opaque));
 	return *this;

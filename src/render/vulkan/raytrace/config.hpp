@@ -39,6 +39,8 @@ class AccelStructConfig {
 			BOTTOM = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR,
 		};
 
+		static AccelStructConfig create(Operation operation, Type type);
+
 	public:
 
 		/// Add triangle geometry buffer to the config, used by BLASes

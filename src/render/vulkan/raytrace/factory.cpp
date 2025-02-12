@@ -2,6 +2,14 @@
 #include "factory.hpp"
 #include "render/vulkan/command/recorder.hpp"
 
+/*
+ * AccelStructFactory
+ */
+
+void AccelStructFactory::close() {
+	scratch.close();
+}
+
 void AccelStructFactory::reserveScratchSpace(Allocator& allocator, uint32_t bytes) {
 
 	// make sure we allocate some buffer even if not asked to
@@ -46,10 +54,10 @@ std::vector<AccelStruct> AccelStructFactory::bake(const LogicalDevice& device, A
 		recorder.buildAccelerationStructure(baked);
 		structures.emplace_back(structure);
 
-		VkPipelineStageFlags stage = VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR;
-		VkAccessFlags first = VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR;
-		VkAccessFlags then = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR;
-		recorder.memoryBarrier(stage, first, stage, then);
+		recorder.memoryBarrier()
+			.first(VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR, VK_ACCESS_MEMORY_WRITE_BIT)
+			.then(VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR, VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR)
+			.done();
 	}
 
 	return structures;

@@ -18,6 +18,7 @@
 #include "render/vulkan/descriptor/pool.hpp"
 #include "render/vulkan/descriptor/push.hpp"
 #include "render/vulkan/raytrace/instance.hpp"
+#include "render/vulkan/raytrace/factory.hpp"
 
 class Renderer {
 
@@ -67,7 +68,11 @@ class Renderer {
 		CommandPool graphics_pool;
 		Allocator allocator;
 		DescriptorPool descriptor_pool;
+
+		// raytracing
 		std::unique_ptr<InstanceManager> instances;
+		AccelStructFactory bakery;
+		AccelStruct tlas;
 
 		// shaders
 		Shader shader_basic_vertex;
@@ -132,6 +137,7 @@ class Renderer {
 
 		void acquirePresentationIndex();
 		void presentFramebuffer();
+		void rebuildTopLevel(CommandRecorder& recorder);
 
 	protected:
 

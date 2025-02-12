@@ -407,6 +407,27 @@ void Renderer::presentFramebuffer() {
 	}
 }
 
+void Renderer::rebuildTopLevel(CommandRecorder& recorder) {
+	std::vector<AccelStructConfig> configs = {
+		AccelStructConfig::create(AccelStructConfig::BUILD, AccelStructConfig::TOP).addInstances(device, instances->getBuffer(), true)
+	};
+
+	// this barrier is sussy, i based it on the NVIDIA tutorial but i don't trust their barrier code
+	recorder.memoryBarrier()
+		.first(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_MEMORY_WRITE_BIT)
+		.then(VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR, VK_ACCESS_MEMORY_READ_BIT)
+		.done();
+
+	tlas.close(device);
+	tlas = bakery.bake(device, allocator, recorder, configs).at(0);
+
+	recorder.memoryBarrier()
+		.first(VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR, VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR)
+		.then(VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR)
+		.done();
+
+}
+
 Fence Renderer::createFence(bool signaled) {
 	return {device.getHandle(), signaled};
 }
@@ -500,6 +521,8 @@ Renderer::~Renderer() {
 	// It's important to maintain the correct order
 	closeRenderPasses();
 	compiler.close();
+	bakery.close();
+	tlas.close(device);
 
 	VulkanDebug::assertAllDead();
 	allocator.close();
@@ -530,6 +553,8 @@ void Renderer::beginDraw() {
 
 	// begin rendering
 	recorder = frame.buffer.record();
+
+	rebuildTopLevel(recorder);
 
 	recorder.beginRenderPass(pass_basic_3d, current_image, swapchain.getExtend());
 	recorder.bindPipeline(pipeline_basic_3d);

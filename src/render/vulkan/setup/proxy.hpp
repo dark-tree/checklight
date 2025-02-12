@@ -5,31 +5,34 @@
 class Instance;
 class LogicalDevice;
 
+#define DEF_FUNCTION(name) static PFN_##name name
+
 struct Proxy {
 
-	// VK_KHR_get_physical_device_properties2
-	static PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR;
+		// VK_KHR_get_physical_device_properties2
+		DEF_FUNCTION(vkGetPhysicalDeviceFeatures2KHR);
 
-	// VK_EXT_debug_utils
-	static PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT;
-	static PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT;
-	static PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT;
-	static PFN_vkCmdBeginDebugUtilsLabelEXT vkCmdBeginDebugUtilsLabelEXT;
-	static PFN_vkCmdEndDebugUtilsLabelEXT vkCmdEndDebugUtilsLabelEXT;
-	static PFN_vkCmdInsertDebugUtilsLabelEXT vkCmdInsertDebugUtilsLabelEXT;
+		// VK_EXT_debug_utils
+		DEF_FUNCTION(vkCreateDebugUtilsMessengerEXT);
+		DEF_FUNCTION(vkDestroyDebugUtilsMessengerEXT);
+		DEF_FUNCTION(vkSetDebugUtilsObjectNameEXT);
+		DEF_FUNCTION(vkCmdBeginDebugUtilsLabelEXT);
+		DEF_FUNCTION(vkCmdEndDebugUtilsLabelEXT);
+		DEF_FUNCTION(vkCmdInsertDebugUtilsLabelEXT);
 
-	// VK_KHR_ray_tracing_pipeline
-	static PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR;
-	static PFN_vkCreateRayTracingPipelinesKHR vkCreateRayTracingPipelinesKHR;
+		// VK_KHR_ray_tracing_pipeline
+		DEF_FUNCTION(vkCmdTraceRaysKHR);
+		DEF_FUNCTION(vkCreateRayTracingPipelinesKHR);
 
-	// VK_KHR_acceleration_structure
-	static PFN_vkCreateAccelerationStructureKHR vkCreateAccelerationStructureKHR;
-	static PFN_vkGetAccelerationStructureBuildSizesKHR vkGetAccelerationStructureBuildSizesKHR;
-	static PFN_vkCmdBuildAccelerationStructuresKHR vkCmdBuildAccelerationStructuresKHR;
-	static PFN_vkCmdCopyAccelerationStructureKHR vkCmdCopyAccelerationStructureKHR;
+		// VK_KHR_acceleration_structure
+		DEF_FUNCTION(vkCreateAccelerationStructureKHR);
+		DEF_FUNCTION(vkGetAccelerationStructureBuildSizesKHR);
+		DEF_FUNCTION(vkCmdBuildAccelerationStructuresKHR);
+		DEF_FUNCTION(vkCmdCopyAccelerationStructureKHR);
+		DEF_FUNCTION(vkDestroyAccelerationStructureKHR);
 
-	// VK_EXT_buffer_device_address
-	static PFN_vkGetBufferDeviceAddressKHR vkGetBufferDeviceAddressKHR;
+		// VK_EXT_buffer_device_address
+		DEF_FUNCTION(vkGetBufferDeviceAddressKHR);
 
 	public:
 
@@ -49,3 +52,5 @@ struct Proxy {
 		static void loadRaytraceFunctions(LogicalDevice& device);
 
 };
+
+#undef DEF_FUNCTION

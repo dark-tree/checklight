@@ -165,29 +165,12 @@ CommandRecorder& CommandRecorder::transitionLayout(Image image, VkImageLayout ds
 	return *this;
 }
 
-CommandRecorder& CommandRecorder::memoryBarrier(VkPipelineStageFlags dst_stage, VkAccessFlags dst_access, VkPipelineStageFlags src_stage, VkAccessFlags src_access) {
-	VkMemoryBarrier barrier {};
-	barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-	barrier.pNext = nullptr;
-	barrier.srcAccessMask = src_access;
-	barrier.dstAccessMask = dst_access;
-
-	vkCmdPipelineBarrier(vk_buffer, src_stage, dst_stage, 0, 1, &barrier, 0, nullptr, 0, nullptr);
-	return *this;
+MemoryBarrier CommandRecorder::memoryBarrier() {
+	return MemoryBarrier::create(vk_buffer);
 }
 
-CommandRecorder& CommandRecorder::bufferTransferBarrier(VkPipelineStageFlags dst) {
-	VkMemoryBarrier barrier {};
-	barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-	barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
-	barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-
-	VkPipelineStageFlags src = VK_PIPELINE_STAGE_TRANSFER_BIT;
-
-	// allow reading from already written to sections (the whole thing doesn't need to finish)
-	VkDependencyFlags flags = VK_DEPENDENCY_BY_REGION_BIT;
-
-	vkCmdPipelineBarrier(vk_buffer, src, dst, flags, 1, &barrier, 0, nullptr, 0, nullptr);
+CommandRecorder& CommandRecorder::bufferTransferBarrier(VkPipelineStageFlags stage) {
+	memoryBarrier().first(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_MEMORY_WRITE_BIT).then(stage, VK_ACCESS_MEMORY_READ_BIT).byRegionBit().done();
 	return *this;
 }
 

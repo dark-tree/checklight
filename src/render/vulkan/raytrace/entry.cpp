@@ -5,7 +5,7 @@
 #include "render/api/mesh.hpp"
 
 /*
- * TraceStructEntry
+ * AccelStructEntry
  */
 
 AccelStructEntry::AccelStructEntry(VkAccelerationStructureBuildRangeInfoKHR range, VkAccelerationStructureGeometryKHR geometry)
@@ -56,7 +56,7 @@ AccelStructEntry AccelStructEntry::ofInstances(LogicalDevice& device, const Reus
 	instances.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR;
 	instances.pNext = nullptr;
 	instances.arrayOfPointers = false;
-	instances.data.deviceAddress = device.getAddress(buffer.getBuffer());
+	instances.data.deviceAddress = buffer.isEmpty() ? 0 : device.getAddress(buffer.getBuffer());
 
 	VkAccelerationStructureBuildRangeInfoKHR range {};
 	range.firstVertex = 0;
