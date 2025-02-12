@@ -5,7 +5,7 @@
 #include "render/vulkan/descriptor/push.hpp"
 #include "barrier.hpp"
 
-class AccelStructBakedConfig;
+struct AccelStructBakedConfig;
 class Buffer;
 class Image;
 class GraphicsPipeline;

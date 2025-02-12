@@ -16,7 +16,7 @@
  */
 
 CommandRecorder::CommandRecorder(VkCommandBuffer vk_buffer, VkCommandBufferUsageFlags flags)
-: vk_buffer(vk_buffer), flags(flags) {
+	: vk_buffer(vk_buffer), flags(flags) {
 
 	vkResetCommandBuffer(vk_buffer, 0);
 
@@ -221,7 +221,7 @@ CommandRecorder& CommandRecorder::copyAccelerationStructure(AccelStruct& dst, Ac
 }
 
 CommandRecorder& CommandRecorder::queryAccelStructProperties(QueryPool& pool, const std::vector<VkAccelerationStructureKHR>& structures, VkQueryType type) {
-	Proxy::vkCmdWriteAccelerationStructuresPropertiesKHR(vk_buffer, structures.size(), structures.data(), type, pool.getHandle(), 1);
+	Proxy::vkCmdWriteAccelerationStructuresPropertiesKHR(vk_buffer, structures.size(), structures.data(), type, pool.getHandle(), 0);
 	return *this;
 }
 

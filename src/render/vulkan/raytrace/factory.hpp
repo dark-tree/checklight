@@ -11,7 +11,7 @@ class AccelStructFactory {
 	private:
 
 		std::mutex mutex;
-		size_t batch_scratch;
+		size_t batch_scratch = 0;
 		Buffer scratch;
 		std::vector<AccelStructBakedConfig> elements;
 		QueryPool query;

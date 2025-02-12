@@ -60,8 +60,10 @@ void ReusableBuffer::writeToStaging(const void* data, size_t elements, size_t si
 }
 
 void ReusableBuffer::flushStaging(CommandRecorder& recorder) {
-	staging->getAllocation().flushNonCoherent();
-	recorder.copyBufferToBuffer(*buffer, *staging, staging->size(), 0, 0);
+	if (this->staging) {
+		staging->getAllocation().flushNonCoherent();
+		recorder.copyBufferToBuffer(*buffer, *staging, staging->size(), 0, 0);
+	}
 }
 
 void ReusableBuffer::resize(RenderCommander& commander, int elements, int size) {

@@ -19,10 +19,10 @@ int main() {
 
 	auto model = system.createRenderModel(meshes);
 
-	// free meshes
-	for (auto& mesh : meshes) {
-		mesh.reset();
-	}
+	// TODO: free meshes
+	// for (auto& mesh : meshes) {
+	//	  mesh.reset();
+	// }
 
 	auto object = system.createRenderObject();
 	object->setMatrix(glm::identity<glm::mat4x3>());

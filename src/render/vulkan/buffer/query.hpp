@@ -33,7 +33,7 @@ class QueryPool {
 
 	private:
 
-		size_t length;
+		size_t length = 0;
 		VkDevice vk_device = VK_NULL_HANDLE;
 		VkQueryPool vk_pool = VK_NULL_HANDLE;
 
