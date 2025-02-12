@@ -100,9 +100,12 @@ void AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator,
 		// :cursed:
 		Fence fence = RenderSystem::system->createFence();
 		recorder.quickFenceSubmit(fence, RenderSystem::system->queue);
-		fence.wait();
+		fence.reset();
 
 		query.loadAll(results);
+
+		std::vector<AccelStruct> previouses;
+		previouses.reserve(structures.size());
 
 		for (size_t i = 0; i < structures.size(); i ++) {
 
@@ -110,11 +113,20 @@ void AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator,
 			AccelStructBakedConfig* config = linkages.at(i);
 
 			auto& previous = config->model->structure;
+			previouses.push_back(previous);
 			AccelStruct compacted = allocator.allocateAcceleration(config->build_info.type, size, "Compacted AccelStruct");
 			recorder.copyAccelerationStructure(compacted, previous, true);
 
 			// FIXME old structure is leaked here
 			previous = compacted;
+		}
+
+		recorder.quickFenceSubmit(fence, RenderSystem::system->queue);
+		fence.close();
+
+		// close all previous structures
+		for (auto& previous : previouses) {
+			previous.close(device);
 		}
 	}
 
