@@ -280,6 +280,9 @@ void Renderer::createShaders() {
 
 	shader_basic_vertex = compiler.compileFile(device, "assets/shader/basic.vert", Kind::VERTEX);
 	shader_basic_fragment = compiler.compileFile(device, "assets/shader/basic.frag", Kind::FRAGMENT);
+	shader_trace_gen = compiler.compileFile(device, "assets/shader/ray-gen.glsl", Kind::RAYGEN);
+	shader_trace_miss = compiler.compileFile(device, "assets/shader/ray-miss.glsl", Kind::MISS);
+	shader_trace_hit = compiler.compileFile(device, "assets/shader/ray-hit.glsl", Kind::CLOSEST);
 
 }
 
@@ -375,6 +378,16 @@ void Renderer::createPipelines() {
 		.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
 		.build();
 
+	ShaderArrayBuilder builder;
+	builder.addMissShader(shader_trace_miss);
+	builder.addRayGenShader(shader_trace_gen);
+	builder.addHitGroup().withClosestHit(shader_trace_hit);
+
+	pipeline_trace_3d = RaytracePipelineBuilder::of(device)
+		.withRecursionDepth(2)
+		.withDescriptorSetLayout(layout_geometry)
+		.withShaderLayout(builder.build())
+		.build();
 
 }
 

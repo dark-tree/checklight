@@ -27,8 +27,12 @@ VkPipelineShaderStageCreateInfo Shader::getConfig() const {
 	VkPipelineShaderStageCreateInfo create_info {};
 	create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	create_info.stage = vk_stage;
-	create_info.module = vk_module;
+	create_info.module = getHandle();
 	create_info.pName = "main";
 
 	return create_info;
+}
+
+VkShaderModule Shader::getHandle() const {
+	return vk_module;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pipeline.hpp"
+#include "render/vulkan/shader/group.hpp"
 
 class RaytracePipelineBuilder : public AbstractPipelineBuilder<RaytracePipelineBuilder> {
 
@@ -8,6 +9,7 @@ class RaytracePipelineBuilder : public AbstractPipelineBuilder<RaytracePipelineB
 
 		int limit = 1;
 		int depth = 1;
+		ShaderArrayLayout layout;
 
 	public:
 
@@ -30,6 +32,20 @@ class RaytracePipelineBuilder : public AbstractPipelineBuilder<RaytracePipelineB
 		 */
 		RaytracePipelineBuilder& withRecursionDepth(int depth);
 
+		/**
+		 * Specifies the shader table to be used by the raytracing pipeline,
+		 * shader table consists of 3 regions - generate, miss, and hit (in
+		 * this order). The hit group number to use is specified using
+		 * hit group offset in RenderObject's instance.
+		 *
+		 * @section Raytrace
+		 * @param layout The layout, as created with ShaderArrayBuilder
+		 */
+		RaytracePipelineBuilder& withShaderLayout(const ShaderArrayLayout& layout);
 
+	public:
+
+		/// Complete building and create the pipeline
+		GraphicsPipeline build();
 
 };

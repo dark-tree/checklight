@@ -236,9 +236,10 @@ GraphicsPipeline GraphicsPipelineBuilder::build() {
 
 	VkGraphicsPipelineCreateInfo create_info {};
 	create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	create_info.layout = pipeline_layout;
+
 	create_info.stageCount = (uint32_t) shaders.size();
 	create_info.pStages = shaders.data();
-
 	create_info.pVertexInputState = &input;
 	create_info.pInputAssemblyState = &assembly;
 	create_info.pViewportState = &view;
@@ -247,7 +248,6 @@ GraphicsPipeline GraphicsPipelineBuilder::build() {
 	create_info.pDepthStencilState = &depth;
 	create_info.pColorBlendState = &blending;
 	create_info.pDynamicState = &dynamic;
-	create_info.layout = pipeline_layout;
 
 	create_info.renderPass = vk_pass;
 	create_info.subpass = subpass;

@@ -39,6 +39,12 @@ Shader Compiler::ResultBuilder::build(LogicalDevice& device, bool successful, co
  */
 
 Compiler::Compiler() {
+
+	// required to compile raytracing shaders
+	// https://vulkan.lunarg.com/issue/view/5ef37f87e0d2a337a0166b83
+	options.SetTargetSpirv(shaderc_spirv_version_1_5);
+	options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+
 	#if ENGINE_DEBUG
 	options.SetGenerateDebugInfo();
 	#else

@@ -77,6 +77,9 @@ class Renderer {
 		// shaders
 		Shader shader_basic_vertex;
 		Shader shader_basic_fragment;
+		Shader shader_trace_gen;
+		Shader shader_trace_miss;
+		Shader shader_trace_hit;
 
 		// attachments
 		Attachment attachment_color;
@@ -93,6 +96,7 @@ class Renderer {
 
 		// Pipelines
 		GraphicsPipeline pipeline_basic_3d;
+		GraphicsPipeline pipeline_trace_3d;
 
 		// late vulkan objects
 		Swapchain swapchain;
