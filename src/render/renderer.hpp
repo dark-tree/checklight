@@ -26,7 +26,7 @@ class Renderer {
 
 		/// This object is quite large so to limit the size of this already huge class
 		/// we put it behind a pointer, that class requires no close() call anyway
-		std::unique_ptr<PhysicalDevice> physical;
+		std::shared_ptr<PhysicalDevice> physical;
 
 		/// the number of concurrent frames, this value should no be larger then 4-5 to no cause input delay
 		/// setting it to 1 effectively disables concurrent frames
@@ -118,7 +118,7 @@ class Renderer {
 		void pickDevice();
 
 		/// Loads the LogicalDevice, and Family
-		void createDevice(std::unique_ptr<PhysicalDevice> device, Family queue_family, const std::vector<const char*>& extensions);
+		void createDevice(std::shared_ptr<PhysicalDevice> device, Family queue_family, const std::vector<const char*>& extensions);
 
 		void createShaders();
 		void createAttachments();

@@ -10,6 +10,7 @@
 #define IMPL_FUNCTION(name) PFN_##name Proxy::name = nullptr
 
 IMPL_FUNCTION(vkGetPhysicalDeviceFeatures2KHR);
+IMPL_FUNCTION(vkGetPhysicalDeviceProperties2KHR);
 IMPL_FUNCTION(vkCreateDebugUtilsMessengerEXT);
 IMPL_FUNCTION(vkDestroyDebugUtilsMessengerEXT);
 IMPL_FUNCTION(vkSetDebugUtilsObjectNameEXT);
@@ -41,6 +42,7 @@ void Proxy::loadDebugDeviceFunctions(LogicalDevice& device) {
 
 void Proxy::loadInstanceFunctions(Instance& instance) {
 	LOAD_FUNCTION(instance, vkGetPhysicalDeviceFeatures2KHR);
+	LOAD_FUNCTION(instance, vkGetPhysicalDeviceProperties2KHR);
 }
 
 void Proxy::loadDeviceFunctions(LogicalDevice& device) {

@@ -11,6 +11,7 @@ struct Proxy {
 
 		// VK_KHR_get_physical_device_properties2
 		DEF_FUNCTION(vkGetPhysicalDeviceFeatures2KHR);
+		DEF_FUNCTION(vkGetPhysicalDeviceProperties2KHR);
 
 		// VK_EXT_debug_utils
 		DEF_FUNCTION(vkCreateDebugUtilsMessengerEXT);

@@ -178,7 +178,7 @@ void Renderer::pickDevice() {
 	throw std::runtime_error {"No device could have been selected!"};
 }
 
-void Renderer::createDevice(std::unique_ptr<PhysicalDevice> physical, Family queue_family, const std::vector<const char*>& extensions) {
+void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family queue_family, const std::vector<const char*>& extensions) {
 	printf("INFO: Selected '%s' (queue #%d)\n", physical->getName(), queue_family.getIndex());
 
 	// we use only one queue at this time
@@ -233,9 +233,9 @@ void Renderer::createDevice(std::unique_ptr<PhysicalDevice> physical, Family que
 	}
 
 	// load all device functions
-	this->physical = std::move(physical);
-	this->device = vk_device;
+	this->device = {vk_device, physical};
 	this->family = queue_family;
+	this->physical = std::move(physical);
 
 	#ifdef ENGINE_DEBUG
 		Proxy::loadDebugDeviceFunctions(this->device);

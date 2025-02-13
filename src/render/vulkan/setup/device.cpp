@@ -10,7 +10,14 @@
  */
 
 PhysicalDevice::PhysicalDevice(VkPhysicalDevice device)  {
-	vkGetPhysicalDeviceProperties(device, &properties);
+
+	properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+	properties.pNext = &ray_properties;
+
+	ray_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
+	ray_properties.pNext = nullptr;
+
+	Proxy::vkGetPhysicalDeviceProperties2KHR(device, &properties);
 
 	features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 	features.pNext = &vk12_features;
@@ -29,11 +36,11 @@ PhysicalDevice::PhysicalDevice(VkPhysicalDevice device)  {
 }
 
 VkPhysicalDeviceType PhysicalDevice::getType() const {
-	return properties.deviceType;
+	return properties.properties.deviceType;
 }
 
 const char* PhysicalDevice::getName() const {
-	return properties.deviceName;
+	return properties.properties.deviceName;
 }
 
 bool PhysicalDevice::canUseSurface(VkSurfaceKHR surface) const {
@@ -89,7 +96,7 @@ SwapchainInfo PhysicalDevice::getSwapchainInfo(VkSurfaceKHR surface) {
 }
 
 const VkPhysicalDeviceProperties& PhysicalDevice::getProperties() const {
-	return properties;
+	return properties.properties;
 }
 
 const VkPhysicalDeviceLimits& PhysicalDevice::getLimits() const {
@@ -112,13 +119,32 @@ const void* PhysicalDevice::getFeatures(VkStructureType type) const {
 	}
 }
 
+const void* PhysicalDevice::getProperties(VkStructureType type) const {
+	const VkBaseInStructure* current = (VkBaseInStructure*) &properties;
+
+	while (true) {
+		if (current->sType == type) {
+			return current;
+		}
+
+		if (current->pNext == nullptr) {
+			return nullptr;
+		}
+
+		current = current->pNext;
+	}
+}
+
+int PhysicalDevice::getMaxRaytraceRecursionDepth() const {
+	return ray_properties.maxRayRecursionDepth;
+}
+
 /*
  * Logical Device
  */
 
-LogicalDevice::LogicalDevice(VkDevice device) {
-	this->vk_device = device;
-}
+LogicalDevice::LogicalDevice(VkDevice device, const std::shared_ptr<PhysicalDevice>& physical)
+: vk_device(device), physical(physical) {}
 
 void LogicalDevice::wait() {
 	vkDeviceWaitIdle(vk_device);
@@ -154,4 +180,8 @@ VkDeviceAddress LogicalDevice::getAddress(const AccelStruct& structure) const {
 	info.accelerationStructure = structure.getHandle();
 
 	return Proxy::vkGetAccelerationStructureDeviceAddressKHR(vk_device, &info);
+}
+
+std::shared_ptr<PhysicalDevice> LogicalDevice::getPhysical() const {
+	return physical;
 }
