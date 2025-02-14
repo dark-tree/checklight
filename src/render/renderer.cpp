@@ -57,10 +57,6 @@ void Renderer::createInstance(ApplicationParameters& parameters) {
 	std::vector<const char*> extension = windows.getRequiredExtensions();
 	std::vector<const char*> layers;
 
-	// needed for the vkGetPhysicalDeviceFeatures2KHR which we will need to
-	// use any extensions or new vulkan features
-	extension.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-
 	#ifdef ENGINE_DEBUG
 		layers.push_back("VK_LAYER_KHRONOS_validation");
 		extension.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -123,20 +119,26 @@ void Renderer::pickDevice() {
 		VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
 		VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
 		VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
-		VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
 	};
+
+	std::vector<std::string> debug;
 
 	for (auto& device : devices) {
 
+		printf("INFO: Checking device '%s'...\n", device->getName());
+		bool fail = false;
+
 		// we need the device to be able to render to our window
 		if (!device->canUseSurface(surface)) {
-			continue;
+			printf(" * Can't use window's surface!\n");
+			fail = true;
 		}
 
 		// check for support of required extensions
 		for (auto name : required_extensions) {
 			if (!device->hasExtension(name)) {
-				continue;
+				printf(" * Missing required extension '%s'!\n", name);
+				fail = true;
 			}
 		}
 
@@ -145,14 +147,21 @@ void Renderer::pickDevice() {
 		auto* features_accel = (const VkPhysicalDeviceAccelerationStructureFeaturesKHR*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR);
 
 		if (!features_vk12->bufferDeviceAddress) {
-			continue;
+			printf(" * Feature 'buffer device address' unsupported!\n");
+			fail = true;
 		}
 
 		if (!features_ray->rayTracingPipeline) {
-			continue;
+			printf(" * Feature 'ray tracing pipeline' unsupported!\n");
+			fail = true;
 		}
 
 		if (!features_accel->accelerationStructure) {
+			printf(" * Feature 'acceleration structure' unsupported!\n");
+			fail = true;
+		}
+
+		if (fail) {
 			continue;
 		}
 
@@ -173,6 +182,8 @@ void Renderer::pickDevice() {
 			createDevice(std::move(device), queue_family, required_extensions);
 			return;
 		}
+
+		printf(" * No valid queue!\n");
 
 	}
 
@@ -314,7 +325,7 @@ void Renderer::createAttachments() {
 		.createAttachment();
 
 	attachment_albedo = TextureBuilder::begin()
-		.setFormat(VK_FORMAT_R8G8B8A8_SNORM)
+		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
 		.setDebugName("Albedo")
@@ -678,7 +689,7 @@ void Renderer::beginDraw() {
 
 	recorder.bindPipeline(pipeline_trace_3d);
 	recorder.bindDescriptorSet(frame.set_raytrace);
-	//recorder.traceRays(shader_table, 100, 100);
+	recorder.traceRays(shader_table, 100, 100);
 	
 	recorder.transitionLayout(attachment_albedo.getTexture().getTextureImage(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
 

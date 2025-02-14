@@ -1,12 +1,11 @@
 #version 460
 #extension GL_EXT_ray_tracing : require
 
-struct hitPayload
-{
-  vec3 hitValue;
+struct HitPayload {
+    vec3 value;
 };
 
-layout(location = 0) rayPayloadEXT hitPayload prd;
+layout(location = 0) rayPayloadEXT HitPayload rPayload;
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT TLAS;
 layout(binding = 1, set = 0, rgba32f) uniform image2D image;
@@ -45,5 +44,5 @@ void main() {
           0               // payload (location = 0)
     );
 
-    imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(prd.hitValue, 1.0));
+    imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(rPayload.value, 1.0));
 }

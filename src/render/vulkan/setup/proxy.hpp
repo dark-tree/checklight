@@ -9,9 +9,10 @@ class LogicalDevice;
 
 struct Proxy {
 
-		// VK_KHR_get_physical_device_properties2
-		DEF_FUNCTION(vkGetPhysicalDeviceFeatures2KHR);
-		DEF_FUNCTION(vkGetPhysicalDeviceProperties2KHR);
+		// Vulkan >1.0
+		DEF_FUNCTION(vkGetBufferDeviceAddress);
+		DEF_FUNCTION(vkGetPhysicalDeviceFeatures2);
+		DEF_FUNCTION(vkGetPhysicalDeviceProperties2);
 
 		// VK_EXT_debug_utils
 		DEF_FUNCTION(vkCreateDebugUtilsMessengerEXT);
@@ -34,9 +35,6 @@ struct Proxy {
 		DEF_FUNCTION(vkDestroyAccelerationStructureKHR);
 		DEF_FUNCTION(vkGetAccelerationStructureDeviceAddressKHR);
 		DEF_FUNCTION(vkCmdWriteAccelerationStructuresPropertiesKHR);
-
-		// VK_EXT_buffer_device_address
-		DEF_FUNCTION(vkGetBufferDeviceAddressKHR);
 
 	public:
 

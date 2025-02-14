@@ -46,6 +46,7 @@ GraphicsPipeline RaytracePipelineBuilder::build() {
 	create_info.groupCount = layout.groups.size();
 
 	create_info.pDynamicState = &dynamic;
+	create_info.maxPipelineRayRecursionDepth = depth;
 
 	VkPipeline pipeline;
 

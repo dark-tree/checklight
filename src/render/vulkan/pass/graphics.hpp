@@ -21,7 +21,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 
 		VkViewport vk_viewport {};
 		VkRect2D vk_scissor {};
-		VkRenderPass vk_pass;
+		VkRenderPass vk_pass {};
 		int subpass = -1;
 
 		void finalize();

@@ -17,7 +17,7 @@ PhysicalDevice::PhysicalDevice(VkPhysicalDevice device)  {
 	ray_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
 	ray_properties.pNext = nullptr;
 
-	Proxy::vkGetPhysicalDeviceProperties2KHR(device, &properties);
+	Proxy::vkGetPhysicalDeviceProperties2(device, &properties);
 
 	features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 	features.pNext = &vk12_features;
@@ -31,7 +31,7 @@ PhysicalDevice::PhysicalDevice(VkPhysicalDevice device)  {
 	accel_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
 	accel_features.pNext = nullptr;
 
-	Proxy::vkGetPhysicalDeviceFeatures2KHR(device, &features);
+	Proxy::vkGetPhysicalDeviceFeatures2(device, &features);
 	this->vk_device = device;
 }
 
@@ -170,7 +170,7 @@ VkDeviceAddress LogicalDevice::getAddress(const Buffer& buffer) const {
 	info.pNext = nullptr;
 	info.buffer = buffer.getHandle();
 
-	return Proxy::vkGetBufferDeviceAddressKHR(vk_device, &info);
+	return Proxy::vkGetBufferDeviceAddress(vk_device, &info);
 }
 
 VkDeviceAddress LogicalDevice::getAddress(const AccelStruct& structure) const {
