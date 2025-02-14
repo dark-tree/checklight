@@ -26,7 +26,7 @@ class AccelStruct {
 	private:
 
 		Buffer buffer;
-		VkAccelerationStructureKHR vk_structure;
+		VkAccelerationStructureKHR vk_structure = VK_NULL_HANDLE;
 
 	public:
 
