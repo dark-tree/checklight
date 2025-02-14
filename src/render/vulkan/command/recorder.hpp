@@ -41,7 +41,7 @@ class CommandRecorder {
 		CommandRecorder& copyBufferToImage(Image dst, Buffer src, size_t offset, size_t width, size_t height, size_t layers, size_t level);
 
 		/// Insert pipeline layout barrier
-		CommandRecorder& transitionLayout(Image image, VkImageLayout dst, VkImageLayout src, size_t layers, size_t levels);
+		CommandRecorder& transitionLayout(Image image, VkImageLayout dst, VkImageLayout src);
 
 		/// Begin a simple to use memory barrier builder
 		MemoryBarrier memoryBarrier();

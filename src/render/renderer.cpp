@@ -267,6 +267,7 @@ void Renderer::createSwapchain() {
 
 	// allocate all attachments (except for color)
 	attachment_depth.allocate(device, extent.width, extent.height, allocator);
+	attachment_albedo.allocate(device, extent.width, extent.height, allocator);
 
 	// create framebuffers
 	pass_basic_3d.prepareFramebuffers(swapchain);
@@ -307,6 +308,13 @@ void Renderer::createAttachments() {
 		.setClearDepth(1.0f)
 		.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
 		.setDebugName("Depth")
+		.createAttachment();
+
+	attachment_albedo = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_R8G8B8A8_SNORM)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT)
+		.setDebugName("Albedo")
 		.createAttachment();
 
 	// very important UwU
@@ -423,6 +431,7 @@ void Renderer::lateClose() {
 
 	// close all attachments
 	attachment_depth.close(device);
+	attachment_albedo.close(device);
 
 	swapchain.close();
 	closeFrames();
@@ -614,17 +623,23 @@ void Renderer::beginDraw() {
 
 	rebuildTopLevel(recorder);
 
+	recorder.transitionLayout(attachment_albedo.getTexture().getTextureImage(), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+
+	recorder.bindPipeline(pipeline_trace_3d);
+	recorder.bindDescriptorSet(frame.set_raytrace);
+	recorder.traceRays(shader_table, 100, 100);
+
+	// TODO
 	recorder.beginRenderPass(pass_basic_3d, current_image, swapchain.getExtend());
 	recorder.bindPipeline(pipeline_basic_3d);
 	recorder.bindDescriptorSet(frame.set_graphics);
+	recorder.endRenderPass();
+
 }
 
 void Renderer::endDraw() {
 
-//	recorder.bindPipeline(pipeline_trace_3d);
-//	recorder.traceRays(shader_table, 100, 100);
-
-	recorder.endRenderPass();
+//	recorder.endRenderPass();
 	recorder.done();
 
 	RenderFrame& frame = getFrame();

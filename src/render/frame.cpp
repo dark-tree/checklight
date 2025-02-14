@@ -16,7 +16,7 @@ RenderFrame::RenderFrame(Renderer& renderer, const CommandPool& pool, const Logi
 
 	set_raytrace = renderer.descriptor_pool.allocate(renderer.layout_raytrace);
 	set_raytrace.structure(0, renderer.tlas);
-//	set_raytrace.sampler(1, renderer.s);
+	set_raytrace.view(1, renderer.attachment_albedo.getView());
 }
 
 RenderFrame::~RenderFrame() {

@@ -6,6 +6,7 @@ class DescriptorSetLayout;
 class Buffer;
 class Texture;
 class AccelStruct;
+class ImageView;
 
 class DescriptorSet {
 
@@ -25,10 +26,10 @@ class DescriptorSet {
 		 * for the given descriptor binding site to be compatible the layout from which
 		 * this set was created must configure the binding to match this resource type.
 		 *
-		 * @param binding the descriptor set binding index to update
-		 * @param sampler the buffer to update it to
-		 * @param length the length of the buffer (or part of it) in bytes
-		 * @param offset the offset in the buffer where the section starts (in bytes)
+		 * @param binding descriptor set binding index to update
+		 * @param sampler buffer to update it to
+		 * @param length  length of the buffer (or part of it) in bytes
+		 * @param offset  offset in the buffer where the section starts (in bytes)
 		 */
 		void buffer(int binding, const Buffer& buffer, size_t length, int offset = 0);
 
@@ -37,10 +38,12 @@ class DescriptorSet {
 		 * for the given descriptor binding site to be compatible the layout
 		 * from which this set was created must configure the binding to match this resource type.
 		 *
-		 * @param binding the descriptor set binding index to update
-		 * @param texture the texture to update it to
+		 * @param binding descriptor set binding index to update
+		 * @param texture texture to update it to
 		 */
 		void sampler(int binding, const Texture& texture);
+
+		void view(int binding, const ImageView& view);
 
 		/**
 		 * Update one descriptor binding to point to the given Top
@@ -48,8 +51,8 @@ class DescriptorSet {
 		 * be compatible the layout from which this set was created must configure
 		 * the binding to match this resource type.
 		 *
-		 * @param binding   the descriptor set binding index to update
-		 * @param structure the texture to update it to
+		 * @param binding   descriptor set binding index to update
+		 * @param structure texture to update it to
 		 */
 		void structure(int binding, const AccelStruct& structure);
 

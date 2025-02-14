@@ -27,6 +27,8 @@ class Texture {
 		VkImageView getView() const;
 		VkSampler getSampler() const;
 
+		Image getTextureImage() const;
+
 };
 
 class TextureDelegate {

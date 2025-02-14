@@ -135,7 +135,7 @@ CommandRecorder& CommandRecorder::copyBufferToImage(Image dst, Buffer src, size_
 	return *this;
 }
 
-CommandRecorder& CommandRecorder::transitionLayout(Image image, VkImageLayout dst, VkImageLayout src, size_t layers, size_t levels) {
+CommandRecorder& CommandRecorder::transitionLayout(Image image, VkImageLayout dst, VkImageLayout src) {
 	VkPipelineStageFlags src_stage = 0;
 	VkPipelineStageFlags dst_stage = 0;
 
@@ -152,9 +152,9 @@ CommandRecorder& CommandRecorder::transitionLayout(Image image, VkImageLayout ds
 	barrier.image = image.getHandle();
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = levels;
+	barrier.subresourceRange.levelCount = image.getLayerCount();
 	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = layers;
+	barrier.subresourceRange.layerCount = image.getLayerCount();
 
 	if (src == VK_IMAGE_LAYOUT_UNDEFINED && dst == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
 		barrier.srcAccessMask = 0;
@@ -170,7 +170,16 @@ CommandRecorder& CommandRecorder::transitionLayout(Image image, VkImageLayout ds
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
 		src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		failed = false;
+	}
+
+	if (src == VK_IMAGE_LAYOUT_UNDEFINED && dst == VK_IMAGE_LAYOUT_GENERAL) {
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+
+		src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 		failed = false;
 	}
 

@@ -315,14 +315,14 @@ Image ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& recorde
 	allocation.unmap();
 
 	Image image = allocator.allocateImage(Memory::DEVICE, layer_width, layer_height, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, layer_count, levels(), "Untitled");
-	recorder.transitionLayout(image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_UNDEFINED, layer_count, levels());
+	recorder.transitionLayout(image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_UNDEFINED);
 
 	// transfer the image level by level
 	for (int i = 0; i < levels(); i ++) {
 		recorder.copyBufferToImage(image, staging, offsets[i], level(i).width(), std::max(1, (height >> i)), layer_count, i);
 	}
 
-	recorder.transitionLayout(image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, layer_count, levels());
+	recorder.transitionLayout(image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 	queue.enqueue([&] () {
 		staging.close();

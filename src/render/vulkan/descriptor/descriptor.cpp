@@ -39,9 +39,30 @@ void DescriptorSet::sampler(int binding, const Texture& texture) {
 	const VkDescriptorType type = layout->getType(binding);
 
 	VkDescriptorImageInfo info {};
-	info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	info.imageLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
 	info.imageView = texture.getView();
 	info.sampler = texture.getSampler();
+
+	VkWriteDescriptorSet write {};
+	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	write.dstSet = vk_set;
+	write.dstBinding = binding;
+	write.dstArrayElement = 0;
+	write.descriptorType = type;
+	write.descriptorCount = 1;
+	write.pImageInfo = &info;
+
+	vkUpdateDescriptorSets(vk_device, 1, &write, 0, nullptr);
+
+}
+
+void DescriptorSet::view(int binding, const ImageView& view) {
+
+	const VkDescriptorType type = layout->getType(binding);
+
+	VkDescriptorImageInfo info {};
+	info.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	info.imageView = view.getHandle();
 
 	VkWriteDescriptorSet write {};
 	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
