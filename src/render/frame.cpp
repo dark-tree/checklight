@@ -14,6 +14,9 @@ RenderFrame::RenderFrame(Renderer& renderer, const CommandPool& pool, const Logi
 	set_graphics = renderer.descriptor_pool.allocate(renderer.layout_geometry);
 	set_graphics.buffer(0, uniform_buffer, sizeof(SceneUniform));
 
+	set_compose = renderer.descriptor_pool.allocate(renderer.layout_compose);
+	set_compose.sampler(0, renderer.attachment_albedo.getTexture());
+
 	set_raytrace = renderer.descriptor_pool.allocate(renderer.layout_raytrace);
 	set_raytrace.structure(0, renderer.tlas);
 	set_raytrace.view(1, renderer.attachment_albedo.getView());

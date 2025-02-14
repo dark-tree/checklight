@@ -48,6 +48,7 @@ class RenderFrame {
 
 		SceneUniform* uniform_map;
 		DescriptorSet set_graphics;
+		DescriptorSet set_compose;
 		DescriptorSet set_raytrace;
 
 	public:

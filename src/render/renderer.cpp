@@ -271,6 +271,7 @@ void Renderer::createSwapchain() {
 
 	// create framebuffers
 	pass_basic_3d.prepareFramebuffers(swapchain);
+	pass_compose_2d.prepareFramebuffers(swapchain);
 
 	printf("INFO: Swapchain ready\n");
 
@@ -283,6 +284,8 @@ void Renderer::createShaders() {
 	shader_trace_gen = compiler.compileFile(device, "assets/shader/ray-gen.glsl", Kind::RAYGEN);
 	shader_trace_miss = compiler.compileFile(device, "assets/shader/ray-miss.glsl", Kind::MISS);
 	shader_trace_hit = compiler.compileFile(device, "assets/shader/ray-hit.glsl", Kind::CLOSEST);
+	shader_blit_vertex = compiler.compileFile(device, "assets/shader/blit.vert", Kind::VERTEX);
+	shader_blit_fragment = compiler.compileFile(device, "assets/shader/blit.frag", Kind::FRAGMENT);
 
 }
 
@@ -313,7 +316,7 @@ void Renderer::createAttachments() {
 	attachment_albedo = TextureBuilder::begin()
 		.setFormat(VK_FORMAT_R8G8B8A8_SNORM)
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
-		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT)
+		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
 		.setDebugName("Albedo")
 		.createAttachment();
 
@@ -362,11 +365,39 @@ void Renderer::createRenderPasses() {
 
 	}
 
+	{ // compose 2d pass
+
+		RenderPassBuilder builder;
+
+		Attachment::Ref color = builder.addAttachment(attachment_color)
+			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+			.next();
+
+		builder.addDependency()
+			.first(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0)
+			.then(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+			.next();
+
+		builder.addDependency(VK_DEPENDENCY_BY_REGION_BIT)
+			.first(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+			.then(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_MEMORY_READ_BIT)
+			.next();
+
+		builder.addSubpass()
+			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+			.next();
+
+		pass_compose_2d = builder.build(device, "Compose 2D");
+
+	}
+
 
 }
 
 void Renderer::closeRenderPasses() {
 	pass_basic_3d.close();
+	pass_compose_2d.close();
 }
 
 void Renderer::createPipelines() {
@@ -383,6 +414,15 @@ void Renderer::createPipelines() {
 		.withPushConstant(mesh_constant)
 		.withDescriptorSetLayout(layout_geometry)
 		.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
+		.build();
+
+	pipeline_compose_2d = GraphicsPipelineBuilder::of(device)
+		.withViewport(0, 0, extent.width, extent.height)
+		.withScissors(0, 0, extent.width, extent.height)
+		.withCulling(false)
+		.withRenderPass(pass_compose_2d, 0)
+		.withShaders(shader_blit_vertex, shader_blit_fragment)
+		.withDescriptorSetLayout(layout_compose)
 		.build();
 
 	ShaderTableBuilder builder;
@@ -539,9 +579,9 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 		.done(device);
 
-//	layout_compose = DescriptorSetLayoutBuilder::begin()
-//		.descriptor(0, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
-//		.done(device);
+	layout_compose = DescriptorSetLayoutBuilder::begin()
+		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.done(device);
 
 	layout_raytrace = DescriptorSetLayoutBuilder::begin()
 		.descriptor(0, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
@@ -552,6 +592,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	descriptor_pool = DescriptorPoolBuilder::begin()
 		.addDynamic(layout_geometry, 1)
 		.addDynamic(layout_raytrace, 1)
+		.addDynamic(layout_compose, 1)
 		.done(device, concurrent);
 
 	// render pass used during mesh rendering
@@ -576,6 +617,7 @@ Renderer::~Renderer() {
 	// close all the descriptor layouts here
 	layout_geometry.close();
 	layout_raytrace.close();
+	layout_compose.close();
 
 	descriptor_pool.close();
 	transient_pool.close();
@@ -633,7 +675,13 @@ void Renderer::beginDraw() {
 	recorder.bindDescriptorSet(frame.set_raytrace);
 	recorder.traceRays(shader_table, 100, 100);
 
-	recorder.blit(swapchain.getImages().at(current_image), VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, attachment_albedo.getTexture().getTextureImage(), VK_IMAGE_LAYOUT_GENERAL);
+	recorder.transitionLayout(attachment_albedo.getTexture().getTextureImage(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
+
+	recorder.beginRenderPass(pass_compose_2d, current_image, swapchain.getExtend());
+	recorder.bindPipeline(pipeline_compose_2d);
+	recorder.bindDescriptorSet(frame.set_compose);
+	recorder.draw(3);
+	recorder.endRenderPass();
 
 	// TODO
 //	recorder.beginRenderPass(pass_basic_3d, current_image, swapchain.getExtend());

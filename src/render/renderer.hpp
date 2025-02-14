@@ -81,6 +81,8 @@ class Renderer {
 		Shader shader_trace_gen;
 		Shader shader_trace_miss;
 		Shader shader_trace_hit;
+		Shader shader_blit_vertex;
+		Shader shader_blit_fragment;
 
 		// attachments
 		Attachment attachment_color;
@@ -89,6 +91,7 @@ class Renderer {
 
 		// descriptors
 		DescriptorSetLayout layout_geometry;
+		DescriptorSetLayout layout_compose;
 		DescriptorSetLayout layout_raytrace;
 
 		// layouts
@@ -96,10 +99,12 @@ class Renderer {
 
 		// renderpasses
 		RenderPass pass_basic_3d;
+		RenderPass pass_compose_2d;
 
 		// Pipelines
 		GraphicsPipeline pipeline_basic_3d;
 		GraphicsPipeline pipeline_trace_3d;
+		GraphicsPipeline pipeline_compose_2d;
 
 		// late vulkan objects
 		Swapchain swapchain;

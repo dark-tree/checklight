@@ -183,6 +183,15 @@ CommandRecorder& CommandRecorder::transitionLayout(Image image, VkImageLayout ds
 		failed = false;
 	}
 
+	if (src == VK_IMAGE_LAYOUT_GENERAL && dst == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+		barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		src_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		failed = false;
+	}
+
 	// allow reading from already written to sections (the whole thing doesn't need to finish)
 	VkDependencyFlags flags = VK_DEPENDENCY_BY_REGION_BIT;
 

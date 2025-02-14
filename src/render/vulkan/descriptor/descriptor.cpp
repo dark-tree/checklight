@@ -39,7 +39,7 @@ void DescriptorSet::sampler(int binding, const Texture& texture) {
 	const VkDescriptorType type = layout->getType(binding);
 
 	VkDescriptorImageInfo info {};
-	info.imageLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
+	info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	info.imageView = texture.getView();
 	info.sampler = texture.getSampler();
 
