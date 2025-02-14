@@ -14,8 +14,10 @@ class RenderModel {
 
 	public:
 
-		RenderModel(const LogicalDevice& device, AccelStruct structure);
+		RenderModel(const LogicalDevice& device, const AccelStruct& structure);
 
 		VkDeviceAddress getAddress() const;
+
+		void setStructure(const LogicalDevice& device, const AccelStruct& structure);
 
 };

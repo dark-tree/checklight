@@ -5,9 +5,15 @@
  * RenderModel
  */
 
-RenderModel::RenderModel(const LogicalDevice& device, AccelStruct structure)
-: structure(structure), address(device.getAddress(structure)) {}
+RenderModel::RenderModel(const LogicalDevice& device, const AccelStruct& structure) {
+	setStructure(device, structure);
+}
 
 VkDeviceAddress RenderModel::getAddress() const {
 	return address;
+}
+
+void RenderModel::setStructure(const LogicalDevice& device, const AccelStruct& structure) {
+	this->structure = structure;
+	this->address = device.getAddress(structure);
 }

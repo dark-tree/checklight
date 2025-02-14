@@ -509,14 +509,6 @@ void Renderer::rebuildTopLevel(CommandRecorder& recorder) {
 
 	instances->flush(recorder);
 
-	// wait for object transfer
-	recorder.memoryBarrier()
-		.first(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_MEMORY_WRITE_BIT)
-		.then(VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR, VK_ACCESS_MEMORY_READ_BIT)
-		.done();
-
-	bakery.bake(device, allocator, recorder);
-
 	tlas.close(device);
 	tlas = bakery.submit(device, allocator, config)->structure;
 	bakery.bake(device, allocator, recorder);
@@ -526,6 +518,16 @@ void Renderer::rebuildTopLevel(CommandRecorder& recorder) {
 		.then(VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR)
 		.done();
 
+}
+
+void Renderer::rebuildBottomLevel(CommandRecorder& recorder) {
+	// wait for object transfer
+	recorder.memoryBarrier()
+		.first(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_MEMORY_WRITE_BIT)
+		.then(VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR, VK_ACCESS_MEMORY_READ_BIT)
+		.done();
+
+	bakery.bake(device, allocator, recorder);
 }
 
 Fence Renderer::createFence(bool signaled) {
@@ -586,6 +588,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	layout_raytrace = DescriptorSetLayoutBuilder::begin()
 		.descriptor(0, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.descriptor(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.done(device);
 
 	// add layouts to the pool so that they can be allocated
@@ -669,12 +672,14 @@ void Renderer::beginDraw() {
 
 	rebuildTopLevel(recorder);
 
+	frame.set_raytrace.structure(0, tlas);
+
 	recorder.transitionLayout(attachment_albedo.getTexture().getTextureImage(), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 
 	recorder.bindPipeline(pipeline_trace_3d);
 	recorder.bindDescriptorSet(frame.set_raytrace);
-	recorder.traceRays(shader_table, 100, 100);
-
+	//recorder.traceRays(shader_table, 100, 100);
+	
 	recorder.transitionLayout(attachment_albedo.getTexture().getTextureImage(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
 
 	recorder.beginRenderPass(pass_compose_2d, current_image, swapchain.getExtend());

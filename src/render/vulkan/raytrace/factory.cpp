@@ -117,8 +117,7 @@ void AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator,
 			AccelStruct compacted = allocator.allocateAcceleration(config->build_info.type, size, "Compacted AccelStruct");
 			recorder.copyAccelerationStructure(compacted, previous, true);
 
-			// FIXME old structure is leaked here
-			previous = compacted;
+			config->model->setStructure(device, compacted);
 		}
 
 		recorder.quickFenceSubmit(fence, RenderSystem::system->queue);

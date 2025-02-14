@@ -19,12 +19,17 @@ int main() {
 
 	auto model = system.createRenderModel(meshes);
 
+	auto commander = system.createTransientCommander();
+	system.rebuildBottomLevel(commander->getRecorder());
+	commander->complete();
+
 	// TODO: free meshes
 	// for (auto& mesh : meshes) {
 	//	  mesh.reset();
 	// }
 
 	auto object = system.createRenderObject();
+	object->setShader(0);
 	object->setMatrix(glm::identity<glm::mat4x3>());
 	object->setModel(model);
 

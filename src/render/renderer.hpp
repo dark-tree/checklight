@@ -188,4 +188,5 @@ class Renderer {
 		/// Get current screen height, in pixels
 		int height();
 
+		void rebuildBottomLevel(CommandRecorder& recorder);
 };
