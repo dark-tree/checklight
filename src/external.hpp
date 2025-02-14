@@ -67,3 +67,7 @@
 #	define UNREACHABLE std::terminate()
 #endif
 
+/**
+ * Can be used to mark pointer function parameters that can be set to nullptr
+ */
+#define NULLABLE

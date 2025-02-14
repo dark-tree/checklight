@@ -66,13 +66,14 @@ CommandRecorder& CommandRecorder::nextSubpass() {
 
 CommandRecorder& CommandRecorder::bindPipeline(GraphicsPipeline& pipeline) {
 	this->vk_layout = pipeline.getLayout();
-	vkCmdBindPipeline(vk_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getHandle());
+	this->vk_bind = pipeline.getBindPoint();
+	vkCmdBindPipeline(vk_buffer, vk_bind, pipeline.getHandle());
 	return *this;
 }
 
 CommandRecorder& CommandRecorder::bindDescriptorSet(DescriptorSet& set) {
 	VkDescriptorSet vk_set = set.getHandle();
-	vkCmdBindDescriptorSets(vk_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_layout, 0, 1, &vk_set, 0, nullptr);
+	vkCmdBindDescriptorSets(vk_buffer, vk_bind, vk_layout, 0, 1, &vk_set, 0, nullptr);
 	return *this;
 }
 
@@ -238,5 +239,6 @@ CommandRecorder& CommandRecorder::resetQueryPool(QueryPool& pool) {
 	return *this;
 }
 
-void CommandRecorder::traceRays() {
+void CommandRecorder::traceRays(ShaderTable& shaders, int width, int height) {
+	Proxy::vkCmdTraceRaysKHR(vk_buffer, &shaders.vk_region_generate, &shaders.vk_region_miss, &shaders.vk_region_hit, &shaders.vk_region_call, width, height, 1);
 }

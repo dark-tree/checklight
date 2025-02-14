@@ -26,10 +26,17 @@ enum struct BlendMode {
 	DISABLED = 3
 };
 
+enum struct PipelineType {
+	RASTER,
+	RAYTRACE,
+	COMPUTE
+};
+
 class GraphicsPipeline {
 
 	private:
 
+		PipelineType type;
 		VkPipeline vk_pipeline;
 		VkPipelineLayout vk_layout;
 		VkDevice vk_device;
@@ -37,7 +44,7 @@ class GraphicsPipeline {
 	public:
 
 		GraphicsPipeline() = default;
-		GraphicsPipeline(VkPipeline vk_pipeline, VkPipelineLayout vk_layout, VkDevice vk_device);
+		GraphicsPipeline(PipelineType type, VkPipeline vk_pipeline, VkPipelineLayout vk_layout, VkDevice vk_device);
 
 		void close();
 
@@ -47,6 +54,10 @@ class GraphicsPipeline {
 		/// Get handle to the underlying pipeline layout object
 		VkPipelineLayout getLayout() const;
 
+		/// Get the specific type of this pipeline (e.g. raytrace vs. raster)
+		PipelineType getType() const;
+
+		VkPipelineBindPoint getBindPoint();
 };
 
 template <class Self>

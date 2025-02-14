@@ -24,7 +24,7 @@ RaytracePipelineBuilder& RaytracePipelineBuilder::withRecursionDepth(int depth) 
 	return *this;
 }
 
-RaytracePipelineBuilder& RaytracePipelineBuilder::withShaderLayout(const ShaderArrayLayout& layout) {
+RaytracePipelineBuilder& RaytracePipelineBuilder::withShaderLayout(const ShaderTableLayout& layout) {
 	this->layout = layout;
 	return *this;
 }
@@ -53,6 +53,6 @@ GraphicsPipeline RaytracePipelineBuilder::build() {
 		throw std::runtime_error {"Failed to create raytrace pipeline!"};
 	}
 
-	return {pipeline, pipeline_layout, vk_device};
+	return {PipelineType::RAYTRACE, pipeline, pipeline_layout, vk_device};
 
 }

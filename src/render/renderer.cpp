@@ -9,6 +9,7 @@
 #include "render/vulkan/setup/debug.hpp"
 #include "render/api/vertex.hpp"
 #include "render/api/model.hpp"
+#include "render/vulkan/shader/group.hpp"
 
 /*
  * Renderer
@@ -242,8 +243,6 @@ void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family que
 	#endif
 
 	Proxy::loadDeviceFunctions(this->device);
-	Proxy::loadRaytraceFunctions(this->device);
-
 }
 
 void Renderer::createSwapchain() {
@@ -378,16 +377,20 @@ void Renderer::createPipelines() {
 		.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
 		.build();
 
-	ShaderArrayBuilder builder;
+	ShaderTableBuilder builder;
 	builder.addMissShader(shader_trace_miss);
 	builder.addRayGenShader(shader_trace_gen);
 	builder.addHitGroup().withClosestHit(shader_trace_hit);
 
+	ShaderTableLayout shader_layout = builder.build();
+
 	pipeline_trace_3d = RaytracePipelineBuilder::of(device)
 		.withRecursionDepth(2)
-		.withDescriptorSetLayout(layout_geometry)
-		.withShaderLayout(builder.build())
+		.withDescriptorSetLayout(layout_raytrace)
+		.withShaderLayout(shader_layout)
 		.build();
+
+	shader_table = shader_layout.allocate(device, allocator, pipeline_trace_3d);
 
 }
 
@@ -527,9 +530,15 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 		.done(device);
 
+	layout_raytrace = DescriptorSetLayoutBuilder::begin()
+		.descriptor(0, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.done(device);
+
 	// add layouts to the pool so that they can be allocated
 	descriptor_pool = DescriptorPoolBuilder::begin()
 		.addDynamic(layout_geometry, 1)
+		.addDynamic(layout_raytrace, 1)
 		.done(device, concurrent);
 
 	// render pass used during mesh rendering
@@ -553,6 +562,7 @@ Renderer::~Renderer() {
 
 	// close all the descriptor layouts here
 	layout_geometry.close();
+	layout_raytrace.close();
 
 	descriptor_pool.close();
 	transient_pool.close();
@@ -606,12 +616,13 @@ void Renderer::beginDraw() {
 
 	recorder.beginRenderPass(pass_basic_3d, current_image, swapchain.getExtend());
 	recorder.bindPipeline(pipeline_basic_3d);
-	recorder.bindDescriptorSet(frame.set_0);
+	recorder.bindDescriptorSet(frame.set_graphics);
 }
 
 void Renderer::endDraw() {
 
-	recorder.traceRays();
+//	recorder.bindPipeline(pipeline_trace_3d);
+//	recorder.traceRays(shader_table, 100, 100);
 
 	recorder.endRenderPass();
 	recorder.done();

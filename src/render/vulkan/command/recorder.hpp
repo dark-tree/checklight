@@ -14,6 +14,7 @@ class AccelStruct;
 class QueryPool;
 class Queue;
 class Fence;
+class ShaderTable;
 
 class CommandRecorder {
 
@@ -21,6 +22,7 @@ class CommandRecorder {
 
 		VkCommandBuffer vk_buffer;
 		VkPipelineLayout vk_layout;
+		VkPipelineBindPoint vk_bind;
 		RenderPassTracer tracer;
 		VkCommandBufferUsageFlags flags;
 
@@ -92,5 +94,6 @@ class CommandRecorder {
 		/// Resets the given query pool, pools need to be reset after creation and between uses
 		CommandRecorder& resetQueryPool(QueryPool& pool);
 
-		void traceRays();
+		/// Invokes the raytracing machinery using the provided shader table
+		void traceRays(ShaderTable& shaders, int width, int height);
 };

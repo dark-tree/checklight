@@ -24,6 +24,7 @@ struct Proxy {
 		// VK_KHR_ray_tracing_pipeline
 		DEF_FUNCTION(vkCmdTraceRaysKHR);
 		DEF_FUNCTION(vkCreateRayTracingPipelinesKHR);
+		DEF_FUNCTION(vkGetRayTracingShaderGroupHandlesKHR);
 
 		// VK_KHR_acceleration_structure
 		DEF_FUNCTION(vkCreateAccelerationStructureKHR);
@@ -50,9 +51,6 @@ struct Proxy {
 
 		/// Load functions through the Vulkan Logical Device
 		static void loadDeviceFunctions(LogicalDevice& device);
-
-		/// Load all raytracing related functions
-		static void loadRaytraceFunctions(LogicalDevice& device);
 
 };
 

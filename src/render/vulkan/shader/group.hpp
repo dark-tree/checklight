@@ -3,23 +3,10 @@
 #include "external.hpp"
 
 class Shader;
+class ShaderTableLayout;
 class ShaderHitGroup;
 
-class ShaderArrayLayout {
-
-	private:
-
-		friend class ShaderArrayBuilder;
-		friend class RaytracePipelineBuilder;
-
-		int generate, miss, hit;
-
-		std::vector<VkPipelineShaderStageCreateInfo> stages;
-		std::vector<VkRayTracingShaderGroupCreateInfoKHR> groups;
-
-};
-
-class ShaderArrayBuilder {
+class ShaderTableBuilder {
 
 	private:
 
@@ -37,11 +24,11 @@ class ShaderArrayBuilder {
 
 	public:
 
-		ShaderArrayBuilder& addRayGenShader(const Shader& shader);
-		ShaderArrayBuilder& addMissShader(const Shader& shader);
+		ShaderTableBuilder& addRayGenShader(const Shader& shader);
+		ShaderTableBuilder& addMissShader(const Shader& shader);
 		ShaderHitGroup addHitGroup();
 
-		ShaderArrayLayout build() const;
+		ShaderTableLayout build() const;
 
 };
 
@@ -49,12 +36,12 @@ class ShaderHitGroup {
 
 	private:
 
-		ShaderArrayBuilder* builder;
+		ShaderTableBuilder* builder;
 		VkRayTracingShaderGroupCreateInfoKHR* group;
 
 	public:
 
-		ShaderHitGroup(ShaderArrayBuilder* builder, VkRayTracingShaderGroupCreateInfoKHR* group);
+		ShaderHitGroup(ShaderTableBuilder* builder, VkRayTracingShaderGroupCreateInfoKHR* group);
 
 		ShaderHitGroup& withClosestHit(const Shader& shader);
 		ShaderHitGroup& withAnyHit(const Shader& shader);

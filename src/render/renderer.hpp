@@ -73,6 +73,7 @@ class Renderer {
 		std::unique_ptr<InstanceManager> instances;
 		AccelStructFactory bakery;
 		AccelStruct tlas;
+		ShaderTable shader_table;
 
 		// shaders
 		Shader shader_basic_vertex;
@@ -87,6 +88,7 @@ class Renderer {
 
 		// descriptors
 		DescriptorSetLayout layout_geometry;
+		DescriptorSetLayout layout_raytrace;
 
 		// layouts
 		BindingLayout binding_3d;

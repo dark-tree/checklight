@@ -267,6 +267,6 @@ GraphicsPipeline GraphicsPipelineBuilder::build() {
 		throw std::runtime_error {"Failed to create graphics pipeline!"};
 	}
 
-	return {pipeline, pipeline_layout, vk_device};
+	return {PipelineType::RASTER, pipeline, pipeline_layout, vk_device};
 
 }

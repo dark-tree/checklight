@@ -48,7 +48,7 @@ class Compiler {
 
 		std::vector<Shader> shaders;
 		const shaderc::Compiler compiler;
-		shaderc::CompileOptions options {};
+		shaderc::CompileOptions options;
 
 		class ResultBuilder {
 

@@ -3,6 +3,7 @@
 #include "layout.hpp"
 #include "render/vulkan/buffer/buffer.hpp"
 #include "render/vulkan/buffer/texture.hpp"
+#include "render/vulkan/raytrace/struct.hpp"
 
 /*
  * DescriptorSet
@@ -50,6 +51,29 @@ void DescriptorSet::sampler(int binding, const Texture& texture) {
 	write.descriptorType = type;
 	write.descriptorCount = 1;
 	write.pImageInfo = &info;
+
+	vkUpdateDescriptorSets(vk_device, 1, &write, 0, nullptr);
+
+}
+
+void DescriptorSet::structure(int binding, const AccelStruct& structure) {
+
+	const VkDescriptorType type = layout->getType(binding);
+	VkAccelerationStructureKHR tlas = structure.getHandle();
+
+	VkWriteDescriptorSetAccelerationStructureKHR info {};
+	info.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
+	info.accelerationStructureCount = 1;
+	info.pAccelerationStructures = &tlas;
+
+	VkWriteDescriptorSet write {};
+	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	write.pNext = &info;
+	write.dstSet = vk_set;
+	write.dstBinding = binding;
+	write.dstArrayElement = 0;
+	write.descriptorType = type;
+	write.descriptorCount = 1;
 
 	vkUpdateDescriptorSets(vk_device, 1, &write, 0, nullptr);
 

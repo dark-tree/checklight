@@ -68,19 +68,37 @@ class Allocator {
 		/**
 		 * @brief Allocate buffer of given size
 		 * Allocates a new Vulkan Buffer with the specified memory properties
+		 *
+		 * @param[in] memory The kind of memory heap to use
+		 * @param[in] bytes  The minimal number of bytes to allocate
+		 * @param[in] usage  Combination of vulkan buffer usage flags
+		 * @param[in] name   (Optional) name for the buffer
 		 */
-		Buffer allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags usage, const char* name);
+		Buffer allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags usage, NULLABLE const char* name);
 
 		/**
 		 * @brief Allocate image of given size
 		 * Allocates a new Vulkan Image with the specified memory properties
+		 *
+		 * @param[in] memory The kind of memory heap to use
+		 * @param[in] width  The image width in pixels
+		 * @param[in] height The image height in pixels
+		 * @param[in] format The format of a single pixel in the image
+		 * @param[in] usage  Combination of vulkan image usage flags
+		 * @param[in] layers Number of image array elements
+		 * @param[in] levels Number om image mip-map levels
+		 * @param[in] name   (Optional) name for the buffer
 		 */
-		Image allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels, const char* name);
+		Image allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels, NULLABLE const char* name);
 
 		/**
 		 * @brief Allocate raytracing acceleration structure of given size
 		 * Allocates a new Vulkan Acceleration Structure, either Top or Bottom, and it's corresponding buffer
+		 *
+		 * @param[in] type  The kind of acceleration structure to create (BLAS vs. TLAS)
+		 * @param[in] bytes The minimal number of bytes to allocate
+		 * @param[in] name  (Optional) name for the buffer
 		 */
-		AccelStruct allocateAcceleration(VkAccelerationStructureTypeKHR type, size_t bytes, const char* name);
+		AccelStruct allocateAcceleration(VkAccelerationStructureTypeKHR type, size_t bytes, NULLABLE const char* name);
 
 };

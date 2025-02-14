@@ -19,6 +19,7 @@ IMPL_FUNCTION(vkCmdEndDebugUtilsLabelEXT);
 IMPL_FUNCTION(vkCmdInsertDebugUtilsLabelEXT);
 IMPL_FUNCTION(vkCmdTraceRaysKHR);
 IMPL_FUNCTION(vkCreateRayTracingPipelinesKHR);
+IMPL_FUNCTION(vkGetRayTracingShaderGroupHandlesKHR);
 IMPL_FUNCTION(vkCreateAccelerationStructureKHR);
 IMPL_FUNCTION(vkGetAccelerationStructureBuildSizesKHR);
 IMPL_FUNCTION(vkCmdBuildAccelerationStructuresKHR);
@@ -46,10 +47,6 @@ void Proxy::loadInstanceFunctions(Instance& instance) {
 }
 
 void Proxy::loadDeviceFunctions(LogicalDevice& device) {
-
-}
-
-void Proxy::loadRaytraceFunctions(LogicalDevice& device) {
 	LOAD_FUNCTION(device, vkCmdTraceRaysKHR);
 	LOAD_FUNCTION(device, vkCreateRayTracingPipelinesKHR);
 	LOAD_FUNCTION(device, vkCreateAccelerationStructureKHR);
@@ -60,4 +57,5 @@ void Proxy::loadRaytraceFunctions(LogicalDevice& device) {
 	LOAD_FUNCTION(device, vkDestroyAccelerationStructureKHR);
 	LOAD_FUNCTION(device, vkGetAccelerationStructureDeviceAddressKHR);
 	LOAD_FUNCTION(device, vkCmdWriteAccelerationStructuresPropertiesKHR);
+	LOAD_FUNCTION(device, vkGetRayTracingShaderGroupHandlesKHR);
 }

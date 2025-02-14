@@ -1,7 +1,7 @@
 #pragma once
 
 #include "pipeline.hpp"
-#include "render/vulkan/shader/group.hpp"
+#include "render/vulkan/shader/table.hpp"
 
 class RaytracePipelineBuilder : public AbstractPipelineBuilder<RaytracePipelineBuilder> {
 
@@ -9,7 +9,7 @@ class RaytracePipelineBuilder : public AbstractPipelineBuilder<RaytracePipelineB
 
 		int limit = 1;
 		int depth = 1;
-		ShaderArrayLayout layout;
+		ShaderTableLayout layout;
 
 	public:
 
@@ -41,7 +41,7 @@ class RaytracePipelineBuilder : public AbstractPipelineBuilder<RaytracePipelineB
 		 * @section Raytrace
 		 * @param layout The layout, as created with ShaderArrayBuilder
 		 */
-		RaytracePipelineBuilder& withShaderLayout(const ShaderArrayLayout& layout);
+		RaytracePipelineBuilder& withShaderLayout(const ShaderTableLayout& layout);
 
 	public:
 

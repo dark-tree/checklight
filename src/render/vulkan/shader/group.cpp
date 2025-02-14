@@ -1,12 +1,13 @@
 
 #include "group.hpp"
 #include "shader.hpp"
+#include "table.hpp"
 
 /*
  * ShaderArrayBuilder
  */
 
-int ShaderArrayBuilder::getShaderReference(const Shader& shader) {
+int ShaderTableBuilder::getShaderReference(const Shader& shader) {
 	auto handle = shader.getHandle();
 	auto it = cache.find(handle);
 
@@ -20,7 +21,7 @@ int ShaderArrayBuilder::getShaderReference(const Shader& shader) {
 	return last;
 }
 
-VkRayTracingShaderGroupCreateInfoKHR ShaderArrayBuilder::getEmptyGroup() const {
+VkRayTracingShaderGroupCreateInfoKHR ShaderTableBuilder::getEmptyGroup() const {
 	VkRayTracingShaderGroupCreateInfoKHR group {};
 	group.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
 	group.pNext = nullptr;
@@ -32,7 +33,7 @@ VkRayTracingShaderGroupCreateInfoKHR ShaderArrayBuilder::getEmptyGroup() const {
 	return group;
 }
 
-ShaderArrayBuilder& ShaderArrayBuilder::addRayGenShader(const Shader& shader) {
+ShaderTableBuilder& ShaderTableBuilder::addRayGenShader(const Shader& shader) {
 	VkRayTracingShaderGroupCreateInfoKHR group = getEmptyGroup();
 	group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
 	group.generalShader = getShaderReference(shader);
@@ -41,7 +42,7 @@ ShaderArrayBuilder& ShaderArrayBuilder::addRayGenShader(const Shader& shader) {
 	return *this;
 }
 
-ShaderArrayBuilder& ShaderArrayBuilder::addMissShader(const Shader& shader) {
+ShaderTableBuilder& ShaderTableBuilder::addMissShader(const Shader& shader) {
 	VkRayTracingShaderGroupCreateInfoKHR group = getEmptyGroup();
 	group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
 	group.generalShader = getShaderReference(shader);
@@ -50,7 +51,7 @@ ShaderArrayBuilder& ShaderArrayBuilder::addMissShader(const Shader& shader) {
 	return *this;
 }
 
-ShaderHitGroup ShaderArrayBuilder::addHitGroup() {
+ShaderHitGroup ShaderTableBuilder::addHitGroup() {
 	VkRayTracingShaderGroupCreateInfoKHR group = getEmptyGroup();
 	group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
 
@@ -58,8 +59,8 @@ ShaderHitGroup ShaderArrayBuilder::addHitGroup() {
 	return {this, &group_hit.back()};
 }
 
-ShaderArrayLayout ShaderArrayBuilder::build() const {
-	ShaderArrayLayout array {};
+ShaderTableLayout ShaderTableBuilder::build() const {
+	ShaderTableLayout array {};
 
 	array.generate = group_generate.size();
 	array.miss = group_miss.size();
@@ -78,7 +79,7 @@ ShaderArrayLayout ShaderArrayBuilder::build() const {
  * ShaderHitGroup
  */
 
-ShaderHitGroup::ShaderHitGroup(ShaderArrayBuilder* builder, VkRayTracingShaderGroupCreateInfoKHR* group)
+ShaderHitGroup::ShaderHitGroup(ShaderTableBuilder* builder, VkRayTracingShaderGroupCreateInfoKHR* group)
 : builder(builder), group(group) {}
 
 ShaderHitGroup& ShaderHitGroup::withClosestHit(const Shader& shader) {
