@@ -95,5 +95,8 @@ class CommandRecorder {
 		CommandRecorder& resetQueryPool(QueryPool& pool);
 
 		/// Invokes the raytracing machinery using the provided shader table
-		void traceRays(ShaderTable& shaders, int width, int height);
+		CommandRecorder& traceRays(ShaderTable& shaders, int width, int height);
+
+		/// Blit one image into another
+		CommandRecorder& blit(const Image& dst, VkImageLayout layout_dst, const Image& src, VkImageLayout layout_src);
 };

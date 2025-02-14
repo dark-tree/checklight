@@ -539,6 +539,10 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 		.done(device);
 
+//	layout_compose = DescriptorSetLayoutBuilder::begin()
+//		.descriptor(0, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
+//		.done(device);
+
 	layout_raytrace = DescriptorSetLayoutBuilder::begin()
 		.descriptor(0, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.descriptor(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
@@ -629,11 +633,13 @@ void Renderer::beginDraw() {
 	recorder.bindDescriptorSet(frame.set_raytrace);
 	recorder.traceRays(shader_table, 100, 100);
 
+	recorder.blit(swapchain.getImages().at(current_image), VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, attachment_albedo.getTexture().getTextureImage(), VK_IMAGE_LAYOUT_GENERAL);
+
 	// TODO
-	recorder.beginRenderPass(pass_basic_3d, current_image, swapchain.getExtend());
-	recorder.bindPipeline(pipeline_basic_3d);
-	recorder.bindDescriptorSet(frame.set_graphics);
-	recorder.endRenderPass();
+//	recorder.beginRenderPass(pass_basic_3d, current_image, swapchain.getExtend());
+//	recorder.bindPipeline(pipeline_basic_3d);
+//	recorder.bindDescriptorSet(frame.set_graphics);
+//	recorder.endRenderPass();
 
 }
 

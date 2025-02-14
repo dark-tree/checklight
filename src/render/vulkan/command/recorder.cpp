@@ -248,6 +248,39 @@ CommandRecorder& CommandRecorder::resetQueryPool(QueryPool& pool) {
 	return *this;
 }
 
-void CommandRecorder::traceRays(ShaderTable& shaders, int width, int height) {
+CommandRecorder& CommandRecorder::traceRays(ShaderTable& shaders, int width, int height) {
 	Proxy::vkCmdTraceRaysKHR(vk_buffer, &shaders.vk_region_generate, &shaders.vk_region_miss, &shaders.vk_region_hit, &shaders.vk_region_call, width, height, 1);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::blit(const Image& dst, VkImageLayout layout_dst, const Image& src, VkImageLayout layout_src) {
+
+	VkImageSubresourceLayers src_subresource {};
+	src_subresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	src_subresource.layerCount = src.getLayerCount();
+	src_subresource.baseArrayLayer = 0;
+	src_subresource.mipLevel = 0;
+
+	VkImageSubresourceLayers dst_subresource {};
+	dst_subresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	dst_subresource.layerCount = dst.getLayerCount();
+	dst_subresource.baseArrayLayer = 0;
+	dst_subresource.mipLevel = 0;
+
+	VkOffset3D src_offset[2];
+	src_offset[0] = {0, 0, 0};
+	src_offset[1] = {0, 0, 0};
+
+	VkOffset3D dst_offset[2];
+	dst_offset[0] = {0, 0, 0};
+	dst_offset[1] = {0, 0, 0};
+
+	VkImageBlit blit {};
+	blit.dstSubresource = dst_subresource;
+	memcpy(blit.dstOffsets, dst_offset, sizeof(VkOffset3D) * 2);
+	blit.srcSubresource = src_subresource;
+	memcpy(blit.srcOffsets, src_offset, sizeof(VkOffset3D) * 2);
+
+	vkCmdBlitImage(vk_buffer, src.getHandle(), layout_src, dst.getHandle(), layout_dst, 1, &blit, VK_FILTER_NEAREST);
+	return *this;
 }
