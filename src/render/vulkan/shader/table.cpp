@@ -46,7 +46,9 @@ ShaderTable::ShaderTable(const LogicalDevice& device, Allocator& allocator, Grap
 	// load group handles into a opaque byte buffer
 	std::vector<uint8_t> handles;
 	handles.resize(properties->shaderGroupHandleSize * total_handles);
-	Proxy::vkGetRayTracingShaderGroupHandlesKHR(device.getHandle(), pipeline.getHandle(), 0, total_handles, handles.size(), handles.data());
+	if (Proxy::vkGetRayTracingShaderGroupHandlesKHR(device.getHandle(), pipeline.getHandle(), 0, total_handles, handles.size(), handles.data()) != VK_SUCCESS) {
+		throw std::runtime_error {"Failed to load shader group handles!"};
+	}
 
 	VkDeviceSize buffer_size = vk_region_generate.size + vk_region_miss.size + vk_region_hit.size + vk_region_call.size;
 	VkBufferUsageFlags flags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR;

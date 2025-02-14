@@ -12,6 +12,7 @@ RenderObject::RenderObject(uint32_t index)
 : index(index), instance({}) {
 	instance.instanceCustomIndex = index;
 	instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
+	instance.mask = 0xFF;
 }
 
 const VkAccelerationStructureInstanceKHR* RenderObject::getData() const {
