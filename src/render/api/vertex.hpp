@@ -4,6 +4,7 @@
 
 struct Index3D {
 
+	/// vertex index
 	using type = uint32_t;
 	static constexpr VkIndexType format = VK_INDEX_TYPE_UINT32;
 
@@ -13,9 +14,11 @@ struct Vertex3D {
 
 	public:
 
+		/// vertex position
 		float x, y, z;
 		static constexpr VkFormat position = VK_FORMAT_R32G32B32_SFLOAT;
 
+		/// vertex color
 		float r, g, b;
 		static constexpr VkFormat color = VK_FORMAT_R32G32B32_SFLOAT;
 

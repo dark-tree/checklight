@@ -23,6 +23,7 @@ std::shared_ptr<RenderModel> RenderSystem::createRenderModel(std::vector<std::sh
 	for (auto& mesh : meshes) {
 		config.addTriangles(device, *mesh, true);
 		config.setFlags(VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_KHR);
+		config.setDebugName("<model>"); // TODO
 	}
 
 	return bakery.submit(device, allocator, config);
@@ -62,20 +63,6 @@ void RenderSystem::setViewMatrix(glm::mat4 view) {
 
 void RenderSystem::updateUniforms() {
 	getFrame().flushUniformBuffer(uniforms);
-}
-
-void RenderSystem::bindMesh(std::shared_ptr<RenderMesh>& mesh) {
-	this->mesh = mesh;
-}
-
-void RenderSystem::draw(glm::mat4 model) {
-
-	MeshConstant constant;
-	constant.model = model;
-	constant.material = 0;
-
-	recorder.writePushConstant(mesh_constant, &constant);
-	this->mesh->draw(recorder);
 }
 
 std::shared_ptr<RenderObject> RenderSystem::createRenderObject() {

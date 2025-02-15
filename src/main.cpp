@@ -1,8 +1,5 @@
 
-#include "render/system.hpp"
-#include "render/api/vertex.hpp"
-#include "render/api/mesh.hpp"
-#include "render/model/importer.hpp"
+#include "render/render.hpp"
 
 int main() {
 
@@ -29,7 +26,6 @@ int main() {
 	// }
 
 	auto object = system.createRenderObject();
-	object->setShader(0);
 	object->setMatrix(glm::identity<glm::mat4x3>());
 	object->setModel(model);
 

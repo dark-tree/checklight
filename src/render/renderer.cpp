@@ -516,12 +516,13 @@ void Renderer::presentFramebuffer() {
 void Renderer::rebuildTopLevel(CommandRecorder& recorder) {
 	AccelStructConfig config = AccelStructConfig::create(AccelStructConfig::BUILD, AccelStructConfig::TOP)
 		.addInstances(device, instances->getBuffer(), true)
-		.setFlags(VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_KHR);
+		.setFlags(VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_KHR)
+		.setDebugName("TLAS");
 
 	instances->flush(recorder);
 
 	tlas.close(device);
-	tlas = bakery.submit(device, allocator, config)->structure;
+	tlas = bakery.submit(device, allocator, config)->getStructure();
 	bakery.bake(device, allocator, recorder);
 
 	recorder.memoryBarrier()
@@ -682,7 +683,6 @@ void Renderer::beginDraw() {
 	recorder = frame.buffer.record();
 
 	rebuildTopLevel(recorder);
-
 	frame.set_raytrace.structure(0, tlas);
 
 	recorder.transitionLayout(attachment_albedo.getTexture().getTextureImage(), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);

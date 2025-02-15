@@ -15,11 +15,11 @@ void ReusableBuffer::setDebugName(const std::string& name) {
 }
 
 void ReusableBuffer::close() {
-	closeBuffer();
-	closeStaging();
+	closeDeviceBuffer();
+	closeStagingBuffer();
 }
 
-void ReusableBuffer::closeBuffer() {
+void ReusableBuffer::closeDeviceBuffer() {
 	if (buffer) {
 		buffer->close();
 		buffer.reset();
@@ -28,7 +28,7 @@ void ReusableBuffer::closeBuffer() {
 	count = 0;
 }
 
-void ReusableBuffer::closeStaging() {
+void ReusableBuffer::closeStagingBuffer() {
 	if (staging) {
 		if (staging->allocated()) {
 			staging->getAllocation().unmap();
@@ -55,6 +55,10 @@ void ReusableBuffer::allocateBuffers(size_t elements, size_t size) {
 }
 
 void ReusableBuffer::writeToStaging(const void* data, size_t elements, size_t size, size_t offset) {
+	if (!this->staging) {
+		throw std::runtime_error {"Can't write to staging, buffer missing!"};
+	}
+
 	size_t bytes = elements * size;
 	std::memcpy(static_cast<char*>(stage) + offset * size, data, bytes);
 }
@@ -76,7 +80,7 @@ void ReusableBuffer::resize(RenderCommander& commander, int elements, int size) 
 	}
 
 	auto staging_ptr = this->staging;
-	closeBuffer();
+	closeDeviceBuffer();
 
 	this->count = elements;
 	size_t bytes = elements * size;
@@ -103,7 +107,7 @@ void ReusableBuffer::upload(RenderCommander& commander, const void* data, int el
 	flushStaging(commander.getRecorder());
 
 	commander.getTaskQueue().enqueue([this] () mutable {
-		closeStaging();
+		closeStagingBuffer();
 	});
 }
 

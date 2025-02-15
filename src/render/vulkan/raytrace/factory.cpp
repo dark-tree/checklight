@@ -80,7 +80,7 @@ void AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator,
 		recorder.buildAccelerationStructure(baked);
 
 		if (baked.build_info.flags & VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_KHR) {
-			structures.push_back(baked.model->structure.getHandle());
+			structures.push_back(baked.model->getStructure().getHandle());
 			linkages.push_back(&baked);
 		}
 
@@ -111,10 +111,11 @@ void AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator,
 
 			const uint64_t size = results.at(i);
 			AccelStructBakedConfig* config = linkages.at(i);
+			std::string new_name = "Compacted " + config->name;
 
-			auto& previous = config->model->structure;
+			auto previous = config->model->getStructure();
 			previouses.push_back(previous);
-			AccelStruct compacted = allocator.allocateAcceleration(config->build_info.type, size, "Compacted AccelStruct");
+			AccelStruct compacted = allocator.allocateAcceleration(config->build_info.type, size, new_name.c_str());
 			recorder.copyAccelerationStructure(compacted, previous, true);
 
 			config->model->setStructure(device, compacted);

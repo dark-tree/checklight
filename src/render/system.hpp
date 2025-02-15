@@ -14,7 +14,6 @@ class RenderSystem : public Renderer {
 
 	private:
 
-		std::shared_ptr<RenderMesh> mesh;
 		SceneUniform uniforms;
 
 		void setProjectionMatrix(glm::mat4 projection);
@@ -74,22 +73,6 @@ class RenderSystem : public Renderer {
 		 * at least once to send the updated uniforms to the GPU.
 		 */
 		void updateUniforms();
-
-		/**
-		 * Changes the currently used mesh, this can be a QUITE slow operation,
-		 * so try to avoid needlessly calling it (for example, try to group
-		 * all object that use the same mesh and draw them one after another)
-		 *
-		 * @param mesh The mesh to bind
-		 */
-		void bindMesh(std::shared_ptr<RenderMesh>& mesh);
-
-		/**
-		 * Draws the bound mesh using the bound material at the given position
-		 *
-		 * @param model Model materix to use
-		 */
-		void draw(glm::mat4 model);
 
 		/**
 		 * Create new InstanceDelegate, each delegate represents one object int the world

@@ -17,3 +17,7 @@ void RenderModel::setStructure(const LogicalDevice& device, const AccelStruct& s
 	this->structure = structure;
 	this->address = device.getAddress(structure);
 }
+
+AccelStruct RenderModel::getStructure() const {
+	return structure;
+}

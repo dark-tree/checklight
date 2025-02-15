@@ -19,6 +19,8 @@ class AccelStructConfig {
 
 	private:
 
+		std::string name = "Unnamed";
+
 		VkAccelerationStructureKHR vk_struct = VK_NULL_HANDLE;
 		VkBuildAccelerationStructureModeKHR vk_mode;
 		VkAccelerationStructureTypeKHR vk_type;
@@ -60,6 +62,9 @@ class AccelStructConfig {
 		/// In some cases (e.g. performing an UPDATE) an additional, parental AccelStruct can be supplied
 		AccelStructConfig& setParent(const AccelStruct& structure);
 
+		/// Set a sensible debug name for this acceleration structure
+		AccelStructConfig& setDebugName(const std::string& name);
+
 		/// This method should not be used, it's used internally by AccelStructFactory
 		AccelStructBakedConfig bake(const LogicalDevice& device, Allocator& allocator);
 
@@ -79,6 +84,7 @@ struct AccelStructBakedConfig {
 	std::vector<VkAccelerationStructureBuildRangeInfoKHR> ranges;
 	std::vector<VkAccelerationStructureGeometryKHR> geometries;
 
+	std::string name;
 	bool ready = false;
 
 	uint32_t getScratchSize() const;

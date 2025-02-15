@@ -44,6 +44,11 @@ AccelStructConfig& AccelStructConfig::setParent(const AccelStruct& structure) {
 	return *this;
 }
 
+AccelStructConfig& AccelStructConfig::setDebugName(const std::string& name) {
+	this->name = name;
+	return *this;
+}
+
 AccelStructBakedConfig AccelStructConfig::bake(const LogicalDevice& device, Allocator& allocator) {
 	VkAccelerationStructureBuildGeometryInfoKHR build_info {};
 	build_info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
@@ -68,10 +73,10 @@ AccelStructBakedConfig AccelStructConfig::bake(const LogicalDevice& device, Allo
 
 	Proxy::vkGetAccelerationStructureBuildSizesKHR(device.getHandle(), VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &build_info, primitives.data(), &size_info);
 
-	AccelStruct structure = allocator.allocateAcceleration(build_info.type, size_info.accelerationStructureSize, "Unnamed AccelStruct");
+	AccelStruct structure = allocator.allocateAcceleration(build_info.type, size_info.accelerationStructureSize, name.c_str());
 	build_info.dstAccelerationStructure = structure.getHandle();
 
-	return {std::make_shared<RenderModel>(device, structure), build_info, size_info, std::move(ranges), std::move(geometries)};
+	return {std::make_shared<RenderModel>(device, structure), build_info, size_info, std::move(ranges), std::move(geometries), name};
 }
 
 /*

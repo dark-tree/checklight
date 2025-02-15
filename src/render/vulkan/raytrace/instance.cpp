@@ -3,41 +3,7 @@
 #include "shared/math.hpp"
 #include "render/api/commander.hpp"
 #include "render/api/model.hpp"
-
-/*
- * RenderObject
- */
-
-RenderObject::RenderObject(uint32_t index)
-: index(index), instance({}) {
-	instance.instanceCustomIndex = index;
-	instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
-	instance.mask = 0xFF;
-}
-
-const VkAccelerationStructureInstanceKHR* RenderObject::getData() const {
-	return &instance;
-}
-
-uint32_t RenderObject::getIndex() const {
-	return index;
-}
-
-void RenderObject::setMatrix(const glm::mat4x3& model) {
-	instance.transform = math::toVulkanAffine(model);
-}
-
-void RenderObject::setShader(uint32_t offset) {
-	instance.instanceShaderBindingTableRecordOffset = offset;
-}
-
-void RenderObject::setTraits(VkGeometryInstanceFlagsKHR flags) {
-	instance.flags = flags;
-}
-
-void RenderObject::setModel(const std::shared_ptr<RenderModel>& model) {
-	instance.accelerationStructureReference = model->getAddress();
-}
+#include "render/api/object.hpp"
 
 /*
  * InstanceManager

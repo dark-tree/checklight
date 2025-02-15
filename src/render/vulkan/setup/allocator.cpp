@@ -213,6 +213,9 @@ AccelStruct Allocator::allocateAcceleration(VkAccelerationStructureTypeKHR type,
 		throw std::runtime_error {"Failed to allocate acceleration structure!"};
 	}
 
+	VulkanDebug::beginLifetime(VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR, structure, name);
+	VulkanDebug::setDebugName(vk_device, VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR, structure, name);
+
 	return {backing, structure};
 
 }

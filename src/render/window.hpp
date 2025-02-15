@@ -15,7 +15,10 @@ class WindowSystem {
 		WindowSystem();
 		~WindowSystem();
 
+		/// The list of extensions required from vulkan by the window system
 		std::vector<const char*> getRequiredExtensions() const;
+
+		/// Open new window of the given size
 		std::unique_ptr<Window> open(uint32_t w, uint32_t h, const std::string& title) const;
 
 };
