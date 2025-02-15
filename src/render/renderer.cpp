@@ -57,7 +57,7 @@ void Renderer::createInstance(ApplicationParameters& parameters) {
 	std::vector<const char*> extension = windows.getRequiredExtensions();
 	std::vector<const char*> layers;
 
-	#ifdef ENGINE_DEBUG
+	#if ENGINE_DEBUG
 		layers.push_back("VK_LAYER_KHRONOS_validation");
 		extension.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		printf("INFO: Starting renderer in debug mode, performance will be affected!\n");
@@ -81,7 +81,7 @@ void Renderer::createInstance(ApplicationParameters& parameters) {
 	create_info.ppEnabledLayerNames = layers.data();
 
 	// attach debug messenger during instance creation
-	#ifdef ENGINE_DEBUG
+	#if ENGINE_DEBUG
 		create_info.pNext = &messenger_info;
 	#endif
 
@@ -95,7 +95,7 @@ void Renderer::createInstance(ApplicationParameters& parameters) {
 	this->instance = vk_instance;
 
 	// attach debug messenger for all calls after instance creation
-	#ifdef ENGINE_DEBUG
+	#if ENGINE_DEBUG
 		// load functions from debug utils extension
 		Proxy::loadMessengerFunctions(instance);
 
@@ -249,7 +249,7 @@ void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family que
 	this->family = queue_family;
 	this->physical = std::move(physical);
 
-	#ifdef ENGINE_DEBUG
+	#if ENGINE_DEBUG
 		Proxy::loadDebugDeviceFunctions(this->device);
 	#endif
 
