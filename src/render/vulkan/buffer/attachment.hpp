@@ -41,15 +41,27 @@ class Attachment {
 		Attachment() = default;
 		Attachment(const TextureDelegate& settings);
 
+		/// Get the render pass clear color of this attachment
 		VkClearValue getClearValue() const;
+
+		/// Get the pixel format of this attachment
 		VkFormat getFormat() const;
+
+		/// Get the underlying view, use only after a call to allocate()
 		VkImageView getView() const;
+
+		/// Get the underlying texture, use only after a call to allocate()
 		const Texture& getTexture() const;
 
+		/// Is this attachment backed by driver provided swapchain images?
 		bool isSwapchainBacked() const;
+
+		/// Mark the attachment swapchain backed, @see isSwapchainBacked()
 		void markSwapchainBacked();
 
+		/// Create the underlying texture
 		void allocate(LogicalDevice& device, int width, int height, Allocator& allocator);
 
+		/// Close the underlying texture
 		void close(LogicalDevice device);
 };

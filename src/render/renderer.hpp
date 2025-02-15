@@ -173,11 +173,8 @@ class Renderer {
 		/// Get the Window to which this renderer is attached
 		Window& getWindow() const;
 
-		/// Begins the next frame, all rendering should happen after this call
-		void beginDraw();
-
-		/// End the frame, all rendering should happen before this call
-		void endDraw();
+		/// Render the next frame, all rendering should happen inside this call
+		void draw();
 
 		/// Synchronize all operations and wait for the GPU to idle
 		void wait();

@@ -27,6 +27,7 @@ class Texture {
 		VkImageView getView() const;
 		VkSampler getSampler() const;
 
+		/// Get the underlying Image object
 		Image getTextureImage() const;
 
 };
@@ -115,8 +116,13 @@ class TextureBuilder {
 
 	public:
 
+		/// Create a deferred, preconfigured texture/attachment template
 		TextureDelegate createDelegate() const;
+
+		/// Create a texture given an image
 		Texture createTexture(LogicalDevice& device, const Image& image) const;
+
+		/// Create an attachment, that is a full-screen texture that CAN be used in render passes
 		Attachment createAttachment() const;
 
 };

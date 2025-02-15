@@ -66,6 +66,18 @@ ShaderTableLayout ShaderTableBuilder::build() const {
 	array.miss = group_miss.size();
 	array.hit = group_hit.size();
 
+	if (array.generate < 1) {
+		throw std::runtime_error {"Expected at least one raygen shader group!"};
+	}
+
+	if (array.miss < 1) {
+		throw std::runtime_error {"Expected at least one miss shader group!"};
+	}
+
+	if (array.hit < 1) {
+		throw std::runtime_error {"Expected at least one hit shader group!"};
+	}
+
 	array.groups.insert(array.groups.end(), group_generate.begin(), group_generate.end());
 	array.groups.insert(array.groups.end(), group_miss.begin(), group_miss.end());
 	array.groups.insert(array.groups.end(), group_hit.begin(), group_hit.end());

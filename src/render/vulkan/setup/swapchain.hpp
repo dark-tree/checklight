@@ -30,6 +30,7 @@ class Swapchain {
 		/// Get a list of views into the screen color buffer images
 		const std::vector<ImageView>& getViews() const;
 
+		/// Get a list of window images returned by the driver
 		const std::vector<Image>& getImages() const;
 
 		/// Get swapchain (screen) dimensions

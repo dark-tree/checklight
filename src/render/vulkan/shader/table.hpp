@@ -9,6 +9,10 @@ class GraphicsPipeline;
 
 class ShaderTable;
 
+/**
+ * A configured set of shaders, to be used it needs to be allocated
+ * first, creating a ShaderTable object
+ */
 class ShaderTableLayout {
 
 	private:
@@ -23,10 +27,15 @@ class ShaderTableLayout {
 
 	public:
 
+		/// Create a ShaderTable object needed for raytracing
 		ShaderTable allocate(const LogicalDevice& device, Allocator& allocator, GraphicsPipeline& pipeline);
 
 };
 
+/**
+ * A buffer holding shader handles to be used during
+ * raytracing process
+ */
 class ShaderTable {
 
 	private:
@@ -45,6 +54,7 @@ class ShaderTable {
 		ShaderTable() = default;
 		ShaderTable(const LogicalDevice& device, Allocator& allocator, GraphicsPipeline& pipeline, int generate, int miss, int hit, int call);
 
+		/// Free the buffer backing the shader table
 		void close();
 
 };

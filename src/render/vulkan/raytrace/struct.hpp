@@ -33,8 +33,10 @@ class AccelStruct {
 		AccelStruct() = default;
 		AccelStruct(const Buffer& buffer, VkAccelerationStructureKHR vk_structure);
 
+		/// Close all underlying vulkan objects
 		void close(const LogicalDevice& device);
 
+		/// Get the handle to the underlying vulkan object
 		VkAccelerationStructureKHR getHandle() const;
 
 };

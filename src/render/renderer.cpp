@@ -671,7 +671,8 @@ Window& Renderer::getWindow() const {
 	return *window;
 }
 
-void Renderer::beginDraw() {
+void Renderer::draw() {
+
 	RenderFrame& frame = getFrame();
 
 	frame.wait();
@@ -690,7 +691,7 @@ void Renderer::beginDraw() {
 	recorder.bindPipeline(pipeline_trace_3d);
 	recorder.bindDescriptorSet(frame.set_raytrace);
 	recorder.traceRays(shader_table, 100, 100);
-	
+
 	recorder.transitionLayout(attachment_albedo.getTexture().getTextureImage(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
 
 	recorder.beginRenderPass(pass_compose_2d, current_image, swapchain.getExtend());
@@ -705,14 +706,7 @@ void Renderer::beginDraw() {
 //	recorder.bindDescriptorSet(frame.set_graphics);
 //	recorder.endRenderPass();
 
-}
-
-void Renderer::endDraw() {
-
-//	recorder.endRenderPass();
 	recorder.done();
-
-	RenderFrame& frame = getFrame();
 
 	frame.buffer.submit()
 		.awaits(frame.available_semaphore, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)

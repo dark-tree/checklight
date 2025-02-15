@@ -17,6 +17,7 @@ class Subpass {
 		Subpass() = default;
 		Subpass(uint32_t attachments);
 
+		/// Get the number of attachments used by this subpass
 		uint32_t getAttachmentCount() const;
 
 };

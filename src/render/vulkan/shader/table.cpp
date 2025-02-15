@@ -56,14 +56,17 @@ ShaderTable::ShaderTable(const LogicalDevice& device, Allocator& allocator, Grap
 
 	auto* data = static_cast<uint8_t*>(buffer.getAllocation().map());
 	size_t handle = 0;
+	size_t offset = 0;
 
 	auto copyRegion = [&] (int count, VkStridedDeviceAddressRegionKHR& region, VkDeviceAddress address) {
 		for (int i = 0; i < count; i ++) {
-			memcpy(data, handles.data() + handle * handle_size, handle_size);
-			data += region.stride;
+			memcpy(data + offset, handles.data() + handle * handle_size, handle_size);
+			offset += region.stride;
 			handle ++;
 		}
 
+		offset = 0;
+		data += region.size;
 		region.deviceAddress = address;
 	};
 

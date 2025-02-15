@@ -5,6 +5,9 @@
 
 class RenderObject;
 
+/**
+ * Manages all objects (instances) present in the scene
+ */
 class InstanceManager {
 
 	private:
@@ -23,9 +26,13 @@ class InstanceManager {
 		InstanceManager();
 		~InstanceManager();
 
+		/// Create new delegate
 		std::shared_ptr<RenderObject> create();
+
+		/// Write all delegates to the staging buffer
 		void flush(CommandRecorder& recorder);
 
+		/// Get the buffer object used for instance array storage
 		const ReusableBuffer& getBuffer() const;
 
 };

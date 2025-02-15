@@ -38,11 +38,8 @@ int main() {
 		system.setViewMatrix({18.0f, 1.0f, 4.0f}, {-21.0f, 0.0f, 4.0f});
 		system.updateUniforms();
 
-		// all rendering must be done between beginDraw() and endDraw()
-		system.beginDraw();
-
-		// each frame must end with this call or the engine will deadlock
-		system.endDraw();
+		// render the scene
+		system.draw();
     }
 
 	system.wait();

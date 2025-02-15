@@ -31,12 +31,33 @@ class Allocation {
 		Allocation() = default;
 		Allocation(VmaAllocator allocator, VmaAllocation allocation);
 
+		/**
+		 * Maps the allocation and returns a pointer to the mapped memory area, writing to this memeory
+		 * region will be reflected in the allocation contents
+		 */
 		void* map();
+
+		/**
+		 * Unmaps the allocation, allocation needs to be unmapped before it can be freed, don't unmap
+		 * allocation if you plan on writing to them at some later point
+		 */
 		void unmap();
+
+		/**
+		 * If the buffer is non-coherent this method needs to be called for the memory
+		 * mapped region to be reflected in the buffer contents
+		 */
 		void flushNonCoherent(size_t offset = 0, size_t size = VK_WHOLE_SIZE);
+
+	public:
+
+		/// Close the buffer backed by this allocation
 		void closeBuffer(VkBuffer buffer);
+
+		/// Close an image backed by this allocation
 		void closeImage(VkImage image);
 
+		/// Check if this allocation does not exist
 		bool empty() const;
 
 };
