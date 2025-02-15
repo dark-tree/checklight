@@ -20,7 +20,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanMessageCallback(VkDebugUtilsMessageSeverity
 }
 
 VkBool32 Renderer::onMessage(VkDebugUtilsMessageSeverityFlagBitsEXT severity, const VkDebugUtilsMessengerCallbackDataEXT* data) {
-	
+
 	auto message = std::string(data->pMessage);
 	if (message.find("VUID-vkCmdBuildAccelerationStructuresKHR-pInfos-03813") != std::string::npos) {
 		return VK_FALSE;
@@ -529,6 +529,11 @@ void Renderer::rebuildTopLevel(CommandRecorder& recorder) {
 		.first(VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR, VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR)
 		.then(VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR)
 		.done();
+
+	// temporary fix
+	Fence fence = createFence();
+	recorder.quickFenceSubmit(fence, queue);
+	fence.close();
 
 }
 
