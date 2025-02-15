@@ -1,6 +1,6 @@
 #include "sound.hpp"
 
-SoundObject::SoundObject()
+SoundManager::SoundManager()
 {
 	p_ALCDevice = alcOpenDevice(nullptr);
 	if (!p_ALCDevice) {
@@ -16,9 +16,19 @@ SoundObject::SoundObject()
 
 }
 
-SoundObject::~SoundObject()
+SoundManager::~SoundManager()
 {
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(p_ALCContext);
 	alcCloseDevice(p_ALCDevice);
+}
+
+ALCcontext* SoundManager::getContext()
+{
+	return this->p_ALCContext;
+}
+
+ALCdevice* SoundManager::getDevice()
+{
+	return this->p_ALCDevice();
 }
