@@ -2,12 +2,13 @@
 
 #include "external.hpp"
 #include "listener.hpp"
+#include "shared/weighed.hpp"
 
 class InputDispatcher : public InputListener {
 
 	private:
 
-		std::list<std::shared_ptr<InputListener>> listeners;
+		WeighedSet<std::shared_ptr<InputListener>, std::greater<>> listeners;
 
 	public:
 
@@ -27,7 +28,7 @@ class InputDispatcher : public InputListener {
 		 *
 		 * @param listener The input listener to register
 		 */
-		void registerListener(const std::shared_ptr<InputListener>& listener);
+		void registerListener(const std::shared_ptr<InputListener>& listener, int priority = 0);
 
 		/**
 		 * Removes the specified listener, after calling this method
