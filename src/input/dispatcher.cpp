@@ -9,6 +9,14 @@ void InputDispatcher::registerListener(const std::shared_ptr<InputListener>& lis
 	listeners.insert(priority, listener);
 }
 
+void InputDispatcher::registerLowerListener(const std::shared_ptr<InputListener>& listener) {
+	registerListener(listener, listeners.empty() ? 0 : (listeners.lowest() - 1));
+}
+
+void InputDispatcher::registerHigherListener(const std::shared_ptr<InputListener>& listener) {
+	registerListener(listener, listeners.empty() ? 0 : (listeners.highest() + 1));
+}
+
 void InputDispatcher::removeListener(const std::shared_ptr<InputListener>& listener) {
 	listeners.remove(listener);
 }

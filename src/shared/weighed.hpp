@@ -45,6 +45,24 @@ class WeighedSet {
 			return set.empty();
 		}
 
+		/// Get the lowest priority used in the set
+		int lowest() const {
+			if (set.empty()) {
+				throw std::length_error {"There is no lowest element in empty set!"};
+			}
+
+			return std::min(set.begin()->order, set.rbegin()->order);
+		}
+
+		/// Get the highest priority used in the set
+		int highest() const {
+			if (set.empty()) {
+				throw std::length_error {"There is no highest element in empty set!"};
+			}
+
+			return std::max(set.begin()->order, set.rbegin()->order);
+		}
+
 		class Iterator {
 
 			private:

@@ -77,3 +77,31 @@ TEST(util_weighed_set) {
 	CHECK(order[4], 201);
 
 };
+
+TEST(util_weighed_set_limit) {
+
+	WeighedSet<int, std::greater<>> set;
+
+	EXPECT(std::length_error, {
+		set.lowest();
+	});
+
+	EXPECT(std::length_error, {
+		set.highest();
+	});
+
+	set.insert(10, 101);
+
+	CHECK(set.lowest(), set.highest());
+
+	set.insert(20, 200);
+
+	CHECK(set.lowest(), 10);
+	CHECK(set.highest(), 20);
+
+	set.insert(18, 400);
+
+	CHECK(set.lowest(), 10);
+	CHECK(set.highest(), 20);
+
+};
