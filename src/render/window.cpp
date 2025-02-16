@@ -72,7 +72,11 @@ void Window::glfwCursorCallback(GLFWwindow* glfw_window, double x, double y) {
 	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
 
 	if (window) {
-		window->getInputDispatcher().onEvent(MouseEvent {x, y});
+		MouseEvent event {x, y};
+		window->getInputDispatcher().onEvent(event);
+
+		// update mouse capture state
+		window->setMouseCapture(event.capture);
 	}
 }
 
@@ -155,5 +159,9 @@ glm::vec2 Window::getCursor() const {
 }
 
 void Window::setMouseCapture(bool capture) {
-	glfwSetInputMode(handle, GLFW_CURSOR, capture ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+	if (capture != this->capture) {
+		this->capture = capture;
+
+		glfwSetInputMode(handle, GLFW_CURSOR, capture ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+	}
 }

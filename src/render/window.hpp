@@ -26,6 +26,7 @@ class Window {
 
 	private:
 
+		bool capture = false;
 		InputDispatcher dispatcher;
 		GLFWwindow* handle;
 
@@ -38,6 +39,7 @@ class Window {
 
 		friend class WindowSystem;
 		Window(uint32_t w, uint32_t h, std::string title);
+		void setMouseCapture(bool capture);
 
 	public:
 
@@ -53,6 +55,5 @@ class Window {
 		bool isKeyPressed(int key) const;
 		bool isButtonPressed(int button) const;
 		glm::vec2 getCursor() const;
-		void setMouseCapture(bool capture);
 
 };
