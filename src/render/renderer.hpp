@@ -146,6 +146,7 @@ class Renderer {
 
 		void lateClose();
 		void lateInit();
+		void prepareForRendering(CommandRecorder& recorder);
 
 		void acquirePresentationIndex();
 		void presentFramebuffer();

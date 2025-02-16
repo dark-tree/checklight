@@ -501,6 +501,21 @@ void Renderer::lateInit() {
 	createSwapchain();
 	createPipelines();
 	createFrames();
+
+	Fence fence = createFence();
+	CommandBuffer buffer = transient_pool.allocate(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	CommandRecorder recorder = buffer.record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+	prepareForRendering(recorder);
+
+	recorder.done();
+	buffer.submit().signal(fence).done(queue);
+	fence.wait();
+	fence.close();
+}
+
+void Renderer::prepareForRendering(CommandRecorder& recorder) {
+	recorder.transitionLayout(attachment_albedo.getTexture().getTextureImage(), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 }
 
 RenderFrame& Renderer::getFrame() {
@@ -702,14 +717,12 @@ void Renderer::draw() {
 		.then(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_ACCESS_UNIFORM_READ_BIT)
 		.done();
 
-	recorder.transitionLayout(attachment_albedo.getTexture().getTextureImage(), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
-
+	// ray trace
 	recorder.bindPipeline(pipeline_trace_3d);
 	recorder.bindDescriptorSet(frame.set_raytrace);
-	recorder.traceRays(shader_table, 100, 100);
+	recorder.traceRays(shader_table, width(), height());
 
-	recorder.transitionLayout(attachment_albedo.getTexture().getTextureImage(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
-
+	// compose final image
 	recorder.beginRenderPass(pass_compose_2d, current_image, swapchain.getExtend());
 	recorder.bindPipeline(pipeline_compose_2d);
 	recorder.bindDescriptorSet(frame.set_compose);
