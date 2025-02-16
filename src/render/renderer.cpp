@@ -21,11 +21,6 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanMessageCallback(VkDebugUtilsMessageSeverity
 
 VkBool32 Renderer::onMessage(VkDebugUtilsMessageSeverityFlagBitsEXT severity, const VkDebugUtilsMessengerCallbackDataEXT* data) {
 
-	auto message = std::string(data->pMessage);
-	if (message.find("VUID-vkCmdBuildAccelerationStructuresKHR-pInfos-03813") != std::string::npos) {
-		return VK_FALSE;
-	}
-
 	if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
 		printf("ERROR: %s\n", data->pMessage);
 		return VK_FALSE;

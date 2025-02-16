@@ -10,7 +10,7 @@ layout(location = 0) rayPayloadEXT HitPayload rPayload;
 layout(binding = 0, set = 0) uniform accelerationStructureEXT TLAS;
 layout(binding = 1, set = 0, rgba32f) uniform image2D image;
 
-layout(binding = 2) uniform SceneUniform {
+layout(binding = 2, set = 0) uniform SceneUniform {
     mat4 view;
     mat4 projection;
 } uSceneObject;
@@ -30,7 +30,7 @@ void main() {
     uint  rayFlags = gl_RayFlagsOpaqueEXT;
     float tMin = 0.001;
     float tMax = 10000.0;
-
+    
     traceRayEXT(TLAS, // acceleration structure
           rayFlags,       // rayFlags
           0xFF,           // cullMask
@@ -44,5 +44,5 @@ void main() {
           0               // payload (location = 0)
     );
 
-    imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(rPayload.value, 1.0));
+   imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(rPayload.value, 1.0));
 }

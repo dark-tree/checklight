@@ -54,11 +54,13 @@ ShaderTable::ShaderTable(const LogicalDevice& device, Allocator& allocator, Grap
 	VkBufferUsageFlags flags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR;
 	buffer = allocator.allocateBuffer(Memory::STAGED, buffer_size, flags, "Shader Table");
 
+	VkDeviceAddress address = device.getAddress(buffer);
+
 	auto* data = static_cast<uint8_t*>(buffer.getAllocation().map());
 	size_t handle = 0;
 	size_t offset = 0;
 
-	auto copyRegion = [&] (int count, VkStridedDeviceAddressRegionKHR& region, VkDeviceAddress address) {
+	auto copyRegion = [&] (int count, VkStridedDeviceAddressRegionKHR& region) {
 		for (int i = 0; i < count; i ++) {
 			memcpy(data + offset, handles.data() + handle * handle_size, handle_size);
 			offset += region.stride;
@@ -68,14 +70,13 @@ ShaderTable::ShaderTable(const LogicalDevice& device, Allocator& allocator, Grap
 		offset = 0;
 		data += region.size;
 		region.deviceAddress = address;
+		address += region.size;
 	};
 
-	VkDeviceAddress address = device.getAddress(buffer);
-
-	copyRegion(generate, vk_region_generate, address);
-	copyRegion(miss, vk_region_miss, address);
-	copyRegion(hit, vk_region_hit, address);
-	copyRegion(call, vk_region_call, address);
+	copyRegion(generate, vk_region_generate);
+	copyRegion(miss, vk_region_miss);
+	copyRegion(hit, vk_region_hit);
+	copyRegion(call, vk_region_call);
 
 	buffer.getAllocation().unmap();
 
