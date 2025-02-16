@@ -17,6 +17,8 @@ class InputEvent {
 			KEYBOARD, ///< KeyboardEvent
 			BUTTON,   ///< ButtonEvent
 			UNICODE,  ///< UnicodeEvent
+			CLOSE,    ///< CloseEvent
+			RESIZE,   ///< ResizeEvent
 		};
 
 		/**

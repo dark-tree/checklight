@@ -35,6 +35,8 @@ class Window {
 		static void glfwScrollCallback(GLFWwindow* glfw_window, double x, double y);
 		static void glfwCursorCallback(GLFWwindow* glfw_window, double x, double y);
 		static void glfwUnicodeCallback(GLFWwindow* glfw_window, unsigned int unicode);
+		static void glfwWindowCloseCallback(GLFWwindow* glfw_window);
+		static void glfwWindowResizeCallback(GLFWwindow* glfw_window, int width, int height);
 		static void glfwErrorCallback(int error_code, const char* description);
 
 		friend class WindowSystem;

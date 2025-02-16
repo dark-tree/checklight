@@ -2,6 +2,10 @@
 
 #include "input/event.hpp"
 
+/**
+ * Text input event, don't use for generic keyboard controls
+ * @see KeyboardEvent
+ */
 class UnicodeEvent : public InputEvent {
 
 	public:

@@ -2,12 +2,15 @@
 
 #include "input/event.hpp"
 
+/**
+ * Mouse cursor movement input event
+ */
 class MouseEvent : public InputEvent {
 
 	private:
 
 		friend class Window;
-		mutable bool capture = false;
+		mutable bool capture_flag = false;
 
 	public:
 
@@ -20,10 +23,10 @@ class MouseEvent : public InputEvent {
 		MouseEvent(double x, double y);
 
 		/**
-		 * Set to true to hide the mouse and capture it within the window,
+		 * Hide the mouse and capture it within the window,
 		 * after the event is handled the mouse's state will be updated to match the state of the value set in the event
-		 * By default this value is set to false, to capture it must be set on each event received.
+		 * By default the mouse will be un-capture, to capture effectively capture() must be called on each event received.
 		 */
-		void setCapture(bool capture) const;
+		void capture() const;
 
 };

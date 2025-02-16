@@ -12,6 +12,6 @@ InputEvent::Type MouseEvent::getType() const {
 MouseEvent::MouseEvent(double x, double y)
 : InputEvent(x, y) {}
 
-void MouseEvent::setCapture(bool capture) const {
-	this->capture = capture;
+void MouseEvent::capture() const {
+	this->capture_flag = true;
 }

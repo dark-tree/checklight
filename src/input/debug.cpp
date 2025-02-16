@@ -64,6 +64,14 @@ InputResult DebugInputListener::onEvent(const InputEvent& any) {
 		printf("DEBUG: UnicodeEvent {unicode=%u, x=%d, y=%d}\n", event->unicode, (int) event->x, (int) event->y);
 	}
 
+	if (const auto* event = any.as<CloseEvent>()) {
+		printf("DEBUG: CloseEvent {x=%d, y=%d}\n", (int) event->x, (int) event->y);
+	}
+
+	if (const auto* event = any.as<ResizeEvent>()) {
+		printf("DEBUG: ResizeEvent {width=%d, height=%d, x=%d, y=%d}\n", event->width, event->height, (int) event->x, (int) event->y);
+	}
+
 	if (const auto* event = any.as<MouseEvent>()) {
 		if (show_mouse) printf("DEBUG: MouseEvent {x=%d, y=%d}\n", (int) event->x, (int) event->y);
 	}

@@ -2,6 +2,9 @@
 
 #include "input/event.hpp"
 
+/**
+ * Base class shared by keyboard and mouse button input events
+ */
 class CodedEvent : public InputEvent {
 
 	public:
