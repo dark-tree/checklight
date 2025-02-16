@@ -116,6 +116,9 @@ void Renderer::pickDevice() {
 		VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
 	};
 
+	std::vector<const char*> optional_extensions = {
+	};
+
 	std::vector<std::string> debug;
 
 	for (auto& device : devices) {
@@ -174,7 +177,7 @@ void Renderer::pickDevice() {
 			}
 
 			// we found the one, continue with this device and family
-			createDevice(std::move(device), queue_family, required_extensions);
+			createDevice(std::move(device), queue_family, required_extensions, optional_extensions);
 			return;
 		}
 
@@ -185,8 +188,18 @@ void Renderer::pickDevice() {
 	throw std::runtime_error {"No device could have been selected!"};
 }
 
-void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family queue_family, const std::vector<const char*>& extensions) {
+void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family queue_family, std::vector<const char*>& extensions, std::vector<const char*>& optionals) {
 	printf("INFO: Selected '%s' (queue #%d)\n", physical->getName(), queue_family.getIndex());
+
+	// enable supported optional extensions
+	for (auto name : optionals) {
+		if (!physical->hasExtension(name)) {
+			printf("WARN: Missing optional extension '%s'!\n", name);
+			continue;
+		}
+
+		extensions.emplace_back(name);
+	}
 
 	// we use only one queue at this time
 	const float priority = 1.0f;
@@ -516,19 +529,17 @@ void Renderer::rebuildTopLevel(CommandRecorder& recorder) {
 
 	instances->flush(recorder);
 
+	// Recreate TLAS and update descriptors
 	tlas.close(device);
 	tlas = bakery.submit(device, allocator, config)->getStructure();
+	getFrame().set_raytrace.structure(0, tlas);
+
 	bakery.bake(device, allocator, recorder);
 
 	recorder.memoryBarrier()
 		.first(VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR, VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR)
 		.then(VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR)
 		.done();
-
-	// TODO
-	Fence fence = createFence();
-	recorder.quickFenceSubmit(fence, queue);
-	fence.close();
 
 }
 
@@ -683,9 +694,13 @@ void Renderer::draw() {
 	// begin rendering
 	recorder = frame.buffer.record();
 	frame.flushUniformBuffer(recorder);
-
 	rebuildTopLevel(recorder);
-	frame.set_raytrace.structure(0, tlas);
+
+	// wait for uniform transfer before raytracing or rasterization starts
+	recorder.memoryBarrier()
+		.first(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT)
+		.then(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_ACCESS_UNIFORM_READ_BIT)
+		.done();
 
 	recorder.transitionLayout(attachment_albedo.getTexture().getTextureImage(), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 

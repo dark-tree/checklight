@@ -27,6 +27,7 @@ class PhysicalDevice {
 		VkPhysicalDeviceProperties2KHR properties;
 		VkPhysicalDeviceFeatures2KHR features;
 		VkPhysicalDevice vk_device;
+		std::vector<VkExtensionProperties> extensions;
 
 	public:
 

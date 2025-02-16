@@ -28,7 +28,7 @@ class RenderFrame {
 		/// before the BasicBuffer constructor runs as it uses `system.defer()`
 		TaskQueue queue;
 
-		/// this semaphore will be unlocked once the frambuffer returned from
+		/// this semaphore will be unlocked once the framebuffer returned from
 		/// `RenderSystem::acquireFramebuffer()` is actually ready to be written to, see `CommandSubmitter::awaits()`
 		Semaphore available_semaphore;
 
