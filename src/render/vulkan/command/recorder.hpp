@@ -40,6 +40,9 @@ class CommandRecorder {
 		/// Copy data from buffer to image
 		CommandRecorder& copyBufferToImage(Image dst, Buffer src, size_t offset, size_t width, size_t height, size_t layers, size_t level);
 
+		/// Update buffer from host memory
+		CommandRecorder& updateBuffer(Buffer buffer, void* data);
+
 		/// Insert pipeline layout barrier
 		CommandRecorder& transitionLayout(Image image, VkImageLayout dst, VkImageLayout src);
 

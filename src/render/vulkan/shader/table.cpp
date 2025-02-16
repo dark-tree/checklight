@@ -71,6 +71,11 @@ ShaderTable::ShaderTable(const LogicalDevice& device, Allocator& allocator, Grap
 		data += region.size;
 		region.deviceAddress = address;
 		address += region.size;
+
+		// workaround for validation layer bug
+		if (region.size == 0) {
+			region.deviceAddress = 0;
+		}
 	};
 
 	copyRegion(generate, vk_region_generate);

@@ -135,6 +135,11 @@ CommandRecorder& CommandRecorder::copyBufferToImage(Image dst, Buffer src, size_
 	return *this;
 }
 
+CommandRecorder& CommandRecorder::updateBuffer(Buffer buffer, void* data) {
+	vkCmdUpdateBuffer(vk_buffer, buffer.getHandle(), 0, buffer.size(), data);
+	return *this;
+}
+
 CommandRecorder& CommandRecorder::transitionLayout(Image image, VkImageLayout dst, VkImageLayout src) {
 	VkPipelineStageFlags src_stage = 0;
 	VkPipelineStageFlags dst_stage = 0;

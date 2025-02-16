@@ -525,7 +525,7 @@ void Renderer::rebuildTopLevel(CommandRecorder& recorder) {
 		.then(VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR)
 		.done();
 
-	// temporary fix
+	// TODO
 	Fence fence = createFence();
 	recorder.quickFenceSubmit(fence, queue);
 	fence.close();
@@ -682,6 +682,7 @@ void Renderer::draw() {
 
 	// begin rendering
 	recorder = frame.buffer.record();
+	frame.flushUniformBuffer(recorder);
 
 	rebuildTopLevel(recorder);
 	frame.set_raytrace.structure(0, tlas);

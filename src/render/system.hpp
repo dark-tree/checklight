@@ -12,13 +12,6 @@ class RenderModel;
 
 class RenderSystem : public Renderer {
 
-	private:
-
-		SceneUniform uniforms;
-
-		void setProjectionMatrix(glm::mat4 projection);
-		void setViewMatrix(glm::mat4 view);
-
 	public:
 
 		static std::unique_ptr<RenderSystem> system;
@@ -67,12 +60,6 @@ class RenderSystem : public Renderer {
 		 * @param facing  Directional vector that specific in which way the camera looks.
 		 */
 		void setViewMatrix(glm::vec3 eye, glm::vec3 facing);
-
-		/**
-		 * After calling setProjectionMatrix() and/or setViewMatrix() this method must be called
-		 * at least once to send the updated uniforms to the GPU.
-		 */
-		void updateUniforms();
 
 		/**
 		 * Create new InstanceDelegate, each delegate represents one object int the world
