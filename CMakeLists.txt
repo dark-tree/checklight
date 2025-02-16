@@ -30,6 +30,12 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 FetchContent_Declare(
+		vstl
+		GIT_REPOSITORY https://github.com/magistermaks/lib-vstl
+		GIT_TAG v3.1
+)
+
+FetchContent_Declare(
 		vma
 		GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
 		GIT_TAG v3.2.0
@@ -83,7 +89,7 @@ set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
 
 # ... And finally add shaderc!
 add_subdirectory(${shaderc_SOURCE_DIR} ${shaderc_BINARY_DIR})
-FetchContent_MakeAvailable(glfw stb glm vma)
+FetchContent_MakeAvailable(glfw stb glm vma vstl)
 
 set(CHECKLIGHT_LIBRARIES
 		${glm_SOURCE_DIR}                        # Headers in ./glm
@@ -122,6 +128,7 @@ target_include_directories(checklight_external PRIVATE
 )
 
 add_executable(checklight "src/main.cpp")
+add_executable(checklight_test "src/test.cpp")
 
 target_link_libraries(checklight_render_system PRIVATE
 		checklight_common
@@ -146,6 +153,15 @@ target_link_libraries(checklight PRIVATE
 		checklight_render_system
 		checklight_shared_system
 		checklight_input_system
+)
+
+target_link_libraries(checklight_test PRIVATE
+		checklight_common
+		checklight_shared_system
+)
+
+target_include_directories(checklight_test PRIVATE
+		${vstl_SOURCE_DIR}/
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
