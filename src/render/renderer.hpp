@@ -4,6 +4,8 @@
 #include "frame.hpp"
 #include "application.hpp"
 #include "window.hpp"
+#include "immediate.hpp"
+
 #include "render/vulkan/setup/proxy.hpp"
 #include "render/vulkan/setup/instance.hpp"
 #include "render/vulkan/shader/compiler.hpp"
@@ -55,6 +57,7 @@ class Renderer {
 		Compiler compiler;
 		WindowSystem windows;
 		std::unique_ptr<Window> window;
+		ImmediateRenderer immediate;
 
 		// early vulkan objects
 		VkFormat surface_format;
@@ -98,8 +101,8 @@ class Renderer {
 		BindingLayout binding_3d;
 
 		// renderpasses
-		RenderPass pass_basic_3d;
-		RenderPass pass_compose_2d;
+		RenderPass pass_immediate;
+		RenderPass pass_compose;
 
 		// Pipelines
 		GraphicsPipeline pipeline_basic_3d;

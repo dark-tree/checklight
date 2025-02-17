@@ -42,7 +42,7 @@ std::vector<std::shared_ptr<RenderMesh>> Importer::importObj(RenderSystem& syste
 			float colorR = (vertex.normal.x + 1) / 2;
 			float colorG = (vertex.normal.y + 1) / 2;
 			float colorB = (vertex.normal.z + 1) / 2;
-			vertices.push_back(Vertex3D(vertex.position.x, vertex.position.y, vertex.position.z, colorR, colorG, colorB));
+			vertices.emplace_back(vertex.position.x, vertex.position.y, vertex.position.z, colorR * 255, colorG* 255, colorB * 255, 255);
 		}
 
 		for (size_t i = 0; i < object.groups.size(); i ++) {

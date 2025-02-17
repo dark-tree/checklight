@@ -70,35 +70,19 @@ void ReusableBuffer::flushStaging(CommandRecorder& recorder) {
 	}
 }
 
-void ReusableBuffer::resize(RenderCommander& commander, int elements, int size) {
+void ReusableBuffer::resize(int elements, int size) {
 
-	// if the buffers have not yet been used just allocate
-	if (!this->staging) {
-		close();
+	const size_t bytes = elements * size;
+
+	if (!this->staging || !this->buffer) {
 		allocateBuffers(elements, size);
 		return;
 	}
 
-	auto staging_ptr = this->staging;
-	closeDeviceBuffer();
-
-	this->count = elements;
-	size_t bytes = elements * size;
-	std::string staging_name = debug_name + std::string (" Staging");
-
-	buffer = std::make_shared<Buffer>(RenderSystem::system->allocator.allocateBuffer(Memory::DEVICE, bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage, debug_name.c_str()));
-	staging = std::make_shared<Buffer>(RenderSystem::system->allocator.allocateBuffer(Memory::STAGED, bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, staging_name.c_str()));
-
-	commander.getRecorder()
-		.copyBufferToBuffer(*buffer, *staging_ptr, staging_ptr->size(), 0, 0)
-		.copyBufferToBuffer(*staging, *staging_ptr, staging_ptr->size(), 0, 0);
-
-	if (staging_ptr) {
-		staging_ptr->getAllocation().unmap();
-		commander.getTaskQueue().enqueue([staging_ptr] () mutable {
-			staging_ptr->close();
-		});
+	if (buffer->size() < bytes) {
+		allocateBuffers(elements, size);
 	}
+
 }
 
 void ReusableBuffer::upload(RenderCommander& commander, const void* data, int elements, int size) {

@@ -289,8 +289,8 @@ void Renderer::createSwapchain() {
 	attachment_albedo.allocate(device, extent.width, extent.height, allocator);
 
 	// create framebuffers
-	pass_basic_3d.prepareFramebuffers(swapchain);
-	pass_compose_2d.prepareFramebuffers(swapchain);
+	pass_immediate.prepareFramebuffers(swapchain);
+	pass_compose.prepareFramebuffers(swapchain);
 
 	printf("INFO: Swapchain ready\n");
 
@@ -356,14 +356,14 @@ void Renderer::createRenderPasses() {
 		RenderPassBuilder builder;
 
 		Attachment::Ref color = builder.addAttachment(attachment_color)
-			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
 			.next();
 
-		Attachment::Ref depth = builder.addAttachment(attachment_depth)
-			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
-			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-			.next();
+//		Attachment::Ref depth = builder.addAttachment(attachment_depth)
+//			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+//			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+//			.next();
 
 		builder.addDependency()
 			.first(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0)
@@ -377,10 +377,10 @@ void Renderer::createRenderPasses() {
 
 		builder.addSubpass()
 			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+//			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.next();
 
-		pass_basic_3d = builder.build(device, "Basic 3D");
+		pass_immediate = builder.build(device, "Immediate");
 
 	}
 
@@ -390,7 +390,7 @@ void Renderer::createRenderPasses() {
 
 		Attachment::Ref color = builder.addAttachment(attachment_color)
 			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
-			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			.next();
 
 		builder.addDependency()
@@ -407,7 +407,7 @@ void Renderer::createRenderPasses() {
 			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			.next();
 
-		pass_compose_2d = builder.build(device, "Compose 2D");
+		pass_compose = builder.build(device, "Compose");
 
 	}
 
@@ -415,8 +415,8 @@ void Renderer::createRenderPasses() {
 }
 
 void Renderer::closeRenderPasses() {
-	pass_basic_3d.close();
-	pass_compose_2d.close();
+	pass_immediate.close();
+	pass_compose.close();
 }
 
 void Renderer::createPipelines() {
@@ -427,19 +427,18 @@ void Renderer::createPipelines() {
 		.withViewport(0, 0, extent.width, extent.height)
 		.withScissors(0, 0, extent.width, extent.height)
 		.withCulling(false)
-		.withRenderPass(pass_basic_3d, 0)
+		.withRenderPass(pass_immediate, 0)
 		.withShaders(shader_basic_vertex, shader_basic_fragment)
 		.withBindingLayout(binding_3d)
-		.withPushConstant(mesh_constant)
 		.withDescriptorSetLayout(layout_geometry)
-		.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
+		//.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
 		.build();
 
 	pipeline_compose_2d = GraphicsPipelineBuilder::of(device)
 		.withViewport(0, 0, extent.width, extent.height)
 		.withScissors(0, 0, extent.width, extent.height)
 		.withCulling(false)
-		.withRenderPass(pass_compose_2d, 0)
+		.withRenderPass(pass_compose, 0)
 		.withShaders(shader_blit_vertex, shader_blit_fragment)
 		.withDescriptorSetLayout(layout_compose)
 		.build();
@@ -671,6 +670,7 @@ Renderer::~Renderer() {
 
 	vkDestroySurfaceKHR(instance.getHandle(), surface, nullptr);
 	instances.reset();
+	immediate.close();
 
 	// It's important to maintain the correct order
 	closeRenderPasses();
@@ -699,6 +699,9 @@ Window& Renderer::getWindow() const {
 
 void Renderer::draw() {
 
+	immediate.clear();
+	immediate.drawRect2D(0, 0, 0.1, 0.1);
+
 	RenderFrame& frame = getFrame();
 
 	frame.wait();
@@ -718,22 +721,29 @@ void Renderer::draw() {
 		.done();
 
 	// ray trace
-	recorder.bindPipeline(pipeline_trace_3d);
-	recorder.bindDescriptorSet(frame.set_raytrace);
-	recorder.traceRays(shader_table, width(), height());
+	recorder.bindPipeline(pipeline_trace_3d)
+		.bindDescriptorSet(frame.set_raytrace)
+		.traceRays(shader_table, width(), height());
 
 	// compose final image
-	recorder.beginRenderPass(pass_compose_2d, current_image, swapchain.getExtend());
-	recorder.bindPipeline(pipeline_compose_2d);
-	recorder.bindDescriptorSet(frame.set_compose);
-	recorder.draw(3);
-	recorder.endRenderPass();
+	recorder.beginRenderPass(pass_compose, current_image, swapchain.getExtend())
+		.bindPipeline(pipeline_compose_2d)
+		.bindDescriptorSet(frame.set_compose)
+		.draw(3)
+		.endRenderPass();
 
-	// TODO
-//	recorder.beginRenderPass(pass_basic_3d, current_image, swapchain.getExtend());
-//	recorder.bindPipeline(pipeline_basic_3d);
-//	recorder.bindDescriptorSet(frame.set_graphics);
-//	recorder.endRenderPass();
+	// upload vertex buffers
+	immediate.upload(recorder);
+
+	// draw immediate vertex data
+	recorder.beginRenderPass(pass_immediate, current_image, swapchain.getExtend());
+	recorder.bindPipeline(pipeline_basic_3d);
+	recorder.bindDescriptorSet(frame.set_graphics);
+
+	recorder.bindVertexBuffer(immediate.basic.buffer.getBuffer());
+	recorder.draw(immediate.basic.buffer.getCount());
+
+	recorder.endRenderPass();
 
 	recorder.done();
 
