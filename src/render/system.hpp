@@ -21,7 +21,7 @@ class RenderSystem : public Renderer {
 
 		RenderSystem(ApplicationParameters& parameters);
 
-		std::shared_ptr<RenderModel> createRenderModel(std::vector<std::shared_ptr<RenderMesh>> meshes);
+		std::vector<std::shared_ptr<RenderModel>> createRenderModels(std::vector<std::shared_ptr<RenderMesh>> meshes);
 
 		/**
 		 * Commanders are used to command the GPU to perform actions, like

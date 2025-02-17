@@ -17,16 +17,23 @@ void RenderSystem::init(ApplicationParameters& parameters) {
 RenderSystem::RenderSystem(ApplicationParameters& parameters)
 : Renderer(parameters) {}
 
-std::shared_ptr<RenderModel> RenderSystem::createRenderModel(std::vector<std::shared_ptr<RenderMesh>> meshes) {
-	AccelStructConfig config = AccelStructConfig::create(AccelStructConfig::BUILD, AccelStructConfig::BOTTOM);
+std::vector<std::shared_ptr<RenderModel>> RenderSystem::createRenderModels(std::vector<std::shared_ptr<RenderMesh>> meshes) {
+	std::vector<std::shared_ptr<RenderModel>> models;
 
 	for (auto& mesh : meshes) {
+		AccelStructConfig config = AccelStructConfig::create(AccelStructConfig::BUILD, AccelStructConfig::BOTTOM);
+
 		config.addTriangles(device, *mesh, true);
 		config.setFlags(VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_KHR);
 		config.setDebugName("<model>"); // TODO
+
+		auto model = bakery.submit(device, allocator, config);
+		model->setMesh(mesh);
+
+		models.push_back(model);
 	}
 
-	return bakery.submit(device, allocator, config);
+	return models;
 }
 
 std::unique_ptr<RenderCommander> RenderSystem::createTransientCommander() {

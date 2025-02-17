@@ -1,8 +1,14 @@
 #pragma once
 
 #include "external.hpp"
+#include "render/vulkan/setup/device.hpp"
 
 class RenderModel;
+
+struct RenderObjectData {
+	uint64_t vertex_address;
+	uint64_t index_address;
+};
 
 /**
  * Represents a instance of a RenderModel that is placed in the world
@@ -15,6 +21,7 @@ class RenderObject {
 		std::shared_ptr<RenderModel> model;
 		uint32_t index;
 		VkAccelerationStructureInstanceKHR instance;
+		RenderObjectData data;
 
 		void setShader(uint32_t index);
 
@@ -22,7 +29,7 @@ class RenderObject {
 
 		RenderObject(uint32_t index);
 
-		const VkAccelerationStructureInstanceKHR* getData() const;
+		const VkAccelerationStructureInstanceKHR* getInstanceData() const;
 		uint32_t getIndex() const;
 
 		/**
@@ -48,8 +55,9 @@ class RenderObject {
 		 * You can obtain a model object from the asset loader.
 		 *
 		 * @param model object model to use for this instance
+		 * @param device logical device to use for address retrieval
 		 */
-		void setModel(const std::shared_ptr<RenderModel>& model);
+		void setModel(const std::shared_ptr<RenderModel>& model, const LogicalDevice& device);
 
 		/**
 		 * Controls whether the object is visible (Active) or not
@@ -59,5 +67,12 @@ class RenderObject {
 		 * @param active true for active, false otherwise
 		 */
 		void setActive(bool active);
+
+		/**
+		 * Get the data associated with this object.
+		 * 
+		 * @return object data
+		 */
+		const RenderObjectData& getObjectData() const;
 
 };

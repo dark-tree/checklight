@@ -10,7 +10,8 @@
  */
 
 void InstanceManager::write(const RenderObject& delegate) {
-	buffer.writeToStaging(delegate.getData(), 1, sizeof(VkAccelerationStructureInstanceKHR), delegate.getIndex());
+	buffer.writeToStaging(delegate.getInstanceData(), 1, sizeof(VkAccelerationStructureInstanceKHR), delegate.getIndex());
+	object_data_buffer.writeToStaging(&delegate.getObjectData(), 1, sizeof(RenderObjectData), delegate.getIndex());
 }
 
 void InstanceManager::trim() {
@@ -26,13 +27,16 @@ void InstanceManager::trim() {
 }
 
 InstanceManager::InstanceManager()
-: buffer(VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR) {
+: buffer(VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR),
+  object_data_buffer(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) {
 	capacity = 0;
 	buffer.setDebugName("Instance Array");
+	object_data_buffer.setDebugName("Instance Data");
 }
 
 InstanceManager::~InstanceManager() {
 	buffer.close();
+	object_data_buffer.close();
 }
 
 std::shared_ptr<RenderObject> InstanceManager::create() {
@@ -53,6 +57,9 @@ std::shared_ptr<RenderObject> InstanceManager::create() {
 
 			buffer.close();
 			buffer.allocateBuffers(capacity, sizeof(VkAccelerationStructureInstanceKHR));
+
+			object_data_buffer.close();
+			object_data_buffer.allocateBuffers(capacity, sizeof(RenderObjectData));
 		}
 
 		return delegates.emplace_back(std::make_shared<RenderObject>(offset));
@@ -74,8 +81,13 @@ void InstanceManager::flush(CommandRecorder& recorder) {
 	}
 
 	buffer.flushStaging(recorder);
+	object_data_buffer.flushStaging(recorder);
 }
 
 const ReusableBuffer& InstanceManager::getBuffer() const {
 	return buffer;
+}
+
+const ReusableBuffer& InstanceManager::getObjectDataBuffer() const {
+	return object_data_buffer;
 }

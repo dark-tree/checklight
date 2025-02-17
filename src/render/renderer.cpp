@@ -227,11 +227,13 @@ void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family que
 	features_vk12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
 	features_vk12.pNext = &features_ray;
 	features_vk12.bufferDeviceAddress = true; // need for raytracing, allow creating the funny universal pointers
+	features_vk12.scalarBlockLayout = true;
 
 	// Basic device features
 	VkPhysicalDeviceFeatures2KHR features {};
 	features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 	features.pNext = &features_vk12;
+	features.features.shaderInt64 = true;
 
 	// we will now connect with the selected driver
 	VkDeviceCreateInfo create_info {};
@@ -628,6 +630,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(0, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.descriptor(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.descriptor(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
 		.done(device);
 
 	// add layouts to the pool so that they can be allocated
@@ -732,6 +735,7 @@ void Renderer::draw() {
 	frame.flushUniformBuffer(recorder);
 
 	rebuildTopLevel(recorder);
+	frame.set_raytrace.buffer(3, instances->getObjectDataBuffer().getBuffer(), instances->getObjectDataBuffer().getBuffer().size());
 
 	// wait for uniform transfer before raytracing or rasterization starts
 	recorder.memoryBarrier()
@@ -789,4 +793,8 @@ int Renderer::width() {
 
 int Renderer::height() {
 	return swapchain.getExtend().height;
+}
+
+LogicalDevice& Renderer::getDevice() {
+	return device;
 }
