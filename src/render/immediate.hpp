@@ -45,10 +45,28 @@ class ImmediateRenderer {
 
 		VertexChannel basic {"Textured 2D"};
 
+		float iw, ih;
+		uint8_t r, g, b, a;
+		float layer;
+
 		void upload(CommandRecorder& recorder);
 		void close();
 
+	private:
+
+		/// Draw 2D vertex
+		void vertex(float x, float y, float u, float v);
+
+		/// Draw 3D vertex
+		void vertex(float x, float y, float z, float u, float v);
+
 	public:
+
+		ImmediateRenderer();
+
+		void setLayer(uint32_t layer);
+		void setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+		void setResolution(uint32_t width, uint32_t height);
 
 		void clear();
 		void drawRect2D(float x, float y, float w, float h);

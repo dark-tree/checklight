@@ -283,6 +283,7 @@ void Renderer::createSwapchain() {
 	builder.addQueueFamily(family);
 
 	this->swapchain = builder.build(device, surface);
+	this->immediate.setResolution(width(), height());
 
 	// allocate all attachments (except for color)
 	attachment_depth.allocate(device, extent.width, extent.height, allocator);
@@ -701,7 +702,11 @@ Window& Renderer::getWindow() const {
 void Renderer::draw() {
 
 	immediate.clear();
-	immediate.drawRect2D(0, 0, 0.1, 0.1);
+	immediate.setColor(255, 0, 100);
+	immediate.drawRect2D(0, 0, width(), 20);
+
+	immediate.setColor(0, 255, 100);
+	immediate.drawRect2D(10, 10, 100, 100);
 
 	RenderFrame& frame = getFrame();
 

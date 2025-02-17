@@ -53,14 +53,44 @@ void ImmediateRenderer::clear() {
 	basic.clear();
 }
 
-void ImmediateRenderer::drawRect2D(float x, float y, float w, float h) {
-	basic.write(x, y, 0.0f, 255, 255, 255, 255);
-	basic.write(x + w, y, 0.0f, 255, 255, 255, 255);
-	basic.write(x + w, y + h, 0.0f, 255, 255, 255, 255);
+void ImmediateRenderer::vertex(float x, float y, float u, float v) {
+	vertex(x * iw - 1, y * ih - 1, layer, u, v);
+}
 
-	basic.write(x, y, 0.0f, 255, 255, 255, 255);
-	basic.write(x + w, y + h, 0.0f, 255, 255, 255, 255);
-	basic.write(x, y + h, 0.0f, 255, 255, 255, 255);
+void ImmediateRenderer::vertex(float x, float y, float z, float u, float v) {
+	basic.write(x, y, z, r, g, b, a); // TODO texture UV
+}
+
+ImmediateRenderer::ImmediateRenderer() {
+	setLayer(0);
+	setColor(255, 255, 255);
+	setResolution(1, 1);
+}
+
+void ImmediateRenderer::setLayer(uint32_t layer) {
+	this->layer = 1.0f / (layer + 1);
+}
+
+void ImmediateRenderer::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+	this->r = r;
+	this->g = g;
+	this->b = b;
+	this->a = a;
+}
+
+void ImmediateRenderer::setResolution(uint32_t width, uint32_t height) {
+	this->iw = 2.0f / std::max(1u, width);
+	this->ih = 2.0f / std::max(1u, height);
+}
+
+void ImmediateRenderer::drawRect2D(float x, float y, float w, float h) {
+	vertex(x, y, 0.0f, 0.0f);
+	vertex(x + w, y, 1.0f, 0.0f);
+	vertex(x + w, y + h, 0.0f, 1.0f);
+
+	vertex(x, y, 0.0f, 0.0f);
+	vertex(x + w, y + h, 0.0f, 0.0f);
+	vertex(x, y + h, 0.0f, 1.0f);
 }
 
 
