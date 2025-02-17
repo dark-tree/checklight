@@ -72,7 +72,11 @@ void Window::glfwCursorCallback(GLFWwindow* glfw_window, double x, double y) {
 	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
 
 	if (window) {
-		window->getInputDispatcher().onEvent(MouseEvent {x, y});
+		MouseEvent event {x, y};
+		window->getInputDispatcher().onEvent(event);
+
+		// update mouse capture state
+		window->setMouseCapture(event.capture_flag);
 	}
 }
 
@@ -82,6 +86,27 @@ void Window::glfwUnicodeCallback(GLFWwindow* glfw_window, unsigned int unicode) 
 	if (window) {
 		glm::vec2 mouse = window->getCursor();
 		window->getInputDispatcher().onEvent(UnicodeEvent {unicode, mouse.x, mouse.y});
+	}
+}
+
+void Window::glfwWindowCloseCallback(GLFWwindow* glfw_window) {
+	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
+
+	if (window) {
+		glm::vec2 mouse = window->getCursor();
+		CloseEvent event {mouse.x, mouse.y};
+		window->getInputDispatcher().onEvent(event);
+
+		glfwSetWindowShouldClose(glfw_window, !event.abort_flag);
+	}
+}
+
+void Window::glfwWindowResizeCallback(GLFWwindow* glfw_window, int width, int height) {
+	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
+
+	if (window) {
+		glm::vec2 mouse = window->getCursor();
+		window->getInputDispatcher().onEvent(ResizeEvent {width, height, mouse.x, mouse.y});
 	}
 }
 
@@ -113,6 +138,8 @@ Window::Window(uint32_t w, uint32_t h, std::string title_string) {
 	glfwSetScrollCallback(handle, glfwScrollCallback);
 	glfwSetCursorPosCallback(handle, glfwCursorCallback);
 	glfwSetCharCallback(handle, glfwUnicodeCallback);
+	glfwSetWindowCloseCallback(handle, glfwWindowCloseCallback);
+	glfwSetWindowSizeCallback(handle, glfwWindowResizeCallback);
 }
 
 Window::~Window() {
@@ -155,5 +182,9 @@ glm::vec2 Window::getCursor() const {
 }
 
 void Window::setMouseCapture(bool capture) {
-	glfwSetInputMode(handle, GLFW_CURSOR, capture ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+	if (capture != this->capture) {
+		this->capture = capture;
+
+		glfwSetInputMode(handle, GLFW_CURSOR, capture ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+	}
 }

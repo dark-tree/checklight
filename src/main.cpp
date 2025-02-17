@@ -14,7 +14,7 @@ int main() {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
-	window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
+	window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>(true));
 
 	auto meshes = Importer::importObj(system, "assets/models/checklight.obj");
 

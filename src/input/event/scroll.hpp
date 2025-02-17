@@ -2,6 +2,9 @@
 
 #include "input/event.hpp"
 
+/**
+ * Mouse wheel scroll input event
+ */
 class ScrollEvent : public InputEvent {
 
 	public:

@@ -26,6 +26,7 @@ class Window {
 
 	private:
 
+		bool capture = false;
 		InputDispatcher dispatcher;
 		GLFWwindow* handle;
 
@@ -34,10 +35,13 @@ class Window {
 		static void glfwScrollCallback(GLFWwindow* glfw_window, double x, double y);
 		static void glfwCursorCallback(GLFWwindow* glfw_window, double x, double y);
 		static void glfwUnicodeCallback(GLFWwindow* glfw_window, unsigned int unicode);
+		static void glfwWindowCloseCallback(GLFWwindow* glfw_window);
+		static void glfwWindowResizeCallback(GLFWwindow* glfw_window, int width, int height);
 		static void glfwErrorCallback(int error_code, const char* description);
 
 		friend class WindowSystem;
 		Window(uint32_t w, uint32_t h, std::string title);
+		void setMouseCapture(bool capture);
 
 	public:
 
@@ -53,6 +57,5 @@ class Window {
 		bool isKeyPressed(int key) const;
 		bool isButtonPressed(int button) const;
 		glm::vec2 getCursor() const;
-		void setMouseCapture(bool capture);
 
 };
