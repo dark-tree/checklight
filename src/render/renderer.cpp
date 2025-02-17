@@ -611,6 +611,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	binding_3d = BindingLayoutBuilder::begin()
 		.attribute(0, Vertex3D::position)
 		.attribute(1, Vertex3D::color)
+		.attribute(2, Vertex3D::texture)
 		.done();
 
 	// create descriptor layouts

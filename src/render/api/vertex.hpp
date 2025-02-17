@@ -20,7 +20,7 @@ struct Vertex3D {
 
 		/// vertex color
 		uint8_t r, g, b, a;
-		static constexpr VkFormat color = VK_FORMAT_R8G8B8A8_SNORM;
+		static constexpr VkFormat color = VK_FORMAT_R8G8B8A8_UNORM;
 
 		/// vertex texture
 		float u, v;

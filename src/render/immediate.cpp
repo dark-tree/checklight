@@ -54,13 +54,13 @@ void ImmediateRenderer::clear() {
 }
 
 void ImmediateRenderer::drawRect2D(float x, float y, float w, float h) {
-	basic.write(x, y, 1.0f, 255, 255, 255, 255);
-	basic.write(x + w, y, 1.0f, 255, 255, 255, 255);
-	basic.write(x + w, y + h, 1.0f, 255, 255, 255, 255);
+	basic.write(x, y, 0.0f, 255, 255, 255, 255);
+	basic.write(x + w, y, 0.0f, 255, 255, 255, 255);
+	basic.write(x + w, y + h, 0.0f, 255, 255, 255, 255);
 
-	basic.write(x, y, 1.0f, 255, 255, 255, 255);
-	basic.write(x + w, y + h, 1.0f, 255, 255, 255, 255);
-	basic.write(x, y + h, 1.0f, 255, 255, 255, 255);
+	basic.write(x, y, 0.0f, 255, 255, 255, 255);
+	basic.write(x + w, y + h, 0.0f, 255, 255, 255, 255);
+	basic.write(x, y + h, 0.0f, 255, 255, 255, 255);
 }
 
 
