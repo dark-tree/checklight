@@ -47,10 +47,10 @@ std::vector<std::shared_ptr<RenderMesh>> Importer::importObj(RenderSystem& syste
 			std::vector<Vertex3D> vertices;
 
 			for (auto& vertex : object.vertices) {
-				float colorR = (vertex.normal.x + 1) / 2;
-				float colorG = (vertex.normal.y + 1) / 2;
-				float colorB = (vertex.normal.z + 1) / 2;
-        vertices.emplace_back(vertex.position.x, vertex.position.y, vertex.position.z, colorR * 255, colorG * 255, colorB * 255, 255);
+				float r = (vertex.normal.x + 1) / 2;
+				float g = (vertex.normal.y + 1) / 2;
+				float b = (vertex.normal.z + 1) / 2;
+				vertices.emplace_back(vertex.position.x, vertex.position.y, vertex.position.z, r * 255, g * 255, b * 255, 255);
 			}
 
 			mesh->uploadVertices(*commander, vertices);

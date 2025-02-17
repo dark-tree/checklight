@@ -2,6 +2,7 @@
 
 layout(location = 0) in vec3 iPosition;
 layout(location = 1) in vec3 iColor;
+layout(location = 2) in vec3 iTexture;
 
 //layout(binding = 0) uniform SceneUniform {
 //    mat4 view;

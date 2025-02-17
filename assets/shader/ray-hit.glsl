@@ -2,6 +2,7 @@
 #extension GL_EXT_ray_tracing : require
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_EXT_scalar_block_layout : enable
+#extension GL_EXT_shader_explicit_arithmetic_types_int8 : require
 #extension GL_EXT_shader_explicit_arithmetic_types_int64 : require
 #extension GL_EXT_buffer_reference2 : require
 
@@ -11,7 +12,8 @@ struct HitPayload {
 
 struct Vertex3D {
 	float x, y, z;
-	float r, g, b;
+	uint8_t r, g, b, a;
+    float u, v;
 };
 
 struct RenderObjectData {
@@ -44,5 +46,5 @@ void main() {
     
     const vec3 normal = vec3(v0.r, v0.g, v0.b) * barycentrics.x + vec3(v1.r, v1.g, v1.b) * barycentrics.y + vec3(v2.r, v2.g, v2.b) * barycentrics.z;
 
-    rPayload.value = normal;
+    rPayload.value = normal/255;
 }

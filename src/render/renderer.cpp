@@ -140,6 +140,7 @@ void Renderer::pickDevice() {
 			}
 		}
 
+		auto* features_base = (const VkPhysicalDeviceFeatures2*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2);
 		auto* features_vk12 = (const VkPhysicalDeviceVulkan12Features*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES);
 		auto* features_ray = (const VkPhysicalDeviceRayTracingPipelineFeaturesKHR*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR);
 		auto* features_accel = (const VkPhysicalDeviceAccelerationStructureFeaturesKHR*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR);
@@ -156,6 +157,21 @@ void Renderer::pickDevice() {
 
 		if (!features_accel->accelerationStructure) {
 			printf(" * Feature 'acceleration structure' unsupported!\n");
+			fail = true;
+		}
+
+		if (!features_vk12->scalarBlockLayout) {
+			printf(" * Feature 'scalar block layout' unsupported!\n");
+			fail = true;
+		}
+
+		if (!features_vk12->storageBuffer8BitAccess) {
+			printf(" * Feature 'storage buffer 8bit access' unsupported!\n");
+			fail = true;
+		}
+
+		if (!features_base->features.shaderInt64) {
+			printf(" * Feature 'shader uint64_t' unsupported!\n");
 			fail = true;
 		}
 
@@ -227,13 +243,15 @@ void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family que
 	features_vk12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
 	features_vk12.pNext = &features_ray;
 	features_vk12.bufferDeviceAddress = true; // need for raytracing, allow creating the funny universal pointers
-	features_vk12.scalarBlockLayout = true;
+	features_vk12.scalarBlockLayout = true; // needed for the shader
+	features_vk12.storageBuffer8BitAccess = true; // needed for the shader RGBA block
+	features_vk12.shaderInt8 = true; // needed for the shader RGBA block
 
 	// Basic device features
 	VkPhysicalDeviceFeatures2KHR features {};
 	features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 	features.pNext = &features_vk12;
-	features.features.shaderInt64 = true;
+	features.features.shaderInt64 = true; // needed for the shader
 
 	// we will now connect with the selected driver
 	VkDeviceCreateInfo create_info {};
