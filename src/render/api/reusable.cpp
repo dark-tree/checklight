@@ -106,3 +106,7 @@ Buffer& ReusableBuffer::getBuffer() const {
 size_t ReusableBuffer::getCount() const {
 	return count;
 }
+
+VkDeviceAddress ReusableBuffer::getDeviceAddress() const {
+	return RenderSystem::system->device.getAddress(*buffer);
+}

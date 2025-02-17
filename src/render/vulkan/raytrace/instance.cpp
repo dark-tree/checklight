@@ -11,7 +11,7 @@
 
 void InstanceManager::write(const RenderObject& delegate) {
 	buffer.writeToStaging(delegate.getInstanceData(), 1, sizeof(VkAccelerationStructureInstanceKHR), delegate.getIndex());
-	object_data_buffer.writeToStaging(&delegate.getObjectData(), 1, sizeof(RenderObjectData), delegate.getIndex());
+	object_data_buffer.writeToStaging(delegate.getObjectData(), 1, sizeof(RenderObjectData), delegate.getIndex());
 }
 
 void InstanceManager::trim() {

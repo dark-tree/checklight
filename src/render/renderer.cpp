@@ -753,7 +753,8 @@ void Renderer::draw() {
 	frame.flushUniformBuffer(recorder);
 
 	rebuildTopLevel(recorder);
-	frame.set_raytrace.buffer(3, instances->getObjectDataBuffer().getBuffer(), instances->getObjectDataBuffer().getBuffer().size());
+	auto& buffer = instances->getObjectDataBuffer();
+	frame.set_raytrace.buffer(3, buffer.getBuffer(), buffer.getBuffer().size());
 
 	// wait for uniform transfer before raytracing or rasterization starts
 	recorder.memoryBarrier()
@@ -811,8 +812,4 @@ int Renderer::width() {
 
 int Renderer::height() {
 	return swapchain.getExtend().height;
-}
-
-LogicalDevice& Renderer::getDevice() {
-	return device;
 }

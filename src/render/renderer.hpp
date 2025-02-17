@@ -193,5 +193,4 @@ class Renderer {
 		/// Build pending acceleration structures
 		void rebuildBottomLevel(CommandRecorder& recorder);
 
-		LogicalDevice& getDevice();
 };

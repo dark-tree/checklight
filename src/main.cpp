@@ -25,7 +25,7 @@ int main() {
 	for (auto& model : models) {
 		auto object = system.createRenderObject();
 		object->setMatrix(glm::identity<glm::mat4x3>());
-		object->setModel(model, system.getDevice());
+		object->setModel(model);
 		objects.push_back(object);
 	}
 	

@@ -30,6 +30,7 @@ class RenderObject {
 		RenderObject(uint32_t index);
 
 		const VkAccelerationStructureInstanceKHR* getInstanceData() const;
+		const RenderObjectData* getObjectData() const;
 		uint32_t getIndex() const;
 
 		/**
@@ -57,7 +58,7 @@ class RenderObject {
 		 * @param model object model to use for this instance
 		 * @param device logical device to use for address retrieval
 		 */
-		void setModel(const std::shared_ptr<RenderModel>& model, const LogicalDevice& device);
+		void setModel(const std::shared_ptr<RenderModel>& model);
 
 		/**
 		 * Controls whether the object is visible (Active) or not
@@ -67,12 +68,5 @@ class RenderObject {
 		 * @param active true for active, false otherwise
 		 */
 		void setActive(bool active);
-
-		/**
-		 * Get the data associated with this object.
-		 * 
-		 * @return object data
-		 */
-		const RenderObjectData& getObjectData() const;
 
 };

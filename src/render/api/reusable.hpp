@@ -23,6 +23,7 @@ class ReusableBuffer {
 
 		void* stage = nullptr;
 		std::shared_ptr<Buffer> staging;
+		VkDeviceAddress address;
 
 	public:
 
@@ -64,5 +65,8 @@ class ReusableBuffer {
 
 		/// Get element count
 		size_t getCount() const;
+
+		/// Get the cached address of device buffer
+		VkDeviceAddress getDeviceAddress() const;
 
 };

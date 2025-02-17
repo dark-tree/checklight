@@ -21,6 +21,10 @@ const VkAccelerationStructureInstanceKHR* RenderObject::getInstanceData() const 
 	return &instance;
 }
 
+const RenderObjectData* RenderObject::getObjectData() const {
+	return &data;
+}
+
 uint32_t RenderObject::getIndex() const {
 	return index;
 }
@@ -37,18 +41,15 @@ void RenderObject::setTraits(VkGeometryInstanceFlagsKHR flags) {
 	instance.flags = flags;
 }
 
-void RenderObject::setModel(const std::shared_ptr<RenderModel>& model, const LogicalDevice& device) {
+void RenderObject::setModel(const std::shared_ptr<RenderModel>& model) {
 	this->model = model;
+
 	instance.accelerationStructureReference = model->getAddress();
-	
-	this->data.vertex_address = device.getAddress(model->getMesh()->getVertexData().getBuffer());
-	this->data.index_address = device.getAddress(model->getMesh()->getIndexData().getBuffer());
+	data.vertex_address = model->getMesh()->getVertexData().getDeviceAddress();
+	data.index_address = model->getMesh()->getIndexData().getDeviceAddress();
 }
 
 void RenderObject::setActive(bool active) {
 	instance.mask = (active ? 0xff : 0x00);
 }
 
-const RenderObjectData& RenderObject::getObjectData() const {
-	return data;
-}
