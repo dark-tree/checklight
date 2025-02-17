@@ -323,6 +323,7 @@ void Renderer::createShaders() {
 	shader_basic_fragment = compiler.compileFile(device, "assets/shader/basic.frag", Kind::FRAGMENT);
 	shader_trace_gen = compiler.compileFile(device, "assets/shader/ray-gen.glsl", Kind::RAYGEN);
 	shader_trace_miss = compiler.compileFile(device, "assets/shader/ray-miss.glsl", Kind::MISS);
+	shader_trace_shadow_miss = compiler.compileFile(device, "assets/shader/ray-shadow-miss.glsl", Kind::MISS);
 	shader_trace_hit = compiler.compileFile(device, "assets/shader/ray-hit.glsl", Kind::CLOSEST);
 	shader_blit_vertex = compiler.compileFile(device, "assets/shader/blit.vert", Kind::VERTEX);
 	shader_blit_fragment = compiler.compileFile(device, "assets/shader/blit.frag", Kind::FRAGMENT);
@@ -466,6 +467,7 @@ void Renderer::createPipelines() {
 
 	ShaderTableBuilder builder;
 	builder.addMissShader(shader_trace_miss);
+	builder.addMissShader(shader_trace_shadow_miss);
 	builder.addRayGenShader(shader_trace_gen);
 	builder.addHitGroup().withClosestHit(shader_trace_hit);
 

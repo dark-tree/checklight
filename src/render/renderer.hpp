@@ -83,6 +83,7 @@ class Renderer {
 		Shader shader_basic_fragment;
 		Shader shader_trace_gen;
 		Shader shader_trace_miss;
+		Shader shader_trace_shadow_miss;
 		Shader shader_trace_hit;
 		Shader shader_blit_vertex;
 		Shader shader_blit_fragment;

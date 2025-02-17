@@ -39,7 +39,7 @@ int main() {
 
 		// render the scene
 		system.draw();
-  }
+	}
 
 	system.wait();
 
