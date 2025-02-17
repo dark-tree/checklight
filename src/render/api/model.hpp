@@ -1,6 +1,7 @@
 #pragma once
 
 #include "render/vulkan/raytrace/struct.hpp"
+#include "render/api/mesh.hpp"
 
 /**
  * Represents a ready-to-render model of a object in the world, and can
@@ -13,6 +14,7 @@ class RenderModel {
 
 		AccelStruct structure;
 		VkDeviceAddress address;
+		std::shared_ptr<RenderMesh> mesh;
 
 	public:
 
@@ -35,5 +37,15 @@ class RenderModel {
 		 * stays constant, but it can be change during baking in the AccelStructFactory
 		 */
 		AccelStruct getStructure() const;
+
+		/**
+		 * Set the mesh that was used to create this model
+		 */
+		void setMesh(const std::shared_ptr<RenderMesh>& mesh);
+
+		/**
+		 * Get the mesh that was used to create this model
+		 */
+		std::shared_ptr<RenderMesh> getMesh() const;
 
 };

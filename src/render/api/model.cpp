@@ -21,3 +21,11 @@ void RenderModel::setStructure(const LogicalDevice& device, const AccelStruct& s
 AccelStruct RenderModel::getStructure() const {
 	return structure;
 }
+
+void RenderModel::setMesh(const std::shared_ptr<RenderMesh>& mesh) {
+	this->mesh = mesh;
+}
+
+std::shared_ptr<RenderMesh> RenderModel::getMesh() const {
+	return mesh;
+}

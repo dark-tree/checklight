@@ -186,4 +186,6 @@ class Renderer {
 		int height();
 
 		void rebuildBottomLevel(CommandRecorder& recorder);
+
+		LogicalDevice& getDevice();
 };

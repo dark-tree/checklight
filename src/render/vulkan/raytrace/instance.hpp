@@ -16,6 +16,7 @@ class InstanceManager {
 		size_t freed = 0;
 
 		ReusableBuffer buffer;
+		ReusableBuffer object_data_buffer;
 		std::vector<std::shared_ptr<RenderObject>> delegates;
 
 		void write(const RenderObject& delegate);
@@ -34,5 +35,8 @@ class InstanceManager {
 
 		/// Get the buffer object used for instance array storage
 		const ReusableBuffer& getBuffer() const;
+
+		/// Get the buffer object used for object data storage
+		const ReusableBuffer& getObjectDataBuffer() const;
 
 };

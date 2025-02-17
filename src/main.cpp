@@ -14,21 +14,21 @@ int main() {
 
 	auto meshes = Importer::importObj(system, "assets/models/checklight.obj");
 
-	auto model = system.createRenderModel(meshes);
+	auto models = system.createRenderModels(meshes);
 
 	auto commander = system.createTransientCommander();
 	system.rebuildBottomLevel(commander->getRecorder());
 	commander->complete();
 
-	// TODO: free meshes
-	// for (auto& mesh : meshes) {
-	//	  mesh.reset();
-	// }
+	std::vector<std::shared_ptr<RenderObject>> objects;
 
-	auto object = system.createRenderObject();
-	object->setMatrix(glm::identity<glm::mat4x3>());
-	object->setModel(model);
-
+	for (auto& model : models) {
+		auto object = system.createRenderObject();
+		object->setMatrix(glm::identity<glm::mat4x3>());
+		object->setModel(model, system.getDevice());
+		objects.push_back(object);
+	}
+	
 	while (!window.shouldClose()) {
 		window.poll();
 
@@ -43,6 +43,11 @@ int main() {
     }
 
 	system.wait();
+
+	// TODO: free meshes
+	//for (auto& mesh : meshes) {
+	//	mesh.reset();
+	//}
 
 	RenderSystem::system.reset();
 

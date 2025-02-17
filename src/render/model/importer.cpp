@@ -10,19 +10,19 @@ std::vector<std::shared_ptr<RenderMesh>> Importer::importObj(RenderSystem& syste
 	std::vector<std::shared_ptr<RenderMesh>> meshes;
 
 	std::map<std::string, std::shared_ptr<ObjMaterial>> materials;
-	std::string mtlPath = "";
+	std::string mtl_path = "";
 
 	try {
-		mtlPath = ObjObject::getMtllib(path);
+		mtl_path = ObjObject::getMtllib(path);
 
-		if (!mtlPath.empty()) {
-			materials = ObjMaterial::open(mtlPath);
+		if (!mtl_path.empty()) {
+			materials = ObjMaterial::open(mtl_path);
 		}
 
 	} catch (const std::exception& e) {
 		try {
-			mtlPath = path.substr(0, path.find_last_of("/\\") + 1) + mtlPath;
-			materials = ObjMaterial::open(mtlPath);
+			mtl_path = path.substr(0, path.find_last_of("/\\") + 1) + mtl_path;
+			materials = ObjMaterial::open(mtl_path);
 
 		} catch (const std::exception& e) {
 			std::cerr << e.what() << std::endl;
@@ -36,28 +36,38 @@ std::vector<std::shared_ptr<RenderMesh>> Importer::importObj(RenderSystem& syste
 	auto commander = system.createTransientCommander();
 
 	for (auto& object : scene) {
-		std::vector<Vertex3D> vertices;
+		std::shared_ptr<RenderMesh> mesh = system.createMesh();
 
-		for (auto& vertex : object.vertices) {
-			float colorR = (vertex.normal.x + 1) / 2;
-			float colorG = (vertex.normal.y + 1) / 2;
-			float colorB = (vertex.normal.z + 1) / 2;
-			vertices.push_back(Vertex3D(vertex.position.x, vertex.position.y, vertex.position.z, colorR, colorG, colorB));
-		}
+		#if ENGINE_DEBUG
+		std::string debug_name = "Mesh " + object.name + " from " + path;
+		mesh->setDebugName(debug_name.c_str());
+		#endif
 
-		for (size_t i = 0; i < object.groups.size(); i ++) {
-			const auto& group = object.groups[i];
-			std::shared_ptr<RenderMesh> mesh = system.createMesh();
+		{
+			std::vector<Vertex3D> vertices;
 
-			#if ENGINE_DEBUG
-			std::string debug_name = "Mesh " + object.name + " #" + std::to_string(i) + " from " + path;
-			mesh->setDebugName(debug_name.c_str());
-			#endif
+			for (auto& vertex : object.vertices) {
+				float colorR = (vertex.normal.x + 1) / 2;
+				float colorG = (vertex.normal.y + 1) / 2;
+				float colorB = (vertex.normal.z + 1) / 2;
+				vertices.push_back(Vertex3D(vertex.position.x, vertex.position.y, vertex.position.z, colorR, colorG, colorB));
+			}
 
 			mesh->uploadVertices(*commander, vertices);
-			mesh->uploadIndices(*commander, group.indices);
-			meshes.push_back(mesh);
 		}
+
+		{
+			std::vector<uint32_t> indices;
+
+			for (size_t i = 0; i < object.groups.size(); i ++) {
+				const auto& group = object.groups[i];
+				indices.insert(indices.end(), group.indices.begin(), group.indices.end());
+			}
+
+			mesh->uploadIndices(*commander, indices);
+		}
+		
+		meshes.push_back(mesh);
 	}
 
 	commander->complete();
