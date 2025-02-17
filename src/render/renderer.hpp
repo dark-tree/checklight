@@ -4,6 +4,8 @@
 #include "frame.hpp"
 #include "application.hpp"
 #include "window.hpp"
+#include "immediate.hpp"
+
 #include "render/vulkan/setup/proxy.hpp"
 #include "render/vulkan/setup/instance.hpp"
 #include "render/vulkan/shader/compiler.hpp"
@@ -36,7 +38,7 @@ class Renderer {
 		/// the size of the frames vector (the vector is used as a ring buffer)
 		int index;
 
-		/// a ring-buffer line holder for the per frame states, utilized for concurrent
+		/// a ring-buffer like holder for the per frame states, utilized for concurrent
 		/// frame rendering (the CPU can "render ahead" of the GPU)
 		std::vector<RenderFrame> frames;
 
@@ -55,6 +57,7 @@ class Renderer {
 		Compiler compiler;
 		WindowSystem windows;
 		std::unique_ptr<Window> window;
+		ImmediateRenderer immediate;
 
 		// early vulkan objects
 		VkFormat surface_format;
@@ -98,8 +101,8 @@ class Renderer {
 		BindingLayout binding_3d;
 
 		// renderpasses
-		RenderPass pass_basic_3d;
-		RenderPass pass_compose_2d;
+		RenderPass pass_immediate;
+		RenderPass pass_compose;
 
 		// Pipelines
 		GraphicsPipeline pipeline_basic_3d;
@@ -130,7 +133,7 @@ class Renderer {
 		void pickDevice();
 
 		/// Loads the LogicalDevice, and Family
-		void createDevice(std::shared_ptr<PhysicalDevice> device, Family queue_family, const std::vector<const char*>& extensions);
+		void createDevice(std::shared_ptr<PhysicalDevice> device, Family queue_family, std::vector<const char*>& extensions, std::vector<const char*>& optional);
 
 		void createShaders();
 		void createAttachments();
@@ -146,9 +149,11 @@ class Renderer {
 
 		void lateClose();
 		void lateInit();
+		void prepareForRendering(CommandRecorder& recorder);
 
 		void acquirePresentationIndex();
 		void presentFramebuffer();
+
 		void rebuildTopLevel(CommandRecorder& recorder);
 
 	protected:
@@ -185,6 +190,7 @@ class Renderer {
 		/// Get current screen height, in pixels
 		int height();
 
+		/// Build pending acceleration structures
 		void rebuildBottomLevel(CommandRecorder& recorder);
 
 		LogicalDevice& getDevice();

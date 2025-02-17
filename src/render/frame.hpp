@@ -28,7 +28,7 @@ class RenderFrame {
 		/// before the BasicBuffer constructor runs as it uses `system.defer()`
 		TaskQueue queue;
 
-		/// this semaphore will be unlocked once the frambuffer returned from
+		/// this semaphore will be unlocked once the framebuffer returned from
 		/// `RenderSystem::acquireFramebuffer()` is actually ready to be written to, see `CommandSubmitter::awaits()`
 		Semaphore available_semaphore;
 
@@ -43,6 +43,10 @@ class RenderFrame {
 		/// Small buffer used to store uniform variables
 		/// after writing data to `uniforms` call uploadUniformBuffer()
 		Buffer uniform_buffer;
+
+		/// Contains all per-frame static data
+		/// Like camera matrices and the like
+		SceneUniform uniforms;
 
 	public:
 
@@ -62,11 +66,11 @@ class RenderFrame {
 		~RenderFrame();
 
 		/**
-		 * Sends the updated uniform buffer content to the GPU mapped
-		 * memory block, call this method when you want to change the uniforms
-		 * and don't modify the mapped block yourself!
+		 * Sends the updated uniform buffer content to the GPU memory,
+		 * always call this method when you want to flush the uniforms
+		 * after modifying the uniforms object
 		 */
-		void flushUniformBuffer(const SceneUniform& uniforms);
+		void flushUniformBuffer(CommandRecorder& recorder);
 
 		/**
 		 * Wait before starting to render this frame

@@ -37,14 +37,14 @@ void DescriptorSet::buffer(int binding, const Buffer& buffer, size_t length, int
 
 }
 
-void DescriptorSet::sampler(int binding, const Texture& texture) {
+void DescriptorSet::sampler(int binding, const Texture& texture, VkImageLayout image_layout) {
 
 	const VkDescriptorType type = layout->getType(binding);
 	const VkSampler vk_sampler = texture.getSampler();
 	VulkanDebug::assertAlive(vk_sampler);
 
 	VkDescriptorImageInfo info {};
-	info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	info.imageLayout = image_layout;
 	info.imageView = texture.getView();
 	info.sampler = vk_sampler;
 
@@ -61,14 +61,14 @@ void DescriptorSet::sampler(int binding, const Texture& texture) {
 
 }
 
-void DescriptorSet::view(int binding, const ImageView& view) {
+void DescriptorSet::view(int binding, const ImageView& view, VkImageLayout image_layout) {
 
 	const VkDescriptorType type = layout->getType(binding);
 	const VkImageView vk_view = view.getHandle();
 	VulkanDebug::assertAlive(vk_view);
 
 	VkDescriptorImageInfo info {};
-	info.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	info.imageLayout = image_layout;
 	info.imageView = vk_view;
 
 	VkWriteDescriptorSet write {};

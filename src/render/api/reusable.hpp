@@ -50,8 +50,8 @@ class ReusableBuffer {
 		/// Copy staging buffer to the device buffer
 		void flushStaging(CommandRecorder& recorder);
 
-		/// Change the size of the buffer while keeping the data held in it
-		void resize(RenderCommander& commander, int elements, int size);
+		/// Change the size of the buffers, all data is discarded
+		void resize(int elements, int size);
 
 		/// Allocate buffers, upload data, and free staging buffers
 		void upload(RenderCommander& commander, const void* data, int elements, int size);

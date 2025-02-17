@@ -33,6 +33,13 @@ PhysicalDevice::PhysicalDevice(VkPhysicalDevice device)  {
 
 	Proxy::vkGetPhysicalDeviceFeatures2(device, &features);
 	this->vk_device = device;
+
+	uint32_t count = 0;
+	vkEnumerateDeviceExtensionProperties(vk_device, nullptr, &count, nullptr);
+
+	extensions.resize(count);
+	vkEnumerateDeviceExtensionProperties(vk_device, nullptr, &count, extensions.data());
+
 }
 
 VkPhysicalDeviceType PhysicalDevice::getType() const {
@@ -58,12 +65,6 @@ VkPhysicalDevice PhysicalDevice::getHandle() const {
 }
 
 bool PhysicalDevice::hasExtension(const char* name) const {
-	uint32_t count = 0;
-	vkEnumerateDeviceExtensionProperties(vk_device, nullptr, &count, nullptr);
-
-	std::vector<VkExtensionProperties> extensions {count};
-	vkEnumerateDeviceExtensionProperties(vk_device, nullptr, &count, extensions.data());
-
 	for (VkExtensionProperties extension : extensions) {
 		if (strcmp(extension.extensionName, name) == 0) {
 			return true;

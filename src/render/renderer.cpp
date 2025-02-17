@@ -116,6 +116,9 @@ void Renderer::pickDevice() {
 		VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
 	};
 
+	std::vector<const char*> optional_extensions = {
+	};
+
 	std::vector<std::string> debug;
 
 	for (auto& device : devices) {
@@ -174,7 +177,7 @@ void Renderer::pickDevice() {
 			}
 
 			// we found the one, continue with this device and family
-			createDevice(std::move(device), queue_family, required_extensions);
+			createDevice(std::move(device), queue_family, required_extensions, optional_extensions);
 			return;
 		}
 
@@ -185,8 +188,18 @@ void Renderer::pickDevice() {
 	throw std::runtime_error {"No device could have been selected!"};
 }
 
-void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family queue_family, const std::vector<const char*>& extensions) {
+void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family queue_family, std::vector<const char*>& extensions, std::vector<const char*>& optionals) {
 	printf("INFO: Selected '%s' (queue #%d)\n", physical->getName(), queue_family.getIndex());
+
+	// enable supported optional extensions
+	for (auto name : optionals) {
+		if (!physical->hasExtension(name)) {
+			printf("WARN: Missing optional extension '%s'!\n", name);
+			continue;
+		}
+
+		extensions.emplace_back(name);
+	}
 
 	// we use only one queue at this time
 	const float priority = 1.0f;
@@ -272,14 +285,15 @@ void Renderer::createSwapchain() {
 	builder.addQueueFamily(family);
 
 	this->swapchain = builder.build(device, surface);
+	this->immediate.setResolution(width(), height());
 
 	// allocate all attachments (except for color)
 	attachment_depth.allocate(device, extent.width, extent.height, allocator);
 	attachment_albedo.allocate(device, extent.width, extent.height, allocator);
 
 	// create framebuffers
-	pass_basic_3d.prepareFramebuffers(swapchain);
-	pass_compose_2d.prepareFramebuffers(swapchain);
+	pass_immediate.prepareFramebuffers(swapchain);
+	pass_compose.prepareFramebuffers(swapchain);
 
 	printf("INFO: Swapchain ready\n");
 
@@ -345,14 +359,14 @@ void Renderer::createRenderPasses() {
 		RenderPassBuilder builder;
 
 		Attachment::Ref color = builder.addAttachment(attachment_color)
-			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
 			.next();
 
-		Attachment::Ref depth = builder.addAttachment(attachment_depth)
-			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
-			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-			.next();
+//		Attachment::Ref depth = builder.addAttachment(attachment_depth)
+//			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+//			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+//			.next();
 
 		builder.addDependency()
 			.first(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0)
@@ -366,10 +380,10 @@ void Renderer::createRenderPasses() {
 
 		builder.addSubpass()
 			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+//			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.next();
 
-		pass_basic_3d = builder.build(device, "Basic 3D");
+		pass_immediate = builder.build(device, "Immediate");
 
 	}
 
@@ -379,7 +393,7 @@ void Renderer::createRenderPasses() {
 
 		Attachment::Ref color = builder.addAttachment(attachment_color)
 			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
-			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			.next();
 
 		builder.addDependency()
@@ -396,7 +410,7 @@ void Renderer::createRenderPasses() {
 			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			.next();
 
-		pass_compose_2d = builder.build(device, "Compose 2D");
+		pass_compose = builder.build(device, "Compose");
 
 	}
 
@@ -404,8 +418,8 @@ void Renderer::createRenderPasses() {
 }
 
 void Renderer::closeRenderPasses() {
-	pass_basic_3d.close();
-	pass_compose_2d.close();
+	pass_immediate.close();
+	pass_compose.close();
 }
 
 void Renderer::createPipelines() {
@@ -416,19 +430,18 @@ void Renderer::createPipelines() {
 		.withViewport(0, 0, extent.width, extent.height)
 		.withScissors(0, 0, extent.width, extent.height)
 		.withCulling(false)
-		.withRenderPass(pass_basic_3d, 0)
+		.withRenderPass(pass_immediate, 0)
 		.withShaders(shader_basic_vertex, shader_basic_fragment)
 		.withBindingLayout(binding_3d)
-		.withPushConstant(mesh_constant)
 		.withDescriptorSetLayout(layout_geometry)
-		.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
+		//.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
 		.build();
 
 	pipeline_compose_2d = GraphicsPipelineBuilder::of(device)
 		.withViewport(0, 0, extent.width, extent.height)
 		.withScissors(0, 0, extent.width, extent.height)
 		.withCulling(false)
-		.withRenderPass(pass_compose_2d, 0)
+		.withRenderPass(pass_compose, 0)
 		.withShaders(shader_blit_vertex, shader_blit_fragment)
 		.withDescriptorSetLayout(layout_compose)
 		.build();
@@ -490,6 +503,21 @@ void Renderer::lateInit() {
 	createSwapchain();
 	createPipelines();
 	createFrames();
+
+	Fence fence = createFence();
+	CommandBuffer buffer = transient_pool.allocate(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	CommandRecorder recorder = buffer.record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+	prepareForRendering(recorder);
+
+	recorder.done();
+	buffer.submit().signal(fence).done(queue);
+	fence.wait();
+	fence.close();
+}
+
+void Renderer::prepareForRendering(CommandRecorder& recorder) {
+	recorder.transitionLayout(attachment_albedo.getTexture().getTextureImage(), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 }
 
 RenderFrame& Renderer::getFrame() {
@@ -518,19 +546,17 @@ void Renderer::rebuildTopLevel(CommandRecorder& recorder) {
 
 	instances->flush(recorder);
 
+	// Recreate TLAS and update descriptors
 	tlas.close(device);
 	tlas = bakery.submit(device, allocator, config)->getStructure();
+	getFrame().set_raytrace.structure(0, tlas);
+
 	bakery.bake(device, allocator, recorder);
 
 	recorder.memoryBarrier()
 		.first(VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR, VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR)
 		.then(VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR)
 		.done();
-
-	// temporary fix
-	Fence fence = createFence();
-	recorder.quickFenceSubmit(fence, queue);
-	fence.close();
 
 }
 
@@ -588,6 +614,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	binding_3d = BindingLayoutBuilder::begin()
 		.attribute(0, Vertex3D::position)
 		.attribute(1, Vertex3D::color)
+		.attribute(2, Vertex3D::texture)
 		.done();
 
 	// create descriptor layouts
@@ -648,6 +675,7 @@ Renderer::~Renderer() {
 
 	vkDestroySurfaceKHR(instance.getHandle(), surface, nullptr);
 	instances.reset();
+	immediate.close();
 
 	// It's important to maintain the correct order
 	closeRenderPasses();
@@ -676,6 +704,25 @@ Window& Renderer::getWindow() const {
 
 void Renderer::draw() {
 
+	immediate.clear();
+	immediate.setColor(255, 0, 100);
+	immediate.drawLine2D(10, 10, 100, 500);
+
+	immediate.setColor(50, 50, 100);
+	immediate.setRectRadius(10, 20, 40, 80);
+	immediate.drawRect2D(100, 100, 200, 150);
+
+	immediate.setColor(200, 200, 200);
+	immediate.setRectRadius(10);
+	immediate.drawRect2D(300, 300, 400, 400);
+
+	immediate.setColor(0, 0, 0);
+	immediate.drawCircle2D(800, 100, 50);
+
+	immediate.setColor(200, 0, 0);
+	immediate.drawEllipse2D(800, 100, 20, 40);
+	immediate.drawBezier2D(800, 100, 900, 400, 500, 600, 800, 800);
+
 	RenderFrame& frame = getFrame();
 
 	frame.wait();
@@ -685,30 +732,41 @@ void Renderer::draw() {
 
 	// begin rendering
 	recorder = frame.buffer.record();
+	frame.flushUniformBuffer(recorder);
 
 	rebuildTopLevel(recorder);
-	frame.set_raytrace.structure(0, tlas);
 	frame.set_raytrace.buffer(3, instances->getObjectDataBuffer().getBuffer(), instances->getObjectDataBuffer().getBuffer().size());
 
-	recorder.transitionLayout(attachment_albedo.getTexture().getTextureImage(), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+	// wait for uniform transfer before raytracing or rasterization starts
+	recorder.memoryBarrier()
+		.first(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT)
+		.then(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_ACCESS_UNIFORM_READ_BIT)
+		.done();
 
-	recorder.bindPipeline(pipeline_trace_3d);
-	recorder.bindDescriptorSet(frame.set_raytrace);
-	recorder.traceRays(shader_table, width(), height());
+	// ray trace
+	recorder.bindPipeline(pipeline_trace_3d)
+		.bindDescriptorSet(frame.set_raytrace)
+		.traceRays(shader_table, width(), height());
 
-	recorder.transitionLayout(attachment_albedo.getTexture().getTextureImage(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
+	// compose final image
+	recorder.beginRenderPass(pass_compose, current_image, swapchain.getExtend())
+		.bindPipeline(pipeline_compose_2d)
+		.bindDescriptorSet(frame.set_compose)
+		.draw(3)
+		.endRenderPass();
 
-	recorder.beginRenderPass(pass_compose_2d, current_image, swapchain.getExtend());
-	recorder.bindPipeline(pipeline_compose_2d);
-	recorder.bindDescriptorSet(frame.set_compose);
-	recorder.draw(3);
+	// upload vertex buffers
+	immediate.upload(recorder);
+
+	// draw immediate vertex data
+	recorder.beginRenderPass(pass_immediate, current_image, swapchain.getExtend());
+	recorder.bindPipeline(pipeline_basic_3d);
+	recorder.bindDescriptorSet(frame.set_graphics);
+
+	recorder.bindVertexBuffer(immediate.basic.buffer.getBuffer());
+	recorder.draw(immediate.basic.buffer.getCount());
+
 	recorder.endRenderPass();
-
-	// TODO
-//	recorder.beginRenderPass(pass_basic_3d, current_image, swapchain.getExtend());
-//	recorder.bindPipeline(pipeline_basic_3d);
-//	recorder.bindDescriptorSet(frame.set_graphics);
-//	recorder.endRenderPass();
 
 	recorder.done();
 

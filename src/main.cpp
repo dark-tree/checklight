@@ -35,12 +35,11 @@ int main() {
 		// update uniforms
 		// do this once at the beginning of frame rendering
 		system.setProjectionMatrix(40.0f, 0.1f, 1000.0f);
-		system.setViewMatrix({18.0f, 1.0f, 4.0f}, {-21.0f, 0.0f, 4.0f});
-		system.updateUniforms();
+		system.setViewMatrix({18.0f, sin(glfwGetTime()) * 10, 4.0f}, {-21.0f, 0.0f, 4.0f});
 
 		// render the scene
 		system.draw();
-    }
+  }
 
 	system.wait();
 
