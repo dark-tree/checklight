@@ -4,6 +4,7 @@
 // C libs
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <cstdint>
 
 // C++ libs
 #include <iostream>

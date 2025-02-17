@@ -107,6 +107,9 @@ target_include_directories(checklight_common INTERFACE
 		${CHECKLIGHT_LIBRARIES}
 )
 
+file(GLOB_RECURSE CHECKLIGHT_ENGINE_SOURCES "src/engine/*.cpp")
+add_library(checklight_engine_system ${CHECKLIGHT_ENGINE_SOURCES})
+
 file(GLOB_RECURSE CHECKLIGHT_RENDER_SOURCES "src/render/*.cpp")
 add_library(checklight_render_system ${CHECKLIGHT_RENDER_SOURCES})
 
@@ -129,6 +132,11 @@ target_include_directories(checklight_external PRIVATE
 
 add_executable(checklight "src/main.cpp")
 add_executable(checklight_test "src/test.cpp")
+
+target_link_libraries(checklight_engine_system PRIVATE
+		checklight_common
+		checklight_shared_system
+)
 
 target_link_libraries(checklight_render_system PRIVATE
 		checklight_common
@@ -153,6 +161,7 @@ target_link_libraries(checklight PRIVATE
 		checklight_render_system
 		checklight_shared_system
 		checklight_input_system
+		checklight_engine_system
 )
 
 target_link_libraries(checklight_test PRIVATE
