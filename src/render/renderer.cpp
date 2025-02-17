@@ -703,10 +703,22 @@ void Renderer::draw() {
 
 	immediate.clear();
 	immediate.setColor(255, 0, 100);
-	immediate.drawRect2D(0, 0, width(), 20);
+	immediate.drawLine2D(10, 10, 100, 500);
 
-	immediate.setColor(0, 255, 100);
-	immediate.drawRect2D(10, 10, 100, 100);
+	immediate.setColor(50, 50, 100);
+	immediate.setRectRadius(10, 20, 40, 80);
+	immediate.drawRect2D(100, 100, 200, 150);
+
+	immediate.setColor(200, 200, 200);
+	immediate.setRectRadius(10);
+	immediate.drawRect2D(300, 300, 400, 400);
+
+	immediate.setColor(0, 0, 0);
+	immediate.drawCircle2D(800, 100, 50);
+
+	immediate.setColor(200, 0, 0);
+	immediate.drawEllipse2D(800, 100, 20, 40);
+	immediate.drawBezier2D(800, 100, 900, 400, 500, 600, 800, 800);
 
 	RenderFrame& frame = getFrame();
 
@@ -718,6 +730,7 @@ void Renderer::draw() {
 	// begin rendering
 	recorder = frame.buffer.record();
 	frame.flushUniformBuffer(recorder);
+
 	rebuildTopLevel(recorder);
 
 	// wait for uniform transfer before raytracing or rasterization starts
