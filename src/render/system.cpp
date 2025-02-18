@@ -41,8 +41,8 @@ std::unique_ptr<RenderCommander> RenderSystem::createTransientCommander() {
 	CommandBuffer buffer = transient_pool.allocate(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	CommandRecorder recorder = buffer.record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-	// TODO why tf does make_unique not work here?
-	return std::unique_ptr<RenderCommander> {new RenderCommander {RenderCommander::TRANSIENT, buffer, recorder, {}}};
+	// FIXME why tf does make_unique not work here?
+	return std::unique_ptr<RenderCommander> {new RenderCommander {buffer, recorder, {}}};
 
 }
 

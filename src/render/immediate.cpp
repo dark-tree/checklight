@@ -1,6 +1,7 @@
 
 #include "immediate.hpp"
 #include "vulkan/command/recorder.hpp"
+#include "asset/atlas.hpp"
 
 /*
  * VertexChannel
@@ -37,6 +38,7 @@ void VertexChannel::clear() {
 
 void ImmediateRenderer::upload(CommandRecorder& recorder) {
 	basic.upload(recorder);
+	atlas->upload(recorder);
 
 	recorder.memoryBarrier()
 		.first(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT)
@@ -86,12 +88,17 @@ float ImmediateRenderer::getBezierTangent(float a, float b, float c, float d, fl
 	return 3 * it2 * (b - a) + 6 * it * t * (c - b) + 3 * t2 * (d - c);
 }
 
-ImmediateRenderer::ImmediateRenderer() {
+ImmediateRenderer::ImmediateRenderer()
+: atlas(std::make_shared<DynamicAtlas>()), images(atlas) {
 	setLayer(0);
 	setColor(255, 255, 255);
 	setResolution(1, 1);
 	setLineWidth(4);
 	setRectRadius(0);
+}
+
+Sprite ImmediateRenderer::getSprite(const std::string& path) {
+	return images.getOrLoad(path);
 }
 
 void ImmediateRenderer::setLayer(uint32_t layer) {
@@ -129,6 +136,10 @@ void ImmediateRenderer::setRectRadius(float top_left, float top_right, float bot
 	this->rbr = bottom_right;
 }
 
+void ImmediateRenderer::setSprite(Sprite sprite) {
+	this->sprite = sprite;
+}
+
 void ImmediateRenderer::drawRect2D(float x, float y, float w, float h) {
 
 	glm::vec2 par {x + rbl, y - rbl + h};
@@ -160,15 +171,13 @@ void ImmediateRenderer::drawLine2D(float x1, float y1, float x2, float y2) {
 	glm::vec2 ab = pb - pa;
 	glm::vec2 pp = glm::normalize(glm::vec2 {-ab.y, ab.x}) * width;
 
-	Sprite blank; // TODO
+	vertex(pa + pp, sprite.u1, sprite.v1);
+	vertex(pb - pp, sprite.u2, sprite.v2);
+	vertex(pb + pp, sprite.u1, sprite.v2);
 
-	vertex(pa + pp, blank.u1, blank.v1);
-	vertex(pb - pp, blank.u2, blank.v2);
-	vertex(pb + pp, blank.u1, blank.v2);
-
-	vertex(pa + pp, blank.u1, blank.v1);
-	vertex(pa - pp, blank.u2, blank.v1);
-	vertex(pb - pp, blank.u2, blank.v2);
+	vertex(pa + pp, sprite.u1, sprite.v1);
+	vertex(pa - pp, sprite.u2, sprite.v1);
+	vertex(pb - pp, sprite.u2, sprite.v2);
 
 }
 

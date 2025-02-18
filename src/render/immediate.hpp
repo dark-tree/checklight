@@ -3,16 +3,13 @@
 #include "external.hpp"
 #include "api/vertex.hpp"
 #include "api/reusable.hpp"
+#include "render/asset/atlas.hpp"
 
 class CommandRecorder;
 
 enum ArcMode {
 	OPEN_PIE,
 	OPEN_CHORD
-};
-
-struct Sprite {
-	float u1, v1, u2, v2;
 };
 
 /**
@@ -52,12 +49,16 @@ class ImmediateRenderer {
 
 		friend class Renderer;
 
+		std::shared_ptr<DynamicAtlas> atlas;
+		DynamicImageAtlas images;
+
 		VertexChannel basic {"Textured 2D"};
 
 		float iw, ih;
 		uint8_t r, g, b, a;
 		float rtl, rtr, rbl, rbr;
 		float layer, width;
+		Sprite sprite;
 
 		void upload(CommandRecorder& recorder);
 		void close();
@@ -85,6 +86,8 @@ class ImmediateRenderer {
 
 		void clear();
 
+		Sprite getSprite(const std::string& path);
+
 		void setLayer(uint32_t layer);
 		void setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 		void setResolution(uint32_t width, uint32_t height);
@@ -92,6 +95,7 @@ class ImmediateRenderer {
 		void setRectRadius(float radius);
 		void setRectRadius(float top, float bottom);
 		void setRectRadius(float top_left, float top_right, float bottom_left, float bottom_right);
+		void setSprite(Sprite sprite);
 
 		// 2D Primitives
 		void drawRect2D(float x, float y, float w, float h);

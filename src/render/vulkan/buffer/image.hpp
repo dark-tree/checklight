@@ -3,6 +3,7 @@
 #include "external.hpp"
 #include "render/vulkan/command/recorder.hpp"
 #include "render/vulkan/setup/allocator.hpp"
+#include "render/vulkan/buffer/buffer.hpp"
 #include "shared/queue.hpp"
 
 enum struct ImageScaling {
@@ -10,6 +11,7 @@ enum struct ImageScaling {
 	NEAREST
 };
 
+class MutableImage;
 class Image;
 
 /**
@@ -188,7 +190,7 @@ class ManagedImageDataSet {
 		 * Records a copy-to-GPU-memory operation into the
 		 * given command buffer, a staging buffer IS used and resulting image returned
 		 */
-		Image upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue queue, VkFormat format) const;
+		MutableImage upload(Allocator& allocator, CommandRecorder& recorder, VkFormat format) const;
 
 		/**
 		 * Free the data held by all the individual
@@ -226,6 +228,35 @@ class Image {
 		VkFormat getFormat() const;
 		int getLevelCount() const;
 		int getLayerCount() const;
+
+};
+
+class MutableImage {
+
+	private:
+
+		struct WriteOperation {
+			size_t offset;
+			int width, height;
+			int level;
+		};
+
+		std::vector<WriteOperation> writes;
+		Buffer staging;
+		Image image;
+		void* map = nullptr;
+
+	public:
+
+		MutableImage() = default;
+		MutableImage(Buffer& buffer, Image& image);
+
+		void close();
+
+		void write(size_t offset, const ImageData& image, size_t width, size_t height, int level);
+		void upload(CommandRecorder& recorder);
+		Image discardStaging(TaskQueue& queue);
+		Image& getImage();
 
 };
 

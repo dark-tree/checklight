@@ -11,23 +11,15 @@
  */
 class RenderCommander {
 
-	public:
-
-		enum Type {
-			TRANSIENT,
-			ASYNCHRONOUS,
-		};
-
 	private:
 
-		Type type;
 		CommandBuffer buffer;
 		CommandRecorder recorder;
 		TaskQueue queue;
 
 	public:
 
-		RenderCommander(Type type, CommandBuffer buffer, CommandRecorder recorder, TaskQueue queue);
+		RenderCommander(CommandBuffer buffer, CommandRecorder recorder, TaskQueue queue);
 
 		/// Get the underlying vulkan command buffer recorder
 		CommandRecorder& getRecorder();

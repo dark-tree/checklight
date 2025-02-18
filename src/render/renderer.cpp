@@ -722,6 +722,9 @@ Window& Renderer::getWindow() const {
 
 void Renderer::draw() {
 
+	Sprite sprite_1 = immediate.getSprite("assets/image/vulkan-1.png");
+	Sprite sprite_2 = immediate.getSprite("assets/image/mug12.png");
+
 	immediate.clear();
 	immediate.setColor(255, 0, 100);
 	immediate.drawLine2D(10, 10, 100, 500);
