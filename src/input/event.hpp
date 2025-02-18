@@ -19,6 +19,7 @@ class InputEvent {
 			UNICODE,  ///< UnicodeEvent
 			CLOSE,    ///< CloseEvent
 			RESIZE,   ///< ResizeEvent
+			FRAME,    ///< FrameEvent
 		};
 
 		/**

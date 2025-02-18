@@ -38,6 +38,29 @@ std::unique_ptr<Window> WindowSystem::open(uint32_t w, uint32_t h, const std::st
 }
 
 /*
+ * InputContext
+ */
+
+InputContext::InputContext(const Window& window) {
+	this->handle = window.getHandle();
+}
+
+bool InputContext::isKeyPressed(int key) const {
+	return glfwGetKey(handle, key) == GLFW_PRESS;
+}
+
+bool InputContext::isButtonPressed(int button) const {
+	return glfwGetMouseButton(handle, button) == GLFW_PRESS;
+}
+
+glm::vec2 InputContext::getCursorPosition() const {
+	double x, y;
+	glfwGetCursorPos(handle, &x, &y);
+
+	return {x, y};
+}
+
+/*
  * Window
  */
 
@@ -45,7 +68,7 @@ void Window::glfwKeyCallback(GLFWwindow* glfw_window, int key, int scancode, int
 	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
 
 	if (window) {
-		glm::vec2 mouse = window->getCursor();
+		glm::vec2 mouse = window->getInputContext().getCursorPosition();
 		window->getInputDispatcher().onEvent(KeyboardEvent {key, scancode, action, mods, mouse.x, mouse.y});
 	}
 }
@@ -54,7 +77,7 @@ void Window::glfwButtonCallback(GLFWwindow* glfw_window, int button, int action,
 	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
 
 	if (window) {
-		glm::vec2 mouse = window->getCursor();
+		glm::vec2 mouse = window->getInputContext().getCursorPosition();
 		window->getInputDispatcher().onEvent(ButtonEvent {button, action, mods, mouse.x, mouse.y});
 	}
 }
@@ -63,7 +86,7 @@ void Window::glfwScrollCallback(GLFWwindow* glfw_window, double horizontal, doub
 	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
 
 	if (window) {
-		glm::vec2 mouse = window->getCursor();
+		glm::vec2 mouse = window->getInputContext().getCursorPosition();
 		window->getInputDispatcher().onEvent(ScrollEvent {horizontal, vertical, mouse.x, mouse.y});
 	}
 }
@@ -74,9 +97,6 @@ void Window::glfwCursorCallback(GLFWwindow* glfw_window, double x, double y) {
 	if (window) {
 		MouseEvent event {x, y};
 		window->getInputDispatcher().onEvent(event);
-
-		// update mouse capture state
-		window->setMouseCapture(event.capture_flag);
 	}
 }
 
@@ -84,7 +104,7 @@ void Window::glfwUnicodeCallback(GLFWwindow* glfw_window, unsigned int unicode) 
 	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
 
 	if (window) {
-		glm::vec2 mouse = window->getCursor();
+		glm::vec2 mouse = window->getInputContext().getCursorPosition();
 		window->getInputDispatcher().onEvent(UnicodeEvent {unicode, mouse.x, mouse.y});
 	}
 }
@@ -148,8 +168,14 @@ GLFWwindow* Window::getHandle() const {
 	return handle;
 }
 
-void Window::poll() const {
+void Window::poll() {
 	glfwPollEvents();
+
+	FrameEvent event {};
+	dispatcher.onEvent(event);
+
+	setMouseCapture(event.capture_flag);
+	setShouldClose(event.close_flag);
 }
 
 bool Window::shouldClose() const {
@@ -164,19 +190,8 @@ InputDispatcher& Window::getInputDispatcher() {
 	return dispatcher;
 }
 
-bool Window::isKeyPressed(int key) const {
-	return glfwGetKey(handle, key) == GLFW_PRESS;
-}
-
-bool Window::isButtonPressed(int button) const {
-	return glfwGetMouseButton(handle, button) == GLFW_PRESS;
-}
-
-glm::vec2 Window::getCursor() const {
-	double x, y;
-	glfwGetCursorPos(handle, &x, &y);
-
-	return {x, y};
+InputContext Window::getInputContext() {
+	return {*this};
 }
 
 void Window::setMouseCapture(bool capture) {
@@ -184,5 +199,13 @@ void Window::setMouseCapture(bool capture) {
 		this->capture = capture;
 
 		glfwSetInputMode(handle, GLFW_CURSOR, capture ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+	}
+}
+
+void Window::setShouldClose(bool close) {
+	if (close != this->close) {
+		this->close = close;
+
+		glfwSetWindowShouldClose(handle, close);
 	}
 }

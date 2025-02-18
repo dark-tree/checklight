@@ -21,12 +21,31 @@ class WindowSystem {
 
 };
 
+class InputContext {
+
+	private:
+
+		friend class Window;
+		GLFWwindow* handle;
+
+		InputContext(const Window& window);
+
+	public:
+
+		bool isKeyPressed(int key) const;
+		bool isButtonPressed(int button) const;
+		glm::vec2 getCursorPosition() const;
+
+
+};
 
 class Window {
 
 	private:
 
 		bool capture = false;
+		bool close = false;
+
 		InputDispatcher dispatcher;
 		GLFWwindow* handle;
 
@@ -41,21 +60,21 @@ class Window {
 
 		friend class WindowSystem;
 		Window(uint32_t w, uint32_t h, std::string title);
+
+		// Controlled using FrameEvent
 		void setMouseCapture(bool capture);
+		void setShouldClose(bool close);
 
 	public:
 
 		~Window();
 
 		GLFWwindow* getHandle() const;
-		void poll() const;
+		void poll();
 		bool shouldClose() const;
 		void getFramebufferSize(int* width, int* height) const;
 
 		InputDispatcher& getInputDispatcher();
-
-		bool isKeyPressed(int key) const;
-		bool isButtonPressed(int button) const;
-		glm::vec2 getCursor() const;
+		InputContext getInputContext();
 
 };

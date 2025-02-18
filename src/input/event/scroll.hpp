@@ -20,4 +20,7 @@ class ScrollEvent : public PositionedEvent {
 
 		ScrollEvent(double horizontal, double vertical, double x, double y);
 
+		/// Get mouse scroll amount as a glm::vec2 vector
+		glm::vec2 getScroll() const;
+
 };

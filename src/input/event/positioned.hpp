@@ -14,4 +14,7 @@ class PositionedEvent : public InputEvent {
 
 		PositionedEvent(double x, double y);
 
+		/// Get mouse position as a glm::vec2 vector
+		glm::vec2 getMouse() const;
+
 };
