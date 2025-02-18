@@ -50,7 +50,7 @@ std::vector<std::shared_ptr<RenderMesh>> Importer::importObj(RenderSystem& syste
 				float r = (vertex.normal.x + 1) / 2;
 				float g = (vertex.normal.y + 1) / 2;
 				float b = (vertex.normal.z + 1) / 2;
-				vertices.emplace_back(vertex.position.x, vertex.position.y, vertex.position.z, r * 255, g * 255, b * 255, 255);
+				vertices.emplace_back(vertex.position.x, vertex.position.y, vertex.position.z, r * 255, g * 255, b * 255, 255, 0, 0);
 			}
 
 			mesh->uploadVertices(*commander, vertices);

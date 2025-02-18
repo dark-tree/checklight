@@ -94,7 +94,7 @@ class Renderer {
 		Attachment attachment_albedo;
 
 		// descriptors
-		DescriptorSetLayout layout_geometry;
+		DescriptorSetLayout layout_immediate;
 		DescriptorSetLayout layout_compose;
 		DescriptorSetLayout layout_raytrace;
 
@@ -106,7 +106,7 @@ class Renderer {
 		RenderPass pass_compose;
 
 		// Pipelines
-		GraphicsPipeline pipeline_basic_3d;
+		GraphicsPipeline pipeline_immediate_3d;
 		GraphicsPipeline pipeline_trace_3d;
 		GraphicsPipeline pipeline_compose_2d;
 

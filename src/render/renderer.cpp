@@ -444,14 +444,17 @@ void Renderer::createPipelines() {
 
 	VkExtent2D extent = swapchain.getExtend();
 
-	pipeline_basic_3d = GraphicsPipelineBuilder::of(device)
+	pipeline_immediate_3d = GraphicsPipelineBuilder::of(device)
 		.withViewport(0, 0, extent.width, extent.height)
 		.withScissors(0, 0, extent.width, extent.height)
 		.withCulling(false)
 		.withRenderPass(pass_immediate, 0)
 		.withShaders(shader_basic_vertex, shader_basic_fragment)
 		.withBindingLayout(binding_3d)
-		.withDescriptorSetLayout(layout_geometry)
+		.withDescriptorSetLayout(layout_immediate)
+		.withBlendMode(BlendMode::ENABLED)
+		.withBlendAlphaFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withBlendColorFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
 		//.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
 		.build();
 
@@ -482,7 +485,9 @@ void Renderer::createPipelines() {
 }
 
 void Renderer::closePipelines() {
-	pipeline_basic_3d.close();
+	pipeline_immediate_3d.close();
+	pipeline_trace_3d.close();
+	pipeline_compose_2d.close();
 }
 
 void Renderer::closeFrames() {
@@ -636,8 +641,8 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.done();
 
 	// create descriptor layouts
-	layout_geometry = DescriptorSetLayoutBuilder::begin()
-		.descriptor(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+	layout_immediate = DescriptorSetLayoutBuilder::begin()
+		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.done(device);
 
 	layout_compose = DescriptorSetLayoutBuilder::begin()
@@ -653,7 +658,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 
 	// add layouts to the pool so that they can be allocated
 	descriptor_pool = DescriptorPoolBuilder::begin()
-		.addDynamic(layout_geometry, 1)
+		.addDynamic(layout_immediate, 1)
 		.addDynamic(layout_raytrace, 1)
 		.addDynamic(layout_compose, 1)
 		.done(device, concurrent);
@@ -678,7 +683,7 @@ Renderer::~Renderer() {
 	lateClose();
 
 	// close all the descriptor layouts here
-	layout_geometry.close();
+	layout_immediate.close();
 	layout_raytrace.close();
 	layout_compose.close();
 
@@ -722,8 +727,10 @@ Window& Renderer::getWindow() const {
 
 void Renderer::draw() {
 
-	Sprite sprite_1 = immediate.getSprite("assets/image/vulkan-1.png");
+	Sprite sprite_1 = immediate.getSprite("assets/image/vulkan-2.png");
 	Sprite sprite_2 = immediate.getSprite("assets/image/mug12.png");
+
+	immediate.setSprite(sprite_2);
 
 	immediate.clear();
 	immediate.setColor(255, 0, 100);
@@ -743,6 +750,29 @@ void Renderer::draw() {
 	immediate.setColor(200, 0, 0);
 	immediate.drawEllipse2D(800, 100, 20, 40);
 	immediate.drawBezier2D(800, 100, 900, 400, 500, 600, 800, 800);
+
+	immediate.setSprite("assets/image/skay.png");
+	immediate.setColor(255, 255, 255);
+	immediate.drawCircle2D(50, 50, 40);
+
+	immediate.setSprite("assets/image/lucek.png");
+	immediate.drawCircle2D(150, 50, 40);
+
+	immediate.setSprite("assets/image/wiesiu.png");
+	immediate.drawCircle2D(250, 50, 40);
+
+	immediate.setSprite("assets/image/magistermaks.png");
+	immediate.drawCircle2D(350, 50, 40);
+
+	immediate.setSprite("assets/image/mug12.png");
+	immediate.drawCircle2D(450, 50, 40);
+
+	immediate.setSprite("assets/image/watermark.png");
+	immediate.setRectRadius(0);
+	immediate.drawRect2D(width() / 2 - 200, 0, 400, 80);
+
+	immediate.setSprite("assets/image/vulkan-1.png");
+	immediate.drawRect2D(0, height() - 126, 310, 126);
 
 	RenderFrame& frame = getFrame();
 
@@ -777,13 +807,14 @@ void Renderer::draw() {
 		.draw(3)
 		.endRenderPass();
 
-	// upload vertex buffers
+	// upload buffers and textures
 	immediate.upload(recorder);
+	frame.set_immediate.sampler(0, immediate.getAtlasTexture(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	// draw immediate vertex data
 	recorder.beginRenderPass(pass_immediate, current_image, swapchain.getExtend());
-	recorder.bindPipeline(pipeline_basic_3d);
-	recorder.bindDescriptorSet(frame.set_graphics);
+	recorder.bindPipeline(pipeline_immediate_3d);
+	recorder.bindDescriptorSet(frame.set_immediate);
 
 	recorder.bindVertexBuffer(immediate.basic.buffer.getBuffer());
 	recorder.draw(immediate.basic.buffer.getCount());

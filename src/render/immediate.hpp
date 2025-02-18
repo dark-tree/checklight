@@ -59,11 +59,17 @@ class ImmediateRenderer {
 		float rtl, rtr, rbl, rbr;
 		float layer, width;
 		Sprite sprite;
+		float tx, ty, tw, th;
+		int mapping = 0;
 
 		void upload(CommandRecorder& recorder);
 		void close();
+		Texture& getAtlasTexture();
 
 	private:
+
+		/// Draw 2D vertex with implicit (mapping based) texture UV
+		void vertex(float x, float y);
 
 		/// Draw 2D vertex
 		void vertex(float x, float y, float u, float v);
@@ -79,6 +85,10 @@ class ImmediateRenderer {
 
 		/// Get the tangent to the bezier curve at the given T value
 		float getBezierTangent(float a, float b, float c, float d, float t);
+
+		void pushTextureMap(float x, float y, float w, float h);
+
+		void popTextureMap();
 
 	public:
 
@@ -96,6 +106,7 @@ class ImmediateRenderer {
 		void setRectRadius(float top, float bottom);
 		void setRectRadius(float top_left, float top_right, float bottom_left, float bottom_right);
 		void setSprite(Sprite sprite);
+		void setSprite(const std::string& path);
 
 		// 2D Primitives
 		void drawRect2D(float x, float y, float w, float h);

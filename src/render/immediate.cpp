@@ -40,6 +40,10 @@ void ImmediateRenderer::upload(CommandRecorder& recorder) {
 	basic.upload(recorder);
 	atlas->upload(recorder);
 
+	if (mapping != 0) {
+		throw std::runtime_error {"Texture mapping stack overflow!"};
+	}
+
 	recorder.memoryBarrier()
 		.first(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT)
 		.then(VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT)
@@ -51,8 +55,26 @@ void ImmediateRenderer::close() {
 	basic.close();
 }
 
+Texture& ImmediateRenderer::getAtlasTexture() {
+	return atlas->getTexture();
+}
+
 void ImmediateRenderer::clear() {
 	basic.clear();
+}
+
+void ImmediateRenderer::vertex(float x, float y) {
+	if (!mapping) {
+		throw std::runtime_error {"No texture mapped!"};
+	}
+
+	float du = sprite.u2 - sprite.u1;
+	float dv = sprite.v2 - sprite.v1;
+
+	float u = sprite.u1 + (x - tx) / tw * du;
+	float v = sprite.v1 + (y - ty) / th * dv;
+
+	vertex(x, y, u, v);
 }
 
 void ImmediateRenderer::vertex(float x, float y, float u, float v) {
@@ -64,7 +86,7 @@ void ImmediateRenderer::vertex(glm::vec2 pos, float u, float v) {
 }
 
 void ImmediateRenderer::vertex(float x, float y, float z, float u, float v) {
-	basic.write(x, y, z, r, g, b, a); // TODO texture UV
+	basic.write(x, y, z, r, g, b, a, u, v);
 }
 
 float ImmediateRenderer::getBezierPoint(float a, float b, float c, float d, float t) {
@@ -86,6 +108,21 @@ float ImmediateRenderer::getBezierTangent(float a, float b, float c, float d, fl
 	const float t2 = t * t;
 
 	return 3 * it2 * (b - a) + 6 * it * t * (c - b) + 3 * t2 * (d - c);
+}
+
+void ImmediateRenderer::pushTextureMap(float x, float y, float w, float h) {
+	if (!mapping) {
+		this->tx = x;
+		this->ty = y;
+		this->tw = w;
+		this->th = h;
+	}
+
+	mapping ++;
+}
+
+void ImmediateRenderer::popTextureMap() {
+	mapping --;
 }
 
 ImmediateRenderer::ImmediateRenderer()
@@ -140,7 +177,13 @@ void ImmediateRenderer::setSprite(Sprite sprite) {
 	this->sprite = sprite;
 }
 
+void ImmediateRenderer::setSprite(const std::string& path) {
+	setSprite(getSprite(path));
+}
+
 void ImmediateRenderer::drawRect2D(float x, float y, float w, float h) {
+
+	pushTextureMap(x, y, w, h);
 
 	glm::vec2 par {x + rbl, y - rbl + h};
 	glm::vec2 pbr {x + w - rbr, y - rbr + h};
@@ -160,6 +203,8 @@ void ImmediateRenderer::drawRect2D(float x, float y, float w, float h) {
 	drawQuad2D(pbr.x, pbr.y, pcr.x, pcr.y, pcr.x + rtr, pcr.y, pbr.x + rbr, pbr.y);
 	drawQuad2D(pcr.x, pcr.y, pdr.x, pdr.y, pdr.x, pdr.y - rtl, pcr.x, pcr.y - rtr);
 	drawQuad2D(par.x, par.y, pbr.x, pbr.y, pbr.x, pbr.y + rbr, par.x, par.y + rbl);
+
+	popTextureMap();
 
 }
 
@@ -207,10 +252,12 @@ void ImmediateRenderer::drawSlantedLine2D(glm::vec2 p1, glm::vec2 d1, glm::vec2 
 
 void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, float start, float angle, ArcMode mode) {
 
+	pushTextureMap(x - hrad, y - vrad, hrad * 2, vrad * 2);
+
 	float extent = std::max(hrad, vrad);
 
 	// https://stackoverflow.com/a/11774493
-	float correctness = 1 - /* TODO: draw_quality */ 0.9f / extent;
+	float correctness = 1 - /* TODO: draw_quality */ 0.95f / extent;
 	int sides = std::max(3, (int) ceil(abs(angle) / acos(2 * correctness * correctness - 1)));
 	float step = angle / sides;
 
@@ -221,9 +268,9 @@ void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, floa
 		float bx = x + hrad * cos(start + step * (i + 1));
 		float by = y + vrad * sin(start + step * (i + 1));
 
-		vertex(x, y, 0, 0);
-		vertex(ax, ay, 0, 0);
-		vertex(bx, by, 0, 0);
+		vertex(x, y);
+		vertex(ax, ay);
+		vertex(bx, by);
 	}
 
 	if (angle > M_PI && mode == OPEN_CHORD) {
@@ -233,10 +280,12 @@ void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, floa
 		float bx = x + hrad * cos(start + angle);
 		float by = y + vrad * sin(start + angle);
 
-		vertex(x, y, 0, 0);
-		vertex(ax, ay, 0, 0);
-		vertex(bx, by, 0, 0);
+		vertex(x, y);
+		vertex(ax, ay);
+		vertex(bx, by);
 	}
+
+	popTextureMap();
 
 }
 
@@ -249,13 +298,21 @@ void ImmediateRenderer::drawCircle2D(float x, float y, float radius) {
 }
 
 void ImmediateRenderer::drawQuad2D(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
-	vertex(x1, y1, 0, 0);
-	vertex(x2, y2, 0, 0);
-	vertex(x3, y3, 0, 0);
 
-	vertex(x1, y1, 0, 0);
-	vertex(x3, y3, 0, 0);
-	vertex(x4, y4, 0, 0);
+	if (mapping) {
+		vertex(x1, y1);
+		vertex(x2, y2);
+		vertex(x3, y3);
+
+		vertex(x1, y1);
+		vertex(x3, y3);
+		vertex(x4, y4);
+
+		return;
+	}
+
+	// TODO explicit UV
+
 }
 
 void ImmediateRenderer::drawTrig2D(float x1, float y1, float x2, float y2, float x3, float y3) {

@@ -35,6 +35,7 @@ class DynamicAtlas {
 		Sprite submit(ImageData& image);
 
 		void upload(CommandRecorder& recorder);
+		Texture& getTexture();
 
 };
 

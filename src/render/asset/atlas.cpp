@@ -32,18 +32,18 @@ void DynamicAtlas::resize() {
 	auto commander = RenderSystem::system->createTransientCommander();
 
 	ManagedImageDataSet set {atlas, false};
-	image = set.upload(RenderSystem::system->allocator, commander->getRecorder(), VK_FORMAT_R8G8B8A8_UNORM);
+	image = set.upload(RenderSystem::system->allocator, commander->getRecorder(), VK_FORMAT_R8G8B8A8_SRGB);
 
 	commander->getTaskQueue().enqueue([texture = texture] () mutable {
 		texture.closeImageViewSampler(RenderSystem::system->device.getHandle());
 	});
 
 	texture = TextureBuilder::begin()
-	.setType(VK_IMAGE_VIEW_TYPE_2D)
-	.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
-	.setFilter(VK_FILTER_LINEAR)
-	.setDebugName("Dynamic Atlas Image")
-	.createTexture(RenderSystem::system->device, image.getImage());
+		.setType(VK_IMAGE_VIEW_TYPE_2D)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setFilter(VK_FILTER_LINEAR)
+		.setDebugName("Dynamic Atlas Image")
+		.createTexture(RenderSystem::system->device, image.getImage());
 
 	rewrite = false;
 	resized = false;
@@ -81,6 +81,10 @@ void DynamicAtlas::upload(CommandRecorder& recorder) {
 		printf("DEBUG: Dynamic atlas was uploaded!\n");
 	}
 
+}
+
+Texture& DynamicAtlas::getTexture() {
+	return texture;
 }
 
 /*
