@@ -93,8 +93,7 @@ void Window::glfwWindowCloseCallback(GLFWwindow* glfw_window) {
 	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
 
 	if (window) {
-		glm::vec2 mouse = window->getCursor();
-		CloseEvent event {mouse.x, mouse.y};
+		CloseEvent event {};
 		window->getInputDispatcher().onEvent(event);
 
 		glfwSetWindowShouldClose(glfw_window, !event.abort_flag);
@@ -105,8 +104,7 @@ void Window::glfwWindowResizeCallback(GLFWwindow* glfw_window, int width, int he
 	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
 
 	if (window) {
-		glm::vec2 mouse = window->getCursor();
-		window->getInputDispatcher().onEvent(ResizeEvent {width, height, mouse.x, mouse.y});
+		window->getInputDispatcher().onEvent(ResizeEvent {width, height});
 	}
 }
 

@@ -42,9 +42,6 @@ class InputEvent {
 
 	public:
 
-		double x;
-		double y;
-
-		InputEvent(double x, double y);
+		InputEvent() = default;
 
 };

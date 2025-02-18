@@ -6,7 +6,7 @@
  */
 
 CodedEvent::CodedEvent(int action, int mods, double x, double y)
-: InputEvent(x, y), action(action), mods(mods) {}
+: PositionedEvent(x, y), action(action), mods(mods) {}
 
 bool CodedEvent::isPressEvent() const {
 	return action == GLFW_PRESS;

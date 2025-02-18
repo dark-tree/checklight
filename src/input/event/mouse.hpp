@@ -1,11 +1,11 @@
 #pragma once
 
-#include "input/event.hpp"
+#include "positioned.hpp"
 
 /**
  * Mouse cursor movement input event
  */
-class MouseEvent : public InputEvent {
+class MouseEvent : public PositionedEvent {
 
 	private:
 

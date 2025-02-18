@@ -1,11 +1,11 @@
 #pragma once
 
-#include "input/event.hpp"
+#include "positioned.hpp"
 
 /**
  * Mouse wheel scroll input event
  */
-class ScrollEvent : public InputEvent {
+class ScrollEvent : public PositionedEvent {
 
 	public:
 
