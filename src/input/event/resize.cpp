@@ -9,5 +9,5 @@ InputEvent::Type ResizeEvent::getType() const {
 	return ResizeEvent::type;
 }
 
-ResizeEvent::ResizeEvent(int width, int height, double x, double y)
-: InputEvent(x, y), width(width), height(height) {}
+ResizeEvent::ResizeEvent(int width, int height)
+: width(width), height(height) {}

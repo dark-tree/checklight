@@ -19,6 +19,7 @@ class InputEvent {
 			UNICODE,  ///< UnicodeEvent
 			CLOSE,    ///< CloseEvent
 			RESIZE,   ///< ResizeEvent
+			FRAME,    ///< FrameEvent
 		};
 
 		/**
@@ -42,9 +43,6 @@ class InputEvent {
 
 	public:
 
-		double x;
-		double y;
-
-		InputEvent(double x, double y);
+		InputEvent() = default;
 
 };

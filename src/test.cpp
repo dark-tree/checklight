@@ -105,3 +105,26 @@ TEST(util_weighed_set_limit) {
 	CHECK(set.highest(), 20);
 
 };
+
+TEST(util_weighed_set_repeated) {
+
+	WeighedSet<int, std::greater<>> set;
+
+	set.insert(20, 111);
+	set.insert(10, 132);
+	set.insert(10, 321);
+	set.insert(10, 213);
+
+	CHECK(set.size(), 4);
+	int sum = 0;
+
+	for (auto& i : set) {
+		sum += i;
+	}
+
+	CHECK(sum, 777);
+	set.remove(321);
+
+	CHECK(set.size(), 3);
+
+};

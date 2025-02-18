@@ -1,12 +1,12 @@
 #pragma once
 
-#include "input/event.hpp"
+#include "positioned.hpp"
 
 /**
  * Text input event, don't use for generic keyboard controls
  * @see KeyboardEvent
  */
-class UnicodeEvent : public InputEvent {
+class UnicodeEvent : public PositionedEvent {
 
 	public:
 

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "input/event.hpp"
+#include "positioned.hpp"
 
 /**
  * Base class shared by keyboard and mouse button input events
  */
-class CodedEvent : public InputEvent {
+class CodedEvent : public PositionedEvent {
 
 	public:
 

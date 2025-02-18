@@ -18,7 +18,7 @@ class WeighedSet {
 			}
 		};
 
-		using Set = std::set<Node, Order>;
+		using Set = std::multiset<Node, Order>;
 		Set set;
 
 	public:

@@ -32,7 +32,7 @@ endif()
 FetchContent_Declare(
 		vstl
 		GIT_REPOSITORY https://github.com/magistermaks/lib-vstl
-		GIT_TAG v3.1
+		GIT_TAG v3.2
 )
 
 FetchContent_Declare(

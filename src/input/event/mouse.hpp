@@ -1,16 +1,11 @@
 #pragma once
 
-#include "input/event.hpp"
+#include "positioned.hpp"
 
 /**
  * Mouse cursor movement input event
  */
-class MouseEvent : public InputEvent {
-
-	private:
-
-		friend class Window;
-		mutable bool capture_flag = false;
+class MouseEvent : public PositionedEvent {
 
 	public:
 
@@ -21,12 +16,5 @@ class MouseEvent : public InputEvent {
 	public:
 
 		MouseEvent(double x, double y);
-
-		/**
-		 * Hide the mouse and capture it within the window,
-		 * after the event is handled the mouse's state will be updated to match the state of the value set in the event
-		 * By default the mouse will be un-capture, to capture effectively capture() must be called on each event received.
-		 */
-		void capture() const;
 
 };

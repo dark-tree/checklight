@@ -65,11 +65,11 @@ InputResult DebugInputListener::onEvent(const InputEvent& any) {
 	}
 
 	if (const auto* event = any.as<CloseEvent>()) {
-		printf("DEBUG: CloseEvent {x=%d, y=%d}\n", (int) event->x, (int) event->y);
+		printf("DEBUG: CloseEvent {}\n");
 	}
 
 	if (const auto* event = any.as<ResizeEvent>()) {
-		printf("DEBUG: ResizeEvent {width=%d, height=%d, x=%d, y=%d}\n", event->width, event->height, (int) event->x, (int) event->y);
+		printf("DEBUG: ResizeEvent {width=%d, height=%d}\n", event->width, event->height);
 	}
 
 	if (const auto* event = any.as<MouseEvent>()) {
