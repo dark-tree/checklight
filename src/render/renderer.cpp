@@ -651,6 +651,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.descriptor(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.descriptor(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
+		.descriptor(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, TextureManager::MAX_TEXTURES)
 		.done(device);
 
 	// add layouts to the pool so that they can be allocated
@@ -758,6 +759,8 @@ void Renderer::draw() {
 	auto& buffer = instances->getObjectDataBuffer();
 	frame.set_raytrace.buffer(3, buffer.getBuffer(), buffer.getBuffer().size());
 
+	materials.getTextureManager().updateDescriptorSet(device, frame.set_raytrace, 4);
+
 	// wait for uniform transfer before raytracing or rasterization starts
 	recorder.memoryBarrier()
 		.first(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT)
@@ -814,4 +817,8 @@ int Renderer::width() {
 
 int Renderer::height() {
 	return swapchain.getExtend().height;
+}
+
+MaterialManager& Renderer::getMaterialManager() {
+	return materials;
 }

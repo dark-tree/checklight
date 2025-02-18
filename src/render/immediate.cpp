@@ -62,7 +62,7 @@ void ImmediateRenderer::vertex(glm::vec2 pos, float u, float v) {
 }
 
 void ImmediateRenderer::vertex(float x, float y, float z, float u, float v) {
-	basic.write(x, y, z, r, g, b, a); // TODO texture UV
+	basic.write(x, y, z, r, g, b, a, u, v);
 }
 
 float ImmediateRenderer::getBezierPoint(float a, float b, float c, float d, float t) {
@@ -160,7 +160,7 @@ void ImmediateRenderer::drawLine2D(float x1, float y1, float x2, float y2) {
 	glm::vec2 ab = pb - pa;
 	glm::vec2 pp = glm::normalize(glm::vec2 {-ab.y, ab.x}) * width;
 
-	Sprite blank; // TODO
+	Sprite blank{}; // TODO
 
 	vertex(pa + pp, blank.u1, blank.v1);
 	vertex(pb - pp, blank.u2, blank.v2);

@@ -10,6 +10,3 @@
 #include "api/model.hpp"
 #include "api/commander.hpp"
 #include "api/object.hpp"
-
-// object
-#include "model/importer.hpp"

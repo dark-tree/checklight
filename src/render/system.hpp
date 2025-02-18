@@ -69,4 +69,5 @@ class RenderSystem : public Renderer {
 		 */
 		std::shared_ptr<RenderObject> createRenderObject();
 
+		static std::vector<std::shared_ptr<RenderMesh>> importObj(const std::string& path);
 };

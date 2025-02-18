@@ -21,6 +21,7 @@
 #include "render/vulkan/descriptor/push.hpp"
 #include "render/vulkan/raytrace/instance.hpp"
 #include "render/vulkan/raytrace/factory.hpp"
+#include "render/model/material.hpp"
 
 class Renderer {
 
@@ -58,6 +59,7 @@ class Renderer {
 		WindowSystem windows;
 		std::unique_ptr<Window> window;
 		ImmediateRenderer immediate;
+		MaterialManager materials;
 
 		// early vulkan objects
 		VkFormat surface_format;
@@ -193,5 +195,8 @@ class Renderer {
 
 		/// Build pending acceleration structures
 		void rebuildBottomLevel(CommandRecorder& recorder);
+
+		/// Get the material manager
+		MaterialManager& getMaterialManager();
 
 };

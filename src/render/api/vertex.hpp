@@ -28,6 +28,6 @@ struct Vertex3D {
 
 	public:
 
-		Vertex3D(float x, float y, float z, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+		Vertex3D(float x, float y, float z, uint8_t r, uint8_t g, uint8_t b, uint8_t a, float u, float v);
 
 };

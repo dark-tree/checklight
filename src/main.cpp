@@ -12,7 +12,7 @@ int main() {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
-	auto meshes = Importer::importObj(system, "assets/models/checklight.obj");
+	auto meshes = RenderSystem::importObj("assets/models/checklight.obj");
 
 	auto models = system.createRenderModels(meshes);
 
