@@ -12,10 +12,9 @@ float median(float r, float g, float b) {
 
 // font_size / 64 * 6
 float range() {
-    // this, i think, is both incorrect and unadvised, but it works for now
-    vec2 unitRange = vec2(6)/vec2(textureSize(uAtlas, 0));
-    vec2 screenTexSize = vec2(1.0)/fwidth(vTexture);
-    return max(0.5*dot(unitRange, screenTexSize), 1.0);
+    vec2 unitRange = vec2(6) / vec2(textureSize(uAtlas, 0));
+    vec2 screenTexSize = vec2(1.0) / fwidth(vTexture / textureSize(uAtlas, 0));
+    return max(0.5 * dot(unitRange, screenTexSize), 1.0);
 }
 
 void main() {

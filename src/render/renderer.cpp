@@ -792,7 +792,10 @@ void Renderer::draw() {
 
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
 	immediate.setFontSize(100);
-	immediate.drawText2D(100, 100, "Cześć Świecie!");
+	immediate.drawText2D(300, 200, "Cześć Świecie!");
+
+	immediate.setFontSize(25);
+	immediate.drawText2D(300, 220, "Checklight - Game engine based on the Vulkan API");
 
 	RenderFrame& frame = getFrame();
 

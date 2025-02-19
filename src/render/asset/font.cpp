@@ -108,10 +108,6 @@ GlyphQuad Font::getOrLoad(float* x, float* y, float scale, uint32_t unicode, int
 		msdfgen::getKerning(kerning, font, prev, unicode, msdfgen::FONT_SCALING_EM_NORMALIZED);
 	}
 
-	if (kerning != 0) {
-		kerning = kerning;
-	}
-
 	auto pair = cdata.find(unicode);
 
 	if (pair == cdata.end()) {
@@ -153,7 +149,7 @@ std::shared_ptr<Font> DynamicFontAtlas::getOrLoad(const std::string& path) {
 		return it->second;
 	}
 
-	auto font = std::make_shared<Font>(atlas, path, 400);
+	auto font = std::make_shared<Font>(atlas, path, 500);
 	fonts[path] = font;
 	return font;
 }
