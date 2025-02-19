@@ -241,13 +241,13 @@ void ImmediateRenderer::drawSlantedLine2D(glm::vec2 p1, glm::vec2 d1, glm::vec2 
 	glm::vec2 b1 = p2 + s2;
 	glm::vec2 b2 = p2 - s2;
 
-	vertex(a1.x, a1.y, 0, 0);
-	vertex(a2.x, a2.y, 0, 0);
-	vertex(b1.x, b1.y, 0, 0);
+	vertex(a1.x, a1.y, sprite.u1, sprite.v1);
+	vertex(a2.x, a2.y, sprite.u2, sprite.v1);
+	vertex(b1.x, b1.y, sprite.u1, sprite.v2);
 
-	vertex(b1.x, b1.y, 0, 0);
-	vertex(a2.x, a2.y, 0, 0);
-	vertex(b2.x, b2.y, 0, 0);
+	vertex(b1.x, b1.y, sprite.u1, sprite.v2);
+	vertex(a2.x, a2.y, sprite.u2, sprite.v1);
+	vertex(b2.x, b2.y, sprite.u2, sprite.v2);
 }
 
 void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, float start, float angle, ArcMode mode) {
@@ -311,14 +311,14 @@ void ImmediateRenderer::drawQuad2D(float x1, float y1, float x2, float y2, float
 		return;
 	}
 
-	// TODO explicit UV
+	vertex(x1, y1, sprite.u1, sprite.v1);
+	vertex(x2, y2, sprite.u2, sprite.v1);
+	vertex(x3, y3, sprite.u2, sprite.v2);
 
-}
+	vertex(x1, y1, sprite.u1, sprite.v1);
+	vertex(x3, y3, sprite.u2, sprite.v2);
+	vertex(x4, y4, sprite.u1, sprite.v2);
 
-void ImmediateRenderer::drawTrig2D(float x1, float y1, float x2, float y2, float x3, float y3) {
-	vertex(x1, y1, 0, 0);
-	vertex(x2, y2, 0, 0);
-	vertex(x3, y3, 0, 0);
 }
 
 void ImmediateRenderer::drawBezier2D(float ax, float ay, float bx, float by, float cx, float cy, float dx, float dy) {

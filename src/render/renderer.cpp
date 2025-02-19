@@ -728,12 +728,12 @@ Window& Renderer::getWindow() const {
 void Renderer::draw() {
 
 	Sprite sprite_1 = immediate.getSprite("assets/image/vulkan-2.png");
-	Sprite sprite_2 = immediate.getSprite("assets/image/mug12.png");
+	Sprite sprite_2 = immediate.getSprite("assets/image/corners.png");
 
 	immediate.setSprite(sprite_2);
 
 	immediate.clear();
-	immediate.setColor(255, 0, 100);
+	immediate.setColor(255, 255, 255);
 	immediate.drawLine2D(10, 10, 100, 500);
 
 	immediate.setColor(50, 50, 100);
@@ -747,7 +747,8 @@ void Renderer::draw() {
 	immediate.setColor(0, 0, 0);
 	immediate.drawCircle2D(800, 100, 50);
 
-	immediate.setColor(200, 0, 0);
+	immediate.setLineWidth(20);
+	immediate.setColor(255, 255, 255);
 	immediate.drawEllipse2D(800, 100, 20, 40);
 	immediate.drawBezier2D(800, 100, 900, 400, 500, 600, 800, 800);
 

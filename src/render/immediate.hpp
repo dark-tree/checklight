@@ -116,7 +116,6 @@ class ImmediateRenderer {
 		void drawEllipse2D(float x, float y, float hrad, float vrad);
 		void drawCircle2D(float x, float y, float radius);
 		void drawQuad2D(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
-		void drawTrig2D(float x1, float y1, float x2, float y2, float x3, float y3);
 		void drawBezier2D(float ax, float ay, float bx, float by, float cx, float cy, float dx, float dy);
 
 };
