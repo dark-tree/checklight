@@ -33,6 +33,12 @@ void VertexChannel::clear() {
 	vertices.clear();
 }
 
+void VertexChannel::draw(CommandRecorder& recorder) {
+	if (!buffer.isEmpty()) {
+		recorder.bindVertexBuffer(buffer.getBuffer()).draw(buffer.getCount());
+	}
+}
+
 /*
  * ImmediateRenderer
  */
@@ -128,6 +134,10 @@ void ImmediateRenderer::popTextureMap() {
 	mapping --;
 }
 
+float ImmediateRenderer::getMaxPixelError() const {
+	return ((float) quality) / 100.0f;
+}
+
 ImmediateRenderer::ImmediateRenderer()
 : atlas(std::make_shared<DynamicAtlas>()), images(atlas), fonts(atlas) {
 	setLayer(0);
@@ -136,6 +146,7 @@ ImmediateRenderer::ImmediateRenderer()
 	setLineWidth(4);
 	setRectRadius(0);
 	setFontSize(20);
+	setQuality(ArcQuality::HIGH);
 }
 
 Sprite ImmediateRenderer::getSprite(const std::string& path) {
@@ -191,6 +202,10 @@ void ImmediateRenderer::setFont(const std::string& path) {
 
 void ImmediateRenderer::setFontSize(int size) {
 	this->font_size = size;
+}
+
+void ImmediateRenderer::setQuality(ArcQuality quality) {
+	this->quality = quality;
 }
 
 void ImmediateRenderer::setFont(const std::string& path, int size) {
@@ -273,9 +288,8 @@ void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, floa
 
 	float extent = std::max(hrad, vrad);
 
-	// https://stackoverflow.com/a/11774493
-	float correctness = 1 - /* TODO: draw_quality */ 0.95f / extent;
-	int sides = std::max(3, (int) ceil(abs(angle) / acos(2 * correctness * correctness - 1)));
+	float theta = 2 * acos(1 - getMaxPixelError() / extent);
+	int sides = (int) std::max(2.0f, (abs(angle) / theta));
 	float step = angle / sides;
 
 	for (int i = 0; i < sides; i ++) {
@@ -355,7 +369,7 @@ void ImmediateRenderer::drawBezier2D(float ax, float ay, float bx, float by, flo
 	const float bound = glm::distance(p1, p2) + glm::distance(p2, p3) + glm::distance(p3, p4);
 
 	// Quality control specifies the spacing between T values that are sampled
-	float spacing = 10.0f + 60.0f * /* TODO: draw_quality */ 0.9f;
+	float spacing = 10.0f + 60.0f * getMaxPixelError() * 3;
 	float parts = bound / spacing;
 	float segments = parts + (12 / parts + 3);
 	float step = 1.0f / segments;

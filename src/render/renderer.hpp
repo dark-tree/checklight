@@ -196,4 +196,7 @@ class Renderer {
 		/// Build pending acceleration structures
 		void rebuildBottomLevel(CommandRecorder& recorder);
 
+		/// Get the immediate style GUI/Debug Renderer
+		ImmediateRenderer& getImmediateRenderer();
+
 };

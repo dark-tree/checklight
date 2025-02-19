@@ -13,6 +13,14 @@ enum ArcMode {
 	OPEN_CHORD
 };
 
+enum ArcQuality {
+	VERY_LOW   = 100,
+	LOW        =  75,
+	MEDIUM     =  45,
+	HIGH       =  33,
+	VERY_HIGH  =  25
+};
+
 /**
  * Easy to use vertex upload system
  */
@@ -35,6 +43,9 @@ struct VertexChannel {
 
 	/// Clear local data, doesn't affect the GPU buffers
 	void clear();
+
+	/// Issue the 'bind' and 'draw' commands
+	void draw(CommandRecorder& recorder);
 
 	/// Write one element into the local buffer
 	template <typename... Args>
@@ -66,10 +77,12 @@ class ImmediateRenderer {
 		float tx, ty, tw, th;
 		int mapping = 0;
 		float font_size;
+		ArcQuality quality;
 
 		void upload(CommandRecorder& recorder);
 		void close();
 		Texture& getAtlasTexture();
+		float getMaxPixelError() const;
 
 	private:
 
@@ -115,6 +128,7 @@ class ImmediateRenderer {
 		void setFont(const std::string& path);
 		void setFont(const std::string& path, int size);
 		void setFontSize(int size);
+		void setQuality(ArcQuality quality);
 
 		// 2D Primitives
 		void drawRect2D(float x, float y, float w, float h);

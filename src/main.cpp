@@ -1,6 +1,59 @@
 
 #include "render/render.hpp"
 
+void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
+	immediate.setSprite("assets/image/corners.png");
+
+	immediate.setColor(255, 255, 255);
+	immediate.drawLine2D(10, 10, 100, 500);
+
+	immediate.setColor(50, 50, 100);
+	immediate.setRectRadius(10, 20, 40, 80);
+	immediate.drawRect2D(100, 100, 200, 150);
+
+	immediate.setColor(200, 200, 200);
+	immediate.setRectRadius(10);
+	immediate.drawRect2D(300, 300, 400, 400);
+
+	immediate.setColor(0, 0, 0);
+	immediate.drawCircle2D(800, 100, 50);
+
+	immediate.setLineWidth(20);
+	immediate.setColor(255, 255, 255);
+	immediate.drawEllipse2D(800, 100, 20, 40);
+	immediate.drawBezier2D(800, 100, 900, 400, 500, 600, 800, 800);
+
+	immediate.setSprite("assets/image/skay.png");
+	immediate.setColor(255, 255, 255);
+	immediate.drawCircle2D(50, 50, 40);
+
+	immediate.setSprite("assets/image/lucek.png");
+	immediate.drawCircle2D(150, 50, 40);
+
+	immediate.setSprite("assets/image/wiesiu.png");
+	immediate.drawCircle2D(250, 50, 40);
+
+	immediate.setSprite("assets/image/magistermaks.png");
+	immediate.drawCircle2D(350, 50, 40);
+
+	immediate.setSprite("assets/image/mug12.png");
+	immediate.drawCircle2D(450, 50, 40);
+
+	immediate.setSprite("assets/image/watermark.png");
+	immediate.setRectRadius(0);
+	immediate.drawRect2D(width / 2 - 200, 0, 400, 80);
+
+	immediate.setSprite("assets/image/vulkan-1.png");
+	immediate.drawRect2D(0, height - 126, 310, 126);
+
+	immediate.setFont("assets/font/OpenSans-Variable.ttf");
+	immediate.setFontSize(100);
+	immediate.drawText2D(300, 200, "Cześć Świecie!");
+
+	immediate.setFontSize(25);
+	immediate.drawText2D(300, 220, "Checklight - Game engine based on the Vulkan API");
+}
+
 int main() {
 
 	ApplicationParameters parameters;
@@ -31,6 +84,8 @@ int main() {
 	
 	while (!window.shouldClose()) {
 		window.poll();
+
+		drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());
 
 		// update uniforms
 		// do this once at the beginning of frame rendering
