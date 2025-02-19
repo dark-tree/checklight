@@ -321,6 +321,7 @@ void Renderer::createShaders() {
 
 	shader_basic_vertex = compiler.compileFile(device, "assets/shader/basic.vert", Kind::VERTEX);
 	shader_basic_fragment = compiler.compileFile(device, "assets/shader/basic.frag", Kind::FRAGMENT);
+	shader_text_fragment = compiler.compileFile(device, "assets/shader/text.frag", Kind::FRAGMENT);
 	shader_trace_gen = compiler.compileFile(device, "assets/shader/ray-gen.glsl", Kind::RAYGEN);
 	shader_trace_miss = compiler.compileFile(device, "assets/shader/ray-miss.glsl", Kind::MISS);
 	shader_trace_hit = compiler.compileFile(device, "assets/shader/ray-hit.glsl", Kind::CLOSEST);
@@ -450,6 +451,20 @@ void Renderer::createPipelines() {
 		.withCulling(false)
 		.withRenderPass(pass_immediate, 0)
 		.withShaders(shader_basic_vertex, shader_basic_fragment)
+		.withBindingLayout(binding_3d)
+		.withDescriptorSetLayout(layout_immediate)
+		.withBlendMode(BlendMode::ENABLED)
+		.withBlendAlphaFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withBlendColorFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		//.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
+		.build();
+
+	pipeline_text_3d = GraphicsPipelineBuilder::of(device)
+		.withViewport(0, 0, extent.width, extent.height)
+		.withScissors(0, 0, extent.width, extent.height)
+		.withCulling(false)
+		.withRenderPass(pass_immediate, 0)
+		.withShaders(shader_basic_vertex, shader_text_fragment)
 		.withBindingLayout(binding_3d)
 		.withDescriptorSetLayout(layout_immediate)
 		.withBlendMode(BlendMode::ENABLED)
@@ -775,6 +790,10 @@ void Renderer::draw() {
 	immediate.setSprite("assets/image/vulkan-1.png");
 	immediate.drawRect2D(0, height() - 126, 310, 126);
 
+	immediate.setFont("assets/font/OpenSans-Variable.ttf");
+	immediate.setFontSize(100);
+	immediate.drawText2D(100, 100, "Cześć Świecie!");
+
 	RenderFrame& frame = getFrame();
 
 	frame.wait();
@@ -819,6 +838,10 @@ void Renderer::draw() {
 
 	recorder.bindVertexBuffer(immediate.basic.buffer.getBuffer());
 	recorder.draw(immediate.basic.buffer.getCount());
+
+	recorder.bindPipeline(pipeline_text_3d);
+	recorder.bindVertexBuffer(immediate.text.buffer.getBuffer());
+	recorder.draw(immediate.text.buffer.getCount());
 
 	recorder.endRenderPass();
 

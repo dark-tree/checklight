@@ -2,6 +2,7 @@
 #include "immediate.hpp"
 #include "vulkan/command/recorder.hpp"
 #include "asset/atlas.hpp"
+#include "shared/unicode.hpp"
 
 /*
  * VertexChannel
@@ -38,6 +39,7 @@ void VertexChannel::clear() {
 
 void ImmediateRenderer::upload(CommandRecorder& recorder) {
 	basic.upload(recorder);
+	text.upload(recorder);
 	atlas->upload(recorder);
 
 	if (mapping != 0) {
@@ -61,6 +63,7 @@ Texture& ImmediateRenderer::getAtlasTexture() {
 
 void ImmediateRenderer::clear() {
 	basic.clear();
+	text.clear();
 }
 
 void ImmediateRenderer::vertex(float x, float y) {
@@ -126,12 +129,13 @@ void ImmediateRenderer::popTextureMap() {
 }
 
 ImmediateRenderer::ImmediateRenderer()
-: atlas(std::make_shared<DynamicAtlas>()), images(atlas) {
+: atlas(std::make_shared<DynamicAtlas>()), images(atlas), fonts(atlas) {
 	setLayer(0);
 	setColor(255, 255, 255);
 	setResolution(1, 1);
 	setLineWidth(4);
 	setRectRadius(0);
+	setFontSize(20);
 }
 
 Sprite ImmediateRenderer::getSprite(const std::string& path) {
@@ -179,6 +183,19 @@ void ImmediateRenderer::setSprite(Sprite sprite) {
 
 void ImmediateRenderer::setSprite(const std::string& path) {
 	setSprite(getSprite(path));
+}
+
+void ImmediateRenderer::setFont(const std::string& path) {
+	this->font = fonts.getOrLoad(path);
+}
+
+void ImmediateRenderer::setFontSize(int size) {
+	this->font_size = size;
+}
+
+void ImmediateRenderer::setFont(const std::string& path, int size) {
+	setFont(path);
+	setFontSize(size);
 }
 
 void ImmediateRenderer::drawRect2D(float x, float y, float w, float h) {
@@ -374,4 +391,34 @@ void ImmediateRenderer::drawBezier2D(float ax, float ay, float bx, float by, flo
 	glm::vec2 tangent = glm::normalize(glm::vec2 {ex, ey});
 	drawSlantedLine2D(last_point, last_tangent, point, tangent);
 
+}
+
+void ImmediateRenderer::drawText2D(float x, float y, const std::string& str) {
+
+	if (!font) {
+		throw std::runtime_error {"No font set!"};
+	}
+
+	uint32_t unicode = 0;
+	int prev = 0;
+	int offset = 0;
+
+	while (true) {
+		prev = unicode;
+		unicode = loadNextUnicode(str.c_str(), &offset);
+
+		if (unicode == 0) {
+			break;
+		}
+
+		GlyphQuad q = font->getOrLoad(&x, &y, font_size / 100.0f, unicode, prev);
+
+		text.write(q.x0 * iw - 1, q.y1 * ih - 1, layer, r, g, b, a, q.s0, q.t1);
+		text.write(q.x0 * iw - 1, q.y0 * ih - 1, layer, r, g, b, a, q.s0, q.t0);
+		text.write(q.x1 * iw - 1, q.y0 * ih - 1, layer, r, g, b, a, q.s1, q.t0);
+
+		text.write(q.x0 * iw - 1, q.y1 * ih - 1, layer, r, g, b, a, q.s0, q.t1);
+		text.write(q.x1 * iw - 1, q.y0 * ih - 1, layer, r, g, b, a, q.s1, q.t0);
+		text.write(q.x1 * iw - 1, q.y1 * ih - 1, layer, r, g, b, a, q.s1, q.t1);
+	}
 }

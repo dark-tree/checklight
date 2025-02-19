@@ -3,7 +3,8 @@
 #include "external.hpp"
 #include "api/vertex.hpp"
 #include "api/reusable.hpp"
-#include "render/asset/atlas.hpp"
+#include "asset/atlas.hpp"
+#include "asset/font.hpp"
 
 class CommandRecorder;
 
@@ -51,8 +52,11 @@ class ImmediateRenderer {
 
 		std::shared_ptr<DynamicAtlas> atlas;
 		DynamicImageAtlas images;
+		DynamicFontAtlas fonts;
+		std::shared_ptr<Font> font;
 
 		VertexChannel basic {"Textured 2D"};
+		VertexChannel text {"Text 2D"};
 
 		float iw, ih;
 		uint8_t r, g, b, a;
@@ -61,6 +65,7 @@ class ImmediateRenderer {
 		Sprite sprite;
 		float tx, ty, tw, th;
 		int mapping = 0;
+		float font_size;
 
 		void upload(CommandRecorder& recorder);
 		void close();
@@ -107,6 +112,9 @@ class ImmediateRenderer {
 		void setRectRadius(float top_left, float top_right, float bottom_left, float bottom_right);
 		void setSprite(Sprite sprite);
 		void setSprite(const std::string& path);
+		void setFont(const std::string& path);
+		void setFont(const std::string& path, int size);
+		void setFontSize(int size);
 
 		// 2D Primitives
 		void drawRect2D(float x, float y, float w, float h);
@@ -117,5 +125,6 @@ class ImmediateRenderer {
 		void drawCircle2D(float x, float y, float radius);
 		void drawQuad2D(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
 		void drawBezier2D(float ax, float ay, float bx, float by, float cx, float cy, float dx, float dy);
+		void drawText2D(float x, float y, const std::string& str);
 
 };

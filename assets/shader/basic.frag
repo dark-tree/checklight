@@ -7,5 +7,6 @@ layout(location = 0) out vec4 fColor;
 layout(binding = 0) uniform sampler2D uAtlas;
 
 void main() {
-    fColor = texture(uAtlas, vTexture / textureSize(uAtlas, 0)) * vColor;
+    vec4 texel = texture(uAtlas, vTexture / textureSize(uAtlas, 0));
+    fColor = texel * vColor;
 }

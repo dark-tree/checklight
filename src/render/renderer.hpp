@@ -82,6 +82,7 @@ class Renderer {
 		// shaders
 		Shader shader_basic_vertex;
 		Shader shader_basic_fragment;
+		Shader shader_text_fragment;
 		Shader shader_trace_gen;
 		Shader shader_trace_miss;
 		Shader shader_trace_hit;
@@ -107,6 +108,7 @@ class Renderer {
 
 		// Pipelines
 		GraphicsPipeline pipeline_immediate_3d;
+		GraphicsPipeline pipeline_text_3d;
 		GraphicsPipeline pipeline_trace_3d;
 		GraphicsPipeline pipeline_compose_2d;
 
