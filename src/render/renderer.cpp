@@ -456,6 +456,7 @@ void Renderer::createPipelines() {
 		.withBlendMode(BlendMode::ENABLED)
 		.withBlendAlphaFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
 		.withBlendColorFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withPushConstant(mesh_constant)
 		//.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
 		.build();
 
@@ -470,6 +471,7 @@ void Renderer::createPipelines() {
 		.withBlendMode(BlendMode::ENABLED)
 		.withBlendAlphaFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
 		.withBlendColorFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withPushConstant(mesh_constant)
 		//.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
 		.build();
 
@@ -787,10 +789,10 @@ void Renderer::draw() {
 	recorder.beginRenderPass(pass_immediate, current_image, swapchain.getExtend());
 	recorder.bindPipeline(pipeline_immediate_3d);
 	recorder.bindDescriptorSet(frame.set_immediate);
-	immediate.basic.draw(recorder);
+	immediate.basic.draw(mesh_constant, recorder);
 
 	recorder.bindPipeline(pipeline_text_3d);
-	immediate.text.draw(recorder);
+	immediate.text.draw(mesh_constant, recorder);
 
 	recorder.endRenderPass();
 

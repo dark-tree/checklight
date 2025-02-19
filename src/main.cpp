@@ -23,21 +23,27 @@ void drawUserInterface(ImmediateRenderer& immediate, float width, float height) 
 	immediate.drawEllipse2D(800, 100, 20, 40);
 	immediate.drawBezier2D(800, 100, 900, 400, 500, 600, 800, 800);
 
+	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(1 + glfwGetTime() * 8) + 1) / 16, 0)));
 	immediate.setSprite("assets/image/skay.png");
 	immediate.setColor(255, 255, 255);
 	immediate.drawCircle2D(50, 50, 40);
 
+	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(2 + glfwGetTime() * 8) + 1) / 16, 0)));
 	immediate.setSprite("assets/image/lucek.png");
 	immediate.drawCircle2D(150, 50, 40);
 
+	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(3 + glfwGetTime() * 8) + 1) / 16, 0)));
 	immediate.setSprite("assets/image/wiesiu.png");
 	immediate.drawCircle2D(250, 50, 40);
 
+	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(4 + glfwGetTime() * 8) + 1) / 16, 0)));
 	immediate.setSprite("assets/image/magistermaks.png");
 	immediate.drawCircle2D(350, 50, 40);
 
+	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(5 + glfwGetTime() * 8) + 1) / 16, 0)));
 	immediate.setSprite("assets/image/mug12.png");
 	immediate.drawCircle2D(450, 50, 40);
+	immediate.setMatrix2D(glm::identity<glm::mat4>());
 
 	immediate.setSprite("assets/image/watermark.png");
 	immediate.setRectRadius(0);

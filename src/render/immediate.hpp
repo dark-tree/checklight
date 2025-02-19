@@ -21,13 +21,24 @@ enum ArcQuality {
 	VERY_HIGH  =  25
 };
 
+struct MeshConstant {
+	glm::mat4 matrix;
+};
+
 /**
  * Easy to use vertex upload system
  */
 struct VertexChannel {
+
+	struct Command {
+		MeshConstant constant;
+		int count;
+	};
+
 	using element = Vertex3D;
 
 	std::vector<element> vertices;
+	std::vector<Command> commands;
 	ReusableBuffer buffer {VK_BUFFER_USAGE_VERTEX_BUFFER_BIT};
 
 	VertexChannel(const std::string& string);
@@ -44,12 +55,20 @@ struct VertexChannel {
 	/// Clear local data, doesn't affect the GPU buffers
 	void clear();
 
+	/// Make future write with this matrix
+	void pushTransform(glm::mat4 matrix);
+
 	/// Issue the 'bind' and 'draw' commands
-	void draw(CommandRecorder& recorder);
+	void draw(PushConstant& push, CommandRecorder& recorder);
 
 	/// Write one element into the local buffer
 	template <typename... Args>
 	void write(Args... values) {
+		if (commands.empty()) {
+			pushTransform(glm::identity<glm::mat4>());
+		}
+
+		commands.back().count ++;
 		vertices.emplace_back(values...);
 	}
 
@@ -129,6 +148,7 @@ class ImmediateRenderer {
 		void setFont(const std::string& path, int size);
 		void setFontSize(int size);
 		void setQuality(ArcQuality quality);
+		void setMatrix2D(const glm::mat4& matrix);
 
 		// 2D Primitives
 		void drawRect2D(float x, float y, float w, float h);

@@ -31,11 +31,30 @@ bool VertexChannel::empty() const {
 
 void VertexChannel::clear() {
 	vertices.clear();
+	commands.clear();
 }
 
-void VertexChannel::draw(CommandRecorder& recorder) {
+void VertexChannel::pushTransform(glm::mat4 matrix) {
+	if (!commands.empty()) {
+		Command& command = commands.back();
+
+		if (command.count == 0) {
+			command.constant.matrix = matrix;
+			return;
+		}
+	}
+
+	commands.emplace_back(MeshConstant {matrix}, 0);
+}
+
+void VertexChannel::draw(PushConstant& push, CommandRecorder& recorder) {
 	if (!buffer.isEmpty()) {
-		recorder.bindVertexBuffer(buffer.getBuffer()).draw(buffer.getCount());
+		int offset = 0;
+
+		for (const auto& command : commands) {
+			recorder.writePushConstant(push, &command.constant).bindVertexBuffer(buffer.getBuffer()).draw(command.count, 1, offset, 0);
+			offset += command.count;
+		}
 	}
 }
 
@@ -206,6 +225,11 @@ void ImmediateRenderer::setFontSize(int size) {
 
 void ImmediateRenderer::setQuality(ArcQuality quality) {
 	this->quality = quality;
+}
+
+void ImmediateRenderer::setMatrix2D(const glm::mat4& matrix) {
+	basic.pushTransform(matrix);
+	text.pushTransform(matrix);
 }
 
 void ImmediateRenderer::setFont(const std::string& path, int size) {
