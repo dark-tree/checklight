@@ -112,7 +112,7 @@ ImageData ImageData::view(void* pixels, int w, int h, int channels) {
 	return {Type::VIEW, pixels, w, h, channels};
 }
 
-Image ImageData::upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue queue, VkFormat format, bool mipmaps) const {
+Image ImageData::upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue& queue, VkFormat format, bool mipmaps) const {
 	ManagedImageDataSet set {*this, mipmaps};
 	Image image = set.upload(allocator, recorder, queue, format);
 
@@ -280,7 +280,7 @@ void ManagedImageDataSet::close() {
 	images.clear();
 }
 
-Image ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue queue, VkFormat format) const {
+Image ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue& queue, VkFormat format) const {
 
 	// dimensions of the base layer in the base level
 	int layer_width = level(0).width();
@@ -324,7 +324,7 @@ Image ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& recorde
 
 	recorder.transitionLayout(image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-	queue.enqueue([&] () {
+	queue.enqueue([=] () mutable {
 		staging.close();
 	});
 

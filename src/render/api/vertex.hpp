@@ -26,8 +26,16 @@ struct Vertex3D {
 		float u, v;
 		static constexpr VkFormat texture = VK_FORMAT_R32G32_SFLOAT;
 
+		/// material index
+		uint32_t material_index;
+		static constexpr VkFormat material = VK_FORMAT_R32_UINT;
+
+		/// Padding
+		uint32_t p;
+		static constexpr VkFormat padding = VK_FORMAT_R32_UINT;
+
 	public:
 
-		Vertex3D(float x, float y, float z, uint8_t r, uint8_t g, uint8_t b, uint8_t a, float u, float v);
+		Vertex3D(float x, float y, float z, uint8_t r, uint8_t g, uint8_t b, uint8_t a, float u = 0, float v = 0, uint32_t material_index = 0);
 
 };

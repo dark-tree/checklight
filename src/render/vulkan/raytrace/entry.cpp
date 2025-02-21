@@ -44,7 +44,7 @@ AccelStructEntry AccelStructEntry::ofTriangles(LogicalDevice& device, const Rend
 
 }
 
-AccelStructEntry AccelStructEntry::ofInstances(LogicalDevice& device, const ReusableBuffer& buffer, bool opaque) {
+AccelStructEntry AccelStructEntry::ofInstances(LogicalDevice& device, uint32_t instanceCount, const ReusableBuffer& buffer, bool opaque) {
 
 	VkAccelerationStructureGeometryKHR geometry {};
 	geometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
@@ -60,7 +60,7 @@ AccelStructEntry AccelStructEntry::ofInstances(LogicalDevice& device, const Reus
 
 	VkAccelerationStructureBuildRangeInfoKHR range {};
 	range.firstVertex = 0;
-	range.primitiveCount = buffer.getCount();
+	range.primitiveCount = instanceCount;
 	range.primitiveOffset = 0;
 	range.transformOffset = 0;
 

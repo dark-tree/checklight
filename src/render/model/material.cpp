@@ -1,9 +1,14 @@
 
 #include "material.hpp"
 
+/**
+ * TextureManager
+ */
+
 TextureManager::TextureManager() {
 
 	ImageData image_data = ImageData::allocate(2, 2, 4);
+	image_data.clear({255, 255, 255, 255});
 
 	TextureDelegate tdelegate = TextureBuilder::begin()
 		.setFormat(VK_FORMAT_R8G8B8A8_SRGB)
@@ -16,16 +21,23 @@ TextureManager::TextureManager() {
 	dirty = true;
 }
 
-TextureManager::~TextureManager() {
+void TextureManager::close(VkDevice device) {
+
 	for (auto& pending : pending_creation) {
 		pending.first.close();
 	}
 
-	// TODO: free textures; Need a way to access VkDevice.
+	for (auto& texture : textures) {
+		texture.closeImageViewSampler(device);
+	}
 }
 
 TextureHandle TextureManager::createTexture(std::string path) {
 	
+	if (textures.size() + pending_creation.size() >= MAX_TEXTURES) {
+		throw std::runtime_error {"Maximum number of textures reached!"};
+	}
+
 	TextureHandle handle;
 	handle.index = textures.size() + pending_creation.size();
 
@@ -34,6 +46,7 @@ TextureHandle TextureManager::createTexture(std::string path) {
 	TextureDelegate tdelegate = TextureBuilder::begin()
 		.setFormat(VK_FORMAT_R8G8B8A8_SRGB)
 		.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
+		.setDebugName(std::string(path.c_str()) + " Handle: " + std::to_string(handle.index))
 		.createDelegate();
 	
 	pending_creation.push_back({image_data, tdelegate});
@@ -41,7 +54,7 @@ TextureHandle TextureManager::createTexture(std::string path) {
 	return handle;
 }
 
-void TextureManager::upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue& queue, LogicalDevice& device) {
+void TextureManager::flush(Allocator& allocator, CommandRecorder& recorder, TaskQueue& queue, LogicalDevice& device) {
 
 	for (auto& [image_data, tdelegate] : pending_creation) {
 		auto image = image_data.upload(allocator, recorder, queue, VK_FORMAT_R8G8B8A8_SRGB, false);
@@ -82,15 +95,45 @@ void TextureManager::updateDescriptorSet(LogicalDevice& device, DescriptorSet& s
 	}
 }
 
+/**
+ * MaterialManager
+ */
+
+MaterialManager::MaterialManager() 
+: texture_manager(), material_buffer(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) {
+	material_buffer.setDebugName("Material Buffer");
+
+	// Create a default material
+	createMaterial();
+}
+
+void MaterialManager::close(VkDevice device) {
+	material_buffer.close();
+	texture_manager.close(device);
+}
+
 Material& MaterialManager::createMaterial() {
-	Material material;
+
+	Material material {};
 	material.index = materials.size();
+
 	materials.push_back(material);
+
 	return materials.back();
 }
 
-const std::vector<Material>& MaterialManager::getMaterials() const {
-	return materials;
+void MaterialManager::flush(Allocator& allocator, CommandRecorder& recorder, TaskQueue& queue, LogicalDevice& device) {
+	
+	material_buffer.resize(materials.size(), sizeof(Material));
+	material_buffer.writeToStaging(materials.data(), materials.size(), sizeof(Material), 0);
+
+	material_buffer.flushStaging(recorder);
+
+	texture_manager.flush(allocator, recorder, queue, device);
+}
+
+const ReusableBuffer& MaterialManager::getMaterialBuffer() {
+	return material_buffer;
 }
 
 TextureManager& MaterialManager::getTextureManager() {

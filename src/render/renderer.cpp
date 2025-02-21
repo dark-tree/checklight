@@ -170,6 +170,21 @@ void Renderer::pickDevice() {
 			fail = true;
 		}
 
+		if (!features_vk12->shaderInt8) {
+			printf(" * Feature 'shader int8_t' unsupported!\n");
+			fail = true;
+		}
+
+		if (!features_vk12->runtimeDescriptorArray) {
+			printf(" * Feature 'runtime descriptor array' unsupported!\n");
+			fail = true;
+		}
+
+		if (!features_vk12->shaderSampledImageArrayNonUniformIndexing) {
+			printf(" * Feature 'shader sampled image array non uniform indexing' unsupported!\n");
+			fail = true;
+		}
+
 		if (!features_base->features.shaderInt64) {
 			printf(" * Feature 'shader uint64_t' unsupported!\n");
 			fail = true;
@@ -246,6 +261,8 @@ void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family que
 	features_vk12.scalarBlockLayout = true; // needed for the shader
 	features_vk12.storageBuffer8BitAccess = true; // needed for the shader RGBA block
 	features_vk12.shaderInt8 = true; // needed for the shader RGBA block
+	features_vk12.runtimeDescriptorArray = true; // needed for the shader
+	features_vk12.shaderSampledImageArrayNonUniformIndexing = true; // needed for the shader
 
 	// Basic device features
 	VkPhysicalDeviceFeatures2KHR features {};
@@ -560,7 +577,7 @@ void Renderer::presentFramebuffer() {
 
 void Renderer::rebuildTopLevel(CommandRecorder& recorder) {
 	AccelStructConfig config = AccelStructConfig::create(AccelStructConfig::BUILD, AccelStructConfig::TOP)
-		.addInstances(device, instances->getBuffer(), true)
+		.addInstances(device, instances->count(), instances->getBuffer(), true)
 		.setFlags(VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_KHR)
 		.setDebugName("TLAS");
 
@@ -635,6 +652,8 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.attribute(0, Vertex3D::position)
 		.attribute(1, Vertex3D::color)
 		.attribute(2, Vertex3D::texture)
+		.attribute(3, Vertex3D::material)
+		.attribute(4, Vertex3D::padding)
 		.done();
 
 	// create descriptor layouts
@@ -652,6 +671,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.descriptor(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
 		.descriptor(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, TextureManager::MAX_TEXTURES)
+		.descriptor(5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
 		.done(device);
 
 	// add layouts to the pool so that they can be allocated
@@ -697,6 +717,7 @@ Renderer::~Renderer() {
 	vkDestroySurfaceKHR(instance.getHandle(), surface, nullptr);
 	instances.reset();
 	immediate.close();
+	materials.close(device.getHandle());
 
 	// It's important to maintain the correct order
 	closeRenderPasses();
@@ -756,8 +777,12 @@ void Renderer::draw() {
 	frame.flushUniformBuffer(recorder);
 
 	rebuildTopLevel(recorder);
+
 	auto& buffer = instances->getObjectDataBuffer();
 	frame.set_raytrace.buffer(3, buffer.getBuffer(), buffer.getBuffer().size());
+
+	auto& material_buffer = materials.getMaterialBuffer();
+	frame.set_raytrace.buffer(5, material_buffer.getBuffer(), material_buffer.getBuffer().size());
 
 	materials.getTextureManager().updateDescriptorSet(device, frame.set_raytrace, 4);
 

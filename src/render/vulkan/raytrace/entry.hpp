@@ -26,7 +26,7 @@ class AccelStructEntry {
 		static AccelStructEntry ofTriangles(LogicalDevice& device, const RenderMesh& mesh, bool opaque);
 
 		/// Create an entry of an instance buffer, used by TLASes
-		static AccelStructEntry ofInstances(LogicalDevice& device, const ReusableBuffer& buffer, bool opaque);
+		static AccelStructEntry ofInstances(LogicalDevice& device, uint32_t instanceCount, const ReusableBuffer& buffer, bool opaque);
 
 		/// Get the vulkan range info of this entry
 		const VkAccelerationStructureBuildRangeInfoKHR& getRange() const;

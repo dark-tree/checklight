@@ -100,7 +100,7 @@ class ImageData {
 		 * Records a copy-to-GPU-memory operation into the
 		 * given command buffer, a staging buffer IS used and resulting image returned
 		 */
-		Image upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue queue, VkFormat format, bool mipmaps) const;
+		Image upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue& queue, VkFormat format, bool mipmaps) const;
 
 	public:
 
@@ -188,7 +188,7 @@ class ManagedImageDataSet {
 		 * Records a copy-to-GPU-memory operation into the
 		 * given command buffer, a staging buffer IS used and resulting image returned
 		 */
-		Image upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue queue, VkFormat format) const;
+		Image upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue& queue, VkFormat format) const;
 
 		/**
 		 * Free the data held by all the individual

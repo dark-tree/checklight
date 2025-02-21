@@ -43,10 +43,17 @@ int main() {
 
 	system.wait();
 
-	// TODO: free meshes
-	//for (auto& mesh : meshes) {
-	//	mesh.reset();
-	//}
+	for (auto& object : objects) {
+		object.reset();
+	}
+
+	for (auto& model : models) {
+		model.reset();
+	}
+
+	for (auto& mesh : meshes) {
+		mesh.reset();
+	}
 
 	RenderSystem::system.reset();
 

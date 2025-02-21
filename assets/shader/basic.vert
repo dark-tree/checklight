@@ -3,6 +3,8 @@
 layout(location = 0) in vec3 iPosition;
 layout(location = 1) in vec3 iColor;
 layout(location = 2) in vec3 iTexture;
+layout(location = 3) in uint iMaterialIndex;
+layout(location = 4) in uint iPadding;
 
 //layout(binding = 0) uniform SceneUniform {
 //    mat4 view;

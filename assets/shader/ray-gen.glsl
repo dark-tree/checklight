@@ -42,7 +42,7 @@ void main() {
 	uint primaryRayFlags = gl_RayFlagsOpaqueEXT;
 
 	traceRayEXT(TLAS,			// acceleration structure
-		primaryRayFlags,	// rayFlags
+		primaryRayFlags,		// rayFlags
 		0xFF,					// cullMask
 		0,						// sbtRecordOffset
 		0,						// sbtRecordStride

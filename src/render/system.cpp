@@ -3,7 +3,6 @@
 #include "api/commander.hpp"
 #include "api/mesh.hpp"
 #include "api/model.hpp"
-#include "model/obj.hpp"
 
 /*
  * RenderSystem
@@ -66,10 +65,7 @@ std::shared_ptr<RenderObject> RenderSystem::createRenderObject() {
 	return {instances->create()};
 }
 
-std::vector<std::shared_ptr<RenderMesh>> RenderSystem::importObj(const std::string& path) {
-
-	std::vector<std::shared_ptr<RenderMesh>> meshes;
-
+std::map<std::string, std::shared_ptr<ObjMaterial>> RenderSystem::importMaterials(const std::string& path) {
 	std::map<std::string, std::shared_ptr<ObjMaterial>> materials;
 	std::string mtl_path = "";
 
@@ -86,70 +82,88 @@ std::vector<std::shared_ptr<RenderMesh>> RenderSystem::importObj(const std::stri
 			materials = ObjMaterial::open(mtl_path);
 		}
 		catch (const std::exception& e) {
-			std::cerr << e.what() << std::endl;
+			std::cout << e.what() << std::endl;
 		}
 	}
 
-	auto open_texture = [&](std::string texture_path) {
+	return materials;
+}
+
+std::vector<std::shared_ptr<RenderMesh>> RenderSystem::importObj(const std::string& path) {
+
+	auto materials = importMaterials(path);
+
+	auto open_texture = [&](std::string texture_path) -> TextureHandle {
 		try {
-			system->materials.getTextureManager().createTexture(texture_path);
+			return system->materials.getTextureManager().createTexture(texture_path);
 		}
 		catch (const std::exception& e) {
 			try {
 				texture_path = path.substr(0, path.find_last_of("/\\") + 1) + texture_path;
-				system->materials.getTextureManager().createTexture(texture_path);
+				return system->materials.getTextureManager().createTexture(texture_path);
 			}
 			catch (const std::exception& e) {
-				std::cerr << e.what() << std::endl;
+				std::cout << e.what() << std::endl;
+				return TextureHandle {};
 			}
 		}
 	};
 
+	std::map<std::shared_ptr<ObjMaterial>, Material> render_materials;
+
 	for (auto& [name, material] : materials) {
+		Material& render_material = system->materials.createMaterial();
+
 		if (!material->diffuseMap.empty()) {
-			open_texture(material->diffuseMap);
+			render_material.albedo_texture = open_texture(material->diffuseMap);
 		}
+
+		render_materials[material] = render_material;
 	}
 
 	auto scene = ObjObject::open(path, materials);
+
+	std::vector<std::shared_ptr<RenderMesh>> meshes;
 
 	// FIXME you should not create the commander multiple times
 	//       create one and reuse, this is very slow
 	auto commander = system->createTransientCommander();
 
-	system->materials.getTextureManager().upload(system->allocator, commander->getRecorder(), commander->getTaskQueue(), system->device);
+	system->materials.flush(system->allocator, commander->getRecorder(), commander->getTaskQueue(), system->device);
 
 	for (auto& object : scene) {
 		std::shared_ptr<RenderMesh> mesh = system->createMesh();
 
-#if ENGINE_DEBUG
+		#if ENGINE_DEBUG
 		std::string debug_name = "Mesh " + object.name + " from " + path;
 		mesh->setDebugName(debug_name.c_str());
-#endif
+		#endif
 
-		{
-			std::vector<Vertex3D> vertices;
+		std::vector<Vertex3D> vertices;
 
-			for (auto& vertex : object.vertices) {
-				float r = (vertex.normal.x + 1) / 2;
-				float g = (vertex.normal.y + 1) / 2;
-				float b = (vertex.normal.z + 1) / 2;
-				vertices.emplace_back(vertex.position.x, vertex.position.y, vertex.position.z, r * 255, g * 255, b * 255, 255, vertex.uv.x, vertex.uv.y);
+		for (auto& vertex : object.vertices) {
+			float r = (vertex.normal.x + 1) / 2;
+			float g = (vertex.normal.y + 1) / 2;
+			float b = (vertex.normal.z + 1) / 2;
+			vertices.emplace_back(vertex.position.x, vertex.position.y, vertex.position.z, r * 255, g * 255, b * 255, 255, vertex.uv.x, 1.0 - vertex.uv.y, 0);
+		}	
+
+		std::vector<uint32_t> indices;
+
+		for (size_t i = 0; i < object.groups.size(); i++) {
+			const auto& group = object.groups[i];
+			indices.insert(indices.end(), group.indices.begin(), group.indices.end());
+
+			// Assign material to vertices
+			Material& material = render_materials[group.material];
+
+			for (uint32_t vertex_index : group.indices) {
+				vertices[vertex_index].material_index = material.index;
 			}
-
-			mesh->uploadVertices(*commander, vertices);
 		}
 
-		{
-			std::vector<uint32_t> indices;
-
-			for (size_t i = 0; i < object.groups.size(); i++) {
-				const auto& group = object.groups[i];
-				indices.insert(indices.end(), group.indices.begin(), group.indices.end());
-			}
-
-			mesh->uploadIndices(*commander, indices);
-		}
+		mesh->uploadVertices(*commander, vertices);
+		mesh->uploadIndices(*commander, indices);
 
 		meshes.push_back(mesh);
 	}

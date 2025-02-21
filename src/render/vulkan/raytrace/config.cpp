@@ -23,8 +23,8 @@ AccelStructConfig& AccelStructConfig::addTriangles(LogicalDevice& device, const 
 	return *this;
 }
 
-AccelStructConfig& AccelStructConfig::addInstances(LogicalDevice& device, const ReusableBuffer& instances, bool opaque) {
-	addEntry(AccelStructEntry::ofInstances(device, instances, opaque));
+AccelStructConfig& AccelStructConfig::addInstances(LogicalDevice& device, uint32_t instanceCount, const ReusableBuffer& instances, bool opaque) {
+	addEntry(AccelStructEntry::ofInstances(device, instanceCount, instances, opaque));
 	return *this;
 }
 

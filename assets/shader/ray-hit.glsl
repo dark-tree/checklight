@@ -19,6 +19,13 @@ struct Vertex3D {
 	float x, y, z;
 	uint8_t r, g, b, a;
     float u, v;
+    uint materialIndex;
+    uint padding;
+};
+
+struct Material {
+	uint index;
+    uint albedoTextureIndex;
 };
 
 struct RenderObjectData {
@@ -30,10 +37,9 @@ layout(location = 0) rayPayloadInEXT HitPayload rPayload;
 
 layout(buffer_reference, scalar) buffer Vertices { Vertex3D v[]; };
 layout(buffer_reference, scalar) buffer Indices { ivec3 i[]; };
-layout(binding = 3, set = 0, scalar) buffer RenderObjectBuffer {
-	RenderObjectData i[];
-} renderObjectBuffer;
+layout(binding = 3, set = 0, scalar) buffer RenderObjectBuffer { RenderObjectData i[]; } renderObjectBuffer;
 layout(binding = 4, set = 0) uniform sampler2D textures[];
+layout(binding = 5, set = 0, scalar) buffer MaterialBuffer { Material i[]; } materials;
 
 hitAttributeEXT vec2 attribs;
 
@@ -56,7 +62,11 @@ void main() {
     vec3 position = vec3(v0.x, v0.y, v0.z) * barycentrics.x + vec3(v1.x, v1.y, v1.z) * barycentrics.y + vec3(v2.x, v2.y, v2.z) * barycentrics.z;
 
 	vec2 uv = vec2(v0.u, v0.v) * barycentrics.x + vec2(v1.u, v1.v) * barycentrics.y + vec2(v2.u, v2.v) * barycentrics.z;
-	vec3 textureColor = texture(textures[1], uv).rgb;
+	
+    uint materialIndex = v0.materialIndex;
+    Material material = materials.i[materialIndex];
+
+    vec3 textureColor = texture(textures[nonuniformEXT(material.albedoTextureIndex)], uv).rgb;
 
     rPayload.hit = vec4(position, 1.0);
     rPayload.value = vec4(textureColor, 0.0);
