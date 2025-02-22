@@ -150,6 +150,26 @@ float ImmediateRenderer::getMaxPixelError() const {
 	return ((float) quality) / 100.0f;
 }
 
+void ImmediateRenderer::drawBillboardVertex(glm::quat rotation, glm::vec3 offset, float x, float y, float u, float v) {
+	drawVertex3D((rotation * glm::vec3 {-x, -y, 0}) + offset, u, v);
+}
+
+glm::quat ImmediateRenderer::getBillboardRotation(glm::vec3 center) const {
+	glm::vec3 facing = glm::normalize(target - center);
+
+	const float yaw = math::fastAtan2(facing.x, facing.z);
+	glm::quat ry = glm::angleAxis(yaw, glm::vec3(0, 1, 0));
+
+	if (billboard == BillboardMode::TWO_AXIS) {
+		const float pitch = math::fastAtan2(-facing.y, glm::length(glm::vec2(facing.x, facing.z)));
+		glm::quat rx = glm::angleAxis(pitch, ry * glm::vec3(1, 0, 0));
+
+		return rx * ry;
+	}
+
+	return ry;
+}
+
 ImmediateRenderer::ImmediateRenderer()
 : atlas(std::make_shared<DynamicAtlas>()), images(atlas), fonts(atlas) {
 	this->blank = images.getOrLoad(DynamicImageAtlas::BLANK_SPRITE);
@@ -161,6 +181,9 @@ ImmediateRenderer::ImmediateRenderer()
 	setRectRadius(0);
 	setFontSize(20);
 	setQuality(ArcQuality::HIGH);
+	setBillboardMode(BillboardMode::ONE_AXIS);
+	setBillboardTarget({0, 0, 0});
+	setFontTilt(0);
 }
 
 Sprite ImmediateRenderer::getSprite(const std::string& path) {
@@ -229,6 +252,22 @@ void ImmediateRenderer::setQuality(ArcQuality quality) {
 void ImmediateRenderer::setMatrix2D(const glm::mat4& matrix) {
 	basic.pushTransform(matrix);
 	text.pushTransform(matrix);
+}
+
+void ImmediateRenderer::setMatrix3D(const glm::mat4& matrix) {
+	basic_3d.pushTransform(matrix);
+}
+
+void ImmediateRenderer::setBillboardTarget(glm::vec3 pos) {
+	this->target = pos;
+}
+
+void ImmediateRenderer::setBillboardMode(BillboardMode mode) {
+	this->billboard = mode;
+}
+
+void ImmediateRenderer::setFontTilt(float tilt) {
+	this->font_tilt = tilt;
 }
 
 void ImmediateRenderer::setFont(const std::string& path, int size) {
@@ -457,13 +496,15 @@ void ImmediateRenderer::drawText2D(float x, float y, const std::string& str) {
 
 		GlyphQuad q = font->getOrLoad(&x, &y, font_size / 100.0f, unicode, prev);
 
-		text.write(q.x0 * iw - 1, q.y1 * ih - 1, layer, r, g, b, a, q.s0, q.t1);
-		text.write(q.x0 * iw - 1, q.y0 * ih - 1, layer, r, g, b, a, q.s0, q.t0);
-		text.write(q.x1 * iw - 1, q.y0 * ih - 1, layer, r, g, b, a, q.s1, q.t0);
+		if (q.shouldDraw()) {
+			text.write(q.x0 * iw - 1, q.y1 * ih - 1, layer, r, g, b, a, q.s0, q.t1);
+			text.write(q.x0 * iw - 1, q.y0 * ih - 1, layer, r, g, b, a, q.s0, q.t0);
+			text.write(q.x1 * iw - 1, q.y0 * ih - 1, layer, r, g, b, a, q.s1, q.t0);
 
-		text.write(q.x0 * iw - 1, q.y1 * ih - 1, layer, r, g, b, a, q.s0, q.t1);
-		text.write(q.x1 * iw - 1, q.y0 * ih - 1, layer, r, g, b, a, q.s1, q.t0);
-		text.write(q.x1 * iw - 1, q.y1 * ih - 1, layer, r, g, b, a, q.s1, q.t1);
+			text.write(q.x0 * iw - 1, q.y1 * ih - 1, layer, r, g, b, a, q.s0, q.t1);
+			text.write(q.x1 * iw - 1, q.y0 * ih - 1, layer, r, g, b, a, q.s1, q.t0);
+			text.write(q.x1 * iw - 1, q.y1 * ih - 1, layer, r, g, b, a, q.s1, q.t1);
+		}
 	}
 }
 
@@ -523,19 +564,23 @@ void ImmediateRenderer::drawLine3D(float x1, float y1, float z1, float x2, float
 	}
 }
 
-void ImmediateRenderer::drawRect3D(float x, float y, float w, float h) {
+void ImmediateRenderer::drawRect3D(float x, float y, float z, float w, float h) {
 
-	throw std::runtime_error {"drawRect3D() is not yet implemented!"};
+	glm::vec3 pos {x, y, z};
 
-}
+	const float sx = -w / 2;
+	const float sy = -h / 2;
+	const float ex = sx + w;
+	const float ey = sy + h;
 
-void ImmediateRenderer::drawText3D(float x, float y, const std::string& str) {
+	glm::quat rot = getBillboardRotation(pos);
 
-	if (!font) {
-		throw std::runtime_error {"No font set!"};
-	}
+	drawBillboardVertex(rot, pos, sx, sy, sprite.u1, sprite.v1);
+	drawBillboardVertex(rot, pos, ex, ey, sprite.u2, sprite.v2);
+	drawBillboardVertex(rot, pos, sx, ey, sprite.u1, sprite.v2);
 
-	// TODO
-	throw std::runtime_error {"drawText3D() is not yet implemented!"};
+	drawBillboardVertex(rot, pos, sx, sy, sprite.u1, sprite.v1);
+	drawBillboardVertex(rot, pos, ex, sy, sprite.u2, sprite.v1);
+	drawBillboardVertex(rot, pos, ex, ey, sprite.u2, sprite.v2);
 
 }

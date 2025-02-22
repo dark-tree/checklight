@@ -30,6 +30,11 @@ struct MeshConstant {
 	glm::mat4 matrix;
 };
 
+enum struct BillboardMode {
+	ONE_AXIS,
+	TWO_AXIS,
+};
+
 /**
  * Easy to use vertex upload system
  */
@@ -104,12 +109,17 @@ class ImmediateRenderer {
 		float tx, ty, tw, th;
 		int mapping = 0;
 		float font_size;
+		float font_tilt;
 		ArcQuality quality;
+		BillboardMode billboard;
+		glm::vec3 target;
 
 		void upload(CommandRecorder& recorder);
 		void close();
 		Texture& getAtlasTexture();
 		float getMaxPixelError() const;
+		void drawBillboardVertex(glm::quat rotation, glm::vec3 offset, float x, float y, float u, float v);
+		glm::quat getBillboardRotation(glm::vec3 center) const;
 
 	private:
 
@@ -150,6 +160,10 @@ class ImmediateRenderer {
 		void setFontSize(int size);
 		void setQuality(ArcQuality quality);
 		void setMatrix2D(const glm::mat4& matrix);
+		void setMatrix3D(const glm::mat4& matrix);
+		void setBillboardTarget(glm::vec3 pos);
+		void setBillboardMode(BillboardMode mode);
+		void setFontTilt(float tilt);
 
 		// 2D Primitives
 		void drawVertex2D(float x, float y, float u, float v);
@@ -168,7 +182,6 @@ class ImmediateRenderer {
 		void drawVertex3D(float x, float y, float z, float u, float v);
 		void drawVertex3D(glm::vec3 pos, float u, float v);
 		void drawLine3D(float x1, float y1, float z1, float x2, float y2, float z2);
-		void drawRect3D(float x, float y, float w, float h);
-		void drawText3D(float x, float y, const std::string& str);
+		void drawRect3D(float x, float y, float z, float w, float h);
 
 };

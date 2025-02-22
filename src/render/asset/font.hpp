@@ -13,6 +13,10 @@ struct GlyphInfo {
 struct GlyphQuad {
 	float x0, y0, s0, t0;
 	float x1, y1, s1, t1;
+
+	/// can return false for glyphs with no visible elements
+	/// (e.g. spaces) to optimize the emitted vertex count
+	bool shouldDraw() const;
 };
 
 class Font {

@@ -64,7 +64,8 @@ void drawUserInterface(ImmediateRenderer& immediate, float width, float height) 
 
 	immediate.setSprite("assets/image/corners.png");
 	immediate.setLineWidth(0.1);
-	immediate.drawLine3D(0, 0, 0, sin(glfwGetTime() / 3) * 50, 100, cos(glfwGetTime() / 3) * 50);
+	immediate.drawLine3D(0, 0, 0, sin(glfwGetTime() / 3) * 50, 10, cos(glfwGetTime() / 3) * 50);
+	immediate.drawRect3D(sin(glfwGetTime() / 3) * 50, 10, cos(glfwGetTime() / 3) * 50, 2, 2);
 
 }
 

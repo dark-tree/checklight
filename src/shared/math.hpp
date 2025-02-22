@@ -30,4 +30,13 @@ namespace math {
 	 */
 	glm::vec3 rotateAlongAxis(glm::vec3 normal, float angle);
 
+	/**
+	 * Approximate the atan2 function
+	 *
+	 * @param y Value representing the proportion of the y-coordinate.
+	 * @param x Value representing the proportion of the x-coordinate.
+	 * @return Principal arc tangent of y/x, in the interval [-pi,+pi] radians.
+	 */
+	float fastAtan2(float y, float x);
+
 }

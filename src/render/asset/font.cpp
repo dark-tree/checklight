@@ -8,6 +8,14 @@
 #include FT_FREETYPE_H
 
 /*
+ * GlyphQuad
+ */
+
+bool GlyphQuad::shouldDraw() const {
+	return true;
+}
+
+/*
  * Font
  */
 
