@@ -59,6 +59,12 @@ void drawUserInterface(ImmediateRenderer& immediate, float width, float height) 
 	immediate.setFontSize(100);
 	immediate.drawText2D(300, 200, "Cześć Świecie!");
 
+	immediate.setColor(200, 0, 0);
+	immediate.setSprite(OFF);
+	immediate.setLineWidth(1);
+	immediate.drawLine2D(300, 200, 800, 200);
+
+	immediate.setColor(255, 255, 255);
 	immediate.setFontSize(25);
 	immediate.drawText2D(300, 220, "Checklight - Game engine based on the Vulkan API");
 

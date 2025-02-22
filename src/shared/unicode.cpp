@@ -1,7 +1,7 @@
 
 #include "unicode.hpp"
 
-uint32_t loadNextUnicode(const char* utf8, int* offset) {
+uint32_t utf8::loadNext(const char* utf8, int* offset) {
 
 	const auto* ptr = reinterpret_cast<const unsigned char*>(utf8 + *offset);
 
@@ -38,4 +38,21 @@ uint32_t loadNextUnicode(const char* utf8, int* offset) {
 	// Invalid
 	*offset += 1;
 	return 0;
+}
+
+std::vector<uint32_t> utf8::toCodePoints(const char* utf8) {
+	std::vector<uint32_t> points;
+	int offset = 0;
+
+	while (true) {
+		uint32_t unicode = utf8::loadNext(utf8, &offset);
+
+		if (unicode == 0) {
+			break;
+		}
+
+		points.push_back(unicode);
+	}
+
+	return points;
 }

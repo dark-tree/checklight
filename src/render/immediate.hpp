@@ -8,17 +8,34 @@
 
 class CommandRecorder;
 
-enum ArcMode {
+enum struct ArcMode {
 	OPEN_PIE,
 	OPEN_CHORD
 };
 
-enum ArcQuality {
+enum struct ArcQuality {
 	VERY_LOW   = 100,
 	LOW        =  75,
 	MEDIUM     =  45,
 	HIGH       =  33,
 	VERY_HIGH  =  25,
+};
+
+enum struct VerticalAlignment {
+	TOP    = 2,
+	CENTER = 1,
+	BOTTOM = 0
+};
+
+enum struct HorizontalAlignment {
+	LEFT   = 0,
+	CENTER = 1,
+	RIGHT  = 2
+};
+
+enum struct BillboardMode {
+	ONE_AXIS,
+	TWO_AXIS,
 };
 
 enum Disabled {
@@ -30,10 +47,6 @@ struct MeshConstant {
 	glm::mat4 matrix;
 };
 
-enum struct BillboardMode {
-	ONE_AXIS,
-	TWO_AXIS,
-};
 
 /**
  * Easy to use vertex upload system
@@ -113,6 +126,8 @@ class ImmediateRenderer {
 		ArcQuality quality;
 		BillboardMode billboard;
 		glm::vec3 target;
+		VerticalAlignment vertical;
+		HorizontalAlignment horizontal;
 
 		void upload(CommandRecorder& recorder);
 		void close();
@@ -120,6 +135,7 @@ class ImmediateRenderer {
 		float getMaxPixelError() const;
 		void drawBillboardVertex(glm::quat rotation, glm::vec3 offset, float x, float y, float u, float v);
 		glm::quat getBillboardRotation(glm::vec3 center) const;
+		glm::vec2 getTextOffset(const std::vector<uint32_t>& text, glm::vec2 extend) const;
 
 	private:
 
@@ -164,12 +180,15 @@ class ImmediateRenderer {
 		void setBillboardTarget(glm::vec3 pos);
 		void setBillboardMode(BillboardMode mode);
 		void setFontTilt(float tilt);
+		void setTextAlignment(VerticalAlignment alignment);
+		void setTextAlignment(HorizontalAlignment alignment);
+		void setTextAlignment(VerticalAlignment vertical, HorizontalAlignment horizontal);
 
 		// 2D Primitives
 		void drawVertex2D(float x, float y, float u, float v);
 		void drawVertex2D(glm::vec2 pos, float u, float v);
 		void drawRect2D(float x, float y, float w, float h);
-		void drawArc2D(float x, float y, float hrad, float vrad, float start, float angle, ArcMode mode = OPEN_PIE);
+		void drawArc2D(float x, float y, float hrad, float vrad, float start, float angle, ArcMode mode = ArcMode::OPEN_PIE);
 		void drawLine2D(float x1, float y1, float x2, float y2);
 		void drawSlantedLine2D(glm::vec2 p1, glm::vec2 d1, glm::vec2 p2, glm::vec2 d2);
 		void drawEllipse2D(float x, float y, float hrad, float vrad);

@@ -170,6 +170,32 @@ glm::quat ImmediateRenderer::getBillboardRotation(glm::vec3 center) const {
 	return ry;
 }
 
+glm::vec2 ImmediateRenderer::getTextOffset(const std::vector<uint32_t>& text, glm::vec2 extend) const {
+
+	if (!font) {
+		throw std::runtime_error {"No font set!"};
+	}
+
+	float mx = static_cast<int>(horizontal) / 2.0f;
+	float my = static_cast<int>(vertical) / 2.0f;
+
+	glm::vec2 offset = {
+		extend.x * mx / font_size,
+		extend.y * my / font_size
+	};
+
+	uint32_t prev = 0;
+	float ox = 0;
+	float oy = font_size / 2;
+
+	for (uint32_t unicode : text) {
+		font->getOrLoad(&ox, &oy, font_size / 100.0f, unicode, prev);
+		prev = unicode;
+	}
+
+	return glm::vec2 {ox * mx, oy * my} - offset;
+}
+
 ImmediateRenderer::ImmediateRenderer()
 : atlas(std::make_shared<DynamicAtlas>()), images(atlas), fonts(atlas) {
 	this->blank = images.getOrLoad(DynamicImageAtlas::BLANK_SPRITE);
@@ -184,6 +210,8 @@ ImmediateRenderer::ImmediateRenderer()
 	setBillboardMode(BillboardMode::ONE_AXIS);
 	setBillboardTarget({0, 0, 0});
 	setFontTilt(0);
+	setTextAlignment(VerticalAlignment::BOTTOM);
+	setTextAlignment(HorizontalAlignment::LEFT);
 }
 
 Sprite ImmediateRenderer::getSprite(const std::string& path) {
@@ -268,6 +296,19 @@ void ImmediateRenderer::setBillboardMode(BillboardMode mode) {
 
 void ImmediateRenderer::setFontTilt(float tilt) {
 	this->font_tilt = tilt;
+}
+
+void ImmediateRenderer::setTextAlignment(VerticalAlignment alignment) {
+	this->vertical = alignment;
+}
+
+void ImmediateRenderer::setTextAlignment(HorizontalAlignment alignment) {
+	this->horizontal = alignment;
+}
+
+void ImmediateRenderer::setTextAlignment(VerticalAlignment vertical, HorizontalAlignment horizontal) {
+	setTextAlignment(vertical);
+	setTextAlignment(horizontal);
 }
 
 void ImmediateRenderer::setFont(const std::string& path, int size) {
@@ -374,7 +415,7 @@ void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, floa
 		drawVertex2D(bx, by);
 	}
 
-	if (angle > M_PI && mode == OPEN_CHORD) {
+	if (angle > M_PI && mode == ArcMode::OPEN_CHORD) {
 		float ax = x + hrad * cos(start);
 		float ay = y + vrad * sin(start);
 
@@ -482,28 +523,28 @@ void ImmediateRenderer::drawText2D(float x, float y, const std::string& str) {
 		throw std::runtime_error {"No font set!"};
 	}
 
-	uint32_t unicode = 0;
-	int prev = 0;
-	int offset = 0;
+	std::vector<uint32_t> unicodes = utf8::toCodePoints(str.c_str());
+	uint32_t prev = 0;
 
-	while (true) {
-		prev = unicode;
-		unicode = loadNextUnicode(str.c_str(), &offset);
+	glm::vec2 alignment = getTextOffset(unicodes, {0, 0});
 
-		if (unicode == 0) {
-			break;
-		}
-
+	for (uint32_t unicode : unicodes) {
 		GlyphQuad q = font->getOrLoad(&x, &y, font_size / 100.0f, unicode, prev);
+		prev = unicode;
+
+		const float x0 = (q.x0 - alignment.x) * iw - 1;
+		const float x1 = (q.x1 - alignment.x) * iw - 1;
+		const float y0 = (q.y0 + alignment.y) * ih - 1;
+		const float y1 = (q.y1 + alignment.y) * ih - 1;
 
 		if (q.shouldDraw()) {
-			text.write(q.x0 * iw - 1, q.y1 * ih - 1, layer, r, g, b, a, q.s0, q.t1);
-			text.write(q.x0 * iw - 1, q.y0 * ih - 1, layer, r, g, b, a, q.s0, q.t0);
-			text.write(q.x1 * iw - 1, q.y0 * ih - 1, layer, r, g, b, a, q.s1, q.t0);
+			text.write(x0, y1, layer, r, g, b, a, q.s0, q.t1);
+			text.write(x0, y0, layer, r, g, b, a, q.s0, q.t0);
+			text.write(x1, y0, layer, r, g, b, a, q.s1, q.t0);
 
-			text.write(q.x0 * iw - 1, q.y1 * ih - 1, layer, r, g, b, a, q.s0, q.t1);
-			text.write(q.x1 * iw - 1, q.y0 * ih - 1, layer, r, g, b, a, q.s1, q.t0);
-			text.write(q.x1 * iw - 1, q.y1 * ih - 1, layer, r, g, b, a, q.s1, q.t1);
+			text.write(x0, y1, layer, r, g, b, a, q.s0, q.t1);
+			text.write(x1, y0, layer, r, g, b, a, q.s1, q.t0);
+			text.write(x1, y1, layer, r, g, b, a, q.s1, q.t1);
 		}
 	}
 }
