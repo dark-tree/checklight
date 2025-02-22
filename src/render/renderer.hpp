@@ -49,6 +49,7 @@ class Renderer {
 		friend class RenderCommander;
 		friend class ReusableBuffer;
 		friend class AccelStructFactory;
+		friend class DynamicAtlas;
 
 		/// The last image index acquired from the driver,
 		/// this is used as an offset into a framebuffer set
@@ -79,8 +80,10 @@ class Renderer {
 		ShaderTable shader_table;
 
 		// shaders
-		Shader shader_basic_vertex;
-		Shader shader_basic_fragment;
+		Shader shader_world_vertex;
+		Shader shader_screen_vertex;
+		Shader shader_atlas_fragment;
+		Shader shader_text_fragment;
 		Shader shader_trace_gen;
 		Shader shader_trace_miss;
 		Shader shader_trace_hit;
@@ -93,7 +96,7 @@ class Renderer {
 		Attachment attachment_albedo;
 
 		// descriptors
-		DescriptorSetLayout layout_geometry;
+		DescriptorSetLayout layout_immediate;
 		DescriptorSetLayout layout_compose;
 		DescriptorSetLayout layout_raytrace;
 
@@ -105,7 +108,9 @@ class Renderer {
 		RenderPass pass_compose;
 
 		// Pipelines
-		GraphicsPipeline pipeline_basic_3d;
+		GraphicsPipeline pipeline_immediate_2d;
+		GraphicsPipeline pipeline_immediate_3d;
+		GraphicsPipeline pipeline_text_2d;
 		GraphicsPipeline pipeline_trace_3d;
 		GraphicsPipeline pipeline_compose_2d;
 
@@ -192,5 +197,8 @@ class Renderer {
 
 		/// Build pending acceleration structures
 		void rebuildBottomLevel(CommandRecorder& recorder);
+
+		/// Get the immediate style GUI/Debug Renderer
+		ImmediateRenderer& getImmediateRenderer();
 
 };

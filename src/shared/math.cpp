@@ -16,3 +16,23 @@ VkTransformMatrixKHR math::toVulkanAffine(const glm::mat4x3& matrix) {
 size_t math::alignUp(size_t size, size_t alignment) {
 	return (size + alignment - 1) & ~(alignment - 1);
 }
+
+glm::vec3 math::rotateAlongAxis(glm::vec3 normal, float angle) {
+	glm::vec3 axis = glm::cross(normal, glm::vec3(1.0f, 0.0f, 0.0f));
+
+	if (glm::length(axis) < 0.01) {
+		axis = glm::cross(normal, glm::vec3(0.0f, 1.0f, 0.0f));
+	}
+
+	glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, normal);
+	return glm::normalize(glm::vec3(rotation * glm::vec4(axis, 0.0f)));
+}
+
+float math::fastAtan2(float y, float x) {
+	float abs_y = std::fabs(y) + 1e-10f; // kludge to prevent 0/0 condition
+	float r = (x - std::copysign(abs_y, x)) / (abs_y + std::fabs(x));
+	float angle = M_PI/2.f - std::copysign(M_PI/4.f, x);
+
+	angle += (0.1963f * r * r - 0.9817f) * r;
+	return std::copysign(angle, y);
+}

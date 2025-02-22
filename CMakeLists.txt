@@ -9,6 +9,7 @@ set(FETCHCONTENT_QUIET OFF)
 
 find_package(Python REQUIRED COMPONENTS Interpreter)
 find_package(Threads REQUIRED)
+find_package(Freetype REQUIRED)
 find_package(Vulkan REQUIRED)
 
 # Try: cmake . -B build && cmake --build build/
@@ -28,6 +29,12 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 		message(STATUS "The MOLD linker was NOT found, consider installing it!")
 	endif()
 endif()
+
+FetchContent_Declare(
+		msdfgen
+		GIT_REPOSITORY https://github.com/Chlumsky/msdfgen
+		GIT_TAG v1.12
+)
 
 FetchContent_Declare(
 		vma
@@ -81,9 +88,15 @@ set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
 set(SHADERC_SKIP_EXAMPLES ON CACHE BOOL "" FORCE)
 set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
 
+set(MSDFGEN_DISABLE_SVG ON CACHE BOOL "" FORCE)
+set(MSDFGEN_DISABLE_PNG ON CACHE BOOL "" FORCE)
+set(MSDFGEN_USE_SKIA OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_USE_VCPKG OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
+
 # ... And finally add shaderc!
 add_subdirectory(${shaderc_SOURCE_DIR} ${shaderc_BINARY_DIR})
-FetchContent_MakeAvailable(glfw stb glm vma)
+FetchContent_MakeAvailable(glfw stb glm vma msdfgen)
 
 add_library(checklight_common INTERFACE)
 target_include_directories(checklight_common INTERFACE
@@ -122,6 +135,9 @@ target_link_libraries(checklight_render_system PRIVATE
 		glfw
 		shaderc
 		checklight_external
+		msdfgen::msdfgen-core
+		msdfgen::msdfgen-ext
+		Freetype::Freetype
 )
 
 target_link_libraries(checklight_shared_system PRIVATE

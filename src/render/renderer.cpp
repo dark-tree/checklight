@@ -319,8 +319,10 @@ void Renderer::createSwapchain() {
 
 void Renderer::createShaders() {
 
-	shader_basic_vertex = compiler.compileFile(device, "assets/shader/basic.vert", Kind::VERTEX);
-	shader_basic_fragment = compiler.compileFile(device, "assets/shader/basic.frag", Kind::FRAGMENT);
+	shader_screen_vertex = compiler.compileFile(device, "assets/shader/screen.vert", Kind::VERTEX);
+	shader_world_vertex = compiler.compileFile(device, "assets/shader/world.vert", Kind::VERTEX);
+	shader_atlas_fragment = compiler.compileFile(device, "assets/shader/atlas.frag", Kind::FRAGMENT);
+	shader_text_fragment = compiler.compileFile(device, "assets/shader/text.frag", Kind::FRAGMENT);
 	shader_trace_gen = compiler.compileFile(device, "assets/shader/ray-gen.glsl", Kind::RAYGEN);
 	shader_trace_miss = compiler.compileFile(device, "assets/shader/ray-miss.glsl", Kind::MISS);
 	shader_trace_hit = compiler.compileFile(device, "assets/shader/ray-hit.glsl", Kind::CLOSEST);
@@ -372,7 +374,7 @@ void Renderer::createRenderPasses() {
 	 * prepareFramebuffers() on it at the end of createSwapchain()!
 	 */
 
-	{ // basic 3d pass
+	{ // immediate 2d/3d pass
 
 		RenderPassBuilder builder;
 
@@ -381,10 +383,10 @@ void Renderer::createRenderPasses() {
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
 			.next();
 
-//		Attachment::Ref depth = builder.addAttachment(attachment_depth)
-//			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
-//			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-//			.next();
+		Attachment::Ref depth = builder.addAttachment(attachment_depth)
+			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+			.next();
 
 		builder.addDependency()
 			.first(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0)
@@ -398,7 +400,7 @@ void Renderer::createRenderPasses() {
 
 		builder.addSubpass()
 			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-//			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.next();
 
 		pass_immediate = builder.build(device, "Immediate");
@@ -444,14 +446,48 @@ void Renderer::createPipelines() {
 
 	VkExtent2D extent = swapchain.getExtend();
 
-	pipeline_basic_3d = GraphicsPipelineBuilder::of(device)
+	pipeline_immediate_2d = GraphicsPipelineBuilder::of(device)
 		.withViewport(0, 0, extent.width, extent.height)
 		.withScissors(0, 0, extent.width, extent.height)
 		.withCulling(false)
 		.withRenderPass(pass_immediate, 0)
-		.withShaders(shader_basic_vertex, shader_basic_fragment)
+		.withShaders(shader_screen_vertex, shader_atlas_fragment)
 		.withBindingLayout(binding_3d)
-		.withDescriptorSetLayout(layout_geometry)
+		.withDescriptorSetLayout(layout_immediate)
+		.withBlendMode(BlendMode::ENABLED)
+		.withBlendAlphaFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withBlendColorFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withPushConstant(mesh_constant)
+		.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
+		.build();
+
+	pipeline_immediate_3d = GraphicsPipelineBuilder::of(device)
+		.withViewport(0, 0, extent.width, extent.height)
+		.withScissors(0, 0, extent.width, extent.height)
+		.withCulling(false)
+		.withRenderPass(pass_immediate, 0)
+		.withShaders(shader_world_vertex, shader_atlas_fragment)
+		.withBindingLayout(binding_3d)
+		.withDescriptorSetLayout(layout_immediate)
+		.withBlendMode(BlendMode::ENABLED)
+		.withBlendAlphaFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withBlendColorFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withPushConstant(mesh_constant)
+		.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
+		.build();
+
+	pipeline_text_2d = GraphicsPipelineBuilder::of(device)
+		.withViewport(0, 0, extent.width, extent.height)
+		.withScissors(0, 0, extent.width, extent.height)
+		.withCulling(false)
+		.withRenderPass(pass_immediate, 0)
+		.withShaders(shader_screen_vertex, shader_text_fragment)
+		.withBindingLayout(binding_3d)
+		.withDescriptorSetLayout(layout_immediate)
+		.withBlendMode(BlendMode::ENABLED)
+		.withBlendAlphaFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withBlendColorFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withPushConstant(mesh_constant)
 		//.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
 		.build();
 
@@ -482,7 +518,11 @@ void Renderer::createPipelines() {
 }
 
 void Renderer::closePipelines() {
-	pipeline_basic_3d.close();
+	pipeline_immediate_2d.close();
+	pipeline_immediate_3d.close();
+	pipeline_text_2d.close();
+	pipeline_trace_3d.close();
+	pipeline_compose_2d.close();
 }
 
 void Renderer::closeFrames() {
@@ -588,6 +628,10 @@ void Renderer::rebuildBottomLevel(CommandRecorder& recorder) {
 	bakery.bake(device, allocator, recorder);
 }
 
+ImmediateRenderer& Renderer::getImmediateRenderer() {
+	return immediate;
+}
+
 Fence Renderer::createFence(bool signaled) {
 	return {device.getHandle(), signaled};
 }
@@ -636,8 +680,9 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.done();
 
 	// create descriptor layouts
-	layout_geometry = DescriptorSetLayoutBuilder::begin()
-		.descriptor(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+	layout_immediate = DescriptorSetLayoutBuilder::begin()
+		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 		.done(device);
 
 	layout_compose = DescriptorSetLayoutBuilder::begin()
@@ -653,7 +698,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 
 	// add layouts to the pool so that they can be allocated
 	descriptor_pool = DescriptorPoolBuilder::begin()
-		.addDynamic(layout_geometry, 1)
+		.addDynamic(layout_immediate, 1)
 		.addDynamic(layout_raytrace, 1)
 		.addDynamic(layout_compose, 1)
 		.done(device, concurrent);
@@ -678,7 +723,7 @@ Renderer::~Renderer() {
 	lateClose();
 
 	// close all the descriptor layouts here
-	layout_geometry.close();
+	layout_immediate.close();
 	layout_raytrace.close();
 	layout_compose.close();
 
@@ -722,25 +767,6 @@ Window& Renderer::getWindow() const {
 
 void Renderer::draw() {
 
-	immediate.clear();
-	immediate.setColor(255, 0, 100);
-	immediate.drawLine2D(10, 10, 100, 500);
-
-	immediate.setColor(50, 50, 100);
-	immediate.setRectRadius(10, 20, 40, 80);
-	immediate.drawRect2D(100, 100, 200, 150);
-
-	immediate.setColor(200, 200, 200);
-	immediate.setRectRadius(10);
-	immediate.drawRect2D(300, 300, 400, 400);
-
-	immediate.setColor(0, 0, 0);
-	immediate.drawCircle2D(800, 100, 50);
-
-	immediate.setColor(200, 0, 0);
-	immediate.drawEllipse2D(800, 100, 20, 40);
-	immediate.drawBezier2D(800, 100, 900, 400, 500, 600, 800, 800);
-
 	RenderFrame& frame = getFrame();
 
 	frame.wait();
@@ -774,16 +800,21 @@ void Renderer::draw() {
 		.draw(3)
 		.endRenderPass();
 
-	// upload vertex buffers
+	// upload buffers and textures
 	immediate.upload(recorder);
+	frame.set_immediate.sampler(0, immediate.getAtlasTexture(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	// draw immediate vertex data
 	recorder.beginRenderPass(pass_immediate, current_image, swapchain.getExtend());
-	recorder.bindPipeline(pipeline_basic_3d);
-	recorder.bindDescriptorSet(frame.set_graphics);
+	recorder.bindPipeline(pipeline_immediate_3d);
+	recorder.bindDescriptorSet(frame.set_immediate);
+	immediate.basic_3d.draw(mesh_constant, recorder);
 
-	recorder.bindVertexBuffer(immediate.basic.buffer.getBuffer());
-	recorder.draw(immediate.basic.buffer.getCount());
+	recorder.bindPipeline(pipeline_immediate_2d);
+	immediate.basic.draw(mesh_constant, recorder);
+
+	recorder.bindPipeline(pipeline_text_2d);
+	immediate.text.draw(mesh_constant, recorder);
 
 	recorder.endRenderPass();
 
@@ -799,6 +830,7 @@ void Renderer::draw() {
 
 	// next frame
 	index = (index + 1) % concurrent;
+	immediate.clear();
 
 }
 

@@ -6,8 +6,8 @@
  * RenderCommander
  */
 
-RenderCommander::RenderCommander(Type type, CommandBuffer buffer, CommandRecorder recorder, TaskQueue queue)
-: type(type), buffer(buffer), recorder(recorder), queue(queue) {};
+RenderCommander::RenderCommander(CommandBuffer buffer, CommandRecorder recorder, TaskQueue queue)
+: buffer(buffer), recorder(recorder), queue(queue) {};
 
 CommandRecorder& RenderCommander::getRecorder() {
 	return recorder;
@@ -20,23 +20,17 @@ TaskQueue& RenderCommander::getTaskQueue() {
 void RenderCommander::complete() {
 	RenderSystem& system = *RenderSystem::system;
 
-	if (type == Type::TRANSIENT) {
-		recorder.done();
+	recorder.done();
 
-		// submit and wait
-		Fence fence = system.createFence();
-		buffer.submit().signal(fence).done(system.queue);
-		fence.wait();
+	// submit and wait
+	Fence fence = system.createFence();
+	buffer.submit().signal(fence).done(system.queue);
+	fence.wait();
 
-		// cleanup after ourselves
-		fence.close();
-		buffer.close();
+	// cleanup after ourselves
+	fence.close();
+	buffer.close();
 
-		// run client cleanups tasks
-		queue.execute();
-	}
-
-	if (type == Type::ASYNCHRONOUS) {
-		system.getFrame().queue.addAll(queue);
-	}
+	// run client cleanups tasks
+	queue.execute();
 }
