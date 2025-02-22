@@ -92,7 +92,14 @@ Texture& DynamicAtlas::getTexture() {
  */
 
 DynamicImageAtlas::DynamicImageAtlas(const std::shared_ptr<DynamicAtlas>& atlas)
-: atlas(atlas) {}
+: atlas(atlas) {
+
+	ImageData blank = ImageData::allocate(16, 16);
+	blank.clear({255, 255, 255, 255});
+	sprites[BLANK_SPRITE] = atlas->submit(blank);
+	blank.close();
+
+}
 
 Sprite DynamicImageAtlas::getOrLoad(const std::string& path) {
 	auto it = sprites.find(path);

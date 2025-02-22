@@ -4,6 +4,8 @@
 void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
 	immediate.setSprite("assets/image/corners.png");
 
+	immediate.setLayer(100);
+	immediate.setLineWidth(4);
 	immediate.setColor(255, 255, 255);
 	immediate.drawLine2D(10, 10, 100, 500);
 
@@ -23,6 +25,7 @@ void drawUserInterface(ImmediateRenderer& immediate, float width, float height) 
 	immediate.drawEllipse2D(800, 100, 20, 40);
 	immediate.drawBezier2D(800, 100, 900, 400, 500, 600, 800, 800);
 
+	immediate.setLayer(0);
 	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(1 + glfwGetTime() * 8) + 1) / 16, 0)));
 	immediate.setSprite("assets/image/skay.png");
 	immediate.setColor(255, 255, 255);
@@ -58,6 +61,11 @@ void drawUserInterface(ImmediateRenderer& immediate, float width, float height) 
 
 	immediate.setFontSize(25);
 	immediate.drawText2D(300, 220, "Checklight - Game engine based on the Vulkan API");
+
+	immediate.setSprite("assets/image/corners.png");
+	immediate.setLineWidth(0.1);
+	immediate.drawLine3D(0, 0, 0, sin(glfwGetTime() / 3) * 50, 100, cos(glfwGetTime() / 3) * 50);
+
 }
 
 int main() {

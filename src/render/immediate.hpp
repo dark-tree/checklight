@@ -18,7 +18,12 @@ enum ArcQuality {
 	LOW        =  75,
 	MEDIUM     =  45,
 	HIGH       =  33,
-	VERY_HIGH  =  25
+	VERY_HIGH  =  25,
+};
+
+enum Disabled {
+	OFF,
+	DISABLED,
 };
 
 struct MeshConstant {
@@ -80,6 +85,7 @@ class ImmediateRenderer {
 
 		friend class Renderer;
 
+		Sprite blank;
 		std::shared_ptr<DynamicAtlas> atlas;
 		DynamicImageAtlas images;
 		DynamicFontAtlas fonts;
@@ -87,6 +93,8 @@ class ImmediateRenderer {
 
 		VertexChannel basic {"Textured 2D"};
 		VertexChannel text {"Text 2D"};
+		VertexChannel basic_3d {"Textured 3D"};
+		VertexChannel text_2d {"Text 3D"};
 
 		float iw, ih;
 		uint8_t r, g, b, a;
@@ -106,16 +114,7 @@ class ImmediateRenderer {
 	private:
 
 		/// Draw 2D vertex with implicit (mapping based) texture UV
-		void vertex(float x, float y);
-
-		/// Draw 2D vertex
-		void vertex(float x, float y, float u, float v);
-
-		/// Draw 2D vertex
-		void vertex(glm::vec2 pos, float u, float v);
-
-		/// Draw 3D vertex
-		void vertex(float x, float y, float z, float u, float v);
+		void drawVertex2D(float x, float y);
 
 		/// Get the point on a bezier curve at the given T value
 		float getBezierPoint(float a, float b, float c, float d, float t);
@@ -123,8 +122,10 @@ class ImmediateRenderer {
 		/// Get the tangent to the bezier curve at the given T value
 		float getBezierTangent(float a, float b, float c, float d, float t);
 
+		/// Changes the window-space texture mapping of the active sprite
 		void pushTextureMap(float x, float y, float w, float h);
 
+		/// Pop the applied texture map
 		void popTextureMap();
 
 	public:
@@ -132,7 +133,6 @@ class ImmediateRenderer {
 		ImmediateRenderer();
 
 		void clear();
-
 		Sprite getSprite(const std::string& path);
 
 		void setLayer(uint32_t layer);
@@ -144,6 +144,7 @@ class ImmediateRenderer {
 		void setRectRadius(float top_left, float top_right, float bottom_left, float bottom_right);
 		void setSprite(Sprite sprite);
 		void setSprite(const std::string& path);
+		void setSprite(Disabled disable);
 		void setFont(const std::string& path);
 		void setFont(const std::string& path, int size);
 		void setFontSize(int size);
@@ -151,6 +152,8 @@ class ImmediateRenderer {
 		void setMatrix2D(const glm::mat4& matrix);
 
 		// 2D Primitives
+		void drawVertex2D(float x, float y, float u, float v);
+		void drawVertex2D(glm::vec2 pos, float u, float v);
 		void drawRect2D(float x, float y, float w, float h);
 		void drawArc2D(float x, float y, float hrad, float vrad, float start, float angle, ArcMode mode = OPEN_PIE);
 		void drawLine2D(float x1, float y1, float x2, float y2);
@@ -160,5 +163,12 @@ class ImmediateRenderer {
 		void drawQuad2D(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
 		void drawBezier2D(float ax, float ay, float bx, float by, float cx, float cy, float dx, float dy);
 		void drawText2D(float x, float y, const std::string& str);
+
+		// 3D Primitives
+		void drawVertex3D(float x, float y, float z, float u, float v);
+		void drawVertex3D(glm::vec3 pos, float u, float v);
+		void drawLine3D(float x1, float y1, float z1, float x2, float y2, float z2);
+		void drawRect3D(float x, float y, float w, float h);
+		void drawText3D(float x, float y, const std::string& str);
 
 };

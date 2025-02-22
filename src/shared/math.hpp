@@ -21,4 +21,13 @@ namespace math {
 	 */
 	size_t alignUp(size_t size, size_t alignment);
 
+	/**
+	 * Obtain a vector perpendicular to the given axis, designated by the angle
+	 *
+	 * @param normal vector perpendicular to the desired vector
+	 * @param angle  rotation around the normal
+	 * @return perpendicular rotation along normal
+	 */
+	glm::vec3 rotateAlongAxis(glm::vec3 normal, float angle);
+
 }

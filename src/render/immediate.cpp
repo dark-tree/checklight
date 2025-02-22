@@ -3,6 +3,7 @@
 #include "vulkan/command/recorder.hpp"
 #include "asset/atlas.hpp"
 #include "shared/unicode.hpp"
+#include "shared/math.hpp"
 
 /*
  * VertexChannel
@@ -64,6 +65,7 @@ void VertexChannel::draw(PushConstant& push, CommandRecorder& recorder) {
 
 void ImmediateRenderer::upload(CommandRecorder& recorder) {
 	basic.upload(recorder);
+	basic_3d.upload(recorder);
 	text.upload(recorder);
 	atlas->upload(recorder);
 
@@ -80,6 +82,8 @@ void ImmediateRenderer::upload(CommandRecorder& recorder) {
 
 void ImmediateRenderer::close() {
 	basic.close();
+	text.close();
+	basic_3d.close();
 }
 
 Texture& ImmediateRenderer::getAtlasTexture() {
@@ -89,9 +93,10 @@ Texture& ImmediateRenderer::getAtlasTexture() {
 void ImmediateRenderer::clear() {
 	basic.clear();
 	text.clear();
+	basic_3d.clear();
 }
 
-void ImmediateRenderer::vertex(float x, float y) {
+void ImmediateRenderer::drawVertex2D(float x, float y) {
 	if (!mapping) {
 		throw std::runtime_error {"No texture mapped!"};
 	}
@@ -102,19 +107,7 @@ void ImmediateRenderer::vertex(float x, float y) {
 	float u = sprite.u1 + (x - tx) / tw * du;
 	float v = sprite.v1 + (y - ty) / th * dv;
 
-	vertex(x, y, u, v);
-}
-
-void ImmediateRenderer::vertex(float x, float y, float u, float v) {
-	vertex(x * iw - 1, y * ih - 1, layer, u, v);
-}
-
-void ImmediateRenderer::vertex(glm::vec2 pos, float u, float v) {
-	vertex(pos.x, pos.y, u, v);
-}
-
-void ImmediateRenderer::vertex(float x, float y, float z, float u, float v) {
-	basic.write(x, y, z, r, g, b, a, u, v);
+	drawVertex2D(x, y, u, v);
 }
 
 float ImmediateRenderer::getBezierPoint(float a, float b, float c, float d, float t) {
@@ -159,6 +152,8 @@ float ImmediateRenderer::getMaxPixelError() const {
 
 ImmediateRenderer::ImmediateRenderer()
 : atlas(std::make_shared<DynamicAtlas>()), images(atlas), fonts(atlas) {
+	this->blank = images.getOrLoad(DynamicImageAtlas::BLANK_SPRITE);
+	setSprite(this->blank);
 	setLayer(0);
 	setColor(255, 255, 255);
 	setResolution(1, 1);
@@ -215,6 +210,10 @@ void ImmediateRenderer::setSprite(const std::string& path) {
 	setSprite(getSprite(path));
 }
 
+void ImmediateRenderer::setSprite(Disabled disable) {
+	setSprite(this->blank);
+}
+
 void ImmediateRenderer::setFont(const std::string& path) {
 	this->font = fonts.getOrLoad(path);
 }
@@ -235,6 +234,14 @@ void ImmediateRenderer::setMatrix2D(const glm::mat4& matrix) {
 void ImmediateRenderer::setFont(const std::string& path, int size) {
 	setFont(path);
 	setFontSize(size);
+}
+
+void ImmediateRenderer::drawVertex2D(float x, float y, float u, float v) {
+	basic.write(x * iw - 1, y * ih - 1, layer, r, g, b, a, u, v);
+}
+
+void ImmediateRenderer::drawVertex2D(glm::vec2 pos, float u, float v) {
+	drawVertex2D(pos.x, pos.y, u, v);
 }
 
 void ImmediateRenderer::drawRect2D(float x, float y, float w, float h) {
@@ -272,13 +279,13 @@ void ImmediateRenderer::drawLine2D(float x1, float y1, float x2, float y2) {
 	glm::vec2 ab = pb - pa;
 	glm::vec2 pp = glm::normalize(glm::vec2 {-ab.y, ab.x}) * width;
 
-	vertex(pa + pp, sprite.u1, sprite.v1);
-	vertex(pb - pp, sprite.u2, sprite.v2);
-	vertex(pb + pp, sprite.u1, sprite.v2);
+	drawVertex2D(pa + pp, sprite.u1, sprite.v1);
+	drawVertex2D(pb - pp, sprite.u2, sprite.v2);
+	drawVertex2D(pb + pp, sprite.u1, sprite.v2);
 
-	vertex(pa + pp, sprite.u1, sprite.v1);
-	vertex(pa - pp, sprite.u2, sprite.v1);
-	vertex(pb - pp, sprite.u2, sprite.v2);
+	drawVertex2D(pa + pp, sprite.u1, sprite.v1);
+	drawVertex2D(pa - pp, sprite.u2, sprite.v1);
+	drawVertex2D(pb - pp, sprite.u2, sprite.v2);
 
 }
 
@@ -297,13 +304,13 @@ void ImmediateRenderer::drawSlantedLine2D(glm::vec2 p1, glm::vec2 d1, glm::vec2 
 	glm::vec2 b1 = p2 + s2;
 	glm::vec2 b2 = p2 - s2;
 
-	vertex(a1.x, a1.y, sprite.u1, sprite.v1);
-	vertex(a2.x, a2.y, sprite.u2, sprite.v1);
-	vertex(b1.x, b1.y, sprite.u1, sprite.v2);
+	drawVertex2D(a1.x, a1.y, sprite.u1, sprite.v1);
+	drawVertex2D(a2.x, a2.y, sprite.u2, sprite.v1);
+	drawVertex2D(b1.x, b1.y, sprite.u1, sprite.v2);
 
-	vertex(b1.x, b1.y, sprite.u1, sprite.v2);
-	vertex(a2.x, a2.y, sprite.u2, sprite.v1);
-	vertex(b2.x, b2.y, sprite.u2, sprite.v2);
+	drawVertex2D(b1.x, b1.y, sprite.u1, sprite.v2);
+	drawVertex2D(a2.x, a2.y, sprite.u2, sprite.v1);
+	drawVertex2D(b2.x, b2.y, sprite.u2, sprite.v2);
 }
 
 void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, float start, float angle, ArcMode mode) {
@@ -323,9 +330,9 @@ void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, floa
 		float bx = x + hrad * cos(start + step * (i + 1));
 		float by = y + vrad * sin(start + step * (i + 1));
 
-		vertex(x, y);
-		vertex(ax, ay);
-		vertex(bx, by);
+		drawVertex2D(x, y);
+		drawVertex2D(ax, ay);
+		drawVertex2D(bx, by);
 	}
 
 	if (angle > M_PI && mode == OPEN_CHORD) {
@@ -335,9 +342,9 @@ void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, floa
 		float bx = x + hrad * cos(start + angle);
 		float by = y + vrad * sin(start + angle);
 
-		vertex(x, y);
-		vertex(ax, ay);
-		vertex(bx, by);
+		drawVertex2D(x, y);
+		drawVertex2D(ax, ay);
+		drawVertex2D(bx, by);
 	}
 
 	popTextureMap();
@@ -355,24 +362,23 @@ void ImmediateRenderer::drawCircle2D(float x, float y, float radius) {
 void ImmediateRenderer::drawQuad2D(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
 
 	if (mapping) {
-		vertex(x1, y1);
-		vertex(x2, y2);
-		vertex(x3, y3);
+		drawVertex2D(x1, y1);
+		drawVertex2D(x2, y2);
+		drawVertex2D(x3, y3);
 
-		vertex(x1, y1);
-		vertex(x3, y3);
-		vertex(x4, y4);
-
+		drawVertex2D(x1, y1);
+		drawVertex2D(x3, y3);
+		drawVertex2D(x4, y4);
 		return;
 	}
 
-	vertex(x1, y1, sprite.u1, sprite.v1);
-	vertex(x2, y2, sprite.u2, sprite.v1);
-	vertex(x3, y3, sprite.u2, sprite.v2);
+	drawVertex2D(x1, y1, sprite.u1, sprite.v1);
+	drawVertex2D(x2, y2, sprite.u2, sprite.v1);
+	drawVertex2D(x3, y3, sprite.u2, sprite.v2);
 
-	vertex(x1, y1, sprite.u1, sprite.v1);
-	vertex(x3, y3, sprite.u2, sprite.v2);
-	vertex(x4, y4, sprite.u1, sprite.v2);
+	drawVertex2D(x1, y1, sprite.u1, sprite.v1);
+	drawVertex2D(x3, y3, sprite.u2, sprite.v2);
+	drawVertex2D(x4, y4, sprite.u1, sprite.v2);
 
 }
 
@@ -459,4 +465,77 @@ void ImmediateRenderer::drawText2D(float x, float y, const std::string& str) {
 		text.write(q.x1 * iw - 1, q.y0 * ih - 1, layer, r, g, b, a, q.s1, q.t0);
 		text.write(q.x1 * iw - 1, q.y1 * ih - 1, layer, r, g, b, a, q.s1, q.t1);
 	}
+}
+
+void ImmediateRenderer::drawVertex3D(float x, float y, float z, float u, float v) {
+	basic_3d.write(x, y, z, r, g, b, a, u, v);
+}
+
+void ImmediateRenderer::drawVertex3D(glm::vec3 pos, float u, float v) {
+	drawVertex3D(pos.x, pos.y, pos.z, u, v);
+}
+
+void ImmediateRenderer::drawLine3D(float x1, float y1, float z1, float x2, float y2, float z2) {
+
+	glm::vec3 pa {x1, y1, z1};
+	glm::vec3 pb {x2, y2, z2};
+	glm::vec3 ab = glm::normalize(pb - pa);
+
+	float radius = width / 2;
+	int sides = 4;
+	float slice = (2 * glm::pi<float>()) / sides;
+
+	for (int i = 0; i < sides; i ++) {
+		float ac = (i + 0) * slice + glm::pi<float>() / 4;
+		float an = (i + 1) * slice + glm::pi<float>() / 4;
+
+		glm::vec3 vc = math::rotateAlongAxis(ab, ac) * radius;
+		glm::vec3 vn = math::rotateAlongAxis(ab, an) * radius;
+
+		//               / Pa + Vc           / Pb + Vc
+		//        * --- x -- -- -- -- -- -- x
+		//      /  Vc /   \ / Pa + Vn        \  / Pb + Vn
+		//     *     /     x -- -- -- -- -- -- x
+		//    |     * _.-`  |                  |
+		//    |   Pa    Vn  |                  |
+		//     *           * -- -- -- -- -- -- *
+		//      \         /                   /
+		//        * --- * -- -- -- -- -- -- *
+
+		// side
+		drawVertex3D(pa + vc, blank.u1, blank.v1);
+		drawVertex3D(pb + vn, blank.u2, blank.v2);
+		drawVertex3D(pb + vc, blank.u1, blank.v2);
+
+		drawVertex3D(pa + vc, blank.u1, blank.v1);
+		drawVertex3D(pa + vn, blank.u2, blank.v1);
+		drawVertex3D(pb + vn, blank.u2, blank.v2);
+
+		// caps
+		drawVertex3D(pa     , blank.u1, blank.v1);
+		drawVertex3D(pa + vn, blank.u2, blank.v1);
+		drawVertex3D(pa + vc, blank.u2, blank.v2);
+
+		drawVertex3D(pb     , blank.u1, blank.v1);
+		drawVertex3D(pb + vn, blank.u2, blank.v1);
+		drawVertex3D(pb + vc, blank.u2, blank.v2);
+
+	}
+}
+
+void ImmediateRenderer::drawRect3D(float x, float y, float w, float h) {
+
+	throw std::runtime_error {"drawRect3D() is not yet implemented!"};
+
+}
+
+void ImmediateRenderer::drawText3D(float x, float y, const std::string& str) {
+
+	if (!font) {
+		throw std::runtime_error {"No font set!"};
+	}
+
+	// TODO
+	throw std::runtime_error {"drawText3D() is not yet implemented!"};
+
 }

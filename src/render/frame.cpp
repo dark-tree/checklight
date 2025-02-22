@@ -11,6 +11,7 @@ RenderFrame::RenderFrame(Renderer& renderer, const CommandPool& pool, const Logi
 	uniform_buffer = renderer.allocator.allocateBuffer(Memory::SHARED, sizeof(SceneUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, "Frame Uniform");
 
 	set_immediate = renderer.descriptor_pool.allocate(renderer.layout_immediate);
+	set_immediate.buffer(1, uniform_buffer, sizeof(SceneUniform));
 
 	set_compose = renderer.descriptor_pool.allocate(renderer.layout_compose);
 	set_compose.sampler(0, renderer.attachment_albedo.getTexture(), VK_IMAGE_LAYOUT_GENERAL);

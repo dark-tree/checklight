@@ -48,6 +48,8 @@ class DynamicImageAtlas {
 
 	public:
 
+		static constexpr const char* BLANK_SPRITE = ":blank";
+
 		DynamicImageAtlas() = default;
 		DynamicImageAtlas(const std::shared_ptr<DynamicAtlas>& atlas);
 
