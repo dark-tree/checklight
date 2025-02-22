@@ -45,6 +45,17 @@ class DescriptorSet {
 		void sampler(int binding, const Texture& texture, VkImageLayout layout);
 
 		/**
+		 * Update one descriptor binding to point to the given sampler array,
+		 * for the given descriptor binding site to be compatible the layout
+		 * from which this set was created must configure the binding to match this resource type.
+		 *
+		 * @param binding  descriptor set binding index to update
+		 * @param textures array of textures to update it to
+		 * @param layout   layout the image will have when the set will be bound
+		 */
+		void samplerArray(int binding, const std::vector<Texture>& textures, VkImageLayout layout);
+
+		/**
 		 * Update one descriptor binding to point to the given image view,
 		 * for the given descriptor binding site to be compatible the layout
 		 * from which this set was created must configure the binding to match this resource type.

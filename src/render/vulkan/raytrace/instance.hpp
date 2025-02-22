@@ -39,4 +39,7 @@ class InstanceManager {
 		/// Get the buffer object used for object data storage
 		const ReusableBuffer& getObjectDataBuffer() const;
 
+		/// Get the number of instances
+		uint32_t count() const;
+
 };

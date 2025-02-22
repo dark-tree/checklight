@@ -50,6 +50,9 @@ class Attachment {
 		/// Get the underlying view, use only after a call to allocate()
 		VkImageView getView() const;
 
+		/// Get the aspect flags of this attachment
+		VkImageAspectFlags getAspect() const;
+
 		/// Get the underlying texture, use only after a call to allocate()
 		const Texture& getTexture() const;
 

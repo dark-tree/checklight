@@ -86,7 +86,7 @@ int main() {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
-	auto meshes = Importer::importObj(system, "assets/models/checklight.obj");
+	auto meshes = RenderSystem::importObj("assets/models/checklight.obj");
 
 	auto models = system.createRenderModels(meshes);
 
@@ -115,14 +115,21 @@ int main() {
 
 		// render the scene
 		system.draw();
-  }
+	}
 
 	system.wait();
 
-	// TODO: free meshes
-	//for (auto& mesh : meshes) {
-	//	mesh.reset();
-	//}
+	for (auto& object : objects) {
+		object.reset();
+	}
+
+	for (auto& model : models) {
+		model.reset();
+	}
+
+	for (auto& mesh : meshes) {
+		mesh.reset();
+	}
 
 	RenderSystem::system.reset();
 

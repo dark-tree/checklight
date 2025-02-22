@@ -140,7 +140,11 @@ CommandRecorder& CommandRecorder::updateBuffer(Buffer buffer, void* data) {
 	return *this;
 }
 
-CommandRecorder& CommandRecorder::transitionLayout(Image image, VkImageLayout dst, VkImageLayout src) {
+CommandRecorder& CommandRecorder::transitionLayout(Attachment& attachment, VkImageLayout dst, VkImageLayout src) {
+	return transitionLayout(attachment.getTexture().getTextureImage(), dst, src, attachment.getAspect());
+}
+
+CommandRecorder& CommandRecorder::transitionLayout(Image image, VkImageLayout dst, VkImageLayout src, VkImageAspectFlags aspect) {
 	VkPipelineStageFlags src_stage = 0;
 	VkPipelineStageFlags dst_stage = 0;
 
@@ -155,7 +159,7 @@ CommandRecorder& CommandRecorder::transitionLayout(Image image, VkImageLayout ds
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
 	barrier.image = image.getHandle();
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	barrier.subresourceRange.aspectMask = aspect;
 	barrier.subresourceRange.baseMipLevel = 0;
 	barrier.subresourceRange.levelCount = image.getLayerCount();
 	barrier.subresourceRange.baseArrayLayer = 0;

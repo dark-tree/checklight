@@ -51,7 +51,7 @@ class AccelStructConfig {
 		AccelStructConfig& addTriangles(LogicalDevice& device, const RenderMesh& mesh, bool opaque);
 
 		/// Add instance buffer to the config, used by TLASes
-		AccelStructConfig& addInstances(LogicalDevice& device, const ReusableBuffer& instances, bool opaque);
+		AccelStructConfig& addInstances(LogicalDevice& device, uint32_t instanceCount, const ReusableBuffer& instances, bool opaque);
 
 		/// Set the operation that should be performed during baking in the AccelStructFactory
 		AccelStructConfig& setOperation(Operation operation, Type type);

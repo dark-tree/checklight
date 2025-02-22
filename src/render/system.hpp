@@ -4,6 +4,7 @@
 #include "renderer.hpp"
 #include "application.hpp"
 #include "window.hpp"
+#include "asset/obj.hpp"
 
 class RenderCommander;
 class RenderMesh;
@@ -11,6 +12,13 @@ class RenderObject;
 class RenderModel;
 
 class RenderSystem : public Renderer {
+
+	private:
+
+		/**
+		 * Import materials for an OBJ file specified by the path
+		 */
+		static std::map<std::string, std::shared_ptr<ObjMaterial>> importMaterials(const std::string& path);
 
 	public:
 
@@ -69,4 +77,8 @@ class RenderSystem : public Renderer {
 		 */
 		std::shared_ptr<RenderObject> createRenderObject();
 
+		/**
+		 * Import an OBJ file and return a list of meshes
+		 */
+		static std::vector<std::shared_ptr<RenderMesh>> importObj(const std::string& path);
 };

@@ -64,3 +64,111 @@ void RenderSystem::setViewMatrix(glm::vec3 eye, glm::vec3 direction) {
 std::shared_ptr<RenderObject> RenderSystem::createRenderObject() {
 	return {instances->create()};
 }
+
+std::map<std::string, std::shared_ptr<ObjMaterial>> RenderSystem::importMaterials(const std::string& path) {
+	std::map<std::string, std::shared_ptr<ObjMaterial>> materials;
+	std::string mtl_path = "";
+
+	try {
+		mtl_path = ObjObject::getMtllib(path);
+
+		if (!mtl_path.empty()) {
+			materials = ObjMaterial::open(mtl_path);
+		}
+	}
+	catch (const std::exception& e) {
+		try {
+			mtl_path = path.substr(0, path.find_last_of("/\\") + 1) + mtl_path;
+			materials = ObjMaterial::open(mtl_path);
+		}
+		catch (const std::exception& e) {
+			std::cout << e.what() << std::endl;
+		}
+	}
+
+	return materials;
+}
+
+std::vector<std::shared_ptr<RenderMesh>> RenderSystem::importObj(const std::string& path) {
+
+	auto materials = importMaterials(path);
+
+	auto open_texture = [&](std::string texture_path) -> TextureHandle {
+		try {
+			return system->materials.getTextureManager().createTexture(texture_path);
+		}
+		catch (const std::exception& e) {
+			try {
+				texture_path = path.substr(0, path.find_last_of("/\\") + 1) + texture_path;
+				return system->materials.getTextureManager().createTexture(texture_path);
+			}
+			catch (const std::exception& e) {
+				std::cout << e.what() << std::endl;
+				return TextureHandle {};
+			}
+		}
+	};
+
+	std::map<std::shared_ptr<ObjMaterial>, Material> render_materials;
+
+	for (auto& [name, material] : materials) {
+		Material& render_material = system->materials.createMaterial();
+
+		if (!material->diffuseMap.empty()) {
+			render_material.albedo_texture = open_texture(material->diffuseMap);
+		}
+
+		render_materials[material] = render_material;
+	}
+
+	auto scene = ObjObject::open(path, materials);
+
+	std::vector<std::shared_ptr<RenderMesh>> meshes;
+
+	// FIXME you should not create the commander multiple times
+	//       create one and reuse, this is very slow
+	auto commander = system->createTransientCommander();
+
+	system->materials.flush(system->allocator, commander->getRecorder(), commander->getTaskQueue(), system->device);
+
+	for (auto& object : scene) {
+		std::shared_ptr<RenderMesh> mesh = system->createMesh();
+
+		#if ENGINE_DEBUG
+		std::string debug_name = "Mesh " + object.name + " from " + path;
+		mesh->setDebugName(debug_name.c_str());
+		#endif
+
+		std::vector<Vertex3D> vertices;
+
+		for (auto& vertex : object.vertices) {
+			float r = (vertex.normal.x + 1) / 2;
+			float g = (vertex.normal.y + 1) / 2;
+			float b = (vertex.normal.z + 1) / 2;
+			vertices.emplace_back(vertex.position.x, vertex.position.y, vertex.position.z, r * 255, g * 255, b * 255, 255, vertex.uv.x, 1.0 - vertex.uv.y, 0);
+		}	
+
+		std::vector<uint32_t> indices;
+
+		for (size_t i = 0; i < object.groups.size(); i++) {
+			const auto& group = object.groups[i];
+			indices.insert(indices.end(), group.indices.begin(), group.indices.end());
+
+			// Assign material to vertices
+			Material& material = render_materials[group.material];
+
+			for (uint32_t vertex_index : group.indices) {
+				vertices[vertex_index].material_index = material.index;
+			}
+		}
+
+		mesh->uploadVertices(*commander, vertices);
+		mesh->uploadIndices(*commander, indices);
+
+		meshes.push_back(mesh);
+	}
+
+	commander->complete();
+
+	return meshes;
+}

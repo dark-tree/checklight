@@ -112,7 +112,7 @@ ImageData ImageData::view(void* pixels, int w, int h, int channels) {
 	return {Type::VIEW, pixels, w, h, channels};
 }
 
-Image ImageData::upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue queue, VkFormat format, bool mipmaps) const {
+Image ImageData::upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue& queue, VkFormat format, bool mipmaps) const {
 	ManagedImageDataSet set {*this, mipmaps};
 	Image image = set.upload(allocator, recorder, format).discardStaging(queue);
 

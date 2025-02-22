@@ -52,8 +52,8 @@ std::shared_ptr<RenderObject> InstanceManager::create() {
 
 		// no space in buffer left
 		if (offset >= capacity) {
-			// TODO
-			capacity = (capacity > 0) ? (capacity * 2) : 1;
+
+			capacity = (capacity > 0) ? (capacity * 2) : 16;
 
 			buffer.close();
 			buffer.allocateBuffers(capacity, sizeof(VkAccelerationStructureInstanceKHR));
@@ -90,4 +90,8 @@ const ReusableBuffer& InstanceManager::getBuffer() const {
 
 const ReusableBuffer& InstanceManager::getObjectDataBuffer() const {
 	return object_data_buffer;
+}
+
+uint32_t InstanceManager::count() const {
+	return static_cast<uint32_t>(delegates.size());
 }

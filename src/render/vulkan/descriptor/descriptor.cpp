@@ -61,6 +61,35 @@ void DescriptorSet::sampler(int binding, const Texture& texture, VkImageLayout i
 
 }
 
+void DescriptorSet::samplerArray(int binding, const std::vector<Texture>& textures, VkImageLayout image_layout) {
+
+	const VkDescriptorType type = layout->getType(binding);
+	std::vector<VkDescriptorImageInfo> infos(textures.size());
+
+	for (size_t i = 0; i < textures.size(); i++) {
+		const Texture& texture = textures[i];
+		const VkSampler vk_sampler = texture.getSampler();
+		VulkanDebug::assertAlive(vk_sampler);
+
+		VkDescriptorImageInfo& info = infos[i];
+		info.imageLayout = image_layout;
+		info.imageView = texture.getView();
+		info.sampler = vk_sampler;
+	}
+
+	VkWriteDescriptorSet write {};
+	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	write.dstSet = vk_set;
+	write.dstBinding = binding;
+	write.dstArrayElement = 0;
+	write.descriptorType = type;
+	write.descriptorCount = static_cast<uint32_t>(textures.size());
+	write.pImageInfo = infos.data();
+
+	vkUpdateDescriptorSets(vk_device, 1, &write, 0, nullptr);
+
+}
+
 void DescriptorSet::view(int binding, const ImageView& view, VkImageLayout image_layout) {
 
 	const VkDescriptorType type = layout->getType(binding);

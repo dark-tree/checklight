@@ -21,6 +21,7 @@
 #include "render/vulkan/descriptor/push.hpp"
 #include "render/vulkan/raytrace/instance.hpp"
 #include "render/vulkan/raytrace/factory.hpp"
+#include "render/asset/material.hpp"
 
 class Renderer {
 
@@ -59,6 +60,7 @@ class Renderer {
 		WindowSystem windows;
 		std::unique_ptr<Window> window;
 		ImmediateRenderer immediate;
+		MaterialManager materials;
 
 		// early vulkan objects
 		VkFormat surface_format;
@@ -86,6 +88,7 @@ class Renderer {
 		Shader shader_text_fragment;
 		Shader shader_trace_gen;
 		Shader shader_trace_miss;
+		Shader shader_trace_shadow_miss;
 		Shader shader_trace_hit;
 		Shader shader_blit_vertex;
 		Shader shader_blit_fragment;
@@ -200,5 +203,8 @@ class Renderer {
 
 		/// Get the immediate style GUI/Debug Renderer
 		ImmediateRenderer& getImmediateRenderer();
+
+		/// Get the material manager
+		MaterialManager& getMaterialManager();
 
 };

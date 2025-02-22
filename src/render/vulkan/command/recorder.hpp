@@ -15,6 +15,7 @@ class QueryPool;
 class Queue;
 class Fence;
 class ShaderTable;
+class Attachment;
 
 class CommandRecorder {
 
@@ -44,7 +45,10 @@ class CommandRecorder {
 		CommandRecorder& updateBuffer(Buffer buffer, void* data);
 
 		/// Insert pipeline layout barrier
-		CommandRecorder& transitionLayout(Image image, VkImageLayout dst, VkImageLayout src);
+		CommandRecorder& transitionLayout(Attachment& attachment, VkImageLayout dst, VkImageLayout src);
+
+		/// Insert pipeline layout barrier
+		CommandRecorder& transitionLayout(Image image, VkImageLayout dst, VkImageLayout src, VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT);
 
 		/// Begin a simple to use memory barrier builder
 		MemoryBarrier memoryBarrier();

@@ -10,6 +10,3 @@
 #include "api/model.hpp"
 #include "api/commander.hpp"
 #include "api/object.hpp"
-
-// asset
-#include "asset/importer.hpp"

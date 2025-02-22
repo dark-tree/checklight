@@ -37,6 +37,10 @@ VkImageView Attachment::getView() const {
 	return texture.getView();
 }
 
+VkImageAspectFlags Attachment::getAspect() const {
+	return settings.view_info.subresourceRange.aspectMask;
+}
+
 const Texture& Attachment::getTexture() const {
 	return texture;
 }
