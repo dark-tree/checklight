@@ -6,13 +6,11 @@
 
 class SoundListener {
 public:
-	static void setPosition(float x, float y, float z)
-	{
+	static void setPosition(float x, float y, float z){
 		alListener3f(AL_POSITION, x, y, z);
 	}
 
-	static void setVelocity(float x, float y, float z)
-	{
+	static void setVelocity(float x, float y, float z){
 		alListener3f(AL_VELOCITY, x, y, z);
 	}
 

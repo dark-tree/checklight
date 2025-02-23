@@ -1,7 +1,6 @@
 #include "sound_manager.hpp"
 
-SoundManager::SoundManager()
-{
+SoundManager::SoundManager(){
 	p_ALCDevice = alcOpenDevice(nullptr);
 	if (!p_ALCDevice) {
 		throw std::runtime_error("OpenAL -> init: Failed to open device");  //throw exception
@@ -16,15 +15,13 @@ SoundManager::SoundManager()
 
 }
 
-SoundManager::~SoundManager()
-{
+SoundManager::~SoundManager(){
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(p_ALCContext);
 	alcCloseDevice(p_ALCDevice);
 }
 
-ALCcontext* SoundManager::getContext()
-{
+ALCcontext* SoundManager::getContext(){
 	return this->p_ALCContext;
 }
 

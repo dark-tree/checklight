@@ -1,7 +1,6 @@
 #include "source.hpp"
 
-SoundSourceObject::SoundSourceObject()
-{
+SoundSourceObject::SoundSourceObject(){
 	alGetError();
 	alGenSources(1, sso_sources);
 	this->number_of_sources = 1;
@@ -12,8 +11,7 @@ SoundSourceObject::SoundSourceObject()
 	}
 }
 
-SoundSourceObject::SoundSourceObject(int numberOfSources)
-{
+SoundSourceObject::SoundSourceObject(int numberOfSources){
 	alGetError();
 	alGenSources(numberOfSources, sso_sources);
 	this->number_of_sources = numberOfSources;
@@ -24,14 +22,12 @@ SoundSourceObject::SoundSourceObject(int numberOfSources)
 	}
 }
 
-SoundSourceObject::~SoundSourceObject()
-{
+SoundSourceObject::~SoundSourceObject(){
 	alDeleteSources(this->number_of_sources,this->sso_sources);
 }
 
 
-ALuint SoundSourceObject::getSource()
-{
+ALuint SoundSourceObject::getSource(){
 	if (alIsSource(sso_sources[0]) == AL_TRUE)
 	{
 		return sso_sources[0];
@@ -40,8 +36,7 @@ ALuint SoundSourceObject::getSource()
 	return 0;
 }
 
-ALuint SoundSourceObject::getSource(int number)
-{
+ALuint SoundSourceObject::getSource(int number){
 	if (alIsSource(sso_sources[number]) == AL_TRUE)
 	{
 		return sso_sources[number];
