@@ -4,10 +4,13 @@
 
 class SoundClip {
 private:
-	ALuint* SCbuffers;
-	ALsizei numberOfBuffers;
+	ALuint* sc_buffers;
+	ALsizei number_of_buffers;
 public:
 	SoundClip();
-	SoundClip(int numberOfBuffers);
+	SoundClip(int number_of_buffers);
 	~SoundClip();
+
+	void addClip(const char* filename);
+
 };

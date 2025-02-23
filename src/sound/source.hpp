@@ -1,12 +1,12 @@
 #pragma once
 
 #include "external.hpp"
-#include "sound.hpp"
+#include "clip.hpp"
 
 class SoundSourceObject {
 private:
-	ALuint* SSOsources;
-	ALsizei numberOfSources;
+	ALuint* sso_sources;
+	ALsizei number_of_sources;
 public:
 	SoundSourceObject();
 	SoundSourceObject(int numberOfSources);
@@ -14,4 +14,7 @@ public:
 
 	ALuint getSource();
 	ALuint getSource(int number);
+
+	void addBuffer(SoundClip buffer);
+	void addBuffers(SoundClip buffer);
 };

@@ -175,6 +175,7 @@ target_link_libraries(checklight PRIVATE
 		checklight_render_system
 		checklight_shared_system
 		checklight_input_system
+		checklight_sound_system
 )
 
 

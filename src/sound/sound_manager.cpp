@@ -1,4 +1,4 @@
-#include "sound.hpp"
+#include "sound_manager.hpp"
 
 SoundManager::SoundManager()
 {
@@ -28,7 +28,7 @@ ALCcontext* SoundManager::getContext()
 	return this->p_ALCContext;
 }
 
-ALCdevice* SoundManager::getDevice()
-{
-	return this->p_ALCDevice();
-}
+//ALCdevice* SoundManager::getDevice()
+//{
+//	return this->p_ALCDevice();
+//}

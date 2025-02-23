@@ -3,8 +3,8 @@
 SoundSourceObject::SoundSourceObject()
 {
 	alGetError();
-	alGenSources(1, SSOsources);
-	this->numberOfSources = 1;
+	alGenSources(1, sso_sources);
+	this->number_of_sources = 1;
 	ALenum error;
 	if ((error = alGetError()) != AL_NO_ERROR)
 	{
@@ -15,8 +15,8 @@ SoundSourceObject::SoundSourceObject()
 SoundSourceObject::SoundSourceObject(int numberOfSources)
 {
 	alGetError();
-	alGenSources(numberOfSources, SSOsources);
-	this->numberOfSources = numberOfSources;
+	alGenSources(numberOfSources, sso_sources);
+	this->number_of_sources = numberOfSources;
 	ALenum error;
 	if ((error = alGetError()) != AL_NO_ERROR)
 	{
@@ -26,15 +26,15 @@ SoundSourceObject::SoundSourceObject(int numberOfSources)
 
 SoundSourceObject::~SoundSourceObject()
 {
-	alDeleteSources(this->numberOfSources,this->SSOsources);
+	alDeleteSources(this->number_of_sources,this->sso_sources);
 }
 
 
 ALuint SoundSourceObject::getSource()
 {
-	if (alIsSource(SSOsources[0]) == AL_TRUE)
+	if (alIsSource(sso_sources[0]) == AL_TRUE)
 	{
-		return SSOsources[0];
+		return sso_sources[0];
 	}
 
 	return 0;
@@ -42,10 +42,20 @@ ALuint SoundSourceObject::getSource()
 
 ALuint SoundSourceObject::getSource(int number)
 {
-	if (alIsSource(SSOsources[number]) == AL_TRUE)
+	if (alIsSource(sso_sources[number]) == AL_TRUE)
 	{
-		return SSOsources[number];
+		return sso_sources[number];
 	}
 
 	return 0;
+}
+
+void SoundSourceObject::addBuffer(SoundClip buffer)
+{
+
+}
+
+void SoundSourceObject::addBuffers(SoundClip buffer)
+{
+
 }

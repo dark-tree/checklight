@@ -19,6 +19,17 @@ int main() {
 
 	auto meshes = Importer::importObj(system, "assets/models/checklight.obj");
 
+	//test sound
+	try {
+		SoundClip sc;
+		sc.addClip("assets/sounds/testOGG.ogg");
+	}
+	catch (const std::runtime_error& e)
+	{
+		printf(e.what());
+	}
+
+
 	while (!window.shouldClose()) {
 		window.poll();
 

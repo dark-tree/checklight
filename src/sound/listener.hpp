@@ -18,7 +18,7 @@ public:
 
 	/*static std::array<float,3> getPosition()
 	{
-		std::array<float,3> positions;
+		std::array<float, 3> positions = { 0.0,0.0,0.0 };
 		alGetListenerfv(AL_POSITION, positions.data);
 		return positions;
 	}*/
