@@ -369,7 +369,7 @@ void Renderer::createAttachments() {
 		.setFormat(VK_FORMAT_D32_SFLOAT)
 		.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT)
 		.setClearDepth(1.0f)
-		.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT)
+		.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
 		.setDebugName("Depth")
 		.createAttachment();
 
@@ -402,7 +402,7 @@ void Renderer::createRenderPasses() {
 			.next();
 
 		Attachment::Ref depth = builder.addAttachment(attachment_depth)
-			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.next();
 
@@ -434,6 +434,11 @@ void Renderer::createRenderPasses() {
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			.next();
 
+		Attachment::Ref depth = builder.addAttachment(attachment_depth)
+			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+			.next();
+
 		builder.addDependency()
 			.first(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0)
 			.then(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
@@ -446,6 +451,7 @@ void Renderer::createRenderPasses() {
 
 		builder.addSubpass()
 			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.next();
 
 		pass_compose = builder.build(device, "Compose");
@@ -516,6 +522,7 @@ void Renderer::createPipelines() {
 		.withRenderPass(pass_compose, 0)
 		.withShaders(shader_blit_vertex, shader_blit_fragment)
 		.withDescriptorSetLayout(layout_compose)
+		.withDepthTest(VK_COMPARE_OP_ALWAYS, false, true)
 		.build();
 
 	ShaderTableBuilder builder;
@@ -717,7 +724,6 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
 		.descriptor(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, TextureManager::MAX_TEXTURES)
 		.descriptor(5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
-		.descriptor(6, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.done(device);
 
 	// add layouts to the pool so that they can be allocated

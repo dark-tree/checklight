@@ -20,7 +20,6 @@ RenderFrame::RenderFrame(Renderer& renderer, const CommandPool& pool, const Logi
 	set_raytrace = renderer.descriptor_pool.allocate(renderer.layout_raytrace);
 	set_raytrace.view(1, renderer.attachment_albedo.getView(), VK_IMAGE_LAYOUT_GENERAL);
 	set_raytrace.buffer(2, uniform_buffer, sizeof(SceneUniform));
-	set_raytrace.view(6, renderer.attachment_depth.getView(), VK_IMAGE_LAYOUT_GENERAL);
 }
 
 RenderFrame::~RenderFrame() {

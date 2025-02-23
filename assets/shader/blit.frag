@@ -6,5 +6,8 @@ layout(location = 0) in vec2 vTexture;
 layout(location = 0) out vec4 fColor;
 
 void main() {
-    fColor = texture(uAlbedoSampler, vTexture);
+    vec4 texel = texture(uAlbedoSampler, vTexture);
+
+    fColor = vec4(texel.rgb, 1.0f);
+    gl_FragDepth = 0;
 }

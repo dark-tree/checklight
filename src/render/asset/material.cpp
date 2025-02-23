@@ -46,7 +46,7 @@ TextureHandle TextureManager::createTexture(std::string path) {
 	TextureDelegate tdelegate = TextureBuilder::begin()
 		.setFormat(VK_FORMAT_R8G8B8A8_SRGB)
 		.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
-		.setDebugName(std::string(path.c_str()) + " Handle: " + std::to_string(handle.index))
+		.setDebugName(path + " Handle: " + std::to_string(handle.index))
 		.createDelegate();
 	
 	pending_creation.push_back({image_data, tdelegate});

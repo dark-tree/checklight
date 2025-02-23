@@ -378,6 +378,7 @@ void MutableImage::upload(CommandRecorder& recorder) {
 
 Image MutableImage::discardStaging(TaskQueue& queue) {
 	queue.enqueue([copy = staging] () mutable {
+		copy.getAllocation().unmap();
 		copy.close();
 	});
 
