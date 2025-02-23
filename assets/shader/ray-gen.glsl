@@ -15,6 +15,7 @@ layout(location = 1) rayPayloadEXT bool rShadowPayload;
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT TLAS;
 layout(binding = 1, set = 0, rgba32f) uniform image2D image;
+layout(binding = 6, set = 0, r32f) uniform image2D depth;
 
 layout(binding = 2, set = 0) uniform SceneUniform {
 	mat4 view;
@@ -55,12 +56,18 @@ void main() {
 	);
 
 	vec3 primaryColor = rPrimaryPayload.value.xyz;
+	float depthValue = tMax;
 
 	/**
 	* Directional light shadow ray
 	*/
 
 	if (rPrimaryPayload.hit.w > 0) {
+
+		// Calculate depth value
+		depthValue = length(rPrimaryPayload.hit.xyz - origin.xyz);
+
+		// Shadow ray
 		vec3 shadowRayDirection = normalize(vec3(0.0, 0.5, -1));
 		vec3 shadowRayOrigin = rPrimaryPayload.hit.xyz + rPrimaryPayload.normal.xyz * 0.001;
 
@@ -91,4 +98,5 @@ void main() {
 	*/
 
 	imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(primaryColor, 1.0));
+	imageStore(depth, ivec2(gl_LaunchIDEXT.xy), vec4(depthValue) / tMax);
 }
