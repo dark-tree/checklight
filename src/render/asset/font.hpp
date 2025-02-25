@@ -1,9 +1,10 @@
 #pragma once
 
-#include "msdfgen.h"
-#include "msdfgen-ext.h"
-#include <ft2build.h>
-#include FT_FREETYPE_H
+namespace msdfgen {
+	class FontHandle;
+}
+
+typedef struct FT_FaceRec_* FT_Face;
 
 #include "atlas.hpp"
 

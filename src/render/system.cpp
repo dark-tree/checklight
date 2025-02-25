@@ -109,10 +109,10 @@ std::vector<std::shared_ptr<RenderMesh>> RenderSystem::importObj(const std::stri
 		}
 	};
 
-	std::map<std::shared_ptr<ObjMaterial>, Material> render_materials;
+	std::map<std::shared_ptr<ObjMaterial>, RenderMaterial> render_materials;
 
 	for (auto& [name, material] : materials) {
-		Material& render_material = system->materials.createMaterial();
+		RenderMaterial& render_material = system->materials.createMaterial();
 
 		if (!material->diffuseMap.empty()) {
 			render_material.albedo_texture = open_texture(material->diffuseMap);
@@ -155,7 +155,7 @@ std::vector<std::shared_ptr<RenderMesh>> RenderSystem::importObj(const std::stri
 			indices.insert(indices.end(), group.indices.begin(), group.indices.end());
 
 			// Assign material to vertices
-			Material& material = render_materials[group.material];
+			RenderMaterial& material = render_materials[group.material];
 
 			for (uint32_t vertex_index : group.indices) {
 				vertices[vertex_index].material_index = material.index;

@@ -50,7 +50,7 @@ class TextureManager {
 
 };
 
-struct Material {
+struct RenderMaterial {
 	uint32_t index;	
 	TextureHandle albedo_texture;
 };
@@ -69,7 +69,7 @@ class MaterialManager {
 		/**
 		* Creates a new material. The material is not uploaded to the GPU until `flush()` is called
 		*/
-		Material& createMaterial();
+		RenderMaterial& createMaterial();
 
 		/**
 		* Uploads all pending materials to the GPU and flushes the TextureManager
@@ -90,7 +90,7 @@ class MaterialManager {
 
 		size_t capacity;
 		TextureManager texture_manager;
-		std::vector<Material> materials;
+		std::vector<RenderMaterial> materials;
 		ReusableBuffer material_buffer;
 
 };

@@ -23,7 +23,7 @@ struct Vertex3D {
     uint padding;
 };
 
-struct Material {
+struct RenderMaterial {
 	uint index;
     uint albedoTextureIndex;
 };
@@ -39,7 +39,7 @@ layout(buffer_reference, scalar) buffer Vertices { Vertex3D v[]; };
 layout(buffer_reference, scalar) buffer Indices { ivec3 i[]; };
 layout(binding = 3, set = 0, scalar) buffer RenderObjectBuffer { RenderObjectData i[]; } renderObjectBuffer;
 layout(binding = 4, set = 0) uniform sampler2D textures[];
-layout(binding = 5, set = 0, scalar) buffer MaterialBuffer { Material i[]; } materials;
+layout(binding = 5, set = 0, scalar) buffer MaterialBuffer { RenderMaterial i[]; } materials;
 
 hitAttributeEXT vec2 attribs;
 
@@ -64,7 +64,7 @@ void main() {
 	vec2 uv = vec2(v0.u, v0.v) * barycentrics.x + vec2(v1.u, v1.v) * barycentrics.y + vec2(v2.u, v2.v) * barycentrics.z;
 	
     uint materialIndex = v0.materialIndex;
-    Material material = materials.i[materialIndex];
+    RenderMaterial material = materials.i[materialIndex];
 
     vec3 textureColor = texture(textures[nonuniformEXT(material.albedoTextureIndex)], uv).rgb;
 

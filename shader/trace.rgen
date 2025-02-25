@@ -41,17 +41,17 @@ void main() {
 	float tMax = 10000.0;
 	uint primaryRayFlags = gl_RayFlagsOpaqueEXT;
 
-	traceRayEXT(TLAS,			// acceleration structure
-		primaryRayFlags,		// rayFlags
-		0xFF,					// cullMask
-		0,						// sbtRecordOffset
-		0,						// sbtRecordStride
-		0,						// missIndex
-		origin.xyz,				// ray origin
-		tMin,					// ray min range
-		direction.xyz,			// ray direction
-		tMax,					// ray max range
-		0						// payload location
+	traceRayEXT(TLAS,          // acceleration structure
+		primaryRayFlags,       // rayFlags
+		0xFF,                  // cullMask
+		0,                     // sbtRecordOffset
+		0,                     // sbtRecordStride
+		0,                     // missIndex
+		origin.xyz,            // ray origin
+		tMin,                  // ray min range
+		direction.xyz,         // ray direction
+		tMax,                  // ray max range
+		0                      // payload location
 	);
 
 	vec3 primaryColor = rPrimaryPayload.value.xyz;
@@ -74,17 +74,17 @@ void main() {
 
 		rShadowPayload = false;
 
-		traceRayEXT(TLAS,			// acceleration structure
-			shadowRayFlags,			// rayFlags
-			0xFF,					// cullMask
-			0,						// sbtRecordOffset
-			0,						// sbtRecordStride
-			1,						// missIndex
-			shadowRayOrigin,		// ray origin
-			0.001,					// ray min range
-			shadowRayDirection,		// ray direction
-			10000.0,				// ray max range
-			1						// payload location
+		traceRayEXT(TLAS,          // acceleration structure
+			shadowRayFlags,        // rayFlags
+			0xFF,                  // cullMask
+			0,                     // sbtRecordOffset
+			0,                     // sbtRecordStride
+			1,                     // missIndex
+			shadowRayOrigin,       // ray origin
+			0.001,                 // ray min range
+			shadowRayDirection,    // ray direction
+			10000.0,               // ray max range
+			1                      // payload location
 		);
 
 		if (!rShadowPayload) {

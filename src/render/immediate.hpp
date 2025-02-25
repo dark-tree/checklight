@@ -113,12 +113,11 @@ class ImmediateRenderer {
 		VertexChannel basic {"Textured 2D"};
 		VertexChannel text {"Text 2D"};
 		VertexChannel basic_3d {"Textured 3D"};
-		VertexChannel text_2d {"Text 3D"};
 
 		float iw, ih;
 		uint8_t r, g, b, a;
 		float rtl, rtr, rbl, rbr;
-		float layer, width;
+		float width;
 		Sprite sprite;
 		float tx, ty, tw, th;
 		int mapping = 0;
@@ -162,7 +161,6 @@ class ImmediateRenderer {
 		void clear();
 		Sprite getSprite(const std::string& path);
 
-		void setLayer(uint32_t layer);
 		void setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 		void setResolution(uint32_t width, uint32_t height);
 		void setLineWidth(float width);

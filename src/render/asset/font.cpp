@@ -1,6 +1,11 @@
 
 #include "font.hpp"
 
+#include "msdfgen.h"
+#include "msdfgen-ext.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 /*
  * GlyphQuad
  */

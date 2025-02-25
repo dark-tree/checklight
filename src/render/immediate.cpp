@@ -200,7 +200,6 @@ ImmediateRenderer::ImmediateRenderer()
 : atlas(std::make_shared<DynamicAtlas>()), images(atlas), fonts(atlas) {
 	this->blank = images.getOrLoad(DynamicImageAtlas::BLANK_SPRITE);
 	setSprite(this->blank);
-	setLayer(0);
 	setColor(255, 255, 255);
 	setResolution(1, 1);
 	setLineWidth(4);
@@ -216,10 +215,6 @@ ImmediateRenderer::ImmediateRenderer()
 
 Sprite ImmediateRenderer::getSprite(const std::string& path) {
 	return images.getOrLoad(path);
-}
-
-void ImmediateRenderer::setLayer(uint32_t layer) {
-	this->layer = 1.0f / (layer + 1);
 }
 
 void ImmediateRenderer::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
@@ -317,7 +312,7 @@ void ImmediateRenderer::setFont(const std::string& path, int size) {
 }
 
 void ImmediateRenderer::drawVertex2D(float x, float y, float u, float v) {
-	basic.write(x * iw - 1, y * ih - 1, layer, r, g, b, a, u, v);
+	basic.write(x * iw - 1, y * ih - 1, 0, r, g, b, a, u, v);
 }
 
 void ImmediateRenderer::drawVertex2D(glm::vec2 pos, float u, float v) {
@@ -538,13 +533,13 @@ void ImmediateRenderer::drawText2D(float x, float y, const std::string& str) {
 		const float y1 = (q.y1 + alignment.y) * ih - 1;
 
 		if (q.shouldDraw()) {
-			text.write(x0, y1, layer, r, g, b, a, q.s0, q.t1);
-			text.write(x0, y0, layer, r, g, b, a, q.s0, q.t0);
-			text.write(x1, y0, layer, r, g, b, a, q.s1, q.t0);
+			text.write(x0, y1, 0, r, g, b, a, q.s0, q.t1);
+			text.write(x0, y0, 0, r, g, b, a, q.s0, q.t0);
+			text.write(x1, y0, 0, r, g, b, a, q.s1, q.t0);
 
-			text.write(x0, y1, layer, r, g, b, a, q.s0, q.t1);
-			text.write(x1, y0, layer, r, g, b, a, q.s1, q.t0);
-			text.write(x1, y1, layer, r, g, b, a, q.s1, q.t1);
+			text.write(x0, y1, 0, r, g, b, a, q.s0, q.t1);
+			text.write(x1, y0, 0, r, g, b, a, q.s1, q.t0);
+			text.write(x1, y1, 0, r, g, b, a, q.s1, q.t1);
 		}
 	}
 }

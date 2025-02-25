@@ -112,9 +112,9 @@ void MaterialManager::close(VkDevice device) {
 	texture_manager.close(device);
 }
 
-Material& MaterialManager::createMaterial() {
+RenderMaterial& MaterialManager::createMaterial() {
 
-	Material material {};
+	RenderMaterial material {};
 	material.index = materials.size();
 
 	materials.push_back(material);
@@ -124,8 +124,8 @@ Material& MaterialManager::createMaterial() {
 
 void MaterialManager::flush(Allocator& allocator, CommandRecorder& recorder, TaskQueue& queue, LogicalDevice& device) {
 	
-	material_buffer.resize(materials.size(), sizeof(Material));
-	material_buffer.writeToStaging(materials.data(), materials.size(), sizeof(Material), 0);
+	material_buffer.resize(materials.size(), sizeof(RenderMaterial));
+	material_buffer.writeToStaging(materials.data(), materials.size(), sizeof(RenderMaterial), 0);
 
 	material_buffer.flushStaging(recorder);
 

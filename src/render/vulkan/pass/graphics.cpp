@@ -149,6 +149,11 @@ GraphicsPipelineBuilder& GraphicsPipelineBuilder::withDepthTest(VkCompareOp func
 	depth.depthCompareOp = function;
 	depth.depthTestEnable = read;
 	depth.depthWriteEnable = write;
+
+	if (write && !read) {
+		throw std::runtime_error {"Read must be enabled to use write, use VK_COMPARE_OP_ALWAYS to skip depth tests instead!"};
+	}
+
 	return *this;
 }
 

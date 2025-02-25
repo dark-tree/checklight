@@ -4,28 +4,6 @@
 void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
 	immediate.setSprite("assets/image/corners.png");
 
-	immediate.setLayer(100);
-	immediate.setLineWidth(4);
-	immediate.setColor(255, 255, 255);
-	immediate.drawLine2D(10, 10, 100, 500);
-
-	immediate.setColor(50, 50, 100);
-	immediate.setRectRadius(10, 20, 40, 80);
-	immediate.drawRect2D(100, 100, 200, 150);
-
-	immediate.setColor(200, 200, 200);
-	immediate.setRectRadius(10);
-	immediate.drawRect2D(300, 300, 400, 400);
-
-	immediate.setColor(0, 0, 0);
-	immediate.drawCircle2D(800, 100, 50);
-
-	immediate.setLineWidth(20);
-	immediate.setColor(255, 255, 255);
-	immediate.drawEllipse2D(800, 100, 20, 40);
-	immediate.drawBezier2D(800, 100, 900, 400, 500, 600, 800, 800);
-
-	immediate.setLayer(0);
 	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(1 + glfwGetTime() * 8) + 1) / 16, 0)));
 	immediate.setSprite("assets/image/skay.png");
 	immediate.setColor(255, 255, 255);
@@ -47,10 +25,6 @@ void drawUserInterface(ImmediateRenderer& immediate, float width, float height) 
 	immediate.setSprite("assets/image/mug12.png");
 	immediate.drawCircle2D(450, 50, 40);
 	immediate.setMatrix2D(glm::identity<glm::mat4>());
-
-	immediate.setSprite("assets/image/watermark.png");
-	immediate.setRectRadius(0);
-	immediate.drawRect2D(width / 2 - 200, 0, 400, 80);
 
 	immediate.setSprite("assets/image/vulkan-1.png");
 	immediate.drawRect2D(0, height - 126, 310, 126);

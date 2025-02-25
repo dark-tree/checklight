@@ -134,9 +134,6 @@ target_link_libraries(checklight PRIVATE
 		checklight_common
 		checklight_render_system
 		checklight_shared_system
-		msdfgen::msdfgen-core
-		msdfgen::msdfgen-ext
-		Freetype::Freetype
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
