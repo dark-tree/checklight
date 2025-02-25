@@ -18,6 +18,12 @@ class RenderMesh {
 
 	public:
 
+		#if ENGINE_DEBUG
+		std::string name;
+		#endif
+
+	public:
+
 		~RenderMesh();
 
 		/// Set resource name

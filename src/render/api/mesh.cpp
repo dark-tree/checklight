@@ -11,6 +11,7 @@ RenderMesh::~RenderMesh() {
 }
 
 void RenderMesh::setDebugName(const std::string& name) {
+	this->name = name;
 	vertex.setDebugName("Vertex " + name);
 	index.setDebugName("Index " + name);
 }

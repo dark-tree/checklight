@@ -1,5 +1,7 @@
 
 #include "system.hpp"
+
+#include <memory>
 #include "api/commander.hpp"
 #include "api/mesh.hpp"
 #include "api/model.hpp"
@@ -25,7 +27,10 @@ std::vector<std::shared_ptr<RenderModel>> RenderSystem::createRenderModels(std::
 
 		config.addTriangles(device, *mesh, true);
 		config.setFlags(VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_KHR);
-		config.setDebugName("<model>"); // TODO
+
+		#if ENGINE_DEBUG
+		config.setDebugName(mesh->name);
+		#endif
 
 		auto model = bakery.submit(device, allocator, config);
 		model->setMesh(mesh);
@@ -37,13 +42,10 @@ std::vector<std::shared_ptr<RenderModel>> RenderSystem::createRenderModels(std::
 }
 
 std::unique_ptr<RenderCommander> RenderSystem::createTransientCommander() {
-
 	CommandBuffer buffer = transient_pool.allocate(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	CommandRecorder recorder = buffer.record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-	// FIXME why tf does make_unique not work here?
-	return std::unique_ptr<RenderCommander> {new RenderCommander {buffer, recorder, {}}};
-
+	return std::make_unique<RenderCommander> (buffer, recorder, TaskQueue {});
 }
 
 std::shared_ptr<RenderMesh> RenderSystem::createMesh() {
@@ -89,18 +91,18 @@ std::map<std::string, std::shared_ptr<ObjMaterial>> RenderSystem::importMaterial
 	return materials;
 }
 
-std::vector<std::shared_ptr<RenderMesh>> RenderSystem::importObj(const std::string& path) {
+std::vector<std::shared_ptr<RenderModel>> RenderSystem::importObj(const std::string& path) {
 
-	auto materials = importMaterials(path);
+	auto imported = importMaterials(path);
 
 	auto open_texture = [&](std::string texture_path) -> TextureHandle {
 		try {
-			return system->materials.getTextureManager().createTexture(texture_path);
+			return materials.getTextureManager().createTexture(texture_path);
 		}
 		catch (const std::exception& e) {
 			try {
 				texture_path = path.substr(0, path.find_last_of("/\\") + 1) + texture_path;
-				return system->materials.getTextureManager().createTexture(texture_path);
+				return materials.getTextureManager().createTexture(texture_path);
 			}
 			catch (const std::exception& e) {
 				std::cout << e.what() << std::endl;
@@ -111,7 +113,7 @@ std::vector<std::shared_ptr<RenderMesh>> RenderSystem::importObj(const std::stri
 
 	std::map<std::shared_ptr<ObjMaterial>, RenderMaterial> render_materials;
 
-	for (auto& [name, material] : materials) {
+	for (auto& [name, material] : imported) {
 		RenderMaterial& render_material = system->materials.createMaterial();
 
 		if (!material->diffuseMap.empty()) {
@@ -121,7 +123,7 @@ std::vector<std::shared_ptr<RenderMesh>> RenderSystem::importObj(const std::stri
 		render_materials[material] = render_material;
 	}
 
-	auto scene = ObjObject::open(path, materials);
+	auto scene = ObjObject::open(path, imported);
 
 	std::vector<std::shared_ptr<RenderMesh>> meshes;
 
@@ -168,7 +170,10 @@ std::vector<std::shared_ptr<RenderMesh>> RenderSystem::importObj(const std::stri
 		meshes.push_back(mesh);
 	}
 
+	auto models = createRenderModels(meshes);
+	rebuildBottomLevel(commander->getRecorder());
+
 	commander->complete();
 
-	return meshes;
+	return models;
 }

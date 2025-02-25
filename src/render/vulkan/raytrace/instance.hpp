@@ -15,8 +15,8 @@ class InstanceManager {
 		size_t capacity = 0;
 		size_t freed = 0;
 
-		ReusableBuffer buffer;
-		ReusableBuffer object_data_buffer;
+		ReusableBuffer instance_buffer;
+		ReusableBuffer attachment_buffer;
 		std::vector<std::shared_ptr<RenderObject>> delegates;
 
 		void write(const RenderObject& delegate);
@@ -34,10 +34,10 @@ class InstanceManager {
 		void flush(CommandRecorder& recorder);
 
 		/// Get the buffer object used for instance array storage
-		const ReusableBuffer& getBuffer() const;
+		const ReusableBuffer& getInstanceBuffer() const;
 
 		/// Get the buffer object used for object data storage
-		const ReusableBuffer& getObjectDataBuffer() const;
+		const ReusableBuffer& getAttachmentBuffer() const;
 
 		/// Get the number of instances
 		uint32_t count() const;

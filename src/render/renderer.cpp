@@ -624,7 +624,7 @@ void Renderer::presentFramebuffer() {
 
 void Renderer::rebuildTopLevel(CommandRecorder& recorder) {
 	AccelStructConfig config = AccelStructConfig::create(AccelStructConfig::BUILD, AccelStructConfig::TOP)
-		.addInstances(device, instances->count(), instances->getBuffer(), true)
+		.addInstances(device, instances->count(), instances->getInstanceBuffer(), true)
 		.setFlags(VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_KHR)
 		.setDebugName("TLAS");
 
@@ -810,7 +810,7 @@ void Renderer::draw() {
 
 	rebuildTopLevel(recorder);
 
-	auto& buffer = instances->getObjectDataBuffer();
+	auto& buffer = instances->getAttachmentBuffer();
 	frame.set_raytrace.buffer(3, buffer.getBuffer(), buffer.getBuffer().size());
 
 	auto& material_buffer = materials.getMaterialBuffer();

@@ -63,13 +63,7 @@ int main() {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
-	auto meshes = RenderSystem::importObj("assets/models/checklight.obj");
-
-	auto models = system.createRenderModels(meshes);
-
-	auto commander = system.createTransientCommander();
-	system.rebuildBottomLevel(commander->getRecorder());
-	commander->complete();
+	auto models = system.importObj("assets/models/checklight.obj");
 
 	std::vector<std::shared_ptr<RenderObject>> objects;
 
@@ -102,10 +96,6 @@ int main() {
 
 	for (auto& model : models) {
 		model.reset();
-	}
-
-	for (auto& mesh : meshes) {
-		mesh.reset();
 	}
 
 	RenderSystem::system.reset();
