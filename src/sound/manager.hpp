@@ -11,15 +11,15 @@ private:
 
 	void init();
 
-	SoundManager();
-	~SoundManager();
+	/*SoundManager();
+	~SoundManager();*/
 public:
-	static SoundManager& getInstance()
-	{
+	static SoundManager& getInstance(){
 		static SoundManager instance;
 		return instance;
 	}
-
+	SoundManager();
+	~SoundManager();
 	ALCdevice* getDevice();
 	ALCcontext* getContext();
 };

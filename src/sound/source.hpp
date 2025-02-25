@@ -15,6 +15,10 @@ public:
 	ALuint getSource();
 	ALuint getSource(int number);
 
+	void setPosition(float x, float y, float z);
+
 	void addBuffer(SoundClip buffer);
 	void addBuffers(SoundClip buffer);
+
+	void playSound();
 };

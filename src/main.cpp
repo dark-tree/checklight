@@ -21,8 +21,14 @@ int main() {
 
 	//test sound
 	try {
+		SoundManager sm;
 		SoundClip sc;
 		sc.addClip("assets/sounds/testOGG.ogg");
+		SoundSourceObject sso;
+		sso.setPosition(0, 1, 0);
+		SoundListener::setPosition(0, 1, 0);
+		sso.addBuffer(sc);
+		sso.playSound();
 	}
 	catch (const std::runtime_error& e)
 	{

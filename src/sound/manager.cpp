@@ -1,4 +1,4 @@
-#include "sound_manager.hpp"
+#include "manager.hpp"
 
 SoundManager::SoundManager(){
 	p_ALCDevice = alcOpenDevice(nullptr);

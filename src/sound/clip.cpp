@@ -53,3 +53,11 @@ void SoundClip::addClip(const char* filename){
 	printf("SoundClip -> OGG file loaded\n\f");
 	free(output);
 }
+
+ALuint SoundClip::getBuffer(int number) {
+	ALuint buf = this->sc_buffers[number];
+	/*if (alIsBuffer(buf) == AL_FALSE){
+		return NULL;
+	}*/
+	return this->sc_buffers[number];
+}

@@ -12,5 +12,5 @@ public:
 	~SoundClip();
 
 	void addClip(const char* filename);
-
+	ALuint getBuffer(int number);
 };
