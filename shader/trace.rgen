@@ -2,12 +2,12 @@
 #extension GL_EXT_ray_tracing : require
 
 struct HitPayload {
-    // posX, posY, posZ, hit
-    vec4 hit;
-    // colorR, colorG, colorB
-    vec4 value;
-    // normalX, normalY, normalZ
-    vec4 normal;
+	// posX, posY, posZ, hit
+	vec4 hit;
+	// colorR, colorG, colorB
+	vec4 value;
+	// normalX, normalY, normalZ
+	vec4 normal;
 };
 
 layout(location = 0) rayPayloadEXT HitPayload rPrimaryPayload;
@@ -96,5 +96,6 @@ void main() {
 	 * Write to the output image
 	 */
 
-	imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(primaryColor, depthValue / tMax));
+	float delinearized = ((1.0 / depthValue) - 1 / tMin) / ((1 / tMax) - (1 / tMin));
+	imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(primaryColor, delinearized));
 }

@@ -38,30 +38,35 @@ FetchContent_Declare(
 		msdfgen
 		GIT_REPOSITORY https://github.com/Chlumsky/msdfgen
 		GIT_TAG v1.12
+		GIT_PROGRESS TRUE
 )
 
 FetchContent_Declare(
 		vma
 		GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
 		GIT_TAG v3.2.0
+		GIT_PROGRESS TRUE
 )
 
 FetchContent_Declare(
 		glfw
 		GIT_REPOSITORY https://github.com/glfw/glfw.git
 		GIT_TAG 3.4
+		GIT_PROGRESS TRUE
 )
 
 FetchContent_Declare(
 		stb
 		GIT_REPOSITORY https://github.com/nothings/stb
 		GIT_TAG 5736b15f7ea0ffb08dd38af21067c314d6a3aae9
+		GIT_PROGRESS TRUE
 )
 
 FetchContent_Declare(
 		glm
 		GIT_REPOSITORY https://github.com/g-truc/glm
 		GIT_TAG 0.9.9.8
+		GIT_PROGRESS TRUE
 )
 
 set(MSDFGEN_DISABLE_SVG ON CACHE BOOL "" FORCE)
@@ -69,6 +74,7 @@ set(MSDFGEN_DISABLE_PNG ON CACHE BOOL "" FORCE)
 set(MSDFGEN_USE_SKIA OFF CACHE BOOL "" FORCE)
 set(MSDFGEN_USE_VCPKG OFF CACHE BOOL "" FORCE)
 set(MSDFGEN_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_DYNAMIC_RUNTIME ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(glfw stb glm vma msdfgen)
 
@@ -128,6 +134,9 @@ target_link_libraries(checklight PRIVATE
 		checklight_common
 		checklight_render_system
 		checklight_shared_system
+		msdfgen::msdfgen-core
+		msdfgen::msdfgen-ext
+		Freetype::Freetype
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

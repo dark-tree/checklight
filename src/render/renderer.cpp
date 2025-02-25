@@ -522,7 +522,7 @@ void Renderer::createPipelines() {
 		.withRenderPass(pass_compose, 0)
 		.withShaders(shader_blit_vertex, shader_blit_fragment)
 		.withDescriptorSetLayout(layout_compose)
-		.withDepthTest(VK_COMPARE_OP_ALWAYS, false, true)
+		.withDepthTest(VK_COMPARE_OP_ALWAYS, true, true)
 		.build();
 
 	ShaderTableBuilder builder;

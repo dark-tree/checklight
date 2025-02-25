@@ -1,9 +1,11 @@
 #pragma once
 
-#include "atlas.hpp"
+#include "msdfgen.h"
+#include "msdfgen-ext.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
-namespace msdfgen { struct FontHandle; }
-typedef struct FT_FaceRec_*  FT_Face;
+#include "atlas.hpp"
 
 struct GlyphInfo {
 	double x0, y0, x1, y1;

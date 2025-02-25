@@ -9,5 +9,5 @@ void main() {
     vec4 texel = texture(uAlbedoSampler, vTexture);
 
     fColor = vec4(texel.rgb, 1.0f);
-    gl_FragDepth = 0;
+    gl_FragDepth = texel.w;
 }
