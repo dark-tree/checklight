@@ -482,13 +482,13 @@ void Renderer::createPipelines() {
 		.withBlendAlphaFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
 		.withBlendColorFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
 		.withPushConstant(mesh_constant)
-		.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
+		.withDepthTest(VK_COMPARE_OP_ALWAYS, true, true)
 		.build();
 
 	pipeline_immediate_3d = GraphicsPipelineBuilder::of(device)
 		.withViewport(0, 0, extent.width, extent.height)
 		.withScissors(0, 0, extent.width, extent.height)
-		.withCulling(false)
+		.withCulling(true, VK_FRONT_FACE_COUNTER_CLOCKWISE)
 		.withRenderPass(pass_immediate, 0)
 		.withShaders(shader_world_vertex, shader_atlas_fragment)
 		.withBindingLayout(binding_3d)
@@ -512,7 +512,7 @@ void Renderer::createPipelines() {
 		.withBlendAlphaFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
 		.withBlendColorFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
 		.withPushConstant(mesh_constant)
-		//.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
+		.withDepthTest(VK_COMPARE_OP_ALWAYS, true, true)
 		.build();
 
 	pipeline_compose_2d = GraphicsPipelineBuilder::of(device)

@@ -6,9 +6,7 @@
 #include "shared/box.hpp"
 #include "render/vulkan/buffer/texture.hpp"
 
-struct Sprite {
-	int u1, v1, u2, v2;
-};
+struct Sprite;
 
 class DynamicAtlas {
 

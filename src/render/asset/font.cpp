@@ -1,5 +1,6 @@
 
 #include "font.hpp"
+#include "sprite.hpp"
 
 #include "msdfgen.h"
 #include "msdfgen-ext.h"

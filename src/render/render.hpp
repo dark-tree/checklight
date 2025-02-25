@@ -4,6 +4,7 @@
 #include "system.hpp"
 #include "window.hpp"
 #include "application.hpp"
+#include "immediate.hpp"
 
 // render
 #include "api/mesh.hpp"

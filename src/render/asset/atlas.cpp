@@ -2,6 +2,7 @@
 #include "atlas.hpp"
 #include "render/api/commander.hpp"
 #include "render/system.hpp"
+#include "sprite.hpp"
 
 /*
  * DynamicAtlas
@@ -48,7 +49,7 @@ void DynamicAtlas::resize() {
 	rewrite = false;
 	resized = false;
 	commander->complete();
-	printf("DEBUG: Dynamic atlas was resized!\n");
+	printf("INFO: Dynamic atlas was resized!\n");
 }
 
 DynamicAtlas::DynamicAtlas() {
@@ -78,7 +79,7 @@ void DynamicAtlas::upload(CommandRecorder& recorder) {
 		image.upload(recorder);
 
 		rewrite = false;
-		printf("DEBUG: Dynamic atlas was uploaded!\n");
+		printf("INFO: Dynamic atlas was uploaded!\n");
 	}
 
 }
@@ -112,7 +113,6 @@ Sprite DynamicImageAtlas::getOrLoad(const std::string& path) {
 	Sprite sprite = atlas->submit(data);
 	data.close();
 
-	printf("DEBUG: Loaded sprite '%s' into atlas\n", path.c_str());
 	sprites[path] = sprite;
 	return sprite;
 }

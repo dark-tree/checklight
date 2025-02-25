@@ -188,7 +188,7 @@ class ManagedImageDataSet {
 
 		/**
 		 * Records a copy-to-GPU-memory operation into the
-		 * given command buffer, a staging buffer IS used and resulting image returned
+		 * given command buffer, a staging buffer IS used and resulting image returned as a mutable view
 		 */
 		MutableImage upload(Allocator& allocator, CommandRecorder& recorder, VkFormat format) const;
 
@@ -251,11 +251,36 @@ class MutableImage {
 		MutableImage() = default;
 		MutableImage(Buffer& buffer, Image& image);
 
+		/**
+		 * Close underlying vulkan image and buffer
+		 */
 		void close();
 
+		/**
+		 * Stage a buffer mip-level write, the given image can be destroyed after use.
+		 *
+		 * @param offset Offset (in bytes) of the targeted staging memory location
+		 * @param image  The image stata to splice into the mutable view
+		 * @param width  Write width
+		 * @param height Write height
+		 * @param level  Mipmap level to modify
+		 */
 		void write(size_t offset, const ImageData& image, size_t width, size_t height, int level);
+
+		/**
+		 * Perform the staged buffer writes, copying data from staging to buffer, staging
+		 * can be dropped after this operation.
+		 */
 		void upload(CommandRecorder& recorder);
+
+		/**
+		 * Delete the underlying staging buffer and return the immutable vulkan image
+		 */
 		Image discardStaging(TaskQueue& queue);
+
+		/**
+		 * Get the underlying vulkan image object
+		 */
 		Image& getImage();
 
 };
