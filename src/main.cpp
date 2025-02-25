@@ -77,6 +77,8 @@ void drawUserInterface(ImmediateRenderer& immediate, float width, float height) 
 
 int main() {
 
+	printf("INFO: Current working directory: %s\n", std::filesystem::current_path().c_str());
+
 	ApplicationParameters parameters;
 	parameters.setName("My Checklight Game");
 	parameters.setDimensions(1200, 800);

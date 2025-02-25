@@ -8,7 +8,6 @@
 
 #include "render/vulkan/setup/proxy.hpp"
 #include "render/vulkan/setup/instance.hpp"
-#include "render/vulkan/shader/compiler.hpp"
 #include "render/vulkan/command/buffer.hpp"
 #include "render/vulkan/setup/swapchain.hpp"
 #include "render/vulkan/buffer/buffer.hpp"
@@ -56,7 +55,6 @@ class Renderer {
 		/// this is used as an offset into a framebuffer set
 		uint32_t current_image;
 
-		Compiler compiler;
 		WindowSystem windows;
 		std::unique_ptr<Window> window;
 		ImmediateRenderer immediate;

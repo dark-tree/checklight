@@ -26,4 +26,7 @@ class Shader {
 		/// Get the underlying vulkan shader module handle
 		VkShaderModule getHandle() const;
 
+		/// Load a precompiled shader file using the source file name
+		static Shader loadFromFile(LogicalDevice& device, const std::string& path, VkShaderStageFlagBits stage);
+
 };

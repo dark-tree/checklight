@@ -336,16 +336,16 @@ void Renderer::createSwapchain() {
 
 void Renderer::createShaders() {
 
-	shader_screen_vertex = compiler.compileFile(device, "assets/shader/screen.vert", Kind::VERTEX);
-	shader_world_vertex = compiler.compileFile(device, "assets/shader/world.vert", Kind::VERTEX);
-	shader_atlas_fragment = compiler.compileFile(device, "assets/shader/atlas.frag", Kind::FRAGMENT);
-	shader_text_fragment = compiler.compileFile(device, "assets/shader/text.frag", Kind::FRAGMENT);
-	shader_trace_gen = compiler.compileFile(device, "assets/shader/ray-gen.glsl", Kind::RAYGEN);
-	shader_trace_miss = compiler.compileFile(device, "assets/shader/ray-miss.glsl", Kind::MISS);
-	shader_trace_shadow_miss = compiler.compileFile(device, "assets/shader/ray-shadow-miss.glsl", Kind::MISS);
-	shader_trace_hit = compiler.compileFile(device, "assets/shader/ray-hit.glsl", Kind::CLOSEST);
-	shader_blit_vertex = compiler.compileFile(device, "assets/shader/blit.vert", Kind::VERTEX);
-	shader_blit_fragment = compiler.compileFile(device, "assets/shader/blit.frag", Kind::FRAGMENT);
+	shader_screen_vertex = Shader::loadFromFile(device, "screen.vert", VK_SHADER_STAGE_VERTEX_BIT);
+	shader_world_vertex = Shader::loadFromFile(device, "world.vert", VK_SHADER_STAGE_VERTEX_BIT);
+	shader_atlas_fragment = Shader::loadFromFile(device, "atlas.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+	shader_text_fragment = Shader::loadFromFile(device, "text.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+	shader_trace_gen = Shader::loadFromFile(device, "trace.rgen", VK_SHADER_STAGE_RAYGEN_BIT_KHR);
+	shader_trace_miss = Shader::loadFromFile(device, "trace.rmiss", VK_SHADER_STAGE_MISS_BIT_KHR);
+	shader_trace_shadow_miss = Shader::loadFromFile(device, "shadow.rmiss", VK_SHADER_STAGE_MISS_BIT_KHR);
+	shader_trace_hit = Shader::loadFromFile(device, "trace.rchit", VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
+	shader_blit_vertex = Shader::loadFromFile(device, "blit.vert", VK_SHADER_STAGE_VERTEX_BIT);
+	shader_blit_fragment = Shader::loadFromFile(device, "blit.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 
 }
 
@@ -773,7 +773,6 @@ Renderer::~Renderer() {
 
 	// It's important to maintain the correct order
 	closeRenderPasses();
-	compiler.close();
 	bakery.close();
 	tlas.close(device);
 

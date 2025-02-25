@@ -18,6 +18,8 @@
 #include <mutex>
 #include <set>
 #include <map>
+#include <memory>
+#include <filesystem>
 
 // GLFW
 #define GLFW_INCLUDE_VULKAN
@@ -29,9 +31,6 @@
 #include "stb_vorbis.c"
 #include "stb_image.h"
 #include "stb_image_write.h"
-
-// ShaderC
-#include <shaderc/shaderc.hpp>
 
 // VMA
 #define VMA_STATIC_VULKAN_FUNCTIONS 0
