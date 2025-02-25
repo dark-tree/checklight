@@ -27,7 +27,8 @@ class DynamicAtlas {
 	public:
 
 		DynamicAtlas();
-		~DynamicAtlas();
+		
+		void close(const LogicalDevice& device);
 
 		ImageData& getImage();
 		Sprite submit(ImageData& image);

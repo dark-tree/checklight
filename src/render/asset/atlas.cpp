@@ -57,8 +57,10 @@ DynamicAtlas::DynamicAtlas() {
 	pool.emplace_back(0, 0, 16, 16);
 }
 
-DynamicAtlas::~DynamicAtlas() {
+void DynamicAtlas::close(const LogicalDevice& device) {
 	atlas.close();
+	texture.closeViewSampler(device.getHandle());
+	image.close();
 }
 
 Sprite DynamicAtlas::submit(ImageData& image) {

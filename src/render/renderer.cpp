@@ -768,13 +768,25 @@ Renderer::~Renderer() {
 
 	vkDestroySurfaceKHR(instance.getHandle(), surface, nullptr);
 	instances.reset();
-	immediate.close();
-	materials.close(device.getHandle());
+	immediate.close(device);
+	materials.close(device);
 
 	// It's important to maintain the correct order
 	closeRenderPasses();
 	bakery.close();
 	tlas.close(device);
+	shader_table.close();
+
+	shader_world_vertex.close();
+	shader_screen_vertex.close();
+	shader_atlas_fragment.close();
+	shader_text_fragment.close();
+	shader_trace_gen.close();
+	shader_trace_miss.close();
+	shader_trace_shadow_miss.close();
+	shader_trace_hit.close();
+	shader_blit_vertex.close();
+	shader_blit_fragment.close();
 
 	VulkanDebug::assertAllDead();
 	allocator.close();

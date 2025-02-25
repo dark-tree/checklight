@@ -19,7 +19,7 @@ class TextureManager {
 		/**
 		* Frees all resources
 		*/
-		void close(VkDevice device);
+		void close(const LogicalDevice& device);
 
 		/**
 		* Creates a texture from a file. The texture is not uploaded to the GPU until `upload()` is called
@@ -64,7 +64,7 @@ class MaterialManager {
 		/**
 		* Frees all resources, including the TextureManager
 		*/
-		void close(VkDevice device);
+		void close(const LogicalDevice& device);
 
 		/**
 		* Creates a new material. The material is not uploaded to the GPU until `flush()` is called

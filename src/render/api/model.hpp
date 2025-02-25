@@ -21,6 +21,11 @@ class RenderModel {
 		RenderModel(const LogicalDevice& device, const AccelStruct& structure);
 
 		/**
+		 * Close all underlying vulkan objects
+		 */
+		void close(const LogicalDevice& device);
+
+		/**
 		 * Get the underlying address of the stored acceleration structure,
 		 * this address is calculated once (during a call to setStructure()) and stored
 		 */

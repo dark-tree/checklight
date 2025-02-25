@@ -130,7 +130,7 @@ class ImmediateRenderer {
 		HorizontalAlignment horizontal;
 
 		void upload(CommandRecorder& recorder);
-		void close();
+		void close(const LogicalDevice& device);
 		Texture& getAtlasTexture();
 		float getMaxPixelError() const;
 		void drawBillboardVertex(glm::quat rotation, glm::vec3 offset, float x, float y, float u, float v);

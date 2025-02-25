@@ -95,6 +95,7 @@ int main() {
 	}
 
 	for (auto& model : models) {
+		system.closeModel(model);
 		model.reset();
 	}
 

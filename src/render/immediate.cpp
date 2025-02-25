@@ -80,10 +80,11 @@ void ImmediateRenderer::upload(CommandRecorder& recorder) {
 		.done();
 }
 
-void ImmediateRenderer::close() {
+void ImmediateRenderer::close(const LogicalDevice& device) {
 	basic.close();
 	text.close();
 	basic_3d.close();
+	atlas->close(device);
 }
 
 Texture& ImmediateRenderer::getAtlasTexture() {

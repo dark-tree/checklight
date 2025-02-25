@@ -177,3 +177,7 @@ std::vector<std::shared_ptr<RenderModel>> RenderSystem::importObj(const std::str
 
 	return models;
 }
+
+void RenderSystem::closeModel(std::shared_ptr<RenderModel> model) {
+	model->close(system->device);
+}

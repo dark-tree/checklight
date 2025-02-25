@@ -21,14 +21,14 @@ TextureManager::TextureManager() {
 	dirty = true;
 }
 
-void TextureManager::close(VkDevice device) {
+void TextureManager::close(const LogicalDevice& device) {
 
 	for (auto& pending : pending_creation) {
 		pending.first.close();
 	}
 
 	for (auto& texture : textures) {
-		texture.closeImageViewSampler(device);
+		texture.closeImageViewSampler(device.getHandle());
 	}
 }
 
@@ -107,7 +107,7 @@ MaterialManager::MaterialManager()
 	createMaterial();
 }
 
-void MaterialManager::close(VkDevice device) {
+void MaterialManager::close(const LogicalDevice& device) {
 	material_buffer.close();
 	texture_manager.close(device);
 }

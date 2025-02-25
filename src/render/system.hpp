@@ -83,4 +83,9 @@ class RenderSystem : public Renderer {
 		 * Import an OBJ file and return a list of models loaded from it
 		 */
 		std::vector<std::shared_ptr<RenderModel>> importObj(const std::string& path);
+
+		/**
+		 * Close RenderModel, the resources used by the model will be released.
+		 */
+		void closeModel(std::shared_ptr<RenderModel> model);
 };

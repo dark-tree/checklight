@@ -9,6 +9,11 @@ RenderModel::RenderModel(const LogicalDevice& device, const AccelStruct& structu
 	setStructure(device, structure);
 }
 
+void RenderModel::close(const LogicalDevice& device) {
+	structure.close(device);
+	this->mesh.reset();
+}
+
 VkDeviceAddress RenderModel::getAddress() const {
 	return address;
 }
