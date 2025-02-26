@@ -27,7 +27,7 @@ SoundClip::~SoundClip(){
 	alDeleteBuffers(this->number_of_buffers, this->sc_buffers);
 }
 
-void SoundClip::addClip(const char* filename){
+void SoundClip::addAudio(const char* filename){
 	alGetError();
 	int channels,sample_rate;
 	short* output;
@@ -55,9 +55,8 @@ void SoundClip::addClip(const char* filename){
 }
 
 ALuint SoundClip::getBuffer(int number) {
-	ALuint buf = this->sc_buffers[number];
-	/*if (alIsBuffer(buf) == AL_FALSE){
-		return NULL;
-	}*/
+
+	if (number >= this->number_of_buffers)
+		return 0;
 	return this->sc_buffers[number];
 }

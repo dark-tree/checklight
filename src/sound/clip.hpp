@@ -11,6 +11,6 @@ public:
 	SoundClip(int number_of_buffers);
 	~SoundClip();
 
-	void addClip(const char* filename);
+	void addAudio(const char* uri);
 	ALuint getBuffer(int number);
 };

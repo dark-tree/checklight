@@ -20,15 +20,21 @@ int main() {
 	auto meshes = Importer::importObj(system, "assets/models/checklight.obj");
 
 	//test sound
+	//@TODO oddzielny watek dla sound managera tak wektor sourcow
 	try {
-		SoundManager sm;
-		SoundClip sc;
+		SoundManager& sm = SoundManager::getInstance();
+		sm.createSource("s");
+		sm.createClip("f");
+		sm.addAudioToClip("f", "assets/sounds/testOGG.ogg");
+		sm.connectClipWithSource("f", "s");
+		sm.playSound("s");
+		/*SoundClip sc;
 		sc.addClip("assets/sounds/testOGG.ogg");
 		SoundSourceObject sso;
 		sso.setPosition(0, 1, 0);
 		SoundListener::setPosition(0, 1, 0);
 		sso.addBuffer(sc);
-		sso.playSound();
+		sso.playSound();*/
 	}
 	catch (const std::runtime_error& e)
 	{
