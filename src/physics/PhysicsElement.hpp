@@ -8,15 +8,25 @@
 
 class PhysicsElement {
 protected:
-    glm::vec3 position; // Position of the object in 3D space as a 3-dimensional vector
-    glm::vec3 velocity; // Velocity of the object in 3D space as a 3-dimensional vector
-    glm::quat rotation; // Rotation of the object in 3D space as a quaternion
-    std::vector<glm::vec3> vertices; // Vertices forming the shape of the object's collider
-    std::vector<glm::ivec3> triangles; // Faces of the object's collider as triplets of vertices indexes
-    bool is_static; // Whether the object can be moved by external forces
-    float gravity_scale; // Value by which gravity's acceleration is multiplied
-    float sphere_collider_radius; // Radius of the simple sphere collider encompassing object's collider, used for initial collision checks
+    glm::vec3 position; /// Position of the object in 3D space as a 3-dimensional vector
+    glm::vec3 velocity; /// Velocity of the object in 3D space as a 3-dimensional vector
+    glm::quat rotation; /// Rotation of the object in 3D space as a quaternion
+    std::vector<glm::vec3> vertices; /// Vertices forming the shape of the object's collider
+    std::vector<glm::ivec3> triangles; /// Faces of the object's collider as triplets of vertices indexes
+    bool is_static; /// Whether the object can be moved by external forces
+    float gravity_scale; /// Value by which gravity's acceleration is multiplied
+    float sphere_collider_radius; /// Radius of the simple sphere collider encompassing object's collider, used for initial collision checks
 public:
+    /** Called for physics updates
+     * @param time_step length of time between the last 2 frames (const for physics update)
+     * @param gravity gravitational acceleration strength
+     */
+    void update(float time_step, float gravity)
+    {
+        position += velocity * time_step;
+        position += glm::vec3(0, -gravity * gravity_scale, 0);
+    }
+
     PhysicsElement()
     {
         position = glm::vec3(0,0,0);
