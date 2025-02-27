@@ -178,6 +178,23 @@ public:
     {
         return sphere_collider_radius;
     }
+
+    /// Returns the furthest point from object origin in a given direction
+    glm::vec3 furthestPoint(glm::vec3 direction)
+    {
+        double dot_result = -INFINITY;
+        glm::vec3 returnal;
+        for (glm::vec3 vertex : vertices)
+        {
+            double dr = glm::dot(vertex, direction);
+            if (dr > dot_result)
+            {
+                dot_result = dr;
+                returnal = vertex;
+            }
+        }
+        return returnal;
+    }
 };
 
 
