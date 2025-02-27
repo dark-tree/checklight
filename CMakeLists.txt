@@ -34,6 +34,20 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	endif()
 endif()
 
+# Don't fail on systems without X11 libraries 
+if (UNIX)
+	find_program(WAYLAND_SCANNER_EXECUTABLE NAMES wayland-scanner)
+	if (NOT WAYLAND_SCANNER_EXECUTABLE)
+		message(WARNING 
+			"Failed to find wayland-scanner! "
+			"The final executable will not work on Wayland only systems, "
+			"consider installing Wayland development libraries!"
+		)
+		
+		set(GLFW_BUILD_WAYLAND "0" CACHE STRING "" FORCE)
+	endif()
+endif()
+
 FetchContent_Declare(
 		msdfgen
 		GIT_REPOSITORY https://github.com/Chlumsky/msdfgen
