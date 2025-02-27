@@ -539,6 +539,7 @@ void Renderer::createPipelines() {
 		.withShaderLayout(shader_layout)
 		.build();
 
+	shader_table.close();
 	shader_table = shader_layout.allocate(device, allocator, pipeline_trace_3d);
 
 }

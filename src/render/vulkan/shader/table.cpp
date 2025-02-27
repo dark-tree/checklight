@@ -88,10 +88,12 @@ ShaderTable::ShaderTable(const LogicalDevice& device, Allocator& allocator, Grap
 }
 
 void ShaderTable::close() {
-	buffer.close();
+	if (buffer.allocated()) {
+		buffer.close();
 
-	vk_region_generate.deviceAddress = 0;
-	vk_region_miss.deviceAddress = 0;
-	vk_region_hit.deviceAddress = 0;
-	vk_region_call.deviceAddress = 0;
+		vk_region_generate.deviceAddress = 0;
+		vk_region_miss.deviceAddress = 0;
+		vk_region_hit.deviceAddress = 0;
+		vk_region_call.deviceAddress = 0;
+	}
 }
