@@ -4,4 +4,4 @@ cmake-build-release/
 .idea/
 out/
 .vs/
-testSound/
+assets/sounds/test/

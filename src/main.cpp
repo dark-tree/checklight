@@ -4,6 +4,36 @@
 #include "input/input.hpp"
 #include "sound/sound.hpp"
 
+SoundManager& sm = SoundManager::getInstance();
+
+class tmpInput : public InputListener{
+public:
+	InputResult onEvent(const InputEvent& event) {
+		if (const auto* nazwijtosobiejakosnpevent = event.as<KeyboardEvent>()) {
+			if(nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_S)){
+				sm.stopSound("s");
+			}else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_P)) {
+				sm.playSound("s");
+			}else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_A)) {
+				sm.pauseSound("s");
+			}else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_N)) {
+				sm.playSound("sa");
+			}else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_M)) {
+				sm.stopSound("sa");
+			}else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_B)) {
+				sm.pauseSound("sa");
+			}
+		}
+
+
+		return InputResult::PASS;
+	}
+
+	
+	
+};
+
+
 int main() {
 
 	ApplicationParameters parameters;
@@ -15,19 +45,28 @@ int main() {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
-	window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
+
+	window.getInputDispatcher().registerListener(std::make_shared<tmpInput>());
 
 	auto meshes = Importer::importObj(system, "assets/models/checklight.obj");
 
 	//test sound
 	//@TODO oddzielny watek dla sound managera tak wektor sourcow
 	try {
-		SoundManager& sm = SoundManager::getInstance();
+
 		sm.createSource("s");
 		sm.createClip("f");
 		sm.addAudioToClip("f", "assets/sounds/testOGG.ogg");
 		sm.connectClipWithSource("f", "s");
+
+		sm.createSource("sa");
+		sm.createClip("fa");
+		sm.addAudioToClip("fa", "assets/sounds/test/2.ogg");
+		sm.connectClipWithSource("fa", "sa");
+
 		sm.playSound("s");
+
+		SoundListener::setPosition(0, 10, 0);
 		/*SoundClip sc;
 		sc.addClip("assets/sounds/testOGG.ogg");
 		SoundSourceObject sso;

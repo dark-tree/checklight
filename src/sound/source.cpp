@@ -7,7 +7,7 @@ void SoundSourceObject::initSource(int number_of_sources){
 	alGenSources(this->number_of_sources, sso_sources);
 	ALenum error;
 	if ((error = alGetError()) != AL_NO_ERROR){
-		throw std::runtime_error("Sound -> SSOinit: Failed to generate sources");  //throw exception
+		throw std::runtime_error("Sound -> SSOinit: Failed to generate sources\f");  //throw exception
 	}
 
 	for (int i = 0;i < this->number_of_sources;i++)
@@ -46,7 +46,7 @@ ALuint SoundSourceObject::getSource(int number){
 		return sso_sources[number];
 	}
 
-	return NULL;
+	return 0;
 }
 
 void SoundSourceObject::setPosition(float x, float y, float z)
@@ -60,14 +60,14 @@ void SoundSourceObject::addBuffer(SoundClip clip){
 	ALuint buffer = clip.getBuffer(0);
 	if (buffer==0) {
 
-		throw std::runtime_error("Source -> addBuffer: Buffer doesnt exist");	//throw exception
+		throw std::runtime_error("Source -> addBuffer: Buffer doesnt exist\f");	//throw exception
 	}
 
 	alSourcei(this->sso_sources[0], AL_BUFFER, buffer);
 
 	ALenum error = alGetError();
 	if (error != AL_NO_ERROR) {
-		throw std::runtime_error("Source -> addBuffer: OpenAL error " + std::to_string(error));
+		throw std::runtime_error("Source -> addBuffer: OpenAL error " + std::to_string(error) +"\f");
 	}
 }
 
@@ -75,14 +75,14 @@ void SoundSourceObject::addBuffer(std::shared_ptr<SoundClip> clip) {
 	ALuint buffer = clip->getBuffer(0);
 	if (buffer == 0) {
 
-		throw std::runtime_error("Source -> addBuffer: Buffer doesnt exist");	//throw exception
+		throw std::runtime_error("Source -> addBuffer: Buffer doesnt exist\f");	//throw exception
 	}
 
 	alSourcei(this->sso_sources[0], AL_BUFFER, buffer);
 
 	ALenum error = alGetError();
 	if (error != AL_NO_ERROR) {
-		throw std::runtime_error("Source -> addBuffer: OpenAL error " + std::to_string(error));
+		throw std::runtime_error("Source -> addBuffer: OpenAL error " + std::to_string(error)+"\f");
 	}
 }
 
@@ -90,22 +90,52 @@ void SoundSourceObject::addBuffers(SoundClip buffer){
 
 }
 
-void SoundSourceObject::playSound()
-{
-	if (!alIsSource(this->sso_sources[0])) {
-		throw std::runtime_error("Source -> playSound: No valid sound source found!");
+void SoundSourceObject::play(int source_number) {
+	if (source_number > this->number_of_sources || !alIsSource(this->sso_sources[source_number])) {
+		throw std::runtime_error("Source -> playSound: No valid sound source found!\f");
 	}
 
-	alSourcePlay(this->sso_sources[0]);
+	alSourcePlay(this->sso_sources[source_number]);
 	ALenum error = alGetError();
 	if ((error = alGetError()) != AL_NO_ERROR) {
-		throw std::runtime_error("Sound -> playSound: Failed to play clip");  //throw exception
+		throw std::runtime_error("Sound -> playSound: Failed to play clip\f");  //throw exception
+	}
+}
+
+void SoundSourceObject::playSound(){
+	play(0);
+}
+
+void SoundSourceObject::stop(int source_number) {
+	if (source_number > this->number_of_sources || !alIsSource(this->sso_sources[source_number])) {
+		throw std::runtime_error("Source -> stopSound: No valid sound source found!\f");
 	}
 
-	/*ALint state;
-	do {
-		alGetSourcei(sso_sources[0], AL_SOURCE_STATE, &state);
-	} while (state == AL_PLAYING);*/
+	alSourceStop(this->sso_sources[source_number]);
+	ALenum error = alGetError();
+	if ((error = alGetError()) != AL_NO_ERROR) {
+		throw std::runtime_error("Sound -> stopSound: Failed to stop clip\f");  //throw exception
+	}
+}
+
+void SoundSourceObject::stopSound(){
+	stop(0);
+}
+
+void SoundSourceObject::pause(int source_number) {
+	if (source_number > this->number_of_sources || !alIsSource(this->sso_sources[source_number])) {
+		throw std::runtime_error("Source -> pauseSound: No valid sound source found!\f");
+	}
+
+	alSourcePause(this->sso_sources[source_number]);
+	ALenum error = alGetError();
+	if ((error = alGetError()) != AL_NO_ERROR) {
+		throw std::runtime_error("Sound -> pauseSound: Failed to pause clip\f");  //throw exception
+	}
+}
+
+void SoundSourceObject::pauseSound() {
+	pause(0);
 }
 
 bool SoundSourceObject::isPlaying(){
