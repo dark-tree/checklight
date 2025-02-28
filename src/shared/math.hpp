@@ -9,6 +9,7 @@ namespace math {
 
 	glm::vec3 calculateForwardVector(glm::quat rotation);
 
+	glm::vec2 calculateForwardVector2D(float angle);
+
 	glm::mat4 translationVectorToMatrix(glm::vec3 vector);
 }
-

@@ -18,20 +18,17 @@ int main() {
 
 	window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 
-	SceneManager sceneManager;
-
 	auto meshes = Importer::importObj(system, "assets/models/checklight.obj");
 
 	while (!window.shouldClose()) {
 		window.poll();
 
 		//physics update before rendering
-		sceneManager.update();
 
 		// update uniforms
 		// do this once at the beginning of frame rendering
 		system.setProjectionMatrix(40.0f, 0.1f, 1000.0f);
-		system.setViewMatrix(sceneManager.getMainScene()->getMainCam().getPosition(), sceneManager.getMainScene()->getMainCam().forwardVector());
+		system.setViewMatrix({ 18.0f, 1, 4.0f }, { -21.0f, 0.0f, 4.0f });
 		system.updateUniforms();
 
 		// all rendering must be done between beginDraw() and endDraw()
