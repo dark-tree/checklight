@@ -18,6 +18,6 @@ class ResizeEvent : public InputEvent {
 		int width;
 		int height;
 
-		ResizeEvent(int width, int height, double x, double y);
+		ResizeEvent(int width, int height);
 
 };

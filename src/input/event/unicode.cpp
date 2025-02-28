@@ -10,4 +10,4 @@ InputEvent::Type UnicodeEvent::getType() const {
 }
 
 UnicodeEvent::UnicodeEvent(uint32_t unicode, double x, double y)
-: InputEvent(x, y), unicode(unicode) {}
+: PositionedEvent(x, y), unicode(unicode) {}

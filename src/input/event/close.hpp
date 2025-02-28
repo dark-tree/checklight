@@ -20,7 +20,7 @@ class CloseEvent : public InputEvent {
 
 	public:
 
-		CloseEvent(double x, double y);
+		CloseEvent() = default;
 
 		/**
 		 * Abort the automatic window closing,
