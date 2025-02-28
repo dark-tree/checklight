@@ -15,6 +15,12 @@ int main() {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
+	BoardManager m;
+
+	std::shared_ptr<Pawn> p = std::make_shared<Pawn>();
+	p->setName("Test");
+
+	m.getCurrentBoard().lock()->addPawnToRoot(p);
 
 	window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 
@@ -24,6 +30,7 @@ int main() {
 		window.poll();
 
 		//physics update before rendering
+		m.updateCycle();
 
 		// update uniforms
 		// do this once at the beginning of frame rendering
