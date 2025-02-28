@@ -105,7 +105,7 @@ const VkPhysicalDeviceLimits& PhysicalDevice::getLimits() const {
 }
 
 const void* PhysicalDevice::getFeatures(VkStructureType type) const {
-	const VkBaseInStructure* current = (VkBaseInStructure*) &features;
+	const VkBaseInStructure* current = reinterpret_cast<const VkBaseInStructure*>(&features);
 
 	while (true) {
 		if (current->sType == type) {
@@ -121,7 +121,7 @@ const void* PhysicalDevice::getFeatures(VkStructureType type) const {
 }
 
 const void* PhysicalDevice::getProperties(VkStructureType type) const {
-	const VkBaseInStructure* current = (VkBaseInStructure*) &properties;
+	const VkBaseInStructure* current = reinterpret_cast<const VkBaseInStructure*>(&properties);
 
 	while (true) {
 		if (current->sType == type) {

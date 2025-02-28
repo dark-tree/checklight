@@ -2,7 +2,7 @@
 #include "render/render.hpp"
 #include "input/input.hpp"
 
-void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
+static void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
 	immediate.setSprite("assets/image/corners.png");
 
 	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(1 + glfwGetTime() * 8) + 1) / 16, 0)));

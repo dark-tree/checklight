@@ -98,15 +98,19 @@ compile_glsl_directory(
 		VULKAN_TARGET "vulkan1.2"
 )
 
-add_library(checklight_common INTERFACE)
-target_include_directories(checklight_common INTERFACE
-		src/
-		lib/
+set(CHECKLIGHT_LIBRARIES
 		${glm_SOURCE_DIR}                        # Headers in ./glm
 		${glfw_SOURCE_DIR}/include               # Headers in ./GLFW
 		${stb_SOURCE_DIR}                        # Headers in ./
 		${Vulkan_INCLUDE_DIRS}                   # Headers in ./vulcan
 		${vma_SOURCE_DIR}/include                # Headers in ./
+)
+
+add_library(checklight_common INTERFACE)
+target_include_directories(checklight_common INTERFACE
+		src/
+		lib/
+		${CHECKLIGHT_LIBRARIES}
 )
 
 file(GLOB_RECURSE CHECKLIGHT_RENDER_SOURCES "src/render/*.cpp")
@@ -127,8 +131,8 @@ add_library(checklight_external
 
 add_executable(checklight "src/main.cpp")
 
-target_link_libraries(checklight_external PRIVATE
-		checklight_common
+target_include_directories(checklight_external PRIVATE
+		${CHECKLIGHT_LIBRARIES}
 )
 
 target_link_libraries(checklight_render_system PRIVATE

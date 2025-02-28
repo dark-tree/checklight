@@ -25,7 +25,7 @@ ShaderTable::ShaderTable(const LogicalDevice& device, Allocator& allocator, Grap
 	}
 
 	const VkStructureType type = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
-	auto properties = (VkPhysicalDeviceRayTracingPipelinePropertiesKHR*) device.getPhysical()->getProperties(type);
+	const auto properties = (const VkPhysicalDeviceRayTracingPipelinePropertiesKHR*) device.getPhysical()->getProperties(type);
 
 	int total_handles = generate + miss + hit + call;
 	int handle_size = math::alignUp(properties->shaderGroupHandleSize, properties->shaderGroupHandleAlignment);
