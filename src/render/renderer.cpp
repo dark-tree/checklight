@@ -810,6 +810,15 @@ Window& Renderer::getWindow() const {
 
 void Renderer::draw() {
 
+	int w, h;
+	window->getFramebufferSize(&w, &h);
+
+	if (w == 0 || h == 0) {
+		immediate.clear();
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 30));
+		return;
+	}
+
 	RenderFrame& frame = getFrame();
 
 	frame.wait();
