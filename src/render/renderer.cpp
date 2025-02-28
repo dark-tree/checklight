@@ -620,6 +620,7 @@ void Renderer::presentFramebuffer() {
 
 	if (swapchain.present(queue, semaphore, this->current_image)) {
 		reload();
+		printf("WARN: Reloading during framebuffer presentation!\n");
 	}
 }
 
