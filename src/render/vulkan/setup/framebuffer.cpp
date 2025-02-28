@@ -154,5 +154,9 @@ void FramebufferSet::construct(VkRenderPass vk_pass, VkDevice vk_device, const S
 }
 
 Framebuffer& FramebufferSet::byPresentationIndex(uint32_t index) {
+	if (framebuffers.empty()) {
+		throw std::runtime_error {"No framebuffer available!"};
+	}
+
 	return framebuffers.at(index % framebuffers.size());
 }

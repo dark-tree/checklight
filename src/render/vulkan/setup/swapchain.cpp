@@ -16,17 +16,19 @@ Swapchain::Swapchain(VkSwapchainKHR vk_swapchain, VkSurfaceFormatKHR vk_surface_
 	vkGetSwapchainImagesKHR(vk_device, vk_swapchain, &count, nullptr);
 
 	if (count > 0) {
-		VkImage* images = new VkImage[count];
-		vkGetSwapchainImagesKHR(vk_device, vk_swapchain, &count, images);
+		VkImage* handles = new VkImage[count];
+		vkGetSwapchainImagesKHR(vk_device, vk_swapchain, &count, handles);
 
 		for (uint32_t i = 0; i < count; i ++) {
-			VkImage vk_image = images[i];
+			VkImage vk_image = handles[i];
 
 			Image img {vk_image, vk_surface_format.format, {}};
+
+			images.emplace_back(img);
 			views.push_back(ImageView::create(vk_device, img, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT));
 		}
 
-		delete[] images;
+		delete[] handles;
 	}
 
 }
@@ -41,6 +43,10 @@ void Swapchain::close() {
 
 const std::vector<ImageView>& Swapchain::getViews() const {
 	return views;
+}
+
+const std::vector<Image>& Swapchain::getImages() const {
+	return images;
 }
 
 VkExtent2D Swapchain::getExtend() const {

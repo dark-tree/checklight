@@ -43,6 +43,10 @@ VkSampler Texture::getSampler() const {
 	return vk_sampler;
 }
 
+Image Texture::getTextureImage() const {
+	return image;
+}
+
 /*
  * TextureDelegate
  */

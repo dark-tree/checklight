@@ -136,8 +136,8 @@ std::vector<ObjObject> ObjObject::open(std::string path, const std::map<std::str
 		throw std::runtime_error("Failed to open file: " + path);
 	}
 
-	std::vector<glm::vec3> globalNormals;
-	std::vector<glm::vec2> globalUVs;
+	std::vector<glm::vec3> global_normals;
+	std::vector<glm::vec2> global_uvs;
 
 	// linked list of duplicates
 	std::vector<int> duplicates;
@@ -172,12 +172,12 @@ std::vector<ObjObject> ObjObject::open(std::string path, const std::map<std::str
 		else if (token == "vn") {
 			glm::vec3 normal;
 			stream >> normal.x >> normal.y >> normal.z;
-			globalNormals.push_back(normal);
+			global_normals.push_back(normal);
 		}
 		else if (token == "vt") {
 			glm::vec2 uv;
 			stream >> uv.x >> uv.y;
-			globalUVs.push_back(uv);
+			global_uvs.push_back(uv);
 		}
 		else if (token == "g") {
 			ObjGroup group;
@@ -203,94 +203,96 @@ std::vector<ObjObject> ObjObject::open(std::string path, const std::map<std::str
 				objects.back().groups.push_back(ObjGroup{});
 			}
 
-			int vertexCount = 0;
-
 			// vertexString is a string of the form "vertexIndex/textureIndex/normalIndex"
-			std::string vertexString;
+			std::string vertex_string;
+			int vertex_count = 0;
 
-			while (stream >> vertexString) {
-				vertexCount++;
-				int vertexIndex = std::stoi(vertexString);
+			while (stream >> vertex_string) {
+				vertex_count ++;
+				int vertex_index = std::stoi(vertex_string);
 
 				// vertexIndex can be negative, which means it is relative to the end of the list
-				if (vertexIndex < 0) {
-					vertexIndex = (objects.back().vertices.size() + objects.back().extraVertexOffset - objects.back().extraVertexCount) + vertexIndex + 1;
+				if (vertex_index < 0) {
+					vertex_index = (objects.back().vertices.size() + objects.back().extraVertexOffset - objects.back().extraVertexCount) + vertex_index + 1;
 				}
 
 				int uvIndex = 0;
-				int normalIndex = 0;
+				int normal_index = 0;
 
-				auto separatorIndex = vertexString.find('/');
-				if (separatorIndex != std::string::npos) {
-					vertexString = vertexString.substr(separatorIndex + 1);
-					if (vertexString[0] != '/') {
-						uvIndex = std::stoi(vertexString);
+				auto separator_index = vertex_string.find('/');
+				if (separator_index != std::string::npos) {
+					vertex_string = vertex_string.substr(separator_index + 1);
+					if (vertex_string[0] != '/') {
+						uvIndex = std::stoi(vertex_string);
 						if (uvIndex < 0) {
-							uvIndex = globalUVs.size() + uvIndex + 1;
+							uvIndex = global_uvs.size() + uvIndex + 1;
 						}
 					}
 
-					separatorIndex = vertexString.find('/');
-					if (separatorIndex != std::string::npos) {
-						normalIndex = std::stoi(vertexString.substr(separatorIndex + 1));
-						if (normalIndex < 0) {
-							normalIndex = globalNormals.size() + normalIndex + 1;
+					separator_index = vertex_string.find('/');
+					if (separator_index != std::string::npos) {
+						normal_index = std::stoi(vertex_string.substr(separator_index + 1));
+						if (normal_index < 0) {
+							normal_index = global_normals.size() + normal_index + 1;
 						}
 					}
 				}
 
-				int localVertexIndex = vertexIndex - 1 - objects.back().vertexOffset + objects.back().extraVertexOffset;
+				int local_vertex_index = vertex_index - 1 - objects.back().vertexOffset + objects.back().extraVertexOffset;
 
-				ObjVertex& vert = objects.back().vertices[localVertexIndex];
-				ObjVertex newVertex = vert;
+				ObjVertex& vertex = objects.back().vertices[local_vertex_index];
+				ObjVertex new_vertex = vertex;
 
 				if (uvIndex > 0) {
-					newVertex.uv = globalUVs[uvIndex - 1];
+					new_vertex.uv = global_uvs[uvIndex - 1];
 				}
-				if (normalIndex > 0) {
-					newVertex.normal = globalNormals[normalIndex - 1];
+				if (normal_index > 0) {
+					new_vertex.normal = global_normals[normal_index - 1];
 				}
 
-				if (vert.normal == glm::vec3(0.0f) && vert.uv == glm::vec2(0.0f)) {
+				if (vertex.normal == glm::vec3(0.0f) && vertex.uv == glm::vec2(0.0f)) {
 					// this vertex has not been processed yet
-					vert = newVertex;
-					objects.back().groups.back().indices.push_back(localVertexIndex);
+					vertex = new_vertex;
+					objects.back().groups.back().indices.push_back(local_vertex_index);
 				}
 				else {
-					if (vert.uv == newVertex.uv && vert.normal == newVertex.normal) {
+					if (vertex.uv == new_vertex.uv && vertex.normal == new_vertex.normal) {
 						// this vertex has been processed and is the same as the new one
-						objects.back().groups.back().indices.push_back(localVertexIndex);
+						objects.back().groups.back().indices.push_back(local_vertex_index);
 					}
 					else {
 						while (true) {
 							// this vertex has been processed and is different from the new one
 							// check if there is a vertex with the same position and uv
-							int duplicateVertexIndex = duplicates[localVertexIndex];
-							if (duplicateVertexIndex == -1) {
+							int duplicate_vertex_index = duplicates[local_vertex_index];
+							if (duplicate_vertex_index == -1) {
 								// there is no vertex with the same position and texture
 								// create a new vertex
-								objects.back().vertices.push_back(newVertex);
+								objects.back().vertices.push_back(new_vertex);
 								duplicates.push_back(-1);
-								duplicates[localVertexIndex] = objects.back().vertices.size() - 1;
+								duplicates[local_vertex_index] = objects.back().vertices.size() - 1;
 								objects.back().groups.back().indices.push_back(objects.back().vertices.size() - 1);
 								objects.back().extraVertexCount++;
 								break;
 							}
 							else {
-								if (objects.back().vertices[duplicateVertexIndex].uv == newVertex.uv && objects.back().vertices[duplicateVertexIndex].normal == newVertex.normal) {
+								if (objects.back().vertices[duplicate_vertex_index].uv == new_vertex.uv && objects.back().vertices[duplicate_vertex_index].normal == new_vertex.normal) {
 									// there is a vertex with the same position, uv and normal, use it
-									objects.back().groups.back().indices.push_back(duplicateVertexIndex);
+									objects.back().groups.back().indices.push_back(duplicate_vertex_index);
 									break;
 								}
 								else {
-									localVertexIndex = duplicateVertexIndex;
+									local_vertex_index = duplicate_vertex_index;
 								}
 							}
 						}
 					}
 				}
 			}
-			// TODO: Handle polygons with more than 3 vertices
+
+			if (vertex_count > 3) {
+				throw std::runtime_error {"Unsupported polygon!"};
+			}
 		}
 
 	}

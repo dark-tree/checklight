@@ -27,8 +27,32 @@ VkPipelineShaderStageCreateInfo Shader::getConfig() const {
 	VkPipelineShaderStageCreateInfo create_info {};
 	create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	create_info.stage = vk_stage;
-	create_info.module = vk_module;
+	create_info.module = getHandle();
 	create_info.pName = "main";
 
 	return create_info;
+}
+
+VkShaderModule Shader::getHandle() const {
+	return vk_module;
+}
+
+Shader Shader::loadFromFile(LogicalDevice& device, const std::string& path, VkShaderStageFlagBits stage) {
+
+	std::string blob = "assets/shader/" + path + ".spv";
+	std::ifstream file(blob, std::ios::binary | std::ios::ate);
+
+	if (!file) {
+		throw std::runtime_error("Failed to open compiled shader: '" + blob + "'");
+	}
+
+	uint32_t size = file.tellg();
+	file.seekg(0, std::ios::beg);
+
+	std::vector<uint8_t> buffer(size);
+	if (!file.read(reinterpret_cast<char*>(buffer.data()), size)) {
+		throw std::runtime_error("Failed to read compiled shader: '" + blob + "'");
+	}
+
+	return {device, reinterpret_cast<const uint32_t*>(buffer.data()), size, stage, path};
 }

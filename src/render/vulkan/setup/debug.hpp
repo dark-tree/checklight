@@ -12,6 +12,7 @@ class VulkanDebug {
 		/// Converts the VkObjectType enum into a human readable string
 		static const char* getObjectName(VkObjectType type);
 
+		/// Combines object type name and the user specified name into one
 		static std::string getObjectFullname(VkObjectType type, const char* name);
 
 	public:

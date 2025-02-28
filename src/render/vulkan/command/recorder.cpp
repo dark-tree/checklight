@@ -5,9 +5,31 @@
 #include "render/vulkan/pass/render.hpp"
 #include "render/vulkan/pass/pipeline.hpp"
 #include "render/vulkan/descriptor/descriptor.hpp"
+#include "render/api/vertex.hpp"
+#include "render/vulkan/setup/proxy.hpp"
+#include "render/vulkan/raytrace/config.hpp"
+#include "render/vulkan/buffer/query.hpp"
+#include "submitter.hpp"
 
-CommandRecorder::CommandRecorder(VkCommandBuffer vk_buffer)
-: vk_buffer(vk_buffer) {}
+/*
+ * CommandRecorder
+ */
+
+CommandRecorder::CommandRecorder(VkCommandBuffer vk_buffer, VkCommandBufferUsageFlags flags)
+	: vk_buffer(vk_buffer), flags(flags) {
+
+	vkResetCommandBuffer(vk_buffer, 0);
+
+	VkCommandBufferBeginInfo info {};
+	info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	info.flags = flags;
+	info.pInheritanceInfo = nullptr;
+
+	if (vkBeginCommandBuffer(vk_buffer, &info) != VK_SUCCESS) {
+		throw std::runtime_error {"Failed to begin recording a command buffer!"};
+	}
+
+}
 
 void CommandRecorder::done() {
 	if (vkEndCommandBuffer(vk_buffer) != VK_SUCCESS) {
@@ -44,13 +66,14 @@ CommandRecorder& CommandRecorder::nextSubpass() {
 
 CommandRecorder& CommandRecorder::bindPipeline(GraphicsPipeline& pipeline) {
 	this->vk_layout = pipeline.getLayout();
-	vkCmdBindPipeline(vk_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getHandle());
+	this->vk_bind = pipeline.getBindPoint();
+	vkCmdBindPipeline(vk_buffer, vk_bind, pipeline.getHandle());
 	return *this;
 }
 
 CommandRecorder& CommandRecorder::bindDescriptorSet(DescriptorSet& set) {
 	VkDescriptorSet vk_set = set.getHandle();
-	vkCmdBindDescriptorSets(vk_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_layout, 0, 1, &vk_set, 0, nullptr);
+	vkCmdBindDescriptorSets(vk_buffer, vk_bind, vk_layout, 0, 1, &vk_set, 0, nullptr);
 	return *this;
 }
 
@@ -62,7 +85,7 @@ CommandRecorder& CommandRecorder::bindVertexBuffer(const Buffer& buffer, VkDevic
 }
 
 CommandRecorder& CommandRecorder::bindIndexBuffer(const Buffer& buffer, VkDeviceSize offset) {
-	vkCmdBindIndexBuffer(vk_buffer, buffer.getHandle(), offset, VK_INDEX_TYPE_UINT32);
+	vkCmdBindIndexBuffer(vk_buffer, buffer.getHandle(), offset, Index3D::format);
 	return *this;
 }
 
@@ -112,7 +135,16 @@ CommandRecorder& CommandRecorder::copyBufferToImage(Image dst, Buffer src, size_
 	return *this;
 }
 
-CommandRecorder& CommandRecorder::transitionLayout(Image image, VkImageLayout dst, VkImageLayout src, size_t layers, size_t levels) {
+CommandRecorder& CommandRecorder::updateBuffer(Buffer buffer, void* data) {
+	vkCmdUpdateBuffer(vk_buffer, buffer.getHandle(), 0, buffer.size(), data);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::transitionLayout(Attachment& attachment, VkImageLayout dst, VkImageLayout src) {
+	return transitionLayout(attachment.getTexture().getTextureImage(), dst, src, attachment.getAspect());
+}
+
+CommandRecorder& CommandRecorder::transitionLayout(Image image, VkImageLayout dst, VkImageLayout src, VkImageAspectFlags aspect) {
 	VkPipelineStageFlags src_stage = 0;
 	VkPipelineStageFlags dst_stage = 0;
 
@@ -127,11 +159,11 @@ CommandRecorder& CommandRecorder::transitionLayout(Image image, VkImageLayout ds
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
 	barrier.image = image.getHandle();
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	barrier.subresourceRange.aspectMask = aspect;
 	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = levels;
+	barrier.subresourceRange.levelCount = image.getLayerCount();
 	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = layers;
+	barrier.subresourceRange.layerCount = image.getLayerCount();
 
 	if (src == VK_IMAGE_LAYOUT_UNDEFINED && dst == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
 		barrier.srcAccessMask = 0;
@@ -147,7 +179,25 @@ CommandRecorder& CommandRecorder::transitionLayout(Image image, VkImageLayout ds
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
 		src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR;
+		failed = false;
+	}
+
+	if (src == VK_IMAGE_LAYOUT_UNDEFINED && dst == VK_IMAGE_LAYOUT_GENERAL) {
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+
+		src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR;
+		failed = false;
+	}
+
+	if (src == VK_IMAGE_LAYOUT_GENERAL && dst == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+		barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		src_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR;
+		dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR;
 		failed = false;
 	}
 
@@ -162,23 +212,93 @@ CommandRecorder& CommandRecorder::transitionLayout(Image image, VkImageLayout ds
 	return *this;
 }
 
-CommandRecorder& CommandRecorder::bufferTransferBarrier(VkPipelineStageFlags dst) {
-	VkMemoryBarrier barrier {};
-	barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-	barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
-	barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+MemoryBarrier CommandRecorder::memoryBarrier() {
+	return MemoryBarrier::create(vk_buffer);
+}
 
-	VkPipelineStageFlags src = VK_PIPELINE_STAGE_TRANSFER_BIT;
-
-	// allow reading from already written to sections (the whole thing doesn't need to finish)
-	VkDependencyFlags flags = VK_DEPENDENCY_BY_REGION_BIT;
-
-	vkCmdPipelineBarrier(vk_buffer, src, dst, flags, 1, &barrier, 0, nullptr, 0, nullptr);
+CommandRecorder& CommandRecorder::bufferTransferBarrier(VkPipelineStageFlags stage) {
+	memoryBarrier().first(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_MEMORY_WRITE_BIT).then(stage, VK_ACCESS_MEMORY_READ_BIT).byRegionBit().done();
 	return *this;
 }
 
 CommandRecorder& CommandRecorder::writePushConstant(const PushConstant& constant, const void* data) {
 	VkPushConstantRange range = constant.getRange();
 	vkCmdPushConstants(vk_buffer, vk_layout, range.stageFlags, range.offset, range.size, data);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::buildAccelerationStructure(const AccelStructBakedConfig& config) {
+	if (!config.ready) {
+		throw std::runtime_error {"Unable to build unfinalized baked config!"};
+	}
+
+	const auto* buffer = config.ranges.data();
+	Proxy::vkCmdBuildAccelerationStructuresKHR(vk_buffer, 1, &config.build_info, &buffer);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::copyAccelerationStructure(AccelStruct& dst, AccelStruct& src, bool compact) {
+	VkCopyAccelerationStructureInfoKHR copy_info {};
+	copy_info.sType = VK_STRUCTURE_TYPE_COPY_ACCELERATION_STRUCTURE_INFO_KHR;
+	copy_info.pNext = nullptr;
+	copy_info.dst = dst.getHandle();
+	copy_info.src = src.getHandle();
+	copy_info.mode = (compact ? VK_COPY_ACCELERATION_STRUCTURE_MODE_COMPACT_KHR : VK_COPY_ACCELERATION_STRUCTURE_MODE_CLONE_KHR);
+	Proxy::vkCmdCopyAccelerationStructureKHR(vk_buffer, &copy_info);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::queryAccelStructProperties(QueryPool& pool, const std::vector<VkAccelerationStructureKHR>& structures, VkQueryType type) {
+	Proxy::vkCmdWriteAccelerationStructuresPropertiesKHR(vk_buffer, structures.size(), structures.data(), type, pool.getHandle(), 0);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::quickFenceSubmit(Fence& fence, Queue& queue) {
+	done();
+	CommandSubmitter {vk_buffer} .signal(fence).done(queue);
+	fence.wait();
+	CommandRecorder {vk_buffer, flags};
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::resetQueryPool(QueryPool& pool) {
+	vkCmdResetQueryPool(vk_buffer, pool.getHandle(), 0, pool.size());
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::traceRays(ShaderTable& shaders, int width, int height) {
+	Proxy::vkCmdTraceRaysKHR(vk_buffer, &shaders.vk_region_generate, &shaders.vk_region_miss, &shaders.vk_region_hit, &shaders.vk_region_call, width, height, 1);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::blit(const Image& dst, VkImageLayout layout_dst, const Image& src, VkImageLayout layout_src) {
+
+	VkImageSubresourceLayers src_subresource {};
+	src_subresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	src_subresource.layerCount = src.getLayerCount();
+	src_subresource.baseArrayLayer = 0;
+	src_subresource.mipLevel = 0;
+
+	VkImageSubresourceLayers dst_subresource {};
+	dst_subresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	dst_subresource.layerCount = dst.getLayerCount();
+	dst_subresource.baseArrayLayer = 0;
+	dst_subresource.mipLevel = 0;
+
+	VkOffset3D src_offset[2];
+	src_offset[0] = {0, 0, 0};
+	src_offset[1] = {0, 0, 0};
+
+	VkOffset3D dst_offset[2];
+	dst_offset[0] = {0, 0, 0};
+	dst_offset[1] = {0, 0, 0};
+
+	VkImageBlit blit {};
+	blit.dstSubresource = dst_subresource;
+	memcpy(blit.dstOffsets, dst_offset, sizeof(VkOffset3D) * 2);
+	blit.srcSubresource = src_subresource;
+	memcpy(blit.srcOffsets, src_offset, sizeof(VkOffset3D) * 2);
+
+	vkCmdBlitImage(vk_buffer, src.getHandle(), layout_src, dst.getHandle(), layout_dst, 1, &blit, VK_FILTER_NEAREST);
 	return *this;
 }

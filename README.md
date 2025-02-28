@@ -27,7 +27,7 @@ like so:
 # Build
 mkdir build
 cmake . -B build -G Ninja
-cmake --build build/ --target main -j $(($(nproc --all) + 1))
+cmake --build build/ -j $(($(nproc --all) + 1))
 
 # Execute
 cd build && ./main

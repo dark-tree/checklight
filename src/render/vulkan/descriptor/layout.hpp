@@ -60,8 +60,9 @@ class DescriptorSetLayoutBuilder {
 		 * @param index  the binding index, must match the one specified in the shader and the one in the allocated descriptor set
 		 * @param type   the type of the data that will be bound to this binding
 		 * @param shader the shader stages where the binding will be made available
+		 * @param count  the number of descriptors in the binding
 		 */
-		DescriptorSetLayoutBuilder& descriptor(uint32_t index, VkDescriptorType type, VkShaderStageFlags shader);
+		DescriptorSetLayoutBuilder& descriptor(uint32_t index, VkDescriptorType type, VkShaderStageFlags shader, uint32_t count = 1);
 
 		/**
 		 * Finish and build the layout object

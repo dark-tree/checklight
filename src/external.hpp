@@ -19,6 +19,10 @@
 #include <numeric>
 #include <set>
 #include <map>
+#include <memory>
+#include <filesystem>
+#include <utility>
+#include <thread>
 
 // GLFW
 #define GLFW_INCLUDE_VULKAN
@@ -30,9 +34,6 @@
 #include "stb_vorbis.c"
 #include "stb_image.h"
 #include "stb_image_write.h"
-
-// ShaderC
-#include <shaderc/shaderc.hpp>
 
 // VMA
 #define VMA_STATIC_VULKAN_FUNCTIONS 0
@@ -68,3 +69,7 @@
 #	define UNREACHABLE std::terminate()
 #endif
 
+/**
+ * Can be used to mark pointer function parameters that can be set to nullptr
+ */
+#define NULLABLE

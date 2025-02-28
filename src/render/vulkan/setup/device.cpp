@@ -2,28 +2,52 @@
 #include "device.hpp"
 #include "proxy.hpp"
 #include "swapchain.hpp"
+#include "render/vulkan/buffer/buffer.hpp"
+#include "render/vulkan/raytrace/struct.hpp"
 
 /*
  * PhysicalDevice
  */
 
 PhysicalDevice::PhysicalDevice(VkPhysicalDevice device)  {
-	vkGetPhysicalDeviceProperties(device, &properties);
 
-	// for future use
+	properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+	properties.pNext = &ray_properties;
+
+	ray_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
+	ray_properties.pNext = nullptr;
+
+	Proxy::vkGetPhysicalDeviceProperties2(device, &properties);
+
 	features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-	features.pNext = nullptr;
+	features.pNext = &vk12_features;
 
-	Proxy::vkGetPhysicalDeviceFeatures2KHR(device, &features);
+	vk12_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+	vk12_features.pNext = &ray_feature;
+
+	ray_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+	ray_feature.pNext = &accel_features;
+
+	accel_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+	accel_features.pNext = nullptr;
+
+	Proxy::vkGetPhysicalDeviceFeatures2(device, &features);
 	this->vk_device = device;
+
+	uint32_t count = 0;
+	vkEnumerateDeviceExtensionProperties(vk_device, nullptr, &count, nullptr);
+
+	extensions.resize(count);
+	vkEnumerateDeviceExtensionProperties(vk_device, nullptr, &count, extensions.data());
+
 }
 
 VkPhysicalDeviceType PhysicalDevice::getType() const {
-	return properties.deviceType;
+	return properties.properties.deviceType;
 }
 
 const char* PhysicalDevice::getName() const {
-	return properties.deviceName;
+	return properties.properties.deviceName;
 }
 
 bool PhysicalDevice::canUseSurface(VkSurfaceKHR surface) const {
@@ -41,12 +65,6 @@ VkPhysicalDevice PhysicalDevice::getHandle() const {
 }
 
 bool PhysicalDevice::hasExtension(const char* name) const {
-	uint32_t count = 0;
-	vkEnumerateDeviceExtensionProperties(vk_device, nullptr, &count, nullptr);
-
-	std::vector<VkExtensionProperties> extensions {count};
-	vkEnumerateDeviceExtensionProperties(vk_device, nullptr, &count, extensions.data());
-
 	for (VkExtensionProperties extension : extensions) {
 		if (strcmp(extension.extensionName, name) == 0) {
 			return true;
@@ -79,20 +97,55 @@ SwapchainInfo PhysicalDevice::getSwapchainInfo(VkSurfaceKHR surface) {
 }
 
 const VkPhysicalDeviceProperties& PhysicalDevice::getProperties() const {
-	return properties;
+	return properties.properties;
 }
 
 const VkPhysicalDeviceLimits& PhysicalDevice::getLimits() const {
 	return getProperties().limits;
 }
 
+const void* PhysicalDevice::getFeatures(VkStructureType type) const {
+	const VkBaseInStructure* current = (VkBaseInStructure*) &features;
+
+	while (true) {
+		if (current->sType == type) {
+			return current;
+		}
+
+		if (current->pNext == nullptr) {
+			return nullptr;
+		}
+
+		current = current->pNext;
+	}
+}
+
+const void* PhysicalDevice::getProperties(VkStructureType type) const {
+	const VkBaseInStructure* current = (VkBaseInStructure*) &properties;
+
+	while (true) {
+		if (current->sType == type) {
+			return current;
+		}
+
+		if (current->pNext == nullptr) {
+			return nullptr;
+		}
+
+		current = current->pNext;
+	}
+}
+
+int PhysicalDevice::getMaxRaytraceRecursionDepth() const {
+	return ray_properties.maxRayRecursionDepth;
+}
+
 /*
  * Logical Device
  */
 
-LogicalDevice::LogicalDevice(VkDevice device) {
-	this->vk_device = device;
-}
+LogicalDevice::LogicalDevice(VkDevice device, const std::shared_ptr<PhysicalDevice>& physical)
+: vk_device(device), physical(physical) {}
 
 void LogicalDevice::wait() {
 	vkDeviceWaitIdle(vk_device);
@@ -110,4 +163,26 @@ Queue LogicalDevice::getQueue(const Family& family) const {
 	VkQueue queue;
 	vkGetDeviceQueue(vk_device, family.getIndex(), 0, &queue);
 	return {queue};
+}
+
+VkDeviceAddress LogicalDevice::getAddress(const Buffer& buffer) const {
+	VkBufferDeviceAddressInfo info {};
+	info.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+	info.pNext = nullptr;
+	info.buffer = buffer.getHandle();
+
+	return Proxy::vkGetBufferDeviceAddress(vk_device, &info);
+}
+
+VkDeviceAddress LogicalDevice::getAddress(const AccelStruct& structure) const {
+	VkAccelerationStructureDeviceAddressInfoKHR info {};
+	info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR;
+	info.pNext = nullptr;
+	info.accelerationStructure = structure.getHandle();
+
+	return Proxy::vkGetAccelerationStructureDeviceAddressKHR(vk_device, &info);
+}
+
+std::shared_ptr<PhysicalDevice> LogicalDevice::getPhysical() const {
+	return physical;
 }
