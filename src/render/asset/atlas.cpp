@@ -63,12 +63,22 @@ void DynamicAtlas::close(const LogicalDevice& device) {
 	image.close();
 }
 
-Sprite DynamicAtlas::submit(ImageData& image) {
-	rewrite = true;
-	return packSprite(image);
+ImageData & DynamicAtlas::getImage() {
+	return atlas;
 }
 
-void DynamicAtlas::upload(CommandRecorder& recorder) {
+Sprite DynamicAtlas::submit(ImageData& image) {
+	rewrite = true;
+	ImageData extended = image.expand(1, ImageExpand::COPY_BORDER);
+	Sprite sprite = packSprite(extended);
+	extended.close();
+
+	return sprite.shrink(1);
+}
+
+bool DynamicAtlas::upload(CommandRecorder& recorder) {
+
+	bool dump = resized || rewrite;
 
 	// atlas run out of space and resized itself
 	if (resized) {
@@ -81,8 +91,10 @@ void DynamicAtlas::upload(CommandRecorder& recorder) {
 		image.upload(recorder);
 
 		rewrite = false;
-		printf("INFO: Dynamic atlas was uploaded!\n");
+		printf("DEBUG: Dynamic atlas was re-uploaded!\n");
 	}
+
+	return dump;
 
 }
 

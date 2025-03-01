@@ -2,7 +2,6 @@
 
 #include "external.hpp"
 #include "render/vulkan/buffer/image.hpp"
-#include "render/vulkan/buffer/buffer.hpp"
 #include "shared/box.hpp"
 #include "render/vulkan/buffer/texture.hpp"
 #include "sprite.hpp"
@@ -26,13 +25,20 @@ class DynamicAtlas {
 	public:
 
 		DynamicAtlas();
-		
+
+		/// Close the underlying resources
 		void close(const LogicalDevice& device);
 
+		/// Get the image data containing all submitted images
 		ImageData& getImage();
+
+		/// Add image to atlas and return its coordinates
 		Sprite submit(ImageData& image);
 
-		void upload(CommandRecorder& recorder);
+		/// Upload (or recreate) underlying vulkan texture
+		bool upload(CommandRecorder& recorder);
+
+		/// Get underlying vulkan texture
 		Texture& getTexture();
 
 };

@@ -67,11 +67,17 @@ void ImmediateRenderer::upload(CommandRecorder& recorder) {
 	basic.upload(recorder);
 	basic_3d.upload(recorder);
 	text.upload(recorder);
-	atlas->upload(recorder);
+	bool dump = atlas->upload(recorder);
 
 	if (mapping != 0) {
 		throw std::runtime_error {"Texture mapping stack overflow!"};
 	}
+
+	#if ENGINE_DEBUG
+	if (dump) {
+		atlas->getImage().save("debug/atlas.png");
+	}
+	#endif
 
 	recorder.memoryBarrier()
 		.first(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT)
@@ -197,6 +203,14 @@ glm::vec2 ImmediateRenderer::getTextOffset(const std::vector<uint32_t>& text, gl
 	return glm::vec2 {ox * mx, oy * my} - offset;
 }
 
+void ImmediateRenderer::usePrimaryColor() {
+	active = primary;
+}
+
+void ImmediateRenderer::useSecondaryColor() {
+	active = secondary;
+}
+
 ImmediateRenderer::ImmediateRenderer()
 : atlas(std::make_shared<DynamicAtlas>()), images(atlas), fonts(atlas) {
 	this->blank = images.getOrLoad(DynamicImageAtlas::BLANK_SPRITE);
@@ -212,17 +226,32 @@ ImmediateRenderer::ImmediateRenderer()
 	setFontTilt(0);
 	setTextAlignment(VerticalAlignment::BOTTOM);
 	setTextAlignment(HorizontalAlignment::LEFT);
+	usePrimaryColor();
 }
 
 Sprite ImmediateRenderer::getSprite(const std::string& path) {
 	return images.getOrLoad(path);
 }
 
+void ImmediateRenderer::setPrimaryColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+	primary.r = r;
+	primary.g = g;
+	primary.b = b;
+	primary.a = a;
+	usePrimaryColor();
+}
+
+void ImmediateRenderer::setSecondaryColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+	secondary.r = r;
+	secondary.g = g;
+	secondary.b = b;
+	secondary.a = a;
+	useSecondaryColor();
+}
+
 void ImmediateRenderer::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-	this->r = r;
-	this->g = g;
-	this->b = b;
-	this->a = a;
+	setPrimaryColor(r, g, b, a);
+	setSecondaryColor(r, g, b, a);
 }
 
 void ImmediateRenderer::setResolution(uint32_t width, uint32_t height) {
@@ -313,7 +342,7 @@ void ImmediateRenderer::setFont(const std::string& path, int size) {
 }
 
 void ImmediateRenderer::drawVertex2D(float x, float y, float u, float v) {
-	basic.write(x * iw - 1, y * ih - 1, 0, r, g, b, a, u, v);
+	basic.write(x * iw - 1, y * ih - 1, 0, active.r, active.g, active.b, active.a, u, v);
 }
 
 void ImmediateRenderer::drawVertex2D(glm::vec2 pos, float u, float v) {
@@ -406,7 +435,10 @@ void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, floa
 		float bx = x + hrad * cos(start + step * (i + 1));
 		float by = y + vrad * sin(start + step * (i + 1));
 
+		usePrimaryColor();
 		drawVertex2D(x, y);
+
+		useSecondaryColor();
 		drawVertex2D(ax, ay);
 		drawVertex2D(bx, by);
 	}
@@ -418,7 +450,10 @@ void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, floa
 		float bx = x + hrad * cos(start + angle);
 		float by = y + vrad * sin(start + angle);
 
+		usePrimaryColor();
 		drawVertex2D(x, y);
+
+		useSecondaryColor();
 		drawVertex2D(ax, ay);
 		drawVertex2D(bx, by);
 	}
@@ -534,19 +569,19 @@ void ImmediateRenderer::drawText2D(float x, float y, const std::string& str) {
 		const float y1 = (q.y1 + alignment.y) * ih - 1;
 
 		if (q.shouldDraw()) {
-			text.write(x0, y1, 0, r, g, b, a, q.s0, q.t1);
-			text.write(x0, y0, 0, r, g, b, a, q.s0, q.t0);
-			text.write(x1, y0, 0, r, g, b, a, q.s1, q.t0);
+			text.write(x0, y1, 0, active.r, active.g, active.b, active.a, q.s0, q.t1);
+			text.write(x0, y0, 0, active.r, active.g, active.b, active.a, q.s0, q.t0);
+			text.write(x1, y0, 0, active.r, active.g, active.b, active.a, q.s1, q.t0);
 
-			text.write(x0, y1, 0, r, g, b, a, q.s0, q.t1);
-			text.write(x1, y0, 0, r, g, b, a, q.s1, q.t0);
-			text.write(x1, y1, 0, r, g, b, a, q.s1, q.t1);
+			text.write(x0, y1, 0, active.r, active.g, active.b, active.a, q.s0, q.t1);
+			text.write(x1, y0, 0, active.r, active.g, active.b, active.a, q.s1, q.t0);
+			text.write(x1, y1, 0, active.r, active.g, active.b, active.a, q.s1, q.t1);
 		}
 	}
 }
 
 void ImmediateRenderer::drawVertex3D(float x, float y, float z, float u, float v) {
-	basic_3d.write(x, y, z, r, g, b, a, u, v);
+	basic_3d.write(x, y, z, active.r, active.g, active.b, active.a, u, v);
 }
 
 void ImmediateRenderer::drawVertex3D(glm::vec3 pos, float u, float v) {

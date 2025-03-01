@@ -1,6 +1,7 @@
 
 #include "image.hpp"
 #include "buffer.hpp"
+#include <shared/file.hpp>
 
 /*
  * ImageData
@@ -88,9 +89,48 @@ void ImageData::clear(std::initializer_list<uint8_t> value) {
 }
 
 void ImageData::save(const std::string& path) const {
+	file::createPathDirectories(path);
+
 	if (!stbi_write_png(path.c_str(), w, h, c, pixels, w * c)) {
 		throw std::runtime_error {"Failed to save image '" + path + "'"};
 	}
+}
+
+ImageData ImageData::expand(int margin, ImageExpand mode) {
+	if (margin < 0) {
+		throw std::runtime_error {"Invalid image margin!"};
+	}
+
+	ImageData result = ImageData::allocate(w + margin * 2, h + margin * 2, channels());
+	result.blit(margin, margin, *this);
+
+	// short-circuit when no margin
+	if (margin == 0) {
+		return result;
+	}
+
+	if (mode == ImageExpand::COPY_BORDER) {
+
+		for (int i = 1; i <= margin; i ++) {
+
+			int start = margin - i;
+			int end = margin + i;
+			int last = end - 1;
+
+			for (int y = start; y < (h + end); y ++) {
+				memcpy(result.pixel(start, y), result.pixel(start + 1, y), channels());
+				memcpy(result.pixel(w + last, y), result.pixel(w + last - 1, y), channels());
+			}
+
+			for (int x = start; x < (w + end); x ++) {
+				memcpy(result.pixel(x, start), result.pixel(x, start + 1), channels());
+				memcpy(result.pixel(x, h + last), result.pixel(x, h + last - 1), channels());
+			}
+		}
+
+	}
+
+	return result;
 }
 
 ImageData ImageData::loadFromFile(const std::string& path, int channels) {

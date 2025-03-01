@@ -6,6 +6,8 @@
 #include "asset/atlas.hpp"
 #include "asset/font.hpp"
 #include "asset/sprite.hpp"
+#include "draw/channel.hpp"
+#include "draw/color.hpp"
 
 class CommandRecorder;
 
@@ -44,60 +46,6 @@ enum Disabled {
 	DISABLED,
 };
 
-struct MeshConstant {
-	glm::mat4 matrix;
-};
-
-
-/**
- * Easy to use vertex upload system
- */
-struct VertexChannel {
-
-	struct Command {
-		MeshConstant constant;
-		int count;
-	};
-
-	using element = Vertex3D;
-
-	std::vector<element> vertices;
-	std::vector<Command> commands;
-	ReusableBuffer buffer {VK_BUFFER_USAGE_VERTEX_BUFFER_BIT};
-
-	VertexChannel(const std::string& string);
-
-	/// Free underlying vulkan objects
-	void close();
-
-	/// Update data held in GPU buffers
-	void upload(CommandRecorder& recorder);
-
-	/// Check if this channel has any data
-	bool empty() const;
-
-	/// Clear local data, doesn't affect the GPU buffers
-	void clear();
-
-	/// Make future write with this matrix
-	void pushTransform(glm::mat4 matrix);
-
-	/// Issue the 'bind' and 'draw' commands
-	void draw(PushConstant& push, CommandRecorder& recorder);
-
-	/// Write one element into the local buffer
-	template <typename... Args>
-	void write(Args... values) {
-		if (commands.empty()) {
-			pushTransform(glm::identity<glm::mat4>());
-		}
-
-		commands.back().count ++;
-		vertices.emplace_back(values...);
-	}
-
-};
-
 class ImmediateRenderer {
 
 	private:
@@ -115,7 +63,9 @@ class ImmediateRenderer {
 		VertexChannel basic_3d {"Textured 3D"};
 
 		float iw, ih;
-		uint8_t r, g, b, a;
+		Color primary;
+		Color secondary;
+		Color active;
 		float rtl, rtr, rbl, rbr;
 		float width;
 		Sprite sprite;
@@ -136,16 +86,18 @@ class ImmediateRenderer {
 		void drawBillboardVertex(glm::quat rotation, glm::vec3 offset, float x, float y, float u, float v);
 		glm::quat getBillboardRotation(glm::vec3 center) const;
 		glm::vec2 getTextOffset(const std::vector<uint32_t>& text, glm::vec2 extend) const;
+		void usePrimaryColor();
+		void useSecondaryColor();
 
 	private:
 
 		/// Draw 2D vertex with implicit (mapping based) texture UV
 		void drawVertex2D(float x, float y);
 
-		/// Get the point on a bezier curve at the given T value
+		/// Get the point on a Bézier curve at the given T value
 		float getBezierPoint(float a, float b, float c, float d, float t);
 
-		/// Get the tangent to the bezier curve at the given T value
+		/// Get the tangent to the Bézier curve at the given T value
 		float getBezierTangent(float a, float b, float c, float d, float t);
 
 		/// Changes the window-space texture mapping of the active sprite
@@ -161,6 +113,8 @@ class ImmediateRenderer {
 		void clear();
 		Sprite getSprite(const std::string& path);
 
+		void setPrimaryColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+		void setSecondaryColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 		void setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 		void setResolution(uint32_t width, uint32_t height);
 		void setLineWidth(float width);
