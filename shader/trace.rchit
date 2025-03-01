@@ -10,9 +10,13 @@ struct HitPayload {
 	// posX, posY, posZ, hit
 	vec4 hit;
 	// colorR, colorG, colorB
-	vec4 value;
+	vec4 color;
+	// lightR, lightG, lightB
+	vec4 light;
 	// normalX, normalY, normalZ
 	vec4 normal;
+	// specularR, specularG, specularB, shininess
+	vec4 specular;
 };
 
 struct Vertex3D {
@@ -95,8 +99,9 @@ vec3 computeSpecular(RenderMaterial material, vec3 viewDirection, vec3 lightDire
 
 void main() {
 
-	vec3 lightDirection = normalize(vec3(0.0, 0.5, -1.0));
-	vec3 ambient = vec3(0.1);
+	vec3 lightDirection = normalize(vec3(0.0, 3.5, -1.0));
+	vec3 lightColor = vec3(2.0);
+	vec3 ambient = vec3(0.0);
 
 	/**
 	 * Get the vertex data
@@ -134,23 +139,26 @@ void main() {
 	 * Color
 	 */
 
-	vec3 diffuse = computeDiffuse(material, lightDirection, normalWS);
+	vec3 diffuse = vec3(0.0);
+	vec3 specular = vec3(0.0);
 
-	if (traceShadowRay(positionWS, normalWS, lightDirection)) {
-		diffuse = vec3(0.0);
+	if (!traceShadowRay(positionWS, normalWS, lightDirection)) {
+		diffuse = computeDiffuse(material, lightDirection, normalWS) * lightColor;
+		specular = computeSpecular(material, gl_WorldRayDirectionEXT, lightDirection, normalWS) * lightColor;
 	}
-
-	vec3 specular = computeSpecular(material, gl_WorldRayDirectionEXT, lightDirection, normalWS);
 	
 	vec3 color = texture(textures[nonuniformEXT(material.albedoTextureIndex)], uv).rgb;
 	
-	vec3 combined = color * (specular + diffuse + ambient);
+	//vec3 combined = color * (specular + diffuse + ambient);
+	vec3 lightCombined = specular + diffuse + ambient;
 
 	/**
 	 * Set return values
 	 */
 
 	rPayload.hit = vec4(positionWS, 1.0);
-	rPayload.value = vec4(combined, 0.0);
+	rPayload.color = vec4(color, 0.0);
+	rPayload.light = vec4(lightCombined, 0.0);
 	rPayload.normal = vec4(normalWS, 0.0);
+	rPayload.specular = vec4(material.specular, material.shininess);
 }
