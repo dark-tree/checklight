@@ -11,10 +11,12 @@
 
 class PhysicsEngine {
 protected:
-    std::vector<PhysicsElement> elements; /// List of objects currently existing in the scene
+
     float gravity_strength; /// Acceleration due to gravity
 
 public:
+    //this is here for testing only todo move into protected after testing
+    std::vector<PhysicsElement> elements; /// List of objects currently existing in the scene
     /**
      * A single update step to the physics calculations. Moves objects according to their speed and gravity, detects collisions and applies forces in case of one.
      * @returns difference between time step and calculation time
@@ -86,6 +88,7 @@ public:
         return false;
     }
 
+    /// Used to calculate a support point of the minkowski difference in a given direction
     glm::vec3 calculateSupport(PhysicsElement& a, PhysicsElement& b, glm::vec3 direction)
     {
         return a.furthestPoint(direction) - b.furthestPoint(-direction);
@@ -93,6 +96,7 @@ public:
 
     bool manageSimplex(std::vector<glm::vec3>& simplex, glm::vec3& direction)
     {
+        //in each of those functions the points on the simplex are lettered from newest to oldest (a-most recently added, d-least recently added)
         if (simplex.size() == 2)
         {
             return lineCase(simplex, direction);
@@ -106,13 +110,69 @@ public:
 
     bool lineCase(std::vector<glm::vec3>& simplex, glm::vec3& direction)
     {
-        //TODO
+        //vector pointing from the newest point to the origin
+        glm::vec3 ao = glm::vec3(0, 0, 0) - simplex[1];
+        //vector pointing from the newest point to the oldest
+        glm::vec3 ab = simplex[0] - simplex[1];
+
+        //find a perpendicular vector from AB that points in the direction of origin using the triple product operation
+        direction = tripleCrossProduct(ab, ao);
+        //we have a line here, and we need a tetrahedron - another loop
         return false;
     }
 
     bool planeCase(std::vector<glm::vec3>& simplex, glm::vec3& direction)
     {
-        //TODO
+        //vector pointing from the newest point to the origin
+        glm::vec3 ao = glm::vec3(0, 0, 0) - simplex[2];
+
+        //vectors AB & AC
+        glm::vec3 ab = simplex[1] - simplex[2];
+        glm::vec3 ac = simplex[0] - simplex[2];
+        //no need to test all cases of possible origin positions relative to the origin.
+        //the origin can only exist above/below the triangle itself or the Voronoi regions behind edges AB & AC for reason I won't explain here
+
+        //the triangle's normal vector
+        glm::vec3 normal = glm::cross(ab, ac);
+
+        //vector within the plane of the triangle pointing away from the edge AB & AC
+        glm::vec3 voronoi_ab = glm::cross(ab, normal);
+        glm::vec3 voronoi_ac = glm::cross(ac, -normal);
+
+        //check whether the origin is located in the AB Voronoi region (or above/below it)
+        if (glm::dot(voronoi_ab, ao) > 0)
+        {
+            //set the search direction as a perpendicular from edge ab to the origin
+            direction = tripleCrossProduct(ab, ao);
+
+            //update the triangle points, we're not yet ready to form a tetrahedron
+            simplex[0] = simplex[1];
+            simplex[1] = simplex[2];
+            simplex.erase(simplex.begin() + 2);
+            //while we technically could go to a tetrahedron instead of a triangle here, it'll make our life easier and the algorithm faster in most cases
+        } //check whether the origin is located in the AC Voronoi region (or above/below it)
+        else if (glm::dot(voronoi_ac, ao) > 0)
+        {
+            //same case as above
+            direction = tripleCrossProduct(ac, ao);
+
+            simplex[1] = simplex[2];
+            simplex.erase(simplex.begin() + 2);
+        } //if we got here that means the origin is within the triangle, we just need to check whether above or below
+        else if (glm::dot(normal, ao) > 0)
+        {
+            //case for above
+            //all that needs to be done is changing the search direction to the triangle's normal
+            direction = normal;
+        }
+        else
+        {
+            //origin is below
+            //update the search direction for the negative normal
+            direction = -normal;
+        }
+
+        //we have a triangle here (or even a line), and we need a tetrahedron - another loop
         return false;
     }
 
@@ -120,6 +180,11 @@ public:
     {
         //TODO
         return false;
+    }
+
+    glm::vec3 tripleCrossProduct(glm::vec3& a, glm::vec3& b)
+    {
+        return glm::cross(glm::cross(a, b), a);
     }
 
     void applyForces(PhysicsElement& a, PhysicsElement& b)

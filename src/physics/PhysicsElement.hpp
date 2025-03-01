@@ -182,6 +182,8 @@ public:
     /// Returns the furthest point from object origin in a given direction
     glm::vec3 furthestPoint(glm::vec3 direction)
     {
+        //TODO factor in rotation
+        //TODO sphere case
         double dot_result = -INFINITY;
         glm::vec3 returnal;
         for (glm::vec3 vertex : vertices)
@@ -193,7 +195,7 @@ public:
                 returnal = vertex;
             }
         }
-        return returnal;
+        return returnal + position;
     }
 };
 
