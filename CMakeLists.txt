@@ -7,8 +7,13 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(FETCHCONTENT_QUIET OFF)
 
+# When one CMAKE File is not enough
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+include(${CMAKE_SOURCE_DIR}/cmake/ShaderBuild.cmake)
+
 find_package(Python REQUIRED COMPONENTS Interpreter)
 find_package(Threads REQUIRED)
+find_package(Freetype REQUIRED)
 find_package(Vulkan REQUIRED)
 
 # Try: cmake . -B build && cmake --build build/
@@ -29,6 +34,20 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	endif()
 endif()
 
+# Don't fail on systems without X11 libraries
+if (UNIX)
+	find_program(WAYLAND_SCANNER_EXECUTABLE NAMES wayland-scanner)
+	if (NOT WAYLAND_SCANNER_EXECUTABLE)
+		message(WARNING
+				"Failed to find wayland-scanner! "
+				"The final executable will not work on Wayland only systems, "
+				"consider installing Wayland development libraries!"
+		)
+
+		set(GLFW_BUILD_WAYLAND "0" CACHE STRING "" FORCE)
+	endif()
+endif()
+
 FetchContent_Declare(
 		vstl
 		GIT_REPOSITORY https://github.com/magistermaks/lib-vstl
@@ -36,66 +55,59 @@ FetchContent_Declare(
 )
 
 FetchContent_Declare(
+		msdfgen
+		GIT_REPOSITORY https://github.com/Chlumsky/msdfgen
+		GIT_TAG v1.12
+		GIT_PROGRESS TRUE
+)
+
+FetchContent_Declare(
 		vma
 		GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
 		GIT_TAG v3.2.0
+		GIT_PROGRESS TRUE
 )
 
 FetchContent_Declare(
 		glfw
 		GIT_REPOSITORY https://github.com/glfw/glfw.git
 		GIT_TAG 3.4
+		GIT_PROGRESS TRUE
 )
 
 FetchContent_Declare(
 		stb
 		GIT_REPOSITORY https://github.com/nothings/stb
 		GIT_TAG 5736b15f7ea0ffb08dd38af21067c314d6a3aae9
+		GIT_PROGRESS TRUE
 )
 
 FetchContent_Declare(
 		glm
 		GIT_REPOSITORY https://github.com/g-truc/glm
 		GIT_TAG 0.9.9.8
+		GIT_PROGRESS TRUE
 )
 
-FetchContent_Declare(
-		shaderc
-		GIT_REPOSITORY https://github.com/google/shaderc
-		GIT_TAG v2023.4
+set(MSDFGEN_DISABLE_SVG ON CACHE BOOL "" FORCE)
+set(MSDFGEN_DISABLE_PNG ON CACHE BOOL "" FORCE)
+set(MSDFGEN_USE_SKIA OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_USE_VCPKG OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_DYNAMIC_RUNTIME ON CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(glfw stb glm vma msdfgen)
+
+compile_glsl_directory(
+		SRC "${CMAKE_CURRENT_SOURCE_DIR}/shader"
+		DST "${CMAKE_CURRENT_BINARY_DIR}/assets/shader"
+		VULKAN_TARGET "vulkan1.2"
 )
-
-# Time for some mental gymnastics for shaderc ...
-FetchContent_Populate(shaderc)
-message(STATUS "Fetching external dependencies for target 'shaderc'...")
-
-# Invoke their very special dependency python script
-execute_process(
-		COMMAND ${Python_EXECUTABLE} -u ${shaderc_SOURCE_DIR}/utils/git-sync-deps
-		COMMAND_ECHO STDOUT
-		WORKING_DIRECTORY ${shaderc_SOURCE_DIR}
-		RESULT_VARIABLE GIT_SYNC_DEPS_RESULT
-)
-
-if(NOT GIT_SYNC_DEPS_RESULT EQUAL 0)
-	message(FATAL_ERROR "Failed to sync Shaderc dependencies")
-endif()
-
-# Set Shaderc specific options
-set(SKIP_SPIRV_TOOLS_INSTALL ON CACHE BOOL "" FORCE)
-set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
-set(SHADERC_SKIP_EXAMPLES ON CACHE BOOL "" FORCE)
-set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
-
-# ... And finally add shaderc!
-add_subdirectory(${shaderc_SOURCE_DIR} ${shaderc_BINARY_DIR})
-FetchContent_MakeAvailable(glfw stb glm vma vstl)
 
 set(CHECKLIGHT_LIBRARIES
 		${glm_SOURCE_DIR}                        # Headers in ./glm
 		${glfw_SOURCE_DIR}/include               # Headers in ./GLFW
 		${stb_SOURCE_DIR}                        # Headers in ./
-		${shaderc_SOURCE_DIR}/libshaderc/include # Headers in ./shaderc
 		${Vulkan_INCLUDE_DIRS}                   # Headers in ./vulcan
 		${vma_SOURCE_DIR}/include                # Headers in ./
 )
@@ -142,8 +154,10 @@ target_link_libraries(checklight_render_system PRIVATE
 		checklight_common
 		Vulkan::Vulkan
 		glfw
-		shaderc
 		checklight_external
+		msdfgen::msdfgen-core
+		msdfgen::msdfgen-ext
+		Freetype::Freetype
 )
 
 target_link_libraries(checklight_shared_system PRIVATE
@@ -227,5 +241,10 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
 			"${CMAKE_BINARY_DIR}/assets"
 	)
 
+	add_custom_target(compile-shaders
+			DEPENDS ${SPV_OUTPUT}
+	)
+
 	add_dependencies(checklight_common copy-assets)
+	add_dependencies(checklight_common compile-shaders)
 endif()

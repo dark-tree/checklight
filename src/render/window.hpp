@@ -16,7 +16,10 @@ class WindowSystem {
 		WindowSystem();
 		~WindowSystem();
 
+		/// The list of extensions required from vulkan by the window system
 		std::vector<const char*> getRequiredExtensions() const;
+
+		/// Open new window of the given size
 		std::unique_ptr<Window> open(uint32_t w, uint32_t h, const std::string& title) const;
 
 };
@@ -70,8 +73,14 @@ class Window {
 		~Window();
 
 		GLFWwindow* getHandle() const;
+
+		/// Ask the OS for input events and invoke handlers
 		void poll();
+
+		/// Check if the user wants to close this window
 		bool shouldClose() const;
+
+		/// Get the current size of the window's "paintable" area
 		void getFramebufferSize(int* width, int* height) const;
 
 		InputDispatcher& getInputDispatcher();

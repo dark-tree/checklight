@@ -1,6 +1,7 @@
 #pragma once
 
 #include "external.hpp"
+#include "render/api/vertex.hpp"
 
 struct ObjVertex {
 	glm::vec3 position = glm::vec3(0.0f);
@@ -31,7 +32,7 @@ struct ObjMaterial {
 
 struct ObjGroup {
 	std::string name = "";
-	std::vector<int> indices;
+	std::vector<Index3D::type> indices;
 	std::shared_ptr<ObjMaterial> material = nullptr;
 };
 

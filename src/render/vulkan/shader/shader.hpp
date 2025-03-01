@@ -20,10 +20,13 @@ class Shader {
 		/// Shader live time is managed by the compiler, don't free them yourself!
 		void close();
 
-		/**
-		 * @brief Get pipeline shader config
-		 * Returns the config needed to use shader in a pipeline
-		 */
+		/// Get the pipeline config of this shader module
 		VkPipelineShaderStageCreateInfo getConfig() const;
+
+		/// Get the underlying vulkan shader module handle
+		VkShaderModule getHandle() const;
+
+		/// Load a precompiled shader file using the source file name
+		static Shader loadFromFile(LogicalDevice& device, const std::string& path, VkShaderStageFlagBits stage);
 
 };
