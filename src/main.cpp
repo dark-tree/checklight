@@ -76,8 +76,6 @@ int main() {
 
 	m.getCurrentBoard().lock()->addPawnToRoot(p);
 
-
-	auto meshes = Importer::importObj(system, "assets/models/checklight.obj");
 	std::vector<std::shared_ptr<RenderObject>> objects;
 
 	for (auto& model : models) {
