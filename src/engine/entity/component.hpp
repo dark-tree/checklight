@@ -1,11 +1,12 @@
 #pragma once
 #include "entity.hpp"
+#include "input/input.hpp"
 
 struct Context;
 struct FixedContext;
 class Pawn;
 
-class Component : public Entity {
+class Component : public Entity, public InputListener {
 protected:
 	Pawn* parent;
 
@@ -25,6 +26,7 @@ public:
 	 * TODO make it into a virtual function, that returns const char* lub std::string_view, potentially remove name form entity???? check if that breaks sth in pawn 
 	 */
 	std::string getComponentName() const;
+	void onAdded();
 
 	friend class Pawn;
 };

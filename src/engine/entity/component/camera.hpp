@@ -4,15 +4,17 @@
 
 class Camera : public Component {
 protected:
-	glm::fvec3 position;
-	glm::fvec3 direction;
+	glm::vec3 position;
+	glm::vec3 direction;
 
 	virtual void onUpdate(Context c);
 
 	virtual void onFixedUpdate(FixedContext c);
 
-public:
-	glm::fvec3 getPosition();
+	Camera();
 
-	glm::fvec3 getFactingDirection();
+public:
+	glm::vec3 getPosition();
+
+	glm::vec3 getFactingDirection();
 };

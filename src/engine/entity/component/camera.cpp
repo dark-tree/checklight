@@ -4,6 +4,11 @@
  * Camera
  */
 
+Camera::Camera() : Component() {
+	position = { 0,0,0 };
+	direction = { 1,0,0 };
+}
+
 void Camera::onUpdate(Context c) {
 	if (dynamic_cast<SpatialPawn*>(parent)) { //TODO delete?
 		SpatialPawn* s = (SpatialPawn*)parent;

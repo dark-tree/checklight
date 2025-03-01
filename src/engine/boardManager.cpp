@@ -12,6 +12,9 @@ BoardManager::BoardManager() {
 	current_board = new_board;
 }
 
+void BoardManager::standardSetup(){
+    //TODO
+}
 
 void BoardManager::updateCycle() {
 

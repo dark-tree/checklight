@@ -13,6 +13,11 @@ public:
 
 	BoardManager();
 
+	/*
+	 * Creates standard setup of objects and components 
+	 */
+	void standardSetup();
+
 	/**
 	 * facilitates standard update 
 	 */
