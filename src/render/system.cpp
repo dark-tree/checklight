@@ -116,6 +116,10 @@ std::vector<std::shared_ptr<RenderModel>> RenderSystem::importObj(const std::str
 	for (auto& [name, material] : imported) {
 		RenderMaterial& render_material = system->materials.createMaterial();
 
+		render_material.albedo = glm::vec4(material->diffuse, material->alpha);
+		render_material.specular = material->specular;
+		render_material.shininess = material->shininess;
+
 		if (!material->diffuseMap.empty()) {
 			render_material.albedo_texture = open_texture(material->diffuseMap);
 		}
