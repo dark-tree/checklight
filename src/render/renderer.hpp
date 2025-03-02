@@ -95,6 +95,7 @@ class Renderer {
 		Attachment attachment_color;
 		Attachment attachment_depth;
 		Attachment attachment_albedo;
+		Attachment attachment_illumination;
 
 		// descriptors
 		DescriptorSetLayout layout_immediate;

@@ -56,11 +56,17 @@ void RenderSystem::setProjectionMatrix(float fov, float near_plane, float far_pl
 	glm::mat4 projection = glm::perspective(glm::radians(fov), (float) width() / (float) height(), near_plane, far_plane);
 	projection[1][1] *= -1;
 
+	getFrame().uniforms.prevProjection = getFrame().uniforms.projection;
 	getFrame().uniforms.projection = projection;
 }
 
 void RenderSystem::setViewMatrix(glm::vec3 eye, glm::vec3 direction) {
+	getFrame().uniforms.prevView = getFrame().uniforms.view;
 	getFrame().uniforms.view = glm::lookAt(eye, eye + direction, glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
+void RenderSystem::setTime(float time) {
+	getFrame().uniforms.time = time;
 }
 
 std::shared_ptr<RenderObject> RenderSystem::createRenderObject() {

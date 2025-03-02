@@ -100,7 +100,7 @@ vec3 computeSpecular(RenderMaterial material, vec3 viewDirection, vec3 lightDire
 void main() {
 
 	vec3 lightDirection = normalize(vec3(0.0, 3.5, -1.0));
-	vec3 lightColor = vec3(2.0);
+	vec3 lightColor = vec3(4.0);
 	vec3 ambient = vec3(0.0);
 
 	/**

@@ -11,6 +11,9 @@ class Renderer;
 struct SceneUniform {
 	glm::mat4 view;
 	glm::mat4 projection;
+	glm::mat4 prevView;
+	glm::mat4 prevProjection;
+	float time;
 };
 
 class RenderFrame {

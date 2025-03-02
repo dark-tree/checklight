@@ -17,11 +17,15 @@ struct HitPayload {
 layout(location = 0) rayPayloadEXT HitPayload rPayload;
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT TLAS;
-layout(binding = 1, set = 0, rgba32f) uniform image2D image;
+layout(binding = 1, set = 0, rgba32f) uniform image2D colorImage;
+layout(binding = 6, set = 0, rgba32f) uniform image2D illuminationImage;
 
 layout(binding = 2, set = 0) uniform SceneUniform {
 	mat4 view;
 	mat4 projection;
+	mat4 prevView;
+	mat4 prevProjection;
+	float time;
 } uSceneObject;
 
 float hash1(inout float seed) {
@@ -55,6 +59,53 @@ vec3 randomSphereDirection(inout float seed) {
 	vec2 h = hash2(seed) * vec2(2., 6.28318530718) - vec2(1, 0);
 	float phi = h.y;
 	return vec3(sqrt(1. - h.x * h.x) * vec2(sin(phi), cos(phi)), h.x);
+}
+
+vec2 reproject(vec3 worldPosition, mat4 view, mat4 projection) {
+	vec4 clipSpace = projection * view * vec4(worldPosition, 1.0);
+	vec2 ndc = clipSpace.xy / clipSpace.w;
+	return (ndc + 1.0) / 2.0;
+}
+
+bool inRange(ivec2 uv, ivec2 minv, ivec2 maxv) {
+	return all(greaterThanEqual(uv, minv)) && all(lessThanEqual(uv, maxv));
+}
+
+vec4 bilinearInterpolation(vec2 uv) {
+    // Retrieve the dimensions of the image
+    ivec2 texSize = imageSize(illuminationImage);
+
+    // Convert normalized coordinates to texel space.
+    // The subtraction by 0.5 centers the sampling correctly.
+    vec2 pos = uv * vec2(texSize) - 0.5;
+
+    // Calculate integer coordinates and fractional part
+    ivec2 pos0 = ivec2(floor(pos));
+    vec2 frac = pos - floor(pos);
+
+    // Define the four neighboring texel positions
+    ivec2 pos1 = pos0 + ivec2(1, 0);
+    ivec2 pos2 = pos0 + ivec2(0, 1);
+    ivec2 pos3 = pos0 + ivec2(1, 1);
+
+    // Clamp to the texture boundaries
+   // pos0 = clamp(pos0, ivec2(0), texSize - ivec2(1));
+    //pos1 = clamp(pos1, ivec2(0), texSize - ivec2(1));
+   // pos2 = clamp(pos2, ivec2(0), texSize - ivec2(1));
+   // pos3 = clamp(pos3, ivec2(0), texSize - ivec2(1));
+
+    // Fetch the texels using imageLoad
+    vec4 tex0 = inRange(pos0, ivec2(0), texSize - ivec2(1)) ? imageLoad(illuminationImage, pos0) : vec4(0.0);
+	vec4 tex1 = inRange(pos1, ivec2(0), texSize - ivec2(1)) ? imageLoad(illuminationImage, pos1) : vec4(0.0);
+	vec4 tex2 = inRange(pos2, ivec2(0), texSize - ivec2(1)) ? imageLoad(illuminationImage, pos2) : vec4(0.0);
+	vec4 tex3 = inRange(pos3, ivec2(0), texSize - ivec2(1)) ? imageLoad(illuminationImage, pos3) : vec4(0.0);
+
+    // Interpolate along the x direction
+    vec4 interpX0 = mix(tex0, tex1, frac.x);
+    vec4 interpX1 = mix(tex2, tex3, frac.x);
+
+    // Interpolate along the y direction to get the final color
+    return mix(interpX0, interpX1, frac.y);
 }
 
 void main() {
@@ -95,8 +146,11 @@ void main() {
 	vec3 outColor = primaryPayload.color.xyz;
 
 	float depthValue = tMax;
+
 	if (primaryPayload.hit.w > 0) {
-		depthValue = length(primaryPayload.hit.xyz - origin.xyz);
+		vec4 hitView = uSceneObject.view * vec4(primaryPayload.hit.xyz, 1.0);  
+		vec4 hitClip = uSceneObject.projection * hitView;   
+		depthValue = hitClip.z / hitClip.w;    
 	}
 
 	/**
@@ -104,10 +158,10 @@ void main() {
 	 */
 
 	if (primaryPayload.hit.w > 0){
-		const int samples = 2;
+		const int samples = 1;
 
-		vec3 giColor = vec3(0.0);
-		float seed = gl_LaunchIDEXT.x + gl_LaunchIDEXT.y * 3.43121412313 + fract(1.12345314312);
+		vec3 giLight = vec3(0.0);
+		float seed = gl_LaunchIDEXT.x + gl_LaunchIDEXT.y * 3.43121412313 + fract(1.12345314312 * uSceneObject.time);
 
 		for (int i = 0; i < samples; i++) {
 
@@ -132,16 +186,53 @@ void main() {
 				0                      // payload location
 			);
 
-			giColor += rPayload.light.xyz * rPayload.color.xyz;
+			giLight += rPayload.light.xyz * rPayload.color.xyz * 2.0;
 		}
 
-		outColor = primaryPayload.color.rgb * (primaryPayload.light.rgb + (giColor / float(samples)));
+		//vec2 currPixelCoord = vec2(reproject(primaryPayload.hit.xyz, uSceneObject.view, uSceneObject.projection) * vec2(gl_LaunchSizeEXT.xy));
+		vec2 prevPixelCoord = reproject(primaryPayload.hit.xyz, uSceneObject.prevView, uSceneObject.prevProjection);
+
+		vec4 prevFrameLight = vec4(0.0);
+		float sampleAge = 0.0;
+
+		if (prevPixelCoord.x >= 0 && prevPixelCoord.x < 1 && prevPixelCoord.y >= 0 && prevPixelCoord.y < 1) {
+			float prevDepth = imageLoad(colorImage, ivec2(prevPixelCoord * gl_LaunchSizeEXT.xy)).a;
+
+			vec2 ndcXY = prevPixelCoord * 2.0 - 1.0;
+			float ndcZ = prevDepth;// * 2.0 - 1.0;
+			vec4 clipPos = vec4(ndcXY, ndcZ, 1.0);
+
+			vec4 viewPos = inverse(uSceneObject.prevProjection) * clipPos;
+			viewPos /= viewPos.w;
+
+			vec4 worldPos4 = inverse(uSceneObject.prevView) * viewPos;
+			vec3 prevWorldPos = worldPos4.xyz;
+
+			vec3 currWorldPos = primaryPayload.hit.xyz;
+
+			float worldPosDiff = distance(prevWorldPos, currWorldPos);
+
+			if (worldPosDiff < 0.1) {
+				//prevFrameLight = bilinearInterpolation(prevPixelCoord);
+				prevFrameLight = imageLoad(illuminationImage, ivec2(prevPixelCoord * gl_LaunchSizeEXT.xy));
+				sampleAge = floor(prevFrameLight.a);
+			}
+		}
+
+		vec3 currentLight = primaryPayload.light.rgb + (giLight / float(samples));
+		
+		vec3 mixedLight = mix(prevFrameLight.rgb, currentLight, 1.0 / (sampleAge + 1.0));
+		sampleAge += 1.0;
+
+		imageStore(illuminationImage, ivec2(gl_LaunchIDEXT.xy), vec4(mixedLight, sampleAge));
+
+		//outColor = vec3(abs(prevPixelCoord / vec2(gl_LaunchSizeEXT.xy) - inUV) * 8, 0);
+		outColor = primaryPayload.color.rgb * mixedLight;
 	}
 
 	/**
 	 * Write to the output image
-	 */
+	 */	
 
-	float delinearized = ((1.0 / depthValue) - 1 / tMin) / ((1 / tMax) - (1 / tMin));
-	imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(outColor, delinearized));
+	imageStore(colorImage, ivec2(gl_LaunchIDEXT.xy), vec4(outColor, depthValue));
 }

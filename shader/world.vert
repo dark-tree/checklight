@@ -11,6 +11,9 @@ layout(location = 1) out vec2 vTexture;
 layout(binding = 1, set = 0) uniform SceneUniform {
     mat4 view;
     mat4 projection;
+    mat4 prevView;
+	mat4 prevProjection;
+    float time;
 } uSceneObject;
 
 layout(push_constant) uniform MeshConstant {

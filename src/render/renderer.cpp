@@ -325,6 +325,7 @@ void Renderer::createSwapchain() {
 	// allocate all attachments (except for color)
 	attachment_depth.allocate(device, extent.width, extent.height, allocator);
 	attachment_albedo.allocate(device, extent.width, extent.height, allocator);
+	attachment_illumination.allocate(device, extent.width, extent.height, allocator);
 
 	// create framebuffers
 	pass_immediate.prepareFramebuffers(swapchain);
@@ -378,6 +379,13 @@ void Renderer::createAttachments() {
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
 		.setDebugName("Albedo")
+		.createAttachment();
+
+	attachment_illumination = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
+		.setDebugName("Illumination")
 		.createAttachment();
 
 	// very important UwU
@@ -578,6 +586,7 @@ void Renderer::lateClose() {
 	// close all attachments
 	attachment_depth.close(device);
 	attachment_albedo.close(device);
+	attachment_illumination.close(device);
 
 	swapchain.close();
 	closeFrames();
@@ -603,6 +612,7 @@ void Renderer::lateInit() {
 
 void Renderer::prepareForRendering(CommandRecorder& recorder) {
 	recorder.transitionLayout(attachment_albedo, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+	recorder.transitionLayout(attachment_illumination, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 }
 
 RenderFrame& Renderer::getFrame() {
@@ -726,6 +736,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
 		.descriptor(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, TextureManager::MAX_TEXTURES)
 		.descriptor(5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
+		.descriptor(6, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.done(device);
 
 	// add layouts to the pool so that they can be allocated
