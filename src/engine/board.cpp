@@ -1,4 +1,5 @@
 #include "board.hpp"
+#include "entity/pawns/spatialPawn.hpp"
 
 /*
  * Board
@@ -100,3 +101,17 @@ void Board::setBoardName(const std::string& new_name) {
 std::string Board::getBoardName() {
 	return name;
 }
+
+void Board::setCameraPawn(std::shared_ptr<SpatialPawn>& new_cameraPawn) {
+    cameraPawn = new_cameraPawn;
+}
+
+glm::vec3 Board::getCamPos() {
+    return cameraPawn.lock()->getPosition();
+}
+
+glm::vec3 Board::getCamForward() {
+    return cameraPawn.lock()->getForwardVector();
+}
+
+

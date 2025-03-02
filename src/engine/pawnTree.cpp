@@ -23,7 +23,6 @@ std::shared_ptr<Pawn> PawnTree::findByID(uint32_t id) {
 std::vector<std::shared_ptr<Pawn>> PawnTree::findAllByName(const std::string& name) {
 	std::vector<std::shared_ptr<Pawn>> result;
 	auto range = nameMap.equal_range(name);
-	//TODO przetestowac czy ta petla dziala
 	for (auto r = range.first; r != range.second; ++r) {
 		result.push_back(r->second);
 	}
@@ -33,7 +32,6 @@ std::vector<std::shared_ptr<Pawn>> PawnTree::findAllByName(const std::string& na
 std::vector<std::shared_ptr<Pawn>> PawnTree::findAllByID(uint32_t id) {
 	std::vector<std::shared_ptr<Pawn>> result;
 	auto range = idMap.equal_range(id);
-	//TODO przetestowac czy ta petla dziala
 	for (auto r = range.first; r != range.second; ++r) {
 		result.push_back(r->second);
 	}
@@ -54,12 +52,11 @@ void PawnTree::addToRoot(std::shared_ptr<Pawn> pawn) {
 }
 
 void PawnTree::mountPawn(std::shared_ptr<Pawn> pawn) {
-	//zale¿y czy unordered_multimap dodaje kopie jezeli value i key sa identyczne
+	//zaleï¿½y czy unordered_multimap dodaje kopie jezeli value i key sa identyczne
 	bool isCopy = false;
 	bool isChanged = pawn->isStructureChanged();
 	if (idMap.count(pawn->getEntityID()) > 0) {
 		auto range = idMap.equal_range(pawn->getEntityID());
-		//TODO przetestowac czy ta petla dziala
 		for (auto r = range.first; r != range.second; ++r) {
 			if (r->second == pawn) {
 				isCopy = true;
@@ -67,7 +64,7 @@ void PawnTree::mountPawn(std::shared_ptr<Pawn> pawn) {
 		}
 	}
 
-	//TODO sprawdzic czy to na pewno bedzie dzialac bo idk
+    //TODO test if it works
 	if (isCopy == false) {
 		std::string p_name = pawn->getName();
 		uint32_t p_id = pawn->getEntityID();

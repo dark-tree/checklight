@@ -1,11 +1,13 @@
 #pragma once
 #include "pawnTree.hpp"
 
+class SpatialPawn;
+
 //Its a Scene dumbass
 class Board {
 private:
 	PawnTree pawns;
-	std::weak_ptr<Pawn> cameraPawn;
+	std::weak_ptr<SpatialPawn> cameraPawn;
 	std::string name;
 public:
 
@@ -78,4 +80,10 @@ public:
 	 * return name of a board
 	 */
 	std::string getBoardName();
+
+    void setCameraPawn(std::shared_ptr<SpatialPawn>& new_cameraPawn);
+
+    glm::vec3 getCamPos();
+
+    glm::vec3 getCamForward();
 };

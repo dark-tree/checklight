@@ -65,11 +65,10 @@ int main() {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
-	window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
+	//window.getInputDispatcher().registerListener( std::make_shared<DebugInputListener>());
 	auto models = system.importObj("assets/models/checklight.obj");
 
-
-	BoardManager m;
+	BoardManager m(window);
 
 	std::shared_ptr<Pawn> p = std::make_shared<Pawn>();
 	p->setName("Test");
@@ -90,13 +89,17 @@ int main() {
 
 		//physics update before rendering
 		m.updateCycle();
+        std::shared_ptr<Board> current_board = m.getCurrentBoard().lock();
 
 		drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());
 
 		// update uniforms
 		// do this once at the beginning of frame rendering
 		system.setProjectionMatrix(40.0f, 0.001f, 10000.0f);
-		system.setViewMatrix({18.0f, 1, 4.0f}, {-21.0f, 0.0f, 4.0f});
+		//system.setViewMatrix({18.0f, 1, 4.0f}, {-21.0f, 0.0f, 4.0f});
+
+        printf("[%f %f %f] \n",current_board->getCamPos().x,current_board->getCamPos().y,current_board->getCamPos().z);
+        system.setViewMatrix(current_board->getCamPos(), current_board->getCamForward());
 
 		// render the scene
 		system.draw();

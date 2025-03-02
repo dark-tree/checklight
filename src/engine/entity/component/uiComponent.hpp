@@ -3,5 +3,5 @@
 
 class UiComponent : public Component {
 protected:
-	bool checkValidity(const Pawn& p);
+	virtual bool checkValidity(const Pawn& p) override;
 };

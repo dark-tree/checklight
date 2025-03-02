@@ -14,3 +14,17 @@ bool GameComponent::checkValidity(const Pawn& p) {
 		return false;
 	}
 }
+
+SpatialPawn* GameComponent::getSpatialParent() {
+    return (SpatialPawn*) parent;
+}
+
+glm::vec3 GameComponent::getPosition() {
+    return getSpatialParent()->getPosition();
+}
+
+glm::quat GameComponent::getRotation() {
+    return getSpatialParent()->getRotation();
+}
+
+
