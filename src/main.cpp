@@ -75,7 +75,7 @@ int main() {
 		object->setModel(model);
 		objects.push_back(object);
 	}
-	
+
 	while (!window.shouldClose()) {
 		window.poll();
 
@@ -84,7 +84,8 @@ int main() {
 		// update uniforms
 		// do this once at the beginning of frame rendering
 		system.setProjectionMatrix(40.0f, 0.001f, 10000.0f);
-		system.setViewMatrix({18.0f, 1, 4.0f}, {-21.0f, 0.0f, 4.0f});
+		system.setViewMatrix({18.0f, 1, 4.0f * sin(glfwGetTime() * 0.5)}, {-21.0f, 0.0f, 4.0f});
+		system.setTime(glfwGetTime());
 
 		// render the scene
 		system.draw();
