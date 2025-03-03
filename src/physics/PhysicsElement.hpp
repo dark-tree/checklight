@@ -14,6 +14,7 @@ protected:
     std::vector<glm::vec3> vertices; /// Vertices forming the shape of the object's collider
     std::vector<glm::ivec3> triangles; /// Faces of the object's collider as triplets of vertices indexes
     bool is_static; /// Whether the object can be moved by external forces
+    bool is_sphere; /// Whether the collider of the object is to be a perfect sphere, if yes vertices and triangles will be disregarded in operations
     float gravity_scale; /// Value by which gravity's acceleration is multiplied
     float sphere_collider_radius; /// Radius of the simple sphere collider encompassing object's collider, used for initial collision checks
 public:
@@ -180,9 +181,13 @@ public:
     }
 
     /// Returns the furthest point from object origin in a given direction
-    glm::vec3 furthestPoint(glm::vec3 direction)
+    glm::vec3 furthestPoint(glm::vec3& direction)
     {
-        //TODO sphere case
+        if (is_sphere)
+        {
+            return direction;
+        }
+
         double dot_result = -INFINITY;
         glm::vec3 returnal;
         for (glm::vec3 vertex : vertices)
