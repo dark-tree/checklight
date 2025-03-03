@@ -34,19 +34,25 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	endif()
 endif()
 
-# Don't fail on systems without X11 libraries 
+# Don't fail on systems without X11 libraries
 if (UNIX)
 	find_program(WAYLAND_SCANNER_EXECUTABLE NAMES wayland-scanner)
 	if (NOT WAYLAND_SCANNER_EXECUTABLE)
-		message(WARNING 
-			"Failed to find wayland-scanner! "
-			"The final executable will not work on Wayland only systems, "
-			"consider installing Wayland development libraries!"
+		message(WARNING
+				"Failed to find wayland-scanner! "
+				"The final executable will not work on Wayland only systems, "
+				"consider installing Wayland development libraries!"
 		)
-		
+
 		set(GLFW_BUILD_WAYLAND "0" CACHE STRING "" FORCE)
 	endif()
 endif()
+
+FetchContent_Declare(
+		vstl
+		GIT_REPOSITORY https://github.com/magistermaks/lib-vstl
+		GIT_TAG v3.2
+)
 
 FetchContent_Declare(
 		msdfgen
@@ -90,7 +96,7 @@ set(MSDFGEN_USE_VCPKG OFF CACHE BOOL "" FORCE)
 set(MSDFGEN_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
 set(MSDFGEN_DYNAMIC_RUNTIME ON CACHE BOOL "" FORCE)
 
-FetchContent_MakeAvailable(glfw stb glm vma msdfgen)
+FetchContent_MakeAvailable(glfw stb glm vma msdfgen vstl)
 
 compile_glsl_directory(
 		SRC "${CMAKE_CURRENT_SOURCE_DIR}/shader"
@@ -113,6 +119,9 @@ target_include_directories(checklight_common INTERFACE
 		${CHECKLIGHT_LIBRARIES}
 )
 
+file(GLOB_RECURSE CHECKLIGHT_ENGINE_SOURCES "src/engine/*.cpp")
+add_library(checklight_engine_system ${CHECKLIGHT_ENGINE_SOURCES})
+
 file(GLOB_RECURSE CHECKLIGHT_RENDER_SOURCES "src/render/*.cpp")
 add_library(checklight_render_system ${CHECKLIGHT_RENDER_SOURCES})
 
@@ -129,10 +138,16 @@ add_library(checklight_external
 		lib/vk_mem_alloc.cpp
 )
 
-add_executable(checklight "src/main.cpp")
-
 target_include_directories(checklight_external PRIVATE
 		${CHECKLIGHT_LIBRARIES}
+)
+
+add_executable(checklight "src/main.cpp")
+add_executable(checklight_test "src/test.cpp")
+
+target_link_libraries(checklight_engine_system PRIVATE
+		checklight_common
+		checklight_shared_system
 )
 
 target_link_libraries(checklight_render_system PRIVATE
@@ -160,6 +175,16 @@ target_link_libraries(checklight PRIVATE
 		checklight_render_system
 		checklight_shared_system
 		checklight_input_system
+		checklight_engine_system
+)
+
+target_link_libraries(checklight_test PRIVATE
+		checklight_common
+		checklight_shared_system
+)
+
+target_include_directories(checklight_test PRIVATE
+		${vstl_SOURCE_DIR}/
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

@@ -1,6 +1,7 @@
 
 #include "render/render.hpp"
 #include "input/input.hpp"
+#include "engine/engine.hpp"
 
 static void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
 	immediate.setSprite("assets/image/corners.png");
@@ -56,7 +57,7 @@ int main() {
 	printf("INFO: Current working directory: %s\n", path.c_str());
 
 	ApplicationParameters parameters;
-	parameters.setName("My Checklight Game");
+	parameters.setName("My Checklight Game!");
 	parameters.setDimensions(1200, 800);
 
 	RenderSystem::init(parameters);
@@ -64,8 +65,15 @@ int main() {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
-	window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
+	//window.getInputDispatcher().registerListener( std::make_shared<DebugInputListener>());
 	auto models = system.importObj("assets/models/checklight.obj");
+
+	BoardManager m(window);
+
+	std::shared_ptr<Pawn> p = std::make_shared<Pawn>();
+	p->setName("Test");
+
+	m.getCurrentBoard().lock()->addPawnToRoot(p);
 
 	std::vector<std::shared_ptr<RenderObject>> objects;
 
@@ -75,16 +83,20 @@ int main() {
 		object->setModel(model);
 		objects.push_back(object);
 	}
-	
+
 	while (!window.shouldClose()) {
 		window.poll();
+
+		//physics update before rendering
+		m.updateCycle();
+		std::shared_ptr<Board> current_board = m.getCurrentBoard().lock();
 
 		drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());
 
 		// update uniforms
 		// do this once at the beginning of frame rendering
 		system.setProjectionMatrix(40.0f, 0.001f, 10000.0f);
-		system.setViewMatrix({18.0f, 1, 4.0f}, {-21.0f, 0.0f, 4.0f});
+		system.setViewMatrix(current_board->getCamPos(), current_board->getCamForward());
 
 		// render the scene
 		system.draw();
