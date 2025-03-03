@@ -1,8 +1,11 @@
 #pragma once
 
-#include "input/event.hpp"
+#include "positioned.hpp"
 
-class ScrollEvent : public InputEvent {
+/**
+ * Mouse wheel scroll input event
+ */
+class ScrollEvent : public PositionedEvent {
 
 	public:
 
@@ -16,5 +19,8 @@ class ScrollEvent : public InputEvent {
 		double vertical;
 
 		ScrollEvent(double horizontal, double vertical, double x, double y);
+
+		/// Get mouse scroll amount as a glm::vec2 vector
+		glm::vec2 getScroll() const;
 
 };

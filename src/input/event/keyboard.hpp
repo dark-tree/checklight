@@ -2,6 +2,10 @@
 
 #include "coded.hpp"
 
+/**
+ * Generic keyboard event, don't use for text input
+ * @see UnicodeEvent
+ */
 class KeyboardEvent : public CodedEvent {
 
 	public:

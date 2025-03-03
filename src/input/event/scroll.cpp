@@ -10,4 +10,8 @@ InputEvent::Type ScrollEvent::getType() const {
 }
 
 ScrollEvent::ScrollEvent(double horizontal, double vertical, double x, double y)
-: InputEvent(x, y), horizontal(horizontal), vertical(vertical) {}
+: PositionedEvent(x, y), horizontal(horizontal), vertical(vertical) {}
+
+glm::vec2 ScrollEvent::getScroll() const {
+	return {horizontal, vertical};
+}
