@@ -24,10 +24,30 @@ class WindowSystem {
 
 };
 
+class InputContext {
+
+	private:
+
+		friend class Window;
+		GLFWwindow* handle;
+
+		InputContext(const Window& window);
+
+	public:
+
+		bool isKeyPressed(int key) const;
+		bool isButtonPressed(int button) const;
+		glm::vec2 getCursorPosition() const;
+
+
+};
 
 class Window {
 
 	private:
+
+		bool capture = false;
+		bool close = false;
 
 		InputDispatcher dispatcher;
 		GLFWwindow* handle;
@@ -37,10 +57,16 @@ class Window {
 		static void glfwScrollCallback(GLFWwindow* glfw_window, double x, double y);
 		static void glfwCursorCallback(GLFWwindow* glfw_window, double x, double y);
 		static void glfwUnicodeCallback(GLFWwindow* glfw_window, unsigned int unicode);
+		static void glfwWindowCloseCallback(GLFWwindow* glfw_window);
+		static void glfwWindowResizeCallback(GLFWwindow* glfw_window, int width, int height);
 		static void glfwErrorCallback(int error_code, const char* description);
 
 		friend class WindowSystem;
 		Window(uint32_t w, uint32_t h, std::string title);
+
+		// Controlled using FrameEvent
+		void setMouseCapture(bool capture);
+		void setShouldClose(bool close);
 
 	public:
 
@@ -49,7 +75,7 @@ class Window {
 		GLFWwindow* getHandle() const;
 
 		/// Ask the OS for input events and invoke handlers
-		void poll() const;
+		void poll();
 
 		/// Check if the user wants to close this window
 		bool shouldClose() const;
@@ -58,17 +84,6 @@ class Window {
 		void getFramebufferSize(int* width, int* height) const;
 
 		InputDispatcher& getInputDispatcher();
-
-		/// Enable or disable mouse capture, a captured mouse can't leave the window and is invisible
-		void setMouseCapture(bool capture);
-
-		/// Check if a key is pressed, for debug use only!
-		bool isKeyPressed(int key) const;
-
-		/// Check if a mouse button is pressed, for debug use only!
-		bool isButtonPressed(int button) const;		
-
-		/// Get mouse cursor position, for debug use only!
-		glm::vec2 getCursor() const;
+		InputContext getInputContext();
 
 };
