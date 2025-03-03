@@ -10,18 +10,18 @@ protected:
 	std::unordered_multimap<uint32_t, std::shared_ptr<Pawn>> idMap;
 
 	/**
-     * performs standard game update on all the tree elements, triggered by updateTree() function
-     */
+	 * performs standard game update on all the tree elements, triggered by updateTree() function
+	 */
 	void updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update);
 
 	/**
-     * performs standard game update on all the tree elements, triggered by fixedUpdateTree() function
-     */
+	 * performs standard game update on all the tree elements, triggered by fixedUpdateTree() function
+	 */
 	void fixedUpdareTreeRecursion(std::shared_ptr<Pawn> pawn_to_fixed_update);
 
 	/**
-     * returns part of a pawn tree in a string format, triggered by print() function
-     */
+	 * returns part of a pawn tree in a string format, triggered by print() function
+	 */
 	std::string recursivePrint(std::shared_ptr<Pawn> p, int depth);
 
 public:

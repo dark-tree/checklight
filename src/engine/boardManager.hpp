@@ -6,22 +6,22 @@ class Board;
 
 class BoardManager {
 protected:
-    unsigned long long globalTickNumber;
+	unsigned long long globalTickNumber;
 	std::weak_ptr<Board> current_board;
 	std::vector<std::shared_ptr<Board>> boardList;
-    Window* w;
-    /*
-     * Creates standard setup of objects and components
-     */
-    void standardSetup();
+	Window* w;
+	/*
+	 * Creates standard setup of objects and components
+	 */
+	void standardSetup();
 
 public:
 
-    BoardManager(Window &window);
+	BoardManager(Window &window);
 
-    /**
-     * facilitates standard update
-     */
+	/**
+	 * facilitates standard update
+	 */
 	void updateCycle();
 
 	/**
@@ -30,7 +30,7 @@ public:
 	void fixedUpdateCycle();
 
 	/**
-     * returns currently used board
-     */
+	 * returns currently used board
+	 */
 	std::weak_ptr<Board> getCurrentBoard();
 };

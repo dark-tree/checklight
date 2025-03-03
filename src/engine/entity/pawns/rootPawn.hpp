@@ -19,12 +19,12 @@ public:
 	RootPawn();
 
 	/**
-     * Returns true!
-     */
+	 * Returns true!
+	 */
 	bool isRoot() override;
 
 	/**
-     * Returns PawnTree that manages access to Pawn. PawnTree is an object that stores root pawn and maps for quick pawn and component lookups.
-     */
+	 * Returns PawnTree that manages access to Pawn. PawnTree is an object that stores root pawn and maps for quick pawn and component lookups.
+	 */
 	PawnTree* getTree();
 };

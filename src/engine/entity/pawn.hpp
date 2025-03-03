@@ -22,8 +22,8 @@ protected:
 	std::vector<std::shared_ptr<Component>> components; //TODO unique ptr ???
 
 	/**
-     * All the things that happens on basic update of the engine (intervals between basic updates can vary)
-     */
+	 * All the things that happens on basic update of the engine (intervals between basic updates can vary)
+	 */
 	virtual void onUpdate();
 
 	/**
@@ -36,8 +36,8 @@ public:
 	Pawn();
 
 	/**
-     * Adds a new component to a pawn
-     */
+	 * Adds a new component to a pawn
+	 */
 	void addComponent(std::shared_ptr<Component>& c);
 
 	/**
@@ -63,8 +63,8 @@ public:
 	std::weak_ptr<Pawn> getParent();
 
 	/**
-     * Returns all of the pawns children
-     */
+	 * Returns all of the pawns children
+	 */
 	std::vector<std::shared_ptr<Pawn>> getChildren();
 
 	/**
@@ -73,23 +73,23 @@ public:
 	void addChild(std::shared_ptr<Pawn> new_child);
 
 	/**
-     * Returns a name that is specific to that instance of a pawn
-     */
+	 * Returns a name that is specific to that instance of a pawn
+	 */
 	std::string getName();
 
 	/**
-     * Sets name of this instance of a pawn
-     */
+	 * Sets name of this instance of a pawn
+	 */
 	void setName(std::string new_name);
 
 
 	/**
-     * Returns true if its a root of an pawn tree (therefore of RootPawn type)
-     */
+	 * Returns true if its a root of an pawn tree (therefore of RootPawn type)
+	 */
 	virtual bool isRoot();
 
 	/**
-     * returns true if there were some changes to pawn tree (like new children added) that requires changes to PawnTree structure
-     */
+	 * returns true if there were some changes to pawn tree (like new children added) that requires changes to PawnTree structure
+	 */
 	bool isStructureChanged();
 };

@@ -5,9 +5,9 @@
  */
 
 SpatialPawn::SpatialPawn() {
-    position = {0,0,0};
-    rotation = {1,0,0,0};
-    scale = {1,1,1};
+	position = {0,0,0};
+	rotation = {1,0,0,0};
+	scale = {1,1,1};
 }
 
 void SpatialPawn::addPosition(glm::vec3 new_position) {

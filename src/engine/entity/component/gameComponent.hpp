@@ -3,20 +3,20 @@
 
 class SpatialPawn;
 
-class GameComponent : public Component { // TODO wymyslec lepsza nazwe
+class GameComponent : public Component { // TODO come up with better name
 protected:
 
-    bool checkValidity(const Pawn& p) override;
+	bool checkValidity(const Pawn& p) override;
 
-    SpatialPawn* getSpatialParent();
+	SpatialPawn* getSpatialParent();
 
-    glm::vec3 getPosition();
+	glm::vec3 getPosition();
 
-    glm::quat getRotation();
+	glm::quat getRotation();
 
-    void setPosition(glm::vec3 position);
+	void setPosition(glm::vec3 position);
 
-    void setRotation(glm::quat rotation);
+	void setRotation(glm::quat rotation);
 
-    glm::vec3 getForwardVector();
+	glm::vec3 getForwardVector();
 };

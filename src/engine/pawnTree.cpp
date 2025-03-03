@@ -52,7 +52,6 @@ void PawnTree::addToRoot(std::shared_ptr<Pawn> pawn) {
 }
 
 void PawnTree::mountPawn(std::shared_ptr<Pawn> pawn) {
-	//zale�y czy unordered_multimap dodaje kopie jezeli value i key sa identyczne
 	bool isCopy = false;
 	bool isChanged = pawn->isStructureChanged();
 	if (idMap.count(pawn->getEntityID()) > 0) {

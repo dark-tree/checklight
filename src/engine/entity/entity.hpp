@@ -17,7 +17,7 @@ public:
 	uint32_t getEntityID() const;
 
 	/*
-     * if set true component will execute update and fixedUpdate functions
+	 * if set true component will execute update and fixedUpdate functions
 	 */ 
 	void setActive(bool value);
 

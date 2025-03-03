@@ -16,26 +16,26 @@ bool GameComponent::checkValidity(const Pawn& p) {
 }
 
 SpatialPawn* GameComponent::getSpatialParent() {
-    return (SpatialPawn*) parent;
+	return (SpatialPawn*) parent;
 }
 
 glm::vec3 GameComponent::getPosition() {
-    return getSpatialParent()->getPosition();
+	return getSpatialParent()->getPosition();
 }
 
 glm::quat GameComponent::getRotation() {
-    return getSpatialParent()->getRotation();
+	return getSpatialParent()->getRotation();
 }
 
 void GameComponent::setPosition(glm::vec3 position) {
-    return getSpatialParent()->setPosition(position);
+	return getSpatialParent()->setPosition(position);
 }
 
 void GameComponent::setRotation(glm::quat rotation) {
-    return getSpatialParent()->setRotation(rotation);
+	return getSpatialParent()->setRotation(rotation);
 }
 
 glm::vec3 GameComponent::getForwardVector() {
-    return getSpatialParent()->getForwardVector();
+	return getSpatialParent()->getForwardVector();
 }
 
