@@ -89,14 +89,14 @@ int main() {
 
 		//physics update before rendering
 		m.updateCycle();
-        std::shared_ptr<Board> current_board = m.getCurrentBoard().lock();
+		std::shared_ptr<Board> current_board = m.getCurrentBoard().lock();
 
 		drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());
 
 		// update uniforms
 		// do this once at the beginning of frame rendering
 		system.setProjectionMatrix(40.0f, 0.001f, 10000.0f);
-        system.setViewMatrix(current_board->getCamPos(), current_board->getCamForward());
+		system.setViewMatrix(current_board->getCamPos(), current_board->getCamForward());
 
 		// render the scene
 		system.draw();
