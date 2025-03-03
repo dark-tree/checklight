@@ -327,6 +327,7 @@ void Renderer::createSwapchain() {
 	attachment_albedo.allocate(device, extent.width, extent.height, allocator);
 	attachment_illumination.allocate(device, extent.width, extent.height, allocator);
 	attachment_prev_illumination.allocate(device, extent.width, extent.height, allocator);
+	attachment_normal.allocate(device, extent.width, extent.height, allocator);
 
 	// create framebuffers
 	pass_immediate.prepareFramebuffers(swapchain);
@@ -394,6 +395,13 @@ void Renderer::createAttachments() {
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 		.setDebugName("Prev Illumination")
+		.createAttachment();
+
+	attachment_normal = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
+		.setDebugName("Normal")
 		.createAttachment();
 
 	// very important UwU
@@ -602,6 +610,7 @@ void Renderer::lateClose() {
 	attachment_albedo.close(device);
 	attachment_illumination.close(device);
 	attachment_prev_illumination.close(device);
+	attachment_normal.close(device);
 
 	swapchain.close();
 	closeFrames();
@@ -629,6 +638,7 @@ void Renderer::prepareForRendering(CommandRecorder& recorder) {
 	recorder.transitionLayout(attachment_albedo, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 	recorder.transitionLayout(attachment_illumination, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 	recorder.transitionLayout(attachment_prev_illumination, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+	recorder.transitionLayout(attachment_normal, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 }
 
 RenderFrame& Renderer::getFrame() {
@@ -744,6 +754,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	layout_compose = DescriptorSetLayoutBuilder::begin()
 		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.descriptor(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.done(device);
 
 	layout_raytrace = DescriptorSetLayoutBuilder::begin()
@@ -755,6 +766,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
 		.descriptor(6, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.descriptor(7, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(8, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.done(device);
 
 	// add layouts to the pool so that they can be allocated

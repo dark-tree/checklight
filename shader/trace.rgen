@@ -20,6 +20,7 @@ layout(binding = 0, set = 0) uniform accelerationStructureEXT TLAS;
 layout(binding = 1, set = 0, rgba32f) uniform image2D colorImage;
 layout(binding = 6, set = 0, rgba32f) uniform image2D illuminationImage;
 layout(binding = 7, set = 0, rgba32f) uniform image2D prevIlluminationImage;
+layout(binding = 8, set = 0, rgba32f) uniform image2D normalsImage;
 
 layout(binding = 2, set = 0) uniform SceneUniform {
 	mat4 view;
@@ -108,9 +109,9 @@ void main() {
 	 * Primary ray
 	 */
 
-	vec4 origin = viewInverse * vec4(0, 0, 0, 1);
-	vec4 target = projInverse * vec4(d.x, d.y, 1, 1);
-	vec4 direction = viewInverse * vec4(normalize(target.xyz), 0);
+	const vec4 origin = viewInverse * vec4(0, 0, 0, 1);
+	const vec4 target = projInverse * vec4(d.x, d.y, 1, 1);
+	const vec4 direction = viewInverse * vec4(normalize(target.xyz), 0);
 
 	float tMin = 0.001;
 	float tMax = 10000.0;
@@ -159,7 +160,7 @@ void main() {
 			bool isSpecular = hash1(seed) < primaryPayload.specular.x;
 			vec3 secondaryDirection = normalize(mix(diffuseDirection, reflectionDirection, float(isSpecular) * (primaryPayload.specular.w / 1000.0)));
 		
-			origin.xyz = primaryPayload.hit.xyz + primaryPayload.normal.xyz * 0.001;
+			vec3 secondaryOrigin = primaryPayload.hit.xyz + primaryPayload.normal.xyz * 0.001;
 
 			traceRayEXT(TLAS,          // acceleration structure
 				primaryRayFlags,       // rayFlags
@@ -167,7 +168,7 @@ void main() {
 				0,                     // sbtRecordOffset
 				0,                     // sbtRecordStride
 				0,                     // missIndex
-				origin.xyz,            // ray origin
+				secondaryOrigin,       // ray origin
 				tMin,                  // ray min range
 				secondaryDirection,    // ray direction
 				tMax,                  // ray max range
@@ -214,8 +215,10 @@ void main() {
 
 		imageStore(illuminationImage, ivec2(gl_LaunchIDEXT.xy), vec4(mixedLight, sampleAge));
 
-		//outColor = vec3(abs(prevPixelCoord / vec2(gl_LaunchSizeEXT.xy) - inUV) * 8, 0);
-		outColor = primaryPayload.color.rgb * mixedLight;
+		float worldDepth = distance(primaryPayload.hit.xyz, origin.xyz) / tMax;
+		imageStore(normalsImage, ivec2(gl_LaunchIDEXT.xy), vec4(primaryPayload.normal.xyz, worldDepth));
+
+		outColor = primaryPayload.color.rgb;
 	}
 
 	/**
