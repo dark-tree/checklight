@@ -78,6 +78,7 @@ class ImmediateRenderer {
 		glm::vec3 target;
 		VerticalAlignment vertical;
 		HorizontalAlignment horizontal;
+		glm::vec2 expanse;
 
 		void upload(CommandRecorder& recorder);
 		void close(const LogicalDevice& device);
@@ -85,7 +86,7 @@ class ImmediateRenderer {
 		float getMaxPixelError() const;
 		void drawBillboardVertex(glm::quat rotation, glm::vec3 offset, float x, float y, float u, float v);
 		glm::quat getBillboardRotation(glm::vec3 center) const;
-		glm::vec2 getTextOffset(const std::vector<uint32_t>& text, glm::vec2 extend) const;
+		glm::vec2 getTextOffset(const std::vector<uint32_t>& text) const;
 		void usePrimaryColor();
 		void useSecondaryColor();
 
@@ -136,6 +137,8 @@ class ImmediateRenderer {
 		void setTextAlignment(VerticalAlignment alignment);
 		void setTextAlignment(HorizontalAlignment alignment);
 		void setTextAlignment(VerticalAlignment vertical, HorizontalAlignment horizontal);
+		void setTextBox(Disabled disabled);
+		void setTextBox(int width, int height);
 
 		// 2D Primitives
 		void drawVertex2D(float x, float y, float u, float v);

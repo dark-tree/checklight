@@ -177,7 +177,7 @@ glm::quat ImmediateRenderer::getBillboardRotation(glm::vec3 center) const {
 	return ry;
 }
 
-glm::vec2 ImmediateRenderer::getTextOffset(const std::vector<uint32_t>& text, glm::vec2 extend) const {
+glm::vec2 ImmediateRenderer::getTextOffset(const std::vector<uint32_t>& text) const {
 
 	if (!font) {
 		throw std::runtime_error {"No font set!"};
@@ -187,8 +187,8 @@ glm::vec2 ImmediateRenderer::getTextOffset(const std::vector<uint32_t>& text, gl
 	float my = static_cast<int>(vertical) / 2.0f;
 
 	glm::vec2 offset = {
-		extend.x * mx / font_size,
-		extend.y * my / font_size
+		+ expanse.x * mx,
+		- expanse.y * (1 - my),
 	};
 
 	uint32_t prev = 0;
@@ -336,6 +336,14 @@ void ImmediateRenderer::setTextAlignment(VerticalAlignment vertical, HorizontalA
 	setTextAlignment(horizontal);
 }
 
+void ImmediateRenderer::setTextBox(Disabled disabled) {
+	setTextBox(0, 0);
+}
+
+void ImmediateRenderer::setTextBox(int width, int height) {
+	this->expanse = {width, height};
+}
+
 void ImmediateRenderer::setFont(const std::string& path, int size) {
 	setFont(path);
 	setFontSize(size);
@@ -364,6 +372,7 @@ void ImmediateRenderer::drawRect2D(float x, float y, float w, float h) {
 	drawArc2D(pdr.x, pdr.y, rtl, rtl, glm::radians(270.0f), -M_PI_2);
 
 	// main rect body
+	useSecondaryColor();
 	drawQuad2D(par.x, par.y, pbr.x, pbr.y, pcr.x, pcr.y, pdr.x, pdr.y);
 
 	// beveled walls
@@ -473,11 +482,17 @@ void ImmediateRenderer::drawCircle2D(float x, float y, float radius) {
 void ImmediateRenderer::drawQuad2D(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
 
 	if (mapping) {
+		usePrimaryColor();
 		drawVertex2D(x1, y1);
 		drawVertex2D(x2, y2);
+
+		useSecondaryColor();
 		drawVertex2D(x3, y3);
 
+		usePrimaryColor();
 		drawVertex2D(x1, y1);
+
+		useSecondaryColor();
 		drawVertex2D(x3, y3);
 		drawVertex2D(x4, y4);
 		return;
@@ -557,7 +572,7 @@ void ImmediateRenderer::drawText2D(float x, float y, const std::string& str) {
 	std::vector<uint32_t> unicodes = utf8::toCodePoints(str.c_str());
 	uint32_t prev = 0;
 
-	glm::vec2 alignment = getTextOffset(unicodes, {0, 0});
+	glm::vec2 alignment = getTextOffset(unicodes);
 
 	for (uint32_t unicode : unicodes) {
 		GlyphQuad q = font->getOrLoad(&x, &y, font_size / 100.0f, unicode, prev);
