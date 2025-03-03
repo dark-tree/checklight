@@ -51,13 +51,6 @@ void BoardManager::updateCycle() {
 
 
 	//debug
-	//temporary
-	if (globalTickNumber % 1000 == 0) {
-		if (!current_board.expired()) {
-			std::string result = current_board.lock()->printBoardTree();
-			printf(result.c_str());
-		}
-	}
 
 	globalTickNumber++;
 }

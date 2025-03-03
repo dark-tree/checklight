@@ -7,6 +7,10 @@ protected:
 	glm::vec3 position{};
 	glm::vec3 direction{};
 
+    glm::vec2 mouse_position{};
+    glm::vec2 mouse_position_old{};
+    bool mouse_init;
+
     bool pressed_left,
         pressed_right,
         pressed_up,
@@ -14,10 +18,6 @@ protected:
         pressed_forward,
         pressed_backwards,
         mouse_move;
-
-    glm::vec2 mouse_position;
-    glm::vec2 mouse_position_old;
-    bool mouse_init;
 
 	void onUpdate(Context c) override;
 
