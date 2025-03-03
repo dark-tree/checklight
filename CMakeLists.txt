@@ -96,7 +96,7 @@ set(MSDFGEN_USE_VCPKG OFF CACHE BOOL "" FORCE)
 set(MSDFGEN_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
 set(MSDFGEN_DYNAMIC_RUNTIME ON CACHE BOOL "" FORCE)
 
-FetchContent_MakeAvailable(glfw stb glm vma msdfgen)
+FetchContent_MakeAvailable(glfw stb glm vma msdfgen vstl)
 
 compile_glsl_directory(
 		SRC "${CMAKE_CURRENT_SOURCE_DIR}/shader"

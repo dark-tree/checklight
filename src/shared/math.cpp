@@ -14,7 +14,7 @@ glm::vec3 math::calculateForwardVector(glm::quat rotation) {
 	return quaternionRotation(rotation, FORWARD);
 }
 
-glm::vec2 calculateForwardVector2D(float angle) {
+glm::vec2 math::calculateForwardVector2D(float angle) {
 	return {cos(angle), sin(angle)};
 }
 

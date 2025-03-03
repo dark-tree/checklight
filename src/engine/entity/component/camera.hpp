@@ -10,6 +10,7 @@ protected:
 	glm::vec2 mouse_position{};
 	glm::vec2 mouse_position_old{};
 	bool mouse_init;
+	bool mouse_captured;
 
 	bool pressed_left,
 	    pressed_right,

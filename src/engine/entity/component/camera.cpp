@@ -14,6 +14,7 @@ Camera::Camera() : GameComponent() {
 	pressed_backwards = false;
 	pressed_forward = false;
 	mouse_move = false;
+	mouse_captured = true;
 
 	mouse_position = {0, 0};
 	mouse_position_old = {0, 0};
@@ -98,25 +99,37 @@ InputResult Camera::onEvent(const InputEvent &event) {
 		else if(key_event->wasReleased(GLFW_KEY_Q) || key_event->wasReleased(GLFW_KEY_LEFT_SHIFT))
 		    pressed_down = false;
 		//up
-		if(key_event->wasPressed(GLFW_KEY_E) || key_event->wasPressed(GLFW_KEY_SPACE))
+		else if(key_event->wasPressed(GLFW_KEY_E) || key_event->wasPressed(GLFW_KEY_SPACE))
 		    pressed_up = true;
 		else if(key_event->wasReleased(GLFW_KEY_E) || key_event->wasReleased(GLFW_KEY_SPACE))
 		    pressed_up = false;
+		//uncapture
+		else if(key_event->wasReleased(GLFW_KEY_ESCAPE)){
+			mouse_captured = false;
+			mouse_init = false;
+		}
+	}
+	if (const auto* button_event = event.as<ButtonEvent>()) {
+		if(button_event->wasPressed(GLFW_MOUSE_BUTTON_LEFT)){
+			mouse_captured = true;
+		}
 	}
 	if (const auto* mouse_event = event.as<MouseEvent>()) {
-		mouse_move = true;
-		if(!mouse_init){
-			mouse_position_old = mouse_event->getMouse();
-			mouse_position = mouse_event->getMouse();
+		if(mouse_captured){
+			mouse_move = true;
+			if(!mouse_init){
+				mouse_position_old = mouse_event->getMouse();
+				mouse_position = mouse_event->getMouse();
+			}
+			else{
+				mouse_position = mouse_event->getMouse();
+			}
+			mouse_init = true;
+			return InputResult::ACCEPT;
 		}
-		else{
-			mouse_position = mouse_event->getMouse();
-		}
-		mouse_init = true;
-		return InputResult::ACCEPT;
 	}
 	if (const auto* frame_event = event.as<FrameEvent>()) {
-	    frame_event->capture();
+		if(mouse_captured) frame_event->capture();
 	}
 	return InputResult::PASS;
 }

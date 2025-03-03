@@ -26,7 +26,7 @@ std::vector<std::shared_ptr<Pawn>> PawnTree::findAllByName(const std::string& na
 	for (auto r = range.first; r != range.second; ++r) {
 		result.push_back(r->second);
 	}
-	return std::move(result);
+	return result;
 }
 
 std::vector<std::shared_ptr<Pawn>> PawnTree::findAllByID(uint32_t id) {
@@ -35,7 +35,7 @@ std::vector<std::shared_ptr<Pawn>> PawnTree::findAllByID(uint32_t id) {
 	for (auto r = range.first; r != range.second; ++r) {
 		result.push_back(r->second);
 	}
-	return std::move(result);
+	return result;
 }
 
 size_t PawnTree::nameHitSize(const std::string& name) {
@@ -138,7 +138,7 @@ std::string PawnTree::recursivePrint(std::shared_ptr<Pawn> p, int depth) {
 	result += "\"" + p->getName() + "\"" + "\n";
 
 	std::vector<std::shared_ptr<Pawn>> test = p->getChildren();
-	for (int i = 0; i < test.size(); i++) {
+	for (size_t i = 0; i < test.size(); i++) {
 		result += recursivePrint(test[i], depth + 1);
 	}
 	return result;

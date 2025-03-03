@@ -21,12 +21,12 @@ void Board::addPawnToRoot(std::shared_ptr<Pawn>& pawn) {
 
 
 std::shared_ptr<Pawn> Board::findPawnByID(uint32_t id) {
-	return std::move(pawns.findByID(id));
+	return pawns.findByID(id);
 }
 
 
 std::shared_ptr<Pawn> Board::findPawnByID(uint32_t id, size_t position) {
-	std::vector query_result = std::move(pawns.findAllByID(id));
+	std::vector query_result = pawns.findAllByID(id);
 	if (query_result.size() > position) {
 		return query_result[position];
 	}
@@ -51,7 +51,7 @@ std::shared_ptr<Pawn> Board::findPawnByID(int32_t id, size_t position) {
 		throw std::runtime_error("Id can't be negative");
 	}
 	else {
-		std::vector query_result = std::move(pawns.findAllByID(static_cast<uint32_t>(id)));
+		std::vector query_result = pawns.findAllByID(static_cast<uint32_t>(id));
 		if (query_result.size() > position) {
 			return query_result[position];
 		}
@@ -73,7 +73,7 @@ std::shared_ptr<Pawn> Board::findPawnByName(const std::string& name) {
 
 
 std::shared_ptr<Pawn> Board::findPawnByName(const std::string& name, size_t position) {
-	std::vector query_result = std::move(pawns.findAllByName(name));
+	std::vector query_result = pawns.findAllByName(name);
 	if (query_result.size() > position) {
 		return query_result[position];
 	}
