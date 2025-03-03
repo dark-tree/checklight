@@ -63,7 +63,7 @@ void PawnTree::mountPawn(std::shared_ptr<Pawn> pawn) {
 		}
 	}
 
-    //TODO test if it works
+	//TODO test if it works
 	if (isCopy == false) {
 		std::string p_name = pawn->getName();
 		uint32_t p_id = pawn->getEntityID();

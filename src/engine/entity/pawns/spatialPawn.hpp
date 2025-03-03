@@ -11,7 +11,7 @@ protected:
 	glm::mat3x4 result;
 
 public:
-    SpatialPawn();
+	SpatialPawn();
 
 	/**
 	 * Translates Pawn by specified value
@@ -24,8 +24,8 @@ public:
 	void setPosition(glm::vec3 new_position);
 
 	/**
-     * Returns absolute position of a pawn in 3D space
-     */
+	 * Returns absolute position of a pawn in 3D space
+	 */
 	glm::vec3 getPosition() const;
 
 	/**
@@ -34,8 +34,8 @@ public:
 	void setRotation(glm::quat new_rotation);
 
 	/**
-     * Returns absolute rotation of a pawn in 3D space
-     */
+	 * Returns absolute rotation of a pawn in 3D space
+	 */
 	glm::quat getRotation() const;
 
 	/**
@@ -44,17 +44,17 @@ public:
 	void setScale(glm::vec3 new_scale);
 
 	/**
-     * Sets absolute scale of a pawn in 3D space
-     */
+	 * Sets absolute scale of a pawn in 3D space
+	 */
 	glm::vec3 getScale() const;
 
 	/**
-     * Returns affine transform matrix of an object. (Its rotation scale and position combined!)
-     */
+	 * Returns affine transform matrix of an object. (Its rotation scale and position combined!)
+	 */
 	glm::mat3x4 getMatrix() const;
 
 	/**
-     * Returns facing direction, TODO check if this is normalised
-     */
+	 * Returns facing direction, TODO check if this is normalised
+	 */
 	glm::vec3 getForwardVector();
 };

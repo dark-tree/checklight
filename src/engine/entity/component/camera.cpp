@@ -28,36 +28,34 @@ void Camera::onUpdate(Context c) {
 	glm::vec3 forward = getForwardVector();
 
 	if(pressed_forward){
-	    pos += forward * DELTA;
+		pos += forward * DELTA;
 	}
 	if(pressed_backwards){
-	    pos -= forward * DELTA;
+		pos -= forward * DELTA;
 	}
 	if(pressed_down){
-	    pos += glm::vec3 {0.0f,-1.0f,0.0f} * DELTA;
+		pos += glm::vec3 {0.0f,-1.0f,0.0f} * DELTA;
 	}
 	if(pressed_up){
-	    pos += glm::vec3 {0.0f,1.0f,0.0f} * DELTA;
+		pos += glm::vec3 {0.0f,1.0f,0.0f} * DELTA;
 	}
 	if(pressed_left){
-	    pos -= glm::cross(forward, math::UP) * DELTA;
+		pos -= glm::cross(forward, math::UP) * DELTA;
 	}
 	if(pressed_right){
-	    pos += glm::cross(forward, math::UP) * DELTA;
+		pos += glm::cross(forward, math::UP) * DELTA;
 	}
 	if(mouse_move){
-	    glm::vec2 mouse_difference = mouse_position - mouse_position_old;
-	    mouse_position_old = mouse_position;
+		glm::vec2 mouse_difference = mouse_position - mouse_position_old;
+		mouse_position_old = mouse_position;
 
-	    float moveX = mouse_difference.x/400.0f;
-	    float moveY = mouse_difference.y/400.0f;
+		float moveX = mouse_difference.x/400.0f;
+		float moveY = mouse_difference.y/400.0f;
 
-	    rot = glm::rotate(rot,moveX,{0,-1.0,0});
-	    rot = glm::rotate(rot,moveY,{0.0,0,-1.0});
+		rot = glm::rotate(rot,moveX,{0,-1.0,0});
+		rot = glm::rotate(rot,moveY,{0.0,0,-1.0});
 
-	    printf("ROTATING! %f , %f\n", moveX, moveY);
-
-	    mouse_move = false;
+		mouse_move = false;
 	}
 
 	setPosition(pos);
@@ -82,40 +80,40 @@ glm::fvec3 Camera::getCamFacing() {
 
 InputResult Camera::onEvent(const InputEvent &event) {
 	if (const auto* key_event = event.as<KeyboardEvent>()) {
-	    //forward
-	    if(key_event->wasPressed(GLFW_KEY_W)) pressed_forward = true;
-	    else if(key_event->wasReleased(GLFW_KEY_W)) pressed_forward = false;
-	    //left
-	    else if(key_event->wasPressed(GLFW_KEY_A)) pressed_left = true;
-	    else if(key_event->wasReleased(GLFW_KEY_A)) pressed_left = false;
-	    //back
-	    else if(key_event->wasPressed(GLFW_KEY_S)) pressed_backwards = true;
-	    else if(key_event->wasReleased(GLFW_KEY_S)) pressed_backwards = false;
-	    //right
-	    else if(key_event->wasPressed(GLFW_KEY_D)) pressed_right = true;
-	    else if(key_event->wasReleased(GLFW_KEY_D)) pressed_right = false;
-	    //down
-	    else if(key_event->wasPressed(GLFW_KEY_Q) || key_event->wasPressed(GLFW_KEY_LEFT_SHIFT)) //TODO make two separate ifs?
-	        pressed_down = true;
-	    else if(key_event->wasReleased(GLFW_KEY_Q) || key_event->wasReleased(GLFW_KEY_LEFT_SHIFT))
-	        pressed_down = false;
-	    //up
-	    if(key_event->wasPressed(GLFW_KEY_E) || key_event->wasPressed(GLFW_KEY_SPACE))
-	        pressed_up = true;
-	    else if(key_event->wasReleased(GLFW_KEY_E) || key_event->wasReleased(GLFW_KEY_SPACE))
-	        pressed_up = false;
+		//forward
+		if(key_event->wasPressed(GLFW_KEY_W)) pressed_forward = true;
+		else if(key_event->wasReleased(GLFW_KEY_W)) pressed_forward = false;
+		//left
+		else if(key_event->wasPressed(GLFW_KEY_A)) pressed_left = true;
+		else if(key_event->wasReleased(GLFW_KEY_A)) pressed_left = false;
+		//back
+		else if(key_event->wasPressed(GLFW_KEY_S)) pressed_backwards = true;
+		else if(key_event->wasReleased(GLFW_KEY_S)) pressed_backwards = false;
+		//right
+		else if(key_event->wasPressed(GLFW_KEY_D)) pressed_right = true;
+		else if(key_event->wasReleased(GLFW_KEY_D)) pressed_right = false;
+		//down
+		else if(key_event->wasPressed(GLFW_KEY_Q) || key_event->wasPressed(GLFW_KEY_LEFT_SHIFT)) //TODO make two separate ifs?
+		    pressed_down = true;
+		else if(key_event->wasReleased(GLFW_KEY_Q) || key_event->wasReleased(GLFW_KEY_LEFT_SHIFT))
+		    pressed_down = false;
+		//up
+		if(key_event->wasPressed(GLFW_KEY_E) || key_event->wasPressed(GLFW_KEY_SPACE))
+		    pressed_up = true;
+		else if(key_event->wasReleased(GLFW_KEY_E) || key_event->wasReleased(GLFW_KEY_SPACE))
+		    pressed_up = false;
 	}
 	if (const auto* mouse_event = event.as<MouseEvent>()) {
-	    mouse_move = true;
-	    if(!mouse_init){
-	        mouse_position_old = mouse_event->getMouse();
-	        mouse_position = mouse_event->getMouse();
-	    }
-	    else{
-	        mouse_position = mouse_event->getMouse();
-	    }
-	    mouse_init = true;
-	    return InputResult::ACCEPT;
+		mouse_move = true;
+		if(!mouse_init){
+			mouse_position_old = mouse_event->getMouse();
+			mouse_position = mouse_event->getMouse();
+		}
+		else{
+			mouse_position = mouse_event->getMouse();
+		}
+		mouse_init = true;
+		return InputResult::ACCEPT;
 	}
 	if (const auto* frame_event = event.as<FrameEvent>()) {
 	    frame_event->capture();
