@@ -4,6 +4,12 @@
  * SpatialPawn
  */
 
+SpatialPawn::SpatialPawn() {
+    position = {0,0,0};
+    rotation = {1,0,0,0};
+    scale = {1,1,1};
+}
+
 void SpatialPawn::addPosition(glm::vec3 new_position) {
 	position = position + new_position;
 }
@@ -39,3 +45,5 @@ glm::mat3x4 SpatialPawn::getMatrix() const {
 glm::vec3 SpatialPawn::getForwardVector() {
 	return math::calculateForwardVector(rotation);
 }
+
+

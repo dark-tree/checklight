@@ -13,4 +13,10 @@ protected:
     glm::vec3 getPosition();
 
     glm::quat getRotation();
+
+    void setPosition(glm::vec3 position);
+
+    void setRotation(glm::quat rotation);
+
+    glm::vec3 getForwardVector();
 };

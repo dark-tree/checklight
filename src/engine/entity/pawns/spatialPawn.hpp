@@ -11,6 +11,7 @@ protected:
 	glm::mat3x4 result;
 
 public:
+    SpatialPawn();
 
 	/**
 	 * Translates Pawn by specified value

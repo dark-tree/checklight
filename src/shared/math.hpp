@@ -5,6 +5,7 @@
 namespace math {
 
 	extern const glm::vec3 FORWARD;
+    extern const glm::vec3 UP;
 
     glm::vec3 quaternionRotation(glm::quat q, glm::vec3 vec);
 

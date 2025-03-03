@@ -7,6 +7,18 @@ protected:
 	glm::vec3 position{};
 	glm::vec3 direction{};
 
+    bool pressed_left,
+        pressed_right,
+        pressed_up,
+        pressed_down,
+        pressed_forward,
+        pressed_backwards,
+        mouse_move;
+
+    glm::vec2 mouse_position;
+    glm::vec2 mouse_position_old;
+    bool mouse_init;
+
 	void onUpdate(Context c) override;
 
     void onFixedUpdate(FixedContext c) override;

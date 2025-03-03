@@ -2,6 +2,7 @@
 #include "math.hpp"
 
 const glm::vec3 math::FORWARD = { 1.0,0.0,0.0 };
+const glm::vec3 math::UP = { 0.0,1.0,0.0 };
 
 glm::vec3 math::quaternionRotation(glm::quat q, glm::vec3 vec) {
     glm::vec3 xyz = glm::vec3(q.x, q.y, q.z);
