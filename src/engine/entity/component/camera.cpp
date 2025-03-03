@@ -117,5 +117,8 @@ InputResult Camera::onEvent(const InputEvent &event) {
         mouse_init = true;
         return InputResult::ACCEPT;
     }
+    if (const auto* frame_event = event.as<FrameEvent>()) {
+        frame_event->capture();
+    }
     return InputResult::PASS;
 }

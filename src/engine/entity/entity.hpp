@@ -12,6 +12,8 @@ protected:
 public:
 	Entity();
 
+    virtual ~Entity();
+
 	uint32_t getEntityID() const;
 
 	/*
@@ -23,4 +25,6 @@ public:
 	 * if set true component will be removed at the end of the update cycle
 	 */
 	void queueRemove(bool value);
+
 };
+
