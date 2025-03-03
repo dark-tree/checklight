@@ -12,7 +12,7 @@ protected:
 public:
 	Entity();
 
-    virtual ~Entity();
+	virtual ~Entity();
 
 	uint32_t getEntityID() const;
 
