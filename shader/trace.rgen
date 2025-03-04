@@ -252,7 +252,7 @@ void main() {
 		vec3 currentLight = primaryPayload.light.rgb + (giLight / float(samples));
 		
 		vec3 mixedLight = mix(prevFrameLight.rgb, currentLight, 1.0 / (sampleAge + 1.0));
-		sampleAge = min(sampleAge + 1.0, 100.0);
+		sampleAge = min(sampleAge + 1.0, 200.0);
 
 		imageStore(illuminationImage, ivec2(gl_LaunchIDEXT.xy), vec4(mixedLight, sampleAge));
 		imageStore(normalsImage, ivec2(gl_LaunchIDEXT.xy), vec4(primaryPayload.normal.xyz, depthValue));
@@ -261,6 +261,7 @@ void main() {
 	}
 	else{
 		imageStore(illuminationImage, ivec2(gl_LaunchIDEXT.xy), vec4(1.0));
+		imageStore(normalsImage, ivec2(gl_LaunchIDEXT.xy), vec4(0.0));
 	}
 
 	/**

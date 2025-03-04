@@ -28,6 +28,8 @@ void main() {
     vec3 illumSum = centerIllumSample.rgb;
     float weightSum = 1.0;
 
+    float ageWeight = (200.0 - clamp(centerIllumSample.w - 50, 0, 200)) / 200.0;
+
     float illumTexelSize = 1.0 / float(textureSize(uIlluminationSampler, 0).x);
 
     for (int x = -FILTER_RADIUS; x <= FILTER_RADIUS; x++) {
@@ -36,7 +38,7 @@ void main() {
                 continue;
             }
 
-            vec2 pos = vTexture + vec2(x, y) * illumTexelSize * STEP_SIZE;
+            vec2 pos = vTexture + vec2(x, y) * illumTexelSize * STEP_SIZE * ageWeight;
 
             if (pos.x < 0.0 || pos.x > 1.0 || pos.y < 0.0 || pos.y > 1.0) {
                 continue;
