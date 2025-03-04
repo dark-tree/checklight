@@ -74,7 +74,34 @@ bool inRange(ivec2 uv, ivec2 minv, ivec2 maxv) {
 	return all(greaterThanEqual(uv, minv)) && all(lessThanEqual(uv, maxv));
 }
 
-vec4 samplePrevIllumination(vec2 uv) {
+vec4 getDepthDiffAndNormal(ivec2 prevPixelCoord, HitPayload primaryPayload) {
+	vec4 prevDepthAndNormals = imageLoad(prevDepthImage, prevPixelCoord);
+	float prevDepth = prevDepthAndNormals.a;
+
+	vec2 ndcXY = vec2(prevPixelCoord) / gl_LaunchSizeEXT.xy * 2.0 - 1.0;
+	vec4 clipPos = vec4(ndcXY, prevDepth, 1.0);
+
+	vec4 viewPos = inverse(uSceneObject.prevProjection) * clipPos;
+	viewPos /= viewPos.w;
+
+	vec4 worldPos4 = inverse(uSceneObject.prevView) * viewPos;
+	vec3 prevWorldPos = worldPos4.xyz;
+
+	vec3 currWorldPos = primaryPayload.hit.xyz;
+
+	float worldPosDiff = distance(prevWorldPos, currWorldPos);
+
+	return vec4(prevDepthAndNormals.xyz, worldPosDiff);
+}
+
+#define DEPTH_THRESHOLD 0.2
+#define NORMAL_THRESHOLD 0.5
+
+float normalEdgeStoppingWeight(vec3 centerNormal, vec3 sampleNormal, float power) {
+    return pow(clamp(dot(centerNormal, sampleNormal), 0.0, 1.0), power);
+}
+
+vec4 samplePrevIllumination(vec2 uv, HitPayload primaryPayload) {
 
     ivec2 texSize = imageSize(prevIlluminationImage);
 
@@ -87,20 +114,53 @@ vec4 samplePrevIllumination(vec2 uv) {
     ivec2 pos2 = pos0 + ivec2(0, 1);
     ivec2 pos3 = pos0 + ivec2(1, 1);
 
-    vec4 tex0 = inRange(pos0, ivec2(0), texSize - ivec2(1)) ? imageLoad(prevIlluminationImage, pos0) : vec4(0.0);
-	vec4 tex1 = inRange(pos1, ivec2(0), texSize - ivec2(1)) ? imageLoad(prevIlluminationImage, pos1) : vec4(0.0);
-	vec4 tex2 = inRange(pos2, ivec2(0), texSize - ivec2(1)) ? imageLoad(prevIlluminationImage, pos2) : vec4(0.0);
-	vec4 tex3 = inRange(pos3, ivec2(0), texSize - ivec2(1)) ? imageLoad(prevIlluminationImage, pos3) : vec4(0.0);
+	vec4 depthNormal0 = getDepthDiffAndNormal(pos0, primaryPayload);
+	vec4 depthNormal1 = getDepthDiffAndNormal(pos1, primaryPayload);
+	vec4 depthNormal2 = getDepthDiffAndNormal(pos2, primaryPayload);
+	vec4 depthNormal3 = getDepthDiffAndNormal(pos3, primaryPayload);
+
+	bool range0 = inRange(pos0, ivec2(0), texSize - ivec2(1)) && depthNormal0.w < DEPTH_THRESHOLD 
+		&& normalEdgeStoppingWeight(primaryPayload.normal.xyz, depthNormal0.xyz, 128.0) > NORMAL_THRESHOLD;
+
+	bool range1 = inRange(pos1, ivec2(0), texSize - ivec2(1)) && depthNormal1.w < DEPTH_THRESHOLD 
+		&& normalEdgeStoppingWeight(primaryPayload.normal.xyz, depthNormal1.xyz, 128.0) > NORMAL_THRESHOLD;
+
+	bool range2 = inRange(pos2, ivec2(0), texSize - ivec2(1)) && depthNormal2.w < DEPTH_THRESHOLD
+		&& normalEdgeStoppingWeight(primaryPayload.normal.xyz, depthNormal2.xyz, 128.0) > NORMAL_THRESHOLD;
+
+	bool range3 = inRange(pos3, ivec2(0), texSize - ivec2(1)) && depthNormal3.w < DEPTH_THRESHOLD
+		&& normalEdgeStoppingWeight(primaryPayload.normal.xyz, depthNormal3.xyz, 128.0) > NORMAL_THRESHOLD;
+
+    vec4 tex0 = range0 ? imageLoad(prevIlluminationImage, pos0) : vec4(0.0);
+	vec4 tex1 = range1 ? imageLoad(prevIlluminationImage, pos1) : vec4(0.0);
+	vec4 tex2 = range2 ? imageLoad(prevIlluminationImage, pos2) : vec4(0.0);
+	vec4 tex3 = range3 ? imageLoad(prevIlluminationImage, pos3) : vec4(0.0);
+
+	tex0 = range0 ? tex0 : tex1;
+	tex1 = range1 ? tex1 : tex0;
+
+	tex2 = range2 ? tex2 : tex3;
+	tex3 = range3 ? tex3 : tex2;
 
     vec4 interpX0 = mix(tex0, tex1, frac.x);
     vec4 interpX1 = mix(tex2, tex3, frac.x);
+
+	bool range01 = range0 || range1;
+	bool range23 = range2 || range3;
+
+	interpX0 = range01 ? interpX0 : interpX1;
+	interpX1 = range23 ? interpX1 : interpX0;
+
+	if (!range01 && !range23) {
+		return vec4(0.0);
+	}
 
     return mix(interpX0, interpX1, frac.y);
 }
 
 void main() {
 	const vec2 pixelCenter = vec2(gl_LaunchIDEXT.xy) + vec2(0.5);
-	const vec2 inUV = pixelCenter/vec2(gl_LaunchSizeEXT.xy);
+	const vec2 inUV = pixelCenter / vec2(gl_LaunchSizeEXT.xy);
 	vec2 d = inUV * 2.0 - 1.0;
 
 	mat4 viewInverse = inverse(uSceneObject.view);
@@ -185,26 +245,8 @@ void main() {
 		float sampleAge = 0.0;
 
 		if (prevPixelCoord.x >= 0 && prevPixelCoord.x < 1 && prevPixelCoord.y >= 0 && prevPixelCoord.y < 1) {
-			float prevDepth = imageLoad(prevDepthImage, ivec2(prevPixelCoord * gl_LaunchSizeEXT.xy)).a;
-
-			vec2 ndcXY = prevPixelCoord * 2.0 - 1.0;
-			vec4 clipPos = vec4(ndcXY, prevDepth, 1.0);
-
-			vec4 viewPos = inverse(uSceneObject.prevProjection) * clipPos;
-			viewPos /= viewPos.w;
-
-			vec4 worldPos4 = inverse(uSceneObject.prevView) * viewPos;
-			vec3 prevWorldPos = worldPos4.xyz;
-
-			vec3 currWorldPos = primaryPayload.hit.xyz;
-
-			float worldPosDiff = distance(prevWorldPos, currWorldPos);
-
-			if (worldPosDiff < 0.2) {
-				prevFrameLight = samplePrevIllumination(prevPixelCoord);
-				//prevFrameLight = imageLoad(prevIlluminationImage, ivec2(prevPixelCoord * gl_LaunchSizeEXT.xy));
-				sampleAge = floor(prevFrameLight.a);
-			}
+			prevFrameLight = samplePrevIllumination(prevPixelCoord, primaryPayload);
+			sampleAge = floor(prevFrameLight.a);
 		}
 
 		vec3 currentLight = primaryPayload.light.rgb + (giLight / float(samples));

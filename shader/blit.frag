@@ -54,8 +54,8 @@ void main() {
 
     vec4 color = texture(uAlbedoSampler, vTexture);
 
-    fColor = vec4(color.rgb * illumSum, 1.0f);
-    fPrevDepth = vec4(color.w);
+    fColor = vec4(color.rgb * illumSum, 1.0);
+    fPrevDepth = vec4(centerNormal.xyz, color.w);
 
     fPrevIllumination = texture(uIlluminationSampler, vTexture);
 
