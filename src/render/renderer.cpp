@@ -329,10 +329,12 @@ void Renderer::createSwapchain() {
 	attachment_prev_illumination.allocate(device, extent.width, extent.height, allocator);
 	attachment_normal.allocate(device, extent.width, extent.height, allocator);
 	attachment_prev_depth.allocate(device, extent.width, extent.height, allocator);
+	attachment_illum_transport.allocate(device, extent.width, extent.height, allocator);
 
 	// create framebuffers
 	pass_immediate.prepareFramebuffers(swapchain);
 	pass_compose.prepareFramebuffers(swapchain);
+	pass_denoise.prepareFramebuffers(swapchain);
 
 	printf("INFO: Swapchain ready\n");
 
@@ -350,6 +352,7 @@ void Renderer::createShaders() {
 	shader_trace_hit = Shader::loadFromFile(device, "trace.rchit", VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
 	shader_blit_vertex = Shader::loadFromFile(device, "blit.vert", VK_SHADER_STAGE_VERTEX_BIT);
 	shader_blit_fragment = Shader::loadFromFile(device, "blit.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+	shader_denoise_fragment = Shader::loadFromFile(device, "denoise.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 
 }
 
@@ -412,6 +415,13 @@ void Renderer::createAttachments() {
 		.setDebugName("Prev Depth")
 		.createAttachment();
 
+	attachment_illum_transport = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+		.setDebugName("Illum transport")
+		.createAttachment();
+
 	// very important UwU
 	attachment_color.markSwapchainBacked();
 
@@ -471,11 +481,6 @@ void Renderer::createRenderPasses() {
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.next();
 
-		Attachment::Ref prev_illumination = builder.addAttachment(attachment_prev_illumination)
-			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_GENERAL)
-			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_GENERAL)
-			.next();
-
 		Attachment::Ref prev_depth = builder.addAttachment(attachment_prev_depth)
 			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_GENERAL)
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_GENERAL)
@@ -493,7 +498,6 @@ void Renderer::createRenderPasses() {
 
 		builder.addSubpass()
 			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.addOutput(prev_illumination, VK_IMAGE_LAYOUT_GENERAL)
 			.addOutput(prev_depth, VK_IMAGE_LAYOUT_GENERAL)
 			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.next();
@@ -502,12 +506,45 @@ void Renderer::createRenderPasses() {
 
 	}
 
+	{ // denoise 2d pass
+
+		RenderPassBuilder builder;
+
+		Attachment::Ref illum = builder.addAttachment(attachment_illum_transport)
+			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_GENERAL)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_GENERAL)
+			.next();
+
+		Attachment::Ref illum_prev = builder.addAttachment(attachment_prev_illumination)
+			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_GENERAL)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_GENERAL)
+			.next();
+
+		builder.addDependency()
+			.first(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0)
+			.then(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+			.next();
+
+		builder.addDependency(VK_DEPENDENCY_BY_REGION_BIT)
+			.first(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+			.then(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_MEMORY_READ_BIT)
+			.next();
+
+		builder.addSubpass()
+			.addOutput(illum, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+			.addOutput(illum_prev, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+			.next();
+
+		pass_denoise = builder.build(device, "Denoise");
+
+	}
 
 }
 
 void Renderer::closeRenderPasses() {
 	pass_immediate.close();
 	pass_compose.close();
+	pass_denoise.close();
 }
 
 void Renderer::createPipelines() {
@@ -569,6 +606,16 @@ void Renderer::createPipelines() {
 		.withDepthTest(VK_COMPARE_OP_ALWAYS, true, true)
 		.build();
 
+	pipeline_denoise_2d = GraphicsPipelineBuilder::of(device)
+		.withViewport(0, 0, extent.width, extent.height)
+		.withScissors(0, 0, extent.width, extent.height)
+		.withCulling(false)
+		.withRenderPass(pass_denoise, 0)
+		.withShaders(shader_blit_vertex, shader_denoise_fragment)
+		.withDescriptorSetLayout(layout_denoise)
+		.withDepthTest(VK_COMPARE_OP_ALWAYS, true, false)
+		.build();
+
 	ShaderTableBuilder builder;
 	builder.addMissShader(shader_trace_miss);
 	builder.addMissShader(shader_trace_shadow_miss);
@@ -594,6 +641,7 @@ void Renderer::closePipelines() {
 	pipeline_text_2d.close();
 	pipeline_trace_3d.close();
 	pipeline_compose_2d.close();
+	pipeline_denoise_2d.close();
 }
 
 void Renderer::closeFrames() {
@@ -626,6 +674,7 @@ void Renderer::lateClose() {
 	attachment_prev_illumination.close(device);
 	attachment_normal.close(device);
 	attachment_prev_depth.close(device);
+	attachment_illum_transport.close(device);
 
 	swapchain.close();
 	closeFrames();
@@ -655,6 +704,7 @@ void Renderer::prepareForRendering(CommandRecorder& recorder) {
 	recorder.transitionLayout(attachment_prev_illumination, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 	recorder.transitionLayout(attachment_normal, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 	recorder.transitionLayout(attachment_prev_depth, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+	recorder.transitionLayout(attachment_illum_transport, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 }
 
 RenderFrame& Renderer::getFrame() {
@@ -773,6 +823,11 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.done(device);
 
+	layout_denoise = DescriptorSetLayoutBuilder::begin()
+		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.done(device);
+
 	layout_raytrace = DescriptorSetLayoutBuilder::begin()
 		.descriptor(0, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
 		.descriptor(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
@@ -791,6 +846,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.addDynamic(layout_immediate, 1)
 		.addDynamic(layout_raytrace, 1)
 		.addDynamic(layout_compose, 1)
+		.addDynamic(layout_denoise, 1)
 		.done(device, concurrent);
 
 	// render pass used during mesh rendering
@@ -816,6 +872,7 @@ Renderer::~Renderer() {
 	layout_immediate.close();
 	layout_raytrace.close();
 	layout_compose.close();
+	layout_denoise.close();
 
 	descriptor_pool.close();
 	transient_pool.close();
@@ -847,6 +904,7 @@ Renderer::~Renderer() {
 	shader_trace_hit.close();
 	shader_blit_vertex.close();
 	shader_blit_fragment.close();
+	shader_denoise_fragment.close();
 
 	VulkanDebug::assertAllDead();
 	allocator.close();
@@ -911,6 +969,13 @@ void Renderer::draw() {
 	recorder.bindPipeline(pipeline_trace_3d)
 		.bindDescriptorSet(frame.set_raytrace)
 		.traceRays(shader_table, width(), height());
+
+	// denoise
+	recorder.beginRenderPass(pass_denoise, current_image, swapchain.getExtend())
+		.bindPipeline(pipeline_denoise_2d)
+		.bindDescriptorSet(frame.set_denoise)
+		.draw(3)
+		.endRenderPass();
 
 	// compose final image
 	recorder.beginRenderPass(pass_compose, current_image, swapchain.getExtend())

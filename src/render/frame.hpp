@@ -52,6 +52,7 @@ class RenderFrame {
 		DescriptorSet set_immediate;
 		DescriptorSet set_compose;
 		DescriptorSet set_raytrace;
+		DescriptorSet set_denoise;
 
 	public:
 

@@ -15,8 +15,12 @@ RenderFrame::RenderFrame(Renderer& renderer, const CommandPool& pool, const Logi
 
 	set_compose = renderer.descriptor_pool.allocate(renderer.layout_compose);
 	set_compose.sampler(0, renderer.attachment_albedo.getTexture(), VK_IMAGE_LAYOUT_GENERAL);
-	set_compose.sampler(1, renderer.attachment_illumination.getTexture(), VK_IMAGE_LAYOUT_GENERAL);
+	set_compose.sampler(1, renderer.attachment_illum_transport.getTexture(), VK_IMAGE_LAYOUT_GENERAL);
 	set_compose.sampler(2, renderer.attachment_normal.getTexture(), VK_IMAGE_LAYOUT_GENERAL);
+
+	set_denoise = renderer.descriptor_pool.allocate(renderer.layout_denoise);
+	set_denoise.sampler(0, renderer.attachment_illumination.getTexture(), VK_IMAGE_LAYOUT_GENERAL);
+	set_denoise.sampler(1, renderer.attachment_normal.getTexture(), VK_IMAGE_LAYOUT_GENERAL);
 
 	// intentionally don't set TLAS, it's not build yet at this point!
 	set_raytrace = renderer.descriptor_pool.allocate(renderer.layout_raytrace);
