@@ -25,6 +25,7 @@ RenderFrame::RenderFrame(Renderer& renderer, const CommandPool& pool, const Logi
 	set_raytrace.view(6, renderer.attachment_illumination.getView(), VK_IMAGE_LAYOUT_GENERAL);
 	set_raytrace.view(7, renderer.attachment_prev_illumination.getView(), VK_IMAGE_LAYOUT_GENERAL);
 	set_raytrace.view(8, renderer.attachment_normal.getView(), VK_IMAGE_LAYOUT_GENERAL);
+	set_raytrace.view(9, renderer.attachment_prev_depth.getView(), VK_IMAGE_LAYOUT_GENERAL);
 }
 
 RenderFrame::~RenderFrame() {

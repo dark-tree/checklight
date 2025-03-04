@@ -17,10 +17,11 @@ struct HitPayload {
 layout(location = 0) rayPayloadEXT HitPayload rPayload;
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT TLAS;
-layout(binding = 1, set = 0, rgba32f) uniform image2D colorImage;
-layout(binding = 6, set = 0, rgba32f) uniform image2D illuminationImage;
-layout(binding = 7, set = 0, rgba32f) uniform image2D prevIlluminationImage;
-layout(binding = 8, set = 0, rgba32f) uniform image2D normalsImage;
+layout(binding = 1, set = 0, rgba32f) uniform image2D colorImage;              // W
+layout(binding = 6, set = 0, rgba32f) uniform image2D illuminationImage;       // W
+layout(binding = 7, set = 0, rgba32f) uniform image2D prevIlluminationImage;   // R
+layout(binding = 8, set = 0, rgba32f) uniform image2D normalsImage;            // W
+layout(binding = 9, set = 0, rgba32f) uniform image2D prevDepthImage;          // R
 
 layout(binding = 2, set = 0) uniform SceneUniform {
 	mat4 view;
@@ -184,9 +185,7 @@ void main() {
 		float sampleAge = 0.0;
 
 		if (prevPixelCoord.x >= 0 && prevPixelCoord.x < 1 && prevPixelCoord.y >= 0 && prevPixelCoord.y < 1) {
-			// TODO: Create separate image for reading 
-			// (the same image is being written to in this shader, which can cause artifacts)
-			float prevDepth = imageLoad(colorImage, ivec2(prevPixelCoord * gl_LaunchSizeEXT.xy)).a;
+			float prevDepth = imageLoad(prevDepthImage, ivec2(prevPixelCoord * gl_LaunchSizeEXT.xy)).a;
 
 			vec2 ndcXY = prevPixelCoord * 2.0 - 1.0;
 			vec4 clipPos = vec4(ndcXY, prevDepth, 1.0);
@@ -211,14 +210,15 @@ void main() {
 		vec3 currentLight = primaryPayload.light.rgb + (giLight / float(samples));
 		
 		vec3 mixedLight = mix(prevFrameLight.rgb, currentLight, 1.0 / (sampleAge + 1.0));
-		sampleAge += 1.0;
+		sampleAge = min(sampleAge + 1.0, 100.0);
 
 		imageStore(illuminationImage, ivec2(gl_LaunchIDEXT.xy), vec4(mixedLight, sampleAge));
-
-		float worldDepth = distance(primaryPayload.hit.xyz, origin.xyz) / tMax;
-		imageStore(normalsImage, ivec2(gl_LaunchIDEXT.xy), vec4(primaryPayload.normal.xyz, worldDepth));
+		imageStore(normalsImage, ivec2(gl_LaunchIDEXT.xy), vec4(primaryPayload.normal.xyz, depthValue));
 
 		outColor = primaryPayload.color.rgb;
+	}
+	else{
+		imageStore(illuminationImage, ivec2(gl_LaunchIDEXT.xy), vec4(1.0));
 	}
 
 	/**
