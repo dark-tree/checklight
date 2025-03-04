@@ -91,6 +91,7 @@ class Renderer {
 		Shader shader_blit_vertex;
 		Shader shader_blit_fragment;
 		Shader shader_denoise_fragment;
+		Shader shader_denoise2_fragment;
 
 		// attachments
 		Attachment attachment_color;
@@ -107,6 +108,7 @@ class Renderer {
 		DescriptorSetLayout layout_compose;
 		DescriptorSetLayout layout_raytrace;
 		DescriptorSetLayout layout_denoise;
+		DescriptorSetLayout layout_denoise2;
 
 		// layouts
 		BindingLayout binding_3d;
@@ -115,6 +117,7 @@ class Renderer {
 		RenderPass pass_immediate;
 		RenderPass pass_compose;
 		RenderPass pass_denoise;
+		RenderPass pass_denoise2;
 
 		// Pipelines
 		GraphicsPipeline pipeline_immediate_2d;
@@ -123,6 +126,7 @@ class Renderer {
 		GraphicsPipeline pipeline_trace_3d;
 		GraphicsPipeline pipeline_compose_2d;
 		GraphicsPipeline pipeline_denoise_2d;
+		GraphicsPipeline pipeline_denoise2_2d;
 
 		// late vulkan objects
 		Swapchain swapchain;

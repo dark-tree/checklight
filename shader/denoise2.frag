@@ -1,15 +1,13 @@
 #version 450
 
-layout(binding = 0) uniform sampler2D uAlbedoSampler;
-layout(binding = 1) uniform sampler2D uIlluminationSampler;
-layout(binding = 2) uniform sampler2D uNormalSampler;
+layout(binding = 0) uniform sampler2D uIlluminationSampler;
+layout(binding = 1) uniform sampler2D uNormalSampler;
 
 layout(location = 0) in vec2 vTexture;
-layout(location = 0) out vec4 fColor;
-layout(location = 1) out vec4 fPrevDepth;
+layout(location = 0) out vec4 fIllumination;
 
 #define FILTER_RADIUS 1
-#define STEP_SIZE 9
+#define STEP_SIZE 3
 
 float normalEdgeStoppingWeight(vec3 centerNormal, vec3 sampleNormal, float power) {
     return pow(clamp(dot(centerNormal, sampleNormal), 0.0, 1.0), power);
@@ -55,10 +53,5 @@ void main() {
 
     illumSum /= weightSum;
 
-    vec4 color = texture(uAlbedoSampler, vTexture);
-
-    fColor = vec4(color.rgb * illumSum, 1.0);
-    fPrevDepth = vec4(centerNormal.xyz, color.w);
-
-    gl_FragDepth = color.w;  
+    fIllumination = vec4(illumSum, centerIllumSample.w);
 }

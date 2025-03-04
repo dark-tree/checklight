@@ -335,6 +335,7 @@ void Renderer::createSwapchain() {
 	pass_immediate.prepareFramebuffers(swapchain);
 	pass_compose.prepareFramebuffers(swapchain);
 	pass_denoise.prepareFramebuffers(swapchain);
+	pass_denoise2.prepareFramebuffers(swapchain);
 
 	printf("INFO: Swapchain ready\n");
 
@@ -353,6 +354,7 @@ void Renderer::createShaders() {
 	shader_blit_vertex = Shader::loadFromFile(device, "blit.vert", VK_SHADER_STAGE_VERTEX_BIT);
 	shader_blit_fragment = Shader::loadFromFile(device, "blit.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 	shader_denoise_fragment = Shader::loadFromFile(device, "denoise.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+	shader_denoise2_fragment = Shader::loadFromFile(device, "denoise2.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 
 }
 
@@ -390,7 +392,7 @@ void Renderer::createAttachments() {
 	attachment_illumination = TextureBuilder::begin()
 		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
-		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
+		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 		.setDebugName("Illumination")
 		.createAttachment();
 
@@ -539,12 +541,40 @@ void Renderer::createRenderPasses() {
 
 	}
 
+	{ // denoise2 2d pass
+
+		RenderPassBuilder builder;
+
+		Attachment::Ref illum = builder.addAttachment(attachment_illumination)
+			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_GENERAL)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_GENERAL)
+			.next();
+
+		builder.addDependency()
+			.first(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0)
+			.then(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+			.next();
+
+		builder.addDependency(VK_DEPENDENCY_BY_REGION_BIT)
+			.first(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+			.then(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_MEMORY_READ_BIT)
+			.next();
+
+		builder.addSubpass()
+			.addOutput(illum, VK_IMAGE_LAYOUT_GENERAL)
+			.next();
+
+		pass_denoise2 = builder.build(device, "Denoise2");
+
+	}
+
 }
 
 void Renderer::closeRenderPasses() {
 	pass_immediate.close();
 	pass_compose.close();
 	pass_denoise.close();
+	pass_denoise2.close();
 }
 
 void Renderer::createPipelines() {
@@ -616,6 +646,16 @@ void Renderer::createPipelines() {
 		.withDepthTest(VK_COMPARE_OP_ALWAYS, true, false)
 		.build();
 
+	pipeline_denoise2_2d = GraphicsPipelineBuilder::of(device)
+		.withViewport(0, 0, extent.width, extent.height)
+		.withScissors(0, 0, extent.width, extent.height)
+		.withCulling(false)
+		.withRenderPass(pass_denoise2, 0)
+		.withShaders(shader_blit_vertex, shader_denoise2_fragment)
+		.withDescriptorSetLayout(layout_denoise2)
+		.withDepthTest(VK_COMPARE_OP_ALWAYS, true, false)
+		.build();
+
 	ShaderTableBuilder builder;
 	builder.addMissShader(shader_trace_miss);
 	builder.addMissShader(shader_trace_shadow_miss);
@@ -642,6 +682,7 @@ void Renderer::closePipelines() {
 	pipeline_trace_3d.close();
 	pipeline_compose_2d.close();
 	pipeline_denoise_2d.close();
+	pipeline_denoise2_2d.close();
 }
 
 void Renderer::closeFrames() {
@@ -823,6 +864,11 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.done(device);
 
+	layout_denoise2 = DescriptorSetLayoutBuilder::begin()
+		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.done(device);
+
 	layout_denoise = DescriptorSetLayoutBuilder::begin()
 		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.descriptor(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -846,6 +892,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.addDynamic(layout_immediate, 1)
 		.addDynamic(layout_raytrace, 1)
 		.addDynamic(layout_compose, 1)
+		.addDynamic(layout_denoise2, 1)
 		.addDynamic(layout_denoise, 1)
 		.done(device, concurrent);
 
@@ -873,6 +920,7 @@ Renderer::~Renderer() {
 	layout_raytrace.close();
 	layout_compose.close();
 	layout_denoise.close();
+	layout_denoise2.close();
 
 	descriptor_pool.close();
 	transient_pool.close();
@@ -905,6 +953,7 @@ Renderer::~Renderer() {
 	shader_blit_vertex.close();
 	shader_blit_fragment.close();
 	shader_denoise_fragment.close();
+	shader_denoise2_fragment.close();
 
 	VulkanDebug::assertAllDead();
 	allocator.close();
@@ -974,6 +1023,13 @@ void Renderer::draw() {
 	recorder.beginRenderPass(pass_denoise, current_image, swapchain.getExtend())
 		.bindPipeline(pipeline_denoise_2d)
 		.bindDescriptorSet(frame.set_denoise)
+		.draw(3)
+		.endRenderPass();
+
+	// second denoise pass
+	recorder.beginRenderPass(pass_denoise2, current_image, swapchain.getExtend())
+		.bindPipeline(pipeline_denoise2_2d)
+		.bindDescriptorSet(frame.set_denoise2)
 		.draw(3)
 		.endRenderPass();
 
