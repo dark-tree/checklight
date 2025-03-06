@@ -9,21 +9,21 @@ layout(location = 0) out vec4 vColor;
 layout(location = 1) out vec2 vTexture;
 
 layout(binding = 1, set = 0) uniform SceneUniform {
-    mat4 view;
-    mat4 projection;
-    mat4 prevView;
+	mat4 view;
+	mat4 projection;
+	mat4 prevView;
 	mat4 prevProjection;
-    float time;
+	float time;
 } uSceneObject;
 
 layout(push_constant) uniform MeshConstant {
-    mat4 matrix;
+	mat4 matrix;
 } uMeshObject;
 
 void main() {
-    mat4 matrix = uSceneObject.projection * uSceneObject.view * uMeshObject.matrix;
+	mat4 matrix = uSceneObject.projection * uSceneObject.view * uMeshObject.matrix;
 
-    gl_Position = matrix * vec4(iPosition, 1.0);
-    vColor = iColor;
-    vTexture = iTexture;
+	gl_Position = matrix * vec4(iPosition, 1.0);
+	vColor = iColor;
+	vTexture = iTexture;
 }

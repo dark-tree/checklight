@@ -1,4 +1,5 @@
 #version 450
+#extension GL_GOOGLE_include_directive : enable
 
 layout(binding = 0) uniform sampler2D uAlbedoSampler;
 layout(binding = 1) uniform sampler2D uIlluminationSampler;
@@ -8,59 +9,27 @@ layout(location = 0) in vec2 vTexture;
 layout(location = 0) out vec4 fColor;
 layout(location = 1) out vec4 fPrevDepth;
 
+#include "denoisecommon.glsl"
+
 #define FILTER_RADIUS 1
 #define STEP_SIZE 9
 
-float normalEdgeStoppingWeight(vec3 centerNormal, vec3 sampleNormal, float power) {
-    return pow(clamp(dot(centerNormal, sampleNormal), 0.0, 1.0), power);
-}
-
-float depthEdgeStoppingWeight(float centerDepth, float sampleDepth, float phi) {
-    return exp(-abs(centerDepth - sampleDepth) / phi);
-}
-
 void main() {
-    
-    vec4 centerIllumSample = texture(uIlluminationSampler, vTexture);
-    vec4 centerNormal = texture(uNormalSampler, vTexture);
-    float centerDepth = centerNormal.w;
+	
+	vec4 centerIllumSample = texture(uIlluminationSampler, vTexture);
+	vec4 centerNormal = texture(uNormalSampler, vTexture);
+	float centerDepth = centerNormal.w;
 
-    vec3 illumSum = centerIllumSample.rgb;
-    float weightSum = 1.0;
+	float ageWeight = (200.0 - clamp(centerIllumSample.w - 50, 0, 200)) / 200.0;
 
-    float ageWeight = (200.0 - clamp(centerIllumSample.w - 50, 0, 200)) / 200.0;
+	vec4 illumSum = vec4(centerIllumSample.rgb, 1.0);
+	illumSum += edgeAvoidingBlur(FILTER_RADIUS, STEP_SIZE, vTexture, centerDepth, centerNormal.xyz, ageWeight, uNormalSampler, uIlluminationSampler);  
+	illumSum /= illumSum.w;
 
-    float illumTexelSize = 1.0 / float(textureSize(uIlluminationSampler, 0).x);
+	vec4 color = texture(uAlbedoSampler, vTexture);
 
-    for (int x = -FILTER_RADIUS; x <= FILTER_RADIUS; x++) {
-        for (int y = -FILTER_RADIUS; y <= FILTER_RADIUS; y++) {
-            if (x == 0 && y == 0) {
-                continue;
-            }
+	fColor = vec4(color.rgb * illumSum.rgb, 1.0);
+	fPrevDepth = vec4(centerNormal.xyz, color.w);
 
-            vec2 pos = vTexture + vec2(x, y) * illumTexelSize * STEP_SIZE * ageWeight;
-
-            if (pos.x < 0.0 || pos.x > 1.0 || pos.y < 0.0 || pos.y > 1.0) {
-                continue;
-            }
-
-            vec4 currNormal = texture(uNormalSampler, pos);
-            float currDepth = currNormal.w;
-
-            float weightNormal = normalEdgeStoppingWeight(centerNormal.xyz, currNormal.xyz, 128.0);
-            float weightDepth = depthEdgeStoppingWeight(centerDepth, currDepth, 0.00001);
-            
-            illumSum += texture(uIlluminationSampler, pos).rgb * weightNormal * weightDepth;
-            weightSum += weightNormal * weightDepth;
-        }
-    }
-
-    illumSum /= weightSum;
-
-    vec4 color = texture(uAlbedoSampler, vTexture);
-
-    fColor = vec4(color.rgb * illumSum, 1.0);
-    fPrevDepth = vec4(centerNormal.xyz, color.w);
-
-    gl_FragDepth = color.w;  
+	gl_FragDepth = color.w;  
 }

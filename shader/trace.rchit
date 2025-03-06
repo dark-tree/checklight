@@ -5,19 +5,9 @@
 #extension GL_EXT_shader_explicit_arithmetic_types_int8 : require
 #extension GL_EXT_shader_explicit_arithmetic_types_int64 : require
 #extension GL_EXT_buffer_reference2 : require
+#extension GL_GOOGLE_include_directive : enable
 
-struct HitPayload {
-	// posX, posY, posZ, hit
-	vec4 hit;
-	// colorR, colorG, colorB
-	vec4 color;
-	// lightR, lightG, lightB
-	vec4 light;
-	// normalX, normalY, normalZ
-	vec4 normal;
-	// specularR, specularG, specularB, shininess
-	vec4 specular;
-};
+#include "raycommon.glsl"
 
 struct Vertex3D {
 	vec3 position;
@@ -79,7 +69,7 @@ bool traceShadowRay(vec3 origin, vec3 normal, vec3 shadowRayDirection) {
 	return !rShadowPayload;
 }
 
-vec3 computeDiffuse(RenderMaterial material, vec3 lightDir, vec3 normal) {
+vec3 computeDiffuse(vec3 lightDir, vec3 normal) {
 	vec3 c = vec3(max(dot(normal, lightDir), 0.0));
 	return c;
 }
@@ -143,13 +133,12 @@ void main() {
 	vec3 specular = vec3(0.0);
 
 	if (!traceShadowRay(positionWS, normalWS, lightDirection)) {
-		diffuse = computeDiffuse(material, lightDirection, normalWS) * lightColor;
+		diffuse = computeDiffuse(lightDirection, normalWS) * lightColor;
 		specular = computeSpecular(material, gl_WorldRayDirectionEXT, lightDirection, normalWS) * lightColor;
 	}
 	
 	vec3 color = texture(textures[nonuniformEXT(material.albedoTextureIndex)], uv).rgb;
-	
-	//vec3 combined = color * (specular + diffuse + ambient);
+
 	vec3 lightCombined = specular + diffuse + ambient;
 
 	/**
