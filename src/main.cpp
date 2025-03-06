@@ -1,6 +1,4 @@
 
-#include <gui/widget/button.hpp>
-
 #include "render/render.hpp"
 #include "input/input.hpp"
 #include "engine/engine.hpp"
@@ -20,8 +18,12 @@ int main() {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
-	auto button = std::make_shared<ButtonWidget>("Hello", [] () {
-		printf("DEBUG: Pressed button!\n");
+	// auto button = std::make_shared<ButtonWidget>("Hello", [] () {
+	// 	printf("DEBUG: Pressed button!\n");
+	// });
+
+	auto button = std::make_shared<SliderWidget>([] () {
+
 	});
 
 	button->setBounds(600, 600, 100, 50);

@@ -1,5 +1,8 @@
 #pragma once
 
+#include "widget/button.hpp"
+#include "widget/slider.hpp"
+
 inline void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
 
 
