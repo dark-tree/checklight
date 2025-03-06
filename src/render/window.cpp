@@ -162,6 +162,13 @@ Window::Window(uint32_t w, uint32_t h, std::string title_string) {
 
 Window::~Window() {
 	glfwDestroyWindow(handle);
+
+	for (auto [id, cursor] : cursors) {
+		glfwDestroyCursor(cursor);
+	}
+
+	printf("INFO: Unloaded %d cursors\n", (int) cursors.size());
+	cursors.clear();
 }
 
 GLFWwindow* Window::getHandle() const {
@@ -174,8 +181,9 @@ void Window::poll() {
 	FrameEvent event {};
 	dispatcher.onEvent(event);
 
-	setMouseCapture(event.capture_flag);
+	//setMouseCapture(event.capture_flag);
 	setShouldClose(event.close_flag);
+	setMouseIcon(event.icon);
 }
 
 bool Window::shouldClose() const {
@@ -208,4 +216,24 @@ void Window::setShouldClose(bool close) {
 
 		glfwSetWindowShouldClose(handle, close);
 	}
+}
+
+void Window::setMouseIcon(CursorIcon::Icon cursor) {
+	if (icon == cursor) {
+		return;
+	}
+
+	auto it = cursors.find(cursor);
+	GLFWcursor* pointer = nullptr;
+
+	if (it != cursors.end()) {
+		pointer = it->second;
+	} else {
+		printf("DEBUG: Loaded standard cursor icon '%s'\n", CursorIcon::toString(cursor));
+		pointer = glfwCreateStandardCursor(cursor);
+		cursors[cursor] = pointer;
+	}
+
+	icon = cursor;
+	glfwSetCursor(handle, pointer);
 }

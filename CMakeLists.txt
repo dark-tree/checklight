@@ -131,6 +131,9 @@ add_library(checklight_shared_system ${CHECKLIGHT_SHARED_SOURCES})
 file(GLOB_RECURSE CHECKLIGHT_INPUT_SOURCES "src/input/*.cpp")
 add_library(checklight_input_system ${CHECKLIGHT_INPUT_SOURCES})
 
+file(GLOB_RECURSE CHECKLIGHT_GUI_SOURCES "src/gui/*.cpp")
+add_library(checklight_gui_system ${CHECKLIGHT_GUI_SOURCES})
+
 add_library(checklight_external
 		lib/stb_image.cpp
 		lib/stb_image_write.cpp
@@ -170,11 +173,19 @@ target_link_libraries(checklight_input_system PRIVATE
 		checklight_common
 )
 
+target_link_libraries(checklight_gui_system PRIVATE
+		checklight_common
+		checklight_input_system
+		checklight_render_system
+		checklight_shared_system
+)
+
 target_link_libraries(checklight PRIVATE
 		checklight_common
 		checklight_render_system
 		checklight_shared_system
 		checklight_input_system
+		checklight_gui_system
 		checklight_engine_system
 )
 

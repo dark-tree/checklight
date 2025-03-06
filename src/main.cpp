@@ -1,55 +1,10 @@
 
+#include <gui/widget/button.hpp>
+
 #include "render/render.hpp"
 #include "input/input.hpp"
 #include "engine/engine.hpp"
-
-static void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
-	immediate.setSprite("assets/image/corners.png");
-
-	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(1 + glfwGetTime() * 8) + 1) / 16, 0)));
-	immediate.setSprite("assets/image/skay.png");
-	immediate.setColor(255, 255, 255);
-	immediate.drawCircle2D(50, 50, 40);
-
-	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(2 + glfwGetTime() * 8) + 1) / 16, 0)));
-	immediate.setSprite("assets/image/lucek.png");
-	immediate.drawCircle2D(150, 50, 40);
-
-	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(3 + glfwGetTime() * 8) + 1) / 16, 0)));
-	immediate.setSprite("assets/image/wiesiu.png");
-	immediate.drawCircle2D(250, 50, 40);
-
-	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(4 + glfwGetTime() * 8) + 1) / 16, 0)));
-	immediate.setSprite("assets/image/magistermaks.png");
-	immediate.drawCircle2D(350, 50, 40);
-
-	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(5 + glfwGetTime() * 8) + 1) / 16, 0)));
-	immediate.setSprite("assets/image/mug12.png");
-	immediate.drawCircle2D(450, 50, 40);
-	immediate.setMatrix2D(glm::identity<glm::mat4>());
-
-	immediate.setSprite("assets/image/vulkan-1.png");
-	immediate.drawRect2D(0, height - 126, 310, 126);
-
-	immediate.setFont("assets/font/OpenSans-Variable.ttf");
-	immediate.setFontSize(100);
-	immediate.drawText2D(300, 200, "Cześć Świecie!");
-
-	immediate.setColor(200, 0, 0);
-	immediate.setSprite(OFF);
-	immediate.setLineWidth(1);
-	immediate.drawLine2D(300, 200, 800, 200);
-
-	immediate.setColor(255, 255, 255);
-	immediate.setFontSize(25);
-	immediate.drawText2D(300, 220, "Checklight - Game engine based on the Vulkan API");
-
-	immediate.setSprite("assets/image/corners.png");
-	immediate.setLineWidth(0.1);
-	immediate.drawLine3D(0, 0, 0, sin(glfwGetTime() / 3) * 50, 10, cos(glfwGetTime() / 3) * 50);
-	immediate.drawRect3D(sin(glfwGetTime() / 3) * 50, 10, cos(glfwGetTime() / 3) * 50, 2, 2);
-
-}
+#include "gui/gui.hpp"
 
 int main() {
 
@@ -65,7 +20,13 @@ int main() {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
-	//window.getInputDispatcher().registerListener( std::make_shared<DebugInputListener>());
+	auto button = std::make_shared<ButtonWidget>("Hello", [] () {
+		printf("DEBUG: Pressed button!\n");
+	});
+
+	button->setBounds(600, 600, 100, 50);
+
+	window.getInputDispatcher().registerListener(std::dynamic_pointer_cast<InputListener>(button));
 	auto models = system.importObj("assets/models/checklight.obj");
 
 	BoardManager m(window);
@@ -90,6 +51,9 @@ int main() {
 		//physics update before rendering
 		m.updateCycle();
 		std::shared_ptr<Board> current_board = m.getCurrentBoard().lock();
+
+
+		button->draw(system.getImmediateRenderer());
 
 		drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());
 

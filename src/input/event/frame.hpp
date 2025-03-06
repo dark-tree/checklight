@@ -1,6 +1,7 @@
 #pragma once
 
 #include "input/event.hpp"
+#include "input/icon.hpp"
 
 /**
  * Event emitted each frame, used to gain permission to control the window
@@ -12,6 +13,7 @@ class FrameEvent : public InputEvent {
 		friend class Window;
 		mutable bool capture_flag : 1 = false;
 		mutable bool close_flag : 1 = false;
+		mutable CursorIcon::Icon icon = CursorIcon::DEFAULT;
 
 	public:
 
@@ -33,8 +35,13 @@ class FrameEvent : public InputEvent {
 		/**
 		 * Break the render loop and close the program window,
 		 * if you aborted the CloseEvent this is how you can later close the window yourself.
-		 * By default this flag is set to NOT close the window.
+		 * By default, this flag is set to NOT close the window.
 		 */
 		 void close() const;
+
+		/**
+		 *
+		 */
+		void cursor(CursorIcon::Icon icon) const;
 
 };

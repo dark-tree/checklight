@@ -16,3 +16,7 @@ void FrameEvent::capture() const {
 void FrameEvent::close() const {
 	close_flag = true;
 }
+
+void FrameEvent::cursor(CursorIcon::Icon icon) const {
+	this->icon = icon;
+}

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <input/event/frame.hpp>
+
 #include "external.hpp"
 #include "input/dispatcher.hpp"
 
@@ -48,7 +50,9 @@ class Window {
 
 		bool capture = false;
 		bool close = false;
+		CursorIcon::Icon icon = CursorIcon::DEFAULT;
 
+		std::unordered_map<CursorIcon::Icon, GLFWcursor*> cursors;
 		InputDispatcher dispatcher;
 		GLFWwindow* handle;
 
@@ -67,6 +71,7 @@ class Window {
 		// Controlled using FrameEvent
 		void setMouseCapture(bool capture);
 		void setShouldClose(bool close);
+		void setMouseIcon(CursorIcon::Icon cursor);
 
 	public:
 

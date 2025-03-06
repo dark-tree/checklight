@@ -17,4 +17,7 @@ class PositionedEvent : public InputEvent {
 		/// Get mouse position as a glm::vec2 vector
 		glm::vec2 getMouse() const;
 
+		/// Check if the events falls withint a box
+		bool isWithinBox(int x, int y, int w, int h) const;
+
 };
