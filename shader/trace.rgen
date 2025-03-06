@@ -4,6 +4,7 @@
 
 #include "denoisecommon.glsl"
 #include "raycommon.glsl"
+#include "scene.glsl"
 
 layout(location = 0) rayPayloadEXT HitPayload rPayload;
 
@@ -14,13 +15,7 @@ layout(binding = 7, set = 0, rgba32f) uniform image2D prevIlluminationImage;   /
 layout(binding = 8, set = 0, rgba32f) uniform image2D normalsImage;            // W
 layout(binding = 9, set = 0, rgba32f) uniform image2D prevDepthImage;          // R
 
-layout(binding = 2, set = 0) uniform SceneUniform {
-	mat4 view;
-	mat4 projection;
-	mat4 prevView;
-	mat4 prevProjection;
-	float time;
-} uSceneObject;
+layout(binding = 2, set = 0) uniform _SceneUniform { SceneUniform uSceneObject; };
 
 vec2 reproject(vec3 worldPosition, mat4 view, mat4 projection) {
 	vec4 clipSpace = projection * view * vec4(worldPosition, 1.0);
