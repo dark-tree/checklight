@@ -5,10 +5,6 @@
  * ButtonEvent
  */
 
-InputEvent::Type ButtonEvent::getType() const {
-	return ButtonEvent::type;
-}
-
 ButtonEvent::ButtonEvent(int button, int action, int mods, double x, double y)
 : CodedEvent(action, mods, x, y), button(button) {}
 

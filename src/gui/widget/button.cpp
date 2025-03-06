@@ -11,10 +11,18 @@ ButtonWidget::ButtonWidget(const std::string &label, const std::function<void()>
 
 void ButtonWidget::draw(ImmediateRenderer& immediate) {
 
-	if (hovered) {
-		immediate.setColor(255, 80, 80);
+	if (enabled) {
+		if (hovered) {
+			if (pressed) {
+				immediate.setColor(255, 100, 100);
+			} else {
+				immediate.setColor(255, 80, 80);
+			}
+		} else {
+			immediate.setColor(255, 0, 0);
+		}
 	} else {
-		immediate.setColor(255, 0, 0);
+		immediate.setColor(70, 70, 70);
 	}
 
 	immediate.setRectRadius(10);
@@ -39,12 +47,25 @@ bool ButtonWidget::handle(const InputEvent& any) {
 		return false;
 	}
 
-	if (auto* event = any.as<MouseEvent>()) {
-		hovered = event->isWithinBox(x, y, w, h);
-		return false;
-	}
+	if (auto* positioned = any.as<PositionedEvent>()) {
+		hovered = positioned->isWithinBox(x, y, w, h);
 
-	if (auto* event = any.as<ButtonEvent>()) {
+		if (!hovered) {
+			pressed = false;
+			return false;
+		}
+
+		if (auto* button = positioned->as<ButtonEvent>()) {
+			if (button->isPressEvent()) {
+				pressed = true;
+			}
+
+			if (button->isReleaseEvent()) {
+				pressed = false;
+				callback();
+			}
+		}
+
 		return false;
 	}
 

@@ -10,12 +10,6 @@ class KeyboardEvent : public CodedEvent {
 
 	public:
 
-		static constexpr Type type = InputEvent::KEYBOARD;
-
-		Type getType() const override;
-
-	public:
-
 		int keycode;
 		int scancode;
 

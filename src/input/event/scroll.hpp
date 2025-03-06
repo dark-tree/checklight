@@ -9,12 +9,6 @@ class ScrollEvent : public PositionedEvent {
 
 	public:
 
-		static constexpr Type type = InputEvent::SCROLL;
-
-		Type getType() const override;
-
-	public:
-
 		double horizontal;
 		double vertical;
 

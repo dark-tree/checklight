@@ -5,10 +5,6 @@
  * FrameEvent
  */
 
-InputEvent::Type FrameEvent::getType() const {
-	return FrameEvent::type;
-}
-
 void FrameEvent::capture() const {
 	this->capture_flag = true;
 }

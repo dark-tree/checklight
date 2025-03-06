@@ -17,12 +17,6 @@ class FrameEvent : public InputEvent {
 
 	public:
 
-		static constexpr Type type = InputEvent::FRAME;
-
-		Type getType() const override;
-
-	public:
-
 		FrameEvent() = default;
 
 		/**
@@ -40,7 +34,9 @@ class FrameEvent : public InputEvent {
 		 void close() const;
 
 		/**
-		 *
+		 * Change the mouse icon to the one specified,
+		 * after the event is handled the mouse's icon will be updated.
+		 * By default, if no action is taken, the mouse will revert to the default arrow.
 		 */
 		void cursor(CursorIcon::Icon icon) const;
 

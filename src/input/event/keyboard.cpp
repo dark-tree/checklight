@@ -5,10 +5,6 @@
  * KeyboardEvent
  */
 
-InputEvent::Type KeyboardEvent::getType() const {
-	return KeyboardEvent::type;
-}
-
 KeyboardEvent::KeyboardEvent(int keycode, int scancode, int action, int mods, double x, double y)
 : CodedEvent(action, mods, x, y), keycode(keycode), scancode(scancode) {}
 
