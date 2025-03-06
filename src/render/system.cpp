@@ -58,6 +58,9 @@ void RenderSystem::setProjectionMatrix(float fov, float near_plane, float far_pl
 
 	getFrame().uniforms.prevProjection = getFrame().uniforms.projection;
 	getFrame().uniforms.projection = projection;
+
+	getFrame().uniforms.near = near_plane;
+	getFrame().uniforms.far = far_plane;
 }
 
 void RenderSystem::setViewMatrix(glm::vec3 eye, glm::vec3 direction) {
@@ -67,6 +70,15 @@ void RenderSystem::setViewMatrix(glm::vec3 eye, glm::vec3 direction) {
 
 void RenderSystem::setTime(float time) {
 	getFrame().uniforms.time = time;
+}
+
+void RenderSystem::setDirectionalLight(glm::vec3 direction, glm::vec3 color) {
+	getFrame().uniforms.dir_light_direction = direction;
+	getFrame().uniforms.dir_light_color = color;
+}
+
+void RenderSystem::setAmbientLight(glm::vec3 color) {
+	getFrame().uniforms.ambient_color = color;
 }
 
 std::shared_ptr<RenderObject> RenderSystem::createRenderObject() {

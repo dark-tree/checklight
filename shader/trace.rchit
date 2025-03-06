@@ -8,6 +8,7 @@
 #extension GL_GOOGLE_include_directive : enable
 
 #include "raycommon.glsl"
+#include "scene.glsl"
 
 struct Vertex3D {
 	vec3 position;
@@ -36,6 +37,7 @@ layout(location = 1) rayPayloadEXT bool rShadowPayload;
 layout(buffer_reference, scalar) buffer Vertices { Vertex3D v[]; };
 layout(buffer_reference, scalar) buffer Indices { ivec3 i[]; };
 layout(binding = 0, set = 0) uniform accelerationStructureEXT TLAS;
+layout(binding = 2, set = 0, scalar) uniform _SceneUniform { SceneUniform uSceneObject; };
 layout(binding = 3, set = 0, scalar) buffer RenderObjectBuffer { RenderObjectData i[]; } renderObjectBuffer;
 layout(binding = 4, set = 0) uniform sampler2D textures[];
 layout(binding = 5, set = 0, scalar) buffer MaterialBuffer { RenderMaterial i[]; } materials;
@@ -76,22 +78,18 @@ vec3 computeDiffuse(vec3 lightDir, vec3 normal) {
 
 vec3 computeSpecular(RenderMaterial material, vec3 viewDirection, vec3 lightDirection, vec3 normal) {
 
-  const float kPi        = 3.14159265;
-  const float kShininess = max(material.shininess, 4.0);
+	const float kPi        = 3.14159265;
+	const float kShininess = max(material.shininess, 4.0);
 
-  const float kEnergyConservation = (2.0 + kShininess) / (2.0 * kPi);
-  vec3 V = normalize(-viewDirection);
-  vec3 R = reflect(-lightDirection, normal);
-  float specular = kEnergyConservation * pow(max(dot(V, R), 0.0), kShininess);
+	const float kEnergyConservation = (2.0 + kShininess) / (2.0 * kPi);
+	vec3 V = normalize(-viewDirection);
+	vec3 R = reflect(-lightDirection, normal);
+	float specular = kEnergyConservation * pow(max(dot(V, R), 0.0), kShininess);
 
-  return vec3(material.specular * specular);
+	return vec3(material.specular * specular);
 }
 
 void main() {
-
-	vec3 lightDirection = normalize(vec3(0.0, 3.5, -1.0));
-	vec3 lightColor = vec3(2.0);
-	vec3 ambient = vec3(0.0);
 
 	/**
 	 * Get the vertex data
@@ -132,6 +130,9 @@ void main() {
 	vec3 diffuse = vec3(0.0);
 	vec3 specular = vec3(0.0);
 
+	vec3 lightDirection = normalize(uSceneObject.dirLightDirection);
+	vec3 lightColor = uSceneObject.dirLightColor;
+
 	if (!traceShadowRay(positionWS, normalWS, lightDirection)) {
 		diffuse = computeDiffuse(lightDirection, normalWS) * lightColor;
 		specular = computeSpecular(material, gl_WorldRayDirectionEXT, lightDirection, normalWS) * lightColor;
@@ -139,7 +140,7 @@ void main() {
 	
 	vec3 color = texture(textures[nonuniformEXT(material.albedoTextureIndex)], uv).rgb;
 
-	vec3 lightCombined = specular + diffuse + ambient;
+	vec3 lightCombined = specular + diffuse + uSceneObject.ambientColor;
 
 	/**
 	 * Set return values

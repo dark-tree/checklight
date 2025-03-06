@@ -5,4 +5,9 @@ struct SceneUniform {
 	mat4 prevView;
 	mat4 prevProjection;
 	float time;
+	float near;
+	float far;
+	vec3 dirLightDirection;
+	vec3 dirLightColor;
+	vec3 ambientColor;
 };

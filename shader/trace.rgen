@@ -1,6 +1,7 @@
 #version 460
 #extension GL_EXT_ray_tracing : require
 #extension GL_GOOGLE_include_directive : enable
+#extension GL_EXT_scalar_block_layout : enable
 
 #include "denoisecommon.glsl"
 #include "raycommon.glsl"
@@ -15,7 +16,7 @@ layout(binding = 7, set = 0, rgba32f) uniform image2D prevIlluminationImage;   /
 layout(binding = 8, set = 0, rgba32f) uniform image2D normalsImage;            // W
 layout(binding = 9, set = 0, rgba32f) uniform image2D prevDepthImage;          // R
 
-layout(binding = 2, set = 0) uniform _SceneUniform { SceneUniform uSceneObject; };
+layout(binding = 2, set = 0, scalar) uniform _SceneUniform { SceneUniform uSceneObject; };
 
 vec2 reproject(vec3 worldPosition, mat4 view, mat4 projection) {
 	vec4 clipSpace = projection * view * vec4(worldPosition, 1.0);
@@ -124,8 +125,8 @@ void main() {
 	const vec4 target = projInverse * vec4(d.x, d.y, 1, 1);
 	const vec4 direction = viewInverse * vec4(normalize(target.xyz), 0);
 
-	float tMin = 0.001;
-	float tMax = 10000.0;
+	float tMin = uSceneObject.near;
+	float tMax = uSceneObject.far;
 	uint primaryRayFlags = gl_RayFlagsOpaqueEXT;
 
 	traceRayEXT(TLAS,          // acceleration structure
@@ -180,7 +181,7 @@ void main() {
 				0,                     // sbtRecordStride
 				0,                     // missIndex
 				secondaryOrigin,       // ray origin
-				tMin,                  // ray min range
+				0.001,                 // ray min range
 				secondaryDirection,    // ray direction
 				tMax,                  // ray max range
 				0                      // payload location

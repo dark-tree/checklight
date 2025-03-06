@@ -14,6 +14,11 @@ struct SceneUniform {
 	glm::mat4 prevView;
 	glm::mat4 prevProjection;
 	float time;
+	float near;
+	float far;
+	glm::vec3 dir_light_direction;
+	glm::vec3 dir_light_color;
+	glm::vec3 ambient_color;
 };
 
 class RenderFrame {

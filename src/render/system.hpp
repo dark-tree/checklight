@@ -83,6 +83,25 @@ class RenderSystem : public Renderer {
 		void setTime(float time);
 
 		/**
+		 * Set the directional light direction and color
+		 *
+		 * @note This call modifies an uniform, remember to call updateUniforms() after it!
+		 *
+		 * @param direction  The direction of the light
+		 * @param color      The color of the light
+		 */
+		void setDirectionalLight(glm::vec3 direction, glm::vec3 color);
+
+		/**
+		 * Set the ambient light color
+		 *
+		 * @note This call modifies an uniform, remember to call updateUniforms() after it!
+		 *
+		 * @param color  The color of the ambient light
+		 */
+		void setAmbientLight(glm::vec3 color);
+
+		/**
 		 * Create new InstanceDelegate, each delegate represents one object int the world
 		 * each game object can be made from many render objects (delegates)
 		 * each delegate contains an affine transformation matrix you can access and modify to move the object
