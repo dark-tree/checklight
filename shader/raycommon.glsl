@@ -10,6 +10,8 @@ struct HitPayload {
 	vec4 normal;
 	// specularR, specularG, specularB, shininess
 	vec4 specular;
+	// portal transformation
+	mat4 portal;
 };
 
 float hash1(inout float seed) {

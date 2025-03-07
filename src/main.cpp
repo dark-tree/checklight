@@ -67,6 +67,7 @@ int main() {
 
 	//window.getInputDispatcher().registerListener( std::make_shared<DebugInputListener>());
 	auto models = system.importObj("assets/models/checklight.obj");
+	auto cube = system.importObj("assets/models/cube.obj");
 
 	BoardManager m(window);
 
@@ -81,6 +82,17 @@ int main() {
 		auto object = system.createRenderObject();
 		object->setMatrix(glm::identity<glm::mat4x3>());
 		object->setModel(model);
+		objects.push_back(object);
+	}
+
+	for (auto& model : cube) {
+		auto object = system.createRenderObject();
+		object->setMatrix(glm::translate(glm::identity<glm::mat4>(), glm::vec3(4, 0, 4)));
+		object->setModel(model);
+
+		glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(-4, 8, 4));
+		portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 0, 1));
+		object->setPortal(portal);
 		objects.push_back(object);
 	}
 
@@ -113,6 +125,11 @@ int main() {
 	}
 
 	for (auto& model : models) {
+		system.closeModel(model);
+		model.reset();
+	}
+
+	for (auto& model : cube) {
 		system.closeModel(model);
 		model.reset();
 	}

@@ -11,4 +11,5 @@ void main(){
 	rPayload.color = vec4(0.0, 0.1, 0.3, 0.0);
 	rPayload.light = vec4(0.2);
 	rPayload.normal = vec4(0.0, 0.0, 1.0, 0.0);
+	rPayload.portal = mat4(0.0);
 }

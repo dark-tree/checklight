@@ -121,37 +121,59 @@ void main() {
 	 * Primary ray
 	 */
 
-	const vec4 origin = viewInverse * vec4(0, 0, 0, 1);
-	const vec4 target = projInverse * vec4(d.x, d.y, 1, 1);
-	const vec4 direction = viewInverse * vec4(normalize(target.xyz), 0);
+	vec4 origin = viewInverse * vec4(0, 0, 0, 1);
+	vec4 target = projInverse * vec4(d.x, d.y, 1, 1);
+	vec4 direction = viewInverse * vec4(normalize(target.xyz), 0);
 
 	float tMin = uSceneObject.near;
 	float tMax = uSceneObject.far;
 	uint primaryRayFlags = gl_RayFlagsOpaqueEXT;
 
-	traceRayEXT(TLAS,          // acceleration structure
-		primaryRayFlags,       // rayFlags
-		0xFF,                  // cullMask
-		0,                     // sbtRecordOffset
-		0,                     // sbtRecordStride
-		0,                     // missIndex
-		origin.xyz,            // ray origin
-		tMin,                  // ray min range
-		direction.xyz,         // ray direction
-		tMax,                  // ray max range
-		0                      // payload location
-	);
+	int jump = 0;
+	const int MAX_JUMPS = 2;
+
+	HitPayload firstPrimary;
+
+	while (jump < MAX_JUMPS) {
+		jump++;
+
+		traceRayEXT(TLAS,          // acceleration structure
+			primaryRayFlags,       // rayFlags
+			0xFF,                  // cullMask
+			0,                     // sbtRecordOffset
+			0,                     // sbtRecordStride
+			0,                     // missIndex
+			origin.xyz,            // ray origin
+			tMin,                  // ray min range
+			direction.xyz,         // ray direction
+			tMax,                  // ray max range
+			0                      // payload location
+		);
+
+		if (jump == 1) {
+			firstPrimary = rPayload;
+		}
+
+		if (rPayload.hit.w == 0 || rPayload.portal[0][0] == 0 || jump == MAX_JUMPS) {
+			break;
+		}
+
+		// Apply portal transformation
+		origin = rPayload.portal * vec4(rPayload.hit.xyz, 1);
+		direction = normalize(rPayload.portal * vec4(rPayload.hit.xyz + direction.xyz, 1) - origin);
+	}
 
 	HitPayload primaryPayload = rPayload;
 
-	vec3 outColor = primaryPayload.color.xyz;
+	vec3 portalTint = vec3(0.1) * (jump - 1);
+	vec3 outColor = primaryPayload.color.xyz + portalTint;
 
 	float depthValue = tMax;
 
-	if (primaryPayload.hit.w > 0) {
-		vec4 hitView = uSceneObject.view * vec4(primaryPayload.hit.xyz, 1.0);  
-		vec4 hitClip = uSceneObject.projection * hitView;   
-		depthValue = hitClip.z / hitClip.w;    
+	if (firstPrimary.hit.w > 0) {
+		vec4 hitView = uSceneObject.view * vec4(firstPrimary.hit.xyz, 1.0);
+		vec4 hitClip = uSceneObject.projection * hitView;
+		depthValue = hitClip.z / hitClip.w;
 	}
 
 	/**
@@ -159,6 +181,7 @@ void main() {
 	 */
 
 	if (primaryPayload.hit.w > 0){
+
 		const int samples = 1;
 
 		vec3 giLight = vec3(0.0);
@@ -190,13 +213,13 @@ void main() {
 			giLight += rPayload.light.xyz * rPayload.color.xyz * 2.0;
 		}
 
-		vec2 prevPixelCoord = reproject(primaryPayload.hit.xyz, uSceneObject.prevView, uSceneObject.prevProjection);
+		vec2 prevPixelCoord = reproject(firstPrimary.hit.xyz, uSceneObject.prevView, uSceneObject.prevProjection);
 
 		vec4 prevFrameLight = vec4(0.0);
 		float sampleAge = 0.0;
 
 		if (prevPixelCoord.x >= 0 && prevPixelCoord.x < 1 && prevPixelCoord.y >= 0 && prevPixelCoord.y < 1) {
-			prevFrameLight = samplePrevIllumination(prevPixelCoord, primaryPayload);
+			prevFrameLight = samplePrevIllumination(prevPixelCoord, firstPrimary);
 			sampleAge = floor(prevFrameLight.a);
 		}
 
@@ -207,10 +230,8 @@ void main() {
 
 		imageStore(illuminationImage, ivec2(gl_LaunchIDEXT.xy), vec4(mixedLight, sampleAge));
 		imageStore(normalsImage, ivec2(gl_LaunchIDEXT.xy), vec4(primaryPayload.normal.xyz, depthValue));
-
-		outColor = primaryPayload.color.rgb;
 	}
-	else{
+	else {
 		imageStore(illuminationImage, ivec2(gl_LaunchIDEXT.xy), vec4(1.0));
 		imageStore(normalsImage, ivec2(gl_LaunchIDEXT.xy), vec4(0.0));
 	}

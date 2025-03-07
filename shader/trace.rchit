@@ -29,6 +29,7 @@ struct RenderMaterial {
 struct RenderObjectData {
 	uint64_t vertexAddress;
 	uint64_t indexAddress;
+	mat4 portal;
 };
 
 layout(location = 0) rayPayloadInEXT HitPayload rPayload;
@@ -127,20 +128,27 @@ void main() {
 	 * Color
 	 */
 
-	vec3 diffuse = vec3(0.0);
-	vec3 specular = vec3(0.0);
+	vec3 color = vec3(0.0);
+	vec3 lightCombined = vec3(0.0);
 
-	vec3 lightDirection = normalize(uSceneObject.dirLightDirection);
-	vec3 lightColor = uSceneObject.dirLightColor;
+	// Check if the object isn't a portal
+	if (renderObject.portal[0][0] == 0.0){
 
-	if (!traceShadowRay(positionWS, normalWS, lightDirection)) {
-		diffuse = computeDiffuse(lightDirection, normalWS) * lightColor;
-		specular = computeSpecular(material, gl_WorldRayDirectionEXT, lightDirection, normalWS) * lightColor;
-	}
+		vec3 diffuse = vec3(0.0);
+		vec3 specular = vec3(0.0);
+
+		vec3 lightDirection = normalize(uSceneObject.dirLightDirection);
+		vec3 lightColor = uSceneObject.dirLightColor;
+
+		if (!traceShadowRay(positionWS, normalWS, lightDirection)) {
+			diffuse = computeDiffuse(lightDirection, normalWS) * lightColor;
+			specular = computeSpecular(material, gl_WorldRayDirectionEXT, lightDirection, normalWS) * lightColor;
+		}
 	
-	vec3 color = texture(textures[nonuniformEXT(material.albedoTextureIndex)], uv).rgb;
+		color = texture(textures[nonuniformEXT(material.albedoTextureIndex)], uv).rgb;
 
-	vec3 lightCombined = specular + diffuse + uSceneObject.ambientColor;
+		lightCombined = specular + diffuse + uSceneObject.ambientColor;
+	}
 
 	/**
 	 * Set return values
@@ -151,4 +159,5 @@ void main() {
 	rPayload.light = vec4(lightCombined, 0.0);
 	rPayload.normal = vec4(normalWS, 0.0);
 	rPayload.specular = vec4(material.specular, material.shininess);
+	rPayload.portal = renderObject.portal;
 }
