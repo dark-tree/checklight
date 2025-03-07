@@ -2,6 +2,7 @@
 
 #include "widget/button.hpp"
 #include "widget/slider.hpp"
+#include "widget/select.hpp"
 
 inline void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
 
