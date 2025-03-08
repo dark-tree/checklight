@@ -135,6 +135,7 @@ std::vector<std::shared_ptr<RenderModel>> RenderSystem::importObj(const std::str
 		RenderMaterial& render_material = system->materials.createMaterial();
 
 		render_material.albedo = glm::vec4(material->diffuse, material->alpha);
+		render_material.emissive = material->emissive;
 		render_material.specular = material->specular;
 		render_material.shininess = material->shininess;
 

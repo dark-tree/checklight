@@ -21,6 +21,7 @@ struct Vertex3D {
 struct RenderMaterial {
 	uint index;
 	vec4 albedo;
+	vec3 emissive;
 	vec3 specular;
 	float shininess;
 	uint albedoTextureIndex;
@@ -145,9 +146,9 @@ void main() {
 			specular = computeSpecular(material, gl_WorldRayDirectionEXT, lightDirection, normalWS) * lightColor;
 		}
 	
-		color = texture(textures[nonuniformEXT(material.albedoTextureIndex)], uv).rgb;
+		color = clamp(mix(texture(textures[nonuniformEXT(material.albedoTextureIndex)], uv).rgb, material.emissive, length(material.emissive)), 0.0, 1.0);
 
-		lightCombined = specular + diffuse + uSceneObject.ambientColor;
+		lightCombined = specular + diffuse + material.emissive + uSceneObject.ambientColor;
 	}
 
 	/**

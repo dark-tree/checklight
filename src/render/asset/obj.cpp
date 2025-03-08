@@ -32,6 +32,11 @@ std::map<std::string, std::shared_ptr<ObjMaterial>> ObjMaterial::open(std::strin
 			stream >> ambient.r >> ambient.g >> ambient.b;
 			material->ambient = ambient;
 		}
+		else if (token == "Ke") {
+			glm::vec3 emissive;
+			stream >> emissive.r >> emissive.g >> emissive.b;
+			material->emissive = emissive;
+		}
 		else if (token == "Kd") {
 			glm::vec3 diffuse;
 			stream >> diffuse.r >> diffuse.g >> diffuse.b;

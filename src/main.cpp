@@ -96,7 +96,7 @@ int main() {
 		objects.push_back(object);
 	}
 
-	system.setDirectionalLight(glm::vec3(0.0, 3.5, -1.0), glm::vec3(2, 2, 2));
+	system.setDirectionalLight(glm::vec3(0.0, 3.5, -1.0), glm::vec3(1.5, 1.5, 1.5));
 	system.setAmbientLight(glm::vec3(0.0, 0.0, 0.0));
 
 	while (!window.shouldClose()) {

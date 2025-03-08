@@ -54,6 +54,7 @@ struct RenderMaterial {
 	uint32_t index;
 	
 	glm::vec4 albedo = glm::vec4(1.0f);
+	glm::vec3 emissive = glm::vec3(0.0f);
 	glm::vec3 specular = glm::vec3(0.0f);
 	float shininess = 0.0f;
 
