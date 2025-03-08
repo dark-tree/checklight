@@ -8,11 +8,9 @@ class SliderWidget : public Widget {
 
 		float value = 0;
 
-		bool enabled;
-		bool hovered;
-		bool pressed;
-
 		std::function<void()> callback;
+
+		float step = 0.1;
 		float knob_size = 8;
 		float rail_size = 3;
 

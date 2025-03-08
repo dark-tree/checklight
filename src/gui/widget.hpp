@@ -13,11 +13,15 @@ class Widget : public InputListener {
 		/// position and dimensions, can be changed using setBounds()
 		int x, y, w, h;
 
+		bool enabled = true;
+		bool hovered = false;
+		bool pressed = false;
+
 	public:
 
 		virtual ~Widget();
 		virtual void draw(ImmediateRenderer& immediate) = 0;
-		virtual bool handle(const InputEvent& event) = 0;
+		virtual bool handle(const InputEvent& event);
 
 		InputResult onEvent(const InputEvent& event) final;
 

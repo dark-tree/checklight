@@ -6,10 +6,6 @@ class ButtonWidget : public Widget {
 
 	protected:
 
-		bool enabled;
-		bool hovered;
-		bool pressed;
-
 		std::function<void()> callback;
 		std::string label;
 

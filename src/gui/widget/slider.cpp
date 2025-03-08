@@ -7,7 +7,7 @@
 #include <render/immediate.hpp>
 
 SliderWidget::SliderWidget(const std::function<void()>& callback)
-: enabled(true), pressed(false), callback(callback) {}
+: Widget(), callback(callback) {}
 
 glm::vec2 SliderWidget::getKnobPosition() {
 	return {x + value * w, y + h / 2};
@@ -66,6 +66,11 @@ bool SliderWidget::handle(const InputEvent& any) {
 
 		if (pressed) {
 			value = (std::clamp(positioned->x, static_cast<double>(x), static_cast<double>(x) + w) - x) / w;
+
+			if (step != 0.0) {
+				const int count = round(value / step);
+				value = count * step;
+			}
 		}
 
 		return false;

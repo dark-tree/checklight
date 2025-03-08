@@ -4,19 +4,20 @@
 
 class SelectWidget : public Widget {
 
-	protected:
+	private:
 
-		static constexpr int OPTION_NONE = -2;
-		static constexpr int OPTION_HEADER = -1;
+		struct Option {
+			std::string label;
+		};
+
+		static constexpr int OPTION_NONE = -1;
 
 		int value = -1;
 
 		bool unrolled = false;
-		bool enabled;
-		bool pressed;
+		int option = OPTION_NONE;
 
-		int hovered = OPTION_NONE;
-
+		std::vector<Option> options;
 		std::function<void()> callback;
 
 	public:

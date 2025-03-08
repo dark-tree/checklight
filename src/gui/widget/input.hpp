@@ -34,13 +34,6 @@ class InputWidget : public Widget {
 
 	protected:
 
-		static constexpr int OPTION_NONE = -2;
-		static constexpr int OPTION_HEADER = -1;
-
-		bool enabled;
-		bool hovered;
-		bool pressed;
-
 		TextCursor cursor;
 		std::optional<BakedText> baked {};
 		utf8::UnicodeVector text;

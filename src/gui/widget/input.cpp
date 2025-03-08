@@ -100,7 +100,7 @@ int TextCursor::end() const {
  */
 
 InputWidget::InputWidget(const std::function<void()>& callback)
-: enabled(true), hovered(false), pressed(false) {}
+: Widget() {}
 
 float InputWidget::getCursorOffset(int glyph) const {
 	const auto& glyphs = baked->getQuads();
@@ -176,6 +176,8 @@ bool InputWidget::handle(const InputEvent& any) {
 		return false;
 	}
 
+	Widget::handle(any);
+
 	if (const auto* unicode = any.as<UnicodeEvent>()) {
 		cursor.insert(text, unicode->unicode);
 		cursor.move(text, +1, false);
@@ -218,8 +220,6 @@ bool InputWidget::handle(const InputEvent& any) {
 				cursor.move(text, +1, keyboard->isShiftPressed());
 			}
 		}
-
-
 	}
 
 	return false;

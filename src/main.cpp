@@ -22,7 +22,11 @@ int main() {
 	// 	printf("DEBUG: Pressed button!\n");
 	// });
 
-	auto button = std::make_shared<InputWidget>([] () {
+	// auto button = std::make_shared<InputWidget>([] () {
+	//
+	// });
+
+	auto button = std::make_shared<SelectWidget>([] () {
 
 	});
 

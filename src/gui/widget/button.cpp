@@ -7,7 +7,7 @@
 #include <render/immediate.hpp>
 
 ButtonWidget::ButtonWidget(const std::string &label, const std::function<void()>& callback)
-: enabled(true), hovered(false), pressed(false), label(label), callback(callback) {}
+: Widget(), label(label), callback(callback) {}
 
 void ButtonWidget::draw(ImmediateRenderer& immediate) {
 
@@ -40,33 +40,16 @@ bool ButtonWidget::handle(const InputEvent& any) {
 		return false;
 	}
 
-	if (auto* event = any.as<FrameEvent>()) {
-		if (hovered) {
-			event->cursor(CursorIcon::POINTER);
-		}
-		return false;
-	}
+	const bool was_pressed = pressed;
+	Widget::handle(any);
 
-	if (auto* positioned = any.as<PositionedEvent>()) {
-		hovered = positioned->isWithinBox(x, y, w, h);
-
-		if (!hovered) {
-			pressed = false;
-			return false;
-		}
-
-		if (auto* button = positioned->as<ButtonEvent>()) {
-			if (button->isPressEvent()) {
-				pressed = true;
-			}
-
-			if (button->isReleaseEvent()) {
-				pressed = false;
+	if (was_pressed) {
+		if (auto* button = any.as<ButtonEvent>()) {
+			if (button->isReleaseEvent() && button->isWithinBox(x, y, w, h)) {
 				callback();
+				return true;
 			}
 		}
-
-		return false;
 	}
 
 	return false;

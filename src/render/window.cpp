@@ -69,6 +69,7 @@ void Window::glfwKeyCallback(GLFWwindow* glfw_window, int key, int scancode, int
 
 	if (window) {
 		glm::vec2 mouse = window->getInputContext().getCursorPosition();
+		printf ("Triggered KeyboardEvent\n");
 		window->getInputDispatcher().onEvent(KeyboardEvent {key, scancode, action, mods, mouse.x, mouse.y});
 	}
 }
@@ -148,7 +149,6 @@ Window::Window(uint32_t w, uint32_t h, std::string title_string) {
 	}
 
 	glfwSetWindowUserPointer(handle, this);
-	glfwSetInputMode(handle, GLFW_STICKY_KEYS, GL_TRUE);
 
 	// send events to the root input consumer
 	glfwSetKeyCallback(handle, glfwKeyCallback);
