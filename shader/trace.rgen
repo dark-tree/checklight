@@ -37,10 +37,10 @@ vec4 getDepthDiffAndNormal(ivec2 prevPixelCoord, HitPayload primaryPayload) {
 	vec2 ndcXY = vec2(prevPixelCoord) / gl_LaunchSizeEXT.xy * 2.0 - 1.0;
 	vec4 clipPos = vec4(ndcXY, prevDepth, 1.0);
 
-	vec4 viewPos = inverse(uSceneObject.prevProjection) * clipPos;
+	vec4 viewPos = uSceneObject.prevProjectionInv * clipPos;
 	viewPos /= viewPos.w;
 
-	vec4 worldPos4 = inverse(uSceneObject.prevView) * viewPos;
+	vec4 worldPos4 = uSceneObject.prevViewInv * viewPos;
 	vec3 prevWorldPos = worldPos4.xyz;
 
 	vec3 currWorldPos = primaryPayload.hit.xyz;
@@ -53,7 +53,7 @@ vec4 getDepthDiffAndNormal(ivec2 prevPixelCoord, HitPayload primaryPayload) {
 vec4 samplePrevIllumination(vec2 uv, HitPayload primaryPayload) {
 
 	const float DEPTH_THRESHOLD = 0.2;
-	const float NORMAL_THRESHOLD = 0.5;
+	const float NORMAL_THRESHOLD = 0.2;
 
 	ivec2 texSize = imageSize(prevIlluminationImage);
 
@@ -115,8 +115,8 @@ void main() {
 	const vec2 inUV = pixelCenter / vec2(gl_LaunchSizeEXT.xy);
 	vec2 d = inUV * 2.0 - 1.0;
 
-	mat4 viewInverse = inverse(uSceneObject.view);
-	mat4 projInverse = inverse(uSceneObject.projection);
+	mat4 viewInverse = uSceneObject.viewInv;
+	mat4 projInverse = uSceneObject.projectionInv;
 	
 	/**
 	 * Primary ray

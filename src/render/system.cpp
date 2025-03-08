@@ -56,16 +56,20 @@ void RenderSystem::setProjectionMatrix(float fov, float near_plane, float far_pl
 	glm::mat4 projection = glm::perspective(glm::radians(fov), (float) width() / (float) height(), near_plane, far_plane);
 	projection[1][1] *= -1;
 
-	getFrame().uniforms.prevProjection = getFrame().uniforms.projection;
+	getFrame().uniforms.prev_projection = getFrame().uniforms.projection;
+	getFrame().uniforms.prev_projection_inv = getFrame().uniforms.projection_inv;
 	getFrame().uniforms.projection = projection;
+	getFrame().uniforms.projection_inv = glm::inverse(projection);
 
 	getFrame().uniforms.near = near_plane;
 	getFrame().uniforms.far = far_plane;
 }
 
 void RenderSystem::setViewMatrix(glm::vec3 eye, glm::vec3 direction) {
-	getFrame().uniforms.prevView = getFrame().uniforms.view;
+	getFrame().uniforms.prev_view = getFrame().uniforms.view;
+	getFrame().uniforms.prev_view_inv = getFrame().uniforms.view_inv;
 	getFrame().uniforms.view = glm::lookAt(eye, eye + direction, glm::vec3(0.0f, 1.0f, 0.0f));
+	getFrame().uniforms.view_inv = glm::inverse(getFrame().uniforms.view);
 }
 
 void RenderSystem::setTime(float time) {

@@ -10,9 +10,13 @@ class Renderer;
 
 struct SceneUniform {
 	glm::mat4 view;
+	glm::mat4 view_inv;
 	glm::mat4 projection;
-	glm::mat4 prevView;
-	glm::mat4 prevProjection;
+	glm::mat4 projection_inv;
+	glm::mat4 prev_view;
+	glm::mat4 prev_view_inv;
+	glm::mat4 prev_projection;
+	glm::mat4 prev_projection_inv;
 	float time;
 	float near;
 	float far;

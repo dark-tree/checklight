@@ -134,7 +134,9 @@ std::string ObjObject::getMtllib(std::string path) {
 }
 
 std::vector<ObjObject> ObjObject::open(std::string path, const std::map<std::string, std::shared_ptr<ObjMaterial>>& materials) {
+	
 	std::vector<ObjObject> objects;
+	objects.push_back(ObjObject{});
 
 	std::ifstream file(path);
 	if (!file.is_open()) {
@@ -155,6 +157,11 @@ std::vector<ObjObject> ObjObject::open(std::string path, const std::map<std::str
 		stream >> token;
 
 		if (token == "o") {
+			if (objects.back().vertices.empty()) {
+				// Remove the dummy object
+				objects.pop_back();
+			}
+
 			ObjObject object;
 			stream >> object.name;
 

@@ -39,7 +39,7 @@ class TextureManager {
 		/**
 		* Maximum number of textures that can be created and stored in a single TextureManager instance
 		*/
-		static const uint32_t MAX_TEXTURES = 100;
+		static const uint32_t MAX_TEXTURES = 200;
 
 	private:
 
