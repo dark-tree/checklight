@@ -130,8 +130,10 @@ void main() {
 	uint primaryRayFlags = gl_RayFlagsOpaqueEXT;
 
 	int jump = 0;
+	// The primary ray is also considered a jump
 	const int MAX_JUMPS = 2;
 
+	// firstPrimary is an actual primary ray payload, while primaryPayload is a primary ray that went through the portal
 	HitPayload firstPrimary;
 
 	while (jump < MAX_JUMPS) {
@@ -219,7 +221,13 @@ void main() {
 		float sampleAge = 0.0;
 
 		if (prevPixelCoord.x >= 0 && prevPixelCoord.x < 1 && prevPixelCoord.y >= 0 && prevPixelCoord.y < 1) {
-			prevFrameLight = samplePrevIllumination(prevPixelCoord, firstPrimary);
+
+			// While reprojecting image from the portal, use primary ray's hit position,
+			// and a normal from a ray that went through the portal
+			HitPayload reprojectionPayload = firstPrimary;
+			reprojectionPayload.normal = primaryPayload.normal;
+
+			prevFrameLight = samplePrevIllumination(prevPixelCoord, reprojectionPayload);
 			sampleAge = floor(prevFrameLight.a);
 		}
 
