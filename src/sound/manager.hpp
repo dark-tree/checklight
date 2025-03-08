@@ -19,12 +19,6 @@ private:
 
 	// Tools for managing the sound thread
 	std::mutex sound_manager_mutex;
-	std::thread sound_manager_thread;
-	bool sound_loop_running = true;
-
-	/// Loop function running in a separeted thread
-	/// This function calls sleep(100ms) to keep the thread alive
-	void soundManagerLoop();
 
 	// Constructor
 	SoundManager();
@@ -63,12 +57,14 @@ public:
 
 	/// Get a SoundClip with clip_name and add the first buffer from SoundClip to the SoundSourceObject
 	/// @param clip_name
-	/// @param source_name
-	void connectClipWithSource(const std::string& clip_name, const std::string& source_name);
+	/// @param sso_source_name
+	void connectClipWithSource(const std::string& clip_name, const std::string& sso_source_name);
 
 	/// Sound control funtions
-	/// @param source_name Name of SoundSourceObject
-	void playSound(const std::string& source_name);
-	void stopSound(const std::string& source_name);
-	void pauseSound(const std::string& source_name);
+	/// @param sso_source_name Name of SoundSourceObject
+	void playSound(const std::string& sso_source_name);
+	void stopSound(const std::string& sso_source_name);
+	void pauseSound(const std::string& sso_source_name);
+
+
 };
