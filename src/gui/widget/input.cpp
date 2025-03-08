@@ -133,7 +133,6 @@ void InputWidget::drawCursorSelection(ImmediateRenderer& immediate) {
 	}
 }
 
-
 void InputWidget::draw(ImmediateRenderer& immediate) {
 
 	if (enabled) {
@@ -155,17 +154,19 @@ void InputWidget::draw(ImmediateRenderer& immediate) {
 
 	immediate.setTextAlignment(HorizontalAlignment::LEFT);
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
-	immediate.setColor(0, 0, 0);
 	immediate.setTextBox(w, h);
-
 	baked = immediate.bakeUnicode(x, y, text);
-	auto& glyphs = baked->getQuads();
+
+	if (text.empty()) {
+		immediate.setColor(50, 50, 50, 200);
+		immediate.drawString2D(x, y, placeholder);
+	} else {
+		immediate.setColor(0, 0, 0);
+		immediate.drawText2D(0, 0, *baked);
+	}
+
 	immediate.setLineWidth(1);
-
 	drawCursorSelection(immediate);
-
-	immediate.setColor(0, 0, 0);
-	immediate.drawText2D(0, 0, *baked);
 
 }
 

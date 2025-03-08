@@ -69,7 +69,6 @@ void Window::glfwKeyCallback(GLFWwindow* glfw_window, int key, int scancode, int
 
 	if (window) {
 		glm::vec2 mouse = window->getInputContext().getCursorPosition();
-		printf ("Triggered KeyboardEvent\n");
 		window->getInputDispatcher().onEvent(KeyboardEvent {key, scancode, action, mods, mouse.x, mouse.y});
 	}
 }

@@ -4,7 +4,7 @@
 
 class SliderWidget : public Widget {
 
-	protected:
+	private:
 
 		float value = 0;
 

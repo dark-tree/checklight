@@ -4,7 +4,7 @@
 
 class ButtonWidget : public Widget {
 
-	protected:
+	private:
 
 		std::function<void()> callback;
 		std::string label;
