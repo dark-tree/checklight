@@ -218,7 +218,7 @@ bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 	}
 
 	if (const auto* keyboard = any.as<KeyboardEvent>()) {
-		if (keyboard->isPressEvent()) {
+		if (keyboard->isTypedEvent()) {
 
 			if (keyboard->keycode == GLFW_KEY_BACKSPACE) {
 				cursor.eraseBackward(text);

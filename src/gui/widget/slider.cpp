@@ -8,6 +8,16 @@
 SliderWidget::SliderWidget(const std::function<void()>& callback)
 : InputWidget(), callback(callback) {}
 
+void SliderWidget::updateValue() {
+	if (value > 1.0) value = 1.0;
+	if (value < 0.0) value = 0.0;
+
+	if (step != 0.0) {
+		const int count = round(value / step);
+		value = count * step;
+	}
+}
+
 glm::vec2 SliderWidget::getKnobPosition() {
 	return {x + value * w, y + h / 2};
 }
@@ -45,7 +55,7 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 	const glm::vec2 knob = getKnobPosition();
 
 	// update mouse icon
-	if (auto* event = any.as<FrameEvent>()) {
+	if (const auto* event = any.as<FrameEvent>()) {
 		if (hovered) event->cursor(CursorIcon::POINTER);
 		if (pressed) event->cursor(CursorIcon::HORIZONTAL);
 		return false;
@@ -57,7 +67,7 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 		const float half = range / 2;
 		hovered = positioned->isWithinBox(knob.x - half, knob.y - half, range, range);
 
-		if (auto* button = positioned->as<ButtonEvent>()) {
+		if (const auto* button = positioned->as<ButtonEvent>()) {
 			if (button->isWithinBox(x, y, w, h) || pressed || hovered) {
 				if (button->isPressEvent()) {
 					pressed = true;
@@ -70,13 +80,28 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 			}
 		}
 
+		if (const auto* keyboard = any.as<KeyboardEvent>()) {
+
+			if (!isFocused()) {
+				return false;
+			}
+
+			if (keyboard->wasTyped(GLFW_KEY_LEFT)) {
+				value -= step != 0.0f ? step : 0.1;
+				updateValue();
+				return true;
+			}
+
+			if (keyboard->wasTyped(GLFW_KEY_RIGHT)) {
+				value += step != 0.0f ? step : 0.1;
+				updateValue();
+				return true;
+			}
+		}
+
 		if (pressed) {
 			value = (std::clamp(positioned->x, static_cast<double>(x), static_cast<double>(x) + w) - x) / w;
-
-			if (step != 0.0) {
-				const int count = round(value / step);
-				value = count * step;
-			}
+			updateValue();
 		}
 
 		return false;

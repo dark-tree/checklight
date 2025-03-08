@@ -23,3 +23,11 @@ bool KeyboardEvent::wasReleased(int keycode) const {
 
 	return isReleaseEvent() && (this->keycode == keycode);
 }
+
+bool KeyboardEvent::wasTyped(int keycode) const {
+	if (keycode < 0 || keycode > GLFW_KEY_LAST) {
+		throw std::runtime_error {"Invalid keyboard key constant!"};
+	}
+
+	return isTypedEvent() && (this->keycode == keycode);
+}

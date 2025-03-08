@@ -14,6 +14,7 @@ class SliderWidget : public InputWidget {
 		float knob_size = 8;
 		float rail_size = 3;
 
+		void updateValue();
 		glm::vec2 getKnobPosition();
 
 	public:

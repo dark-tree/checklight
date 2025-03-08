@@ -24,6 +24,11 @@ int main() {
 	auto context = std::make_shared<WidgetContext>();
 	auto panel = std::make_shared<PanelWidget>();
 
+	auto slider = std::make_shared<SliderWidget>([] () {
+
+	});
+	slider->setBounds(600, 300, 100, 50);
+
 	auto button = std::make_shared<ButtonWidget>("Hello", [] () {
 		printf("DEBUG: Pressed button!\n");
 	});
@@ -40,10 +45,12 @@ int main() {
 	select->setBounds(600, 600, 100, 50);
 
 	context->setRoot(panel);
+	panel->addWidget(slider);
 	panel->addWidget(button);
 	panel->addWidget(input);
 	panel->addWidget(select);
 
+	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 	window.getInputDispatcher().registerListener(std::dynamic_pointer_cast<InputListener>(context));
 	auto models = system.importObj("assets/models/checklight.obj");
 

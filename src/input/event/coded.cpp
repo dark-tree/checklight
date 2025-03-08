@@ -16,6 +16,10 @@ bool CodedEvent::isReleaseEvent() const {
 	return action == GLFW_RELEASE;
 }
 
+bool CodedEvent::isTypedEvent() const {
+	return isPressEvent() || (action == GLFW_REPEAT);
+}
+
 bool CodedEvent::isShiftPressed() const {
 	return mods & GLFW_MOD_SHIFT;
 }

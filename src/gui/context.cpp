@@ -13,13 +13,16 @@ std::vector<std::shared_ptr<InputWidget>> WidgetContext::getSelectableWidgets() 
 	return widgets;
 }
 
-void WidgetContext::setSelected(const std::shared_ptr<InputWidget>& widget) {
+void WidgetContext::setSelected(NULLABLE const std::shared_ptr<InputWidget>& widget) {
 	if (selected) {
 		selected->setSelected(false);
 	}
 
 	selected = widget;
-	widget->setSelected(true);
+
+	if (widget) {
+		widget->setSelected(true);
+	}
 }
 
 void WidgetContext::setRoot(const std::shared_ptr<Widget>& widget) {
@@ -44,13 +47,13 @@ InputResult WidgetContext::onEvent(const InputEvent& any) {
 					i = std::distance(selectable.begin(), it) + 1;
 
 					// clamp to array size
-					if (i > selectable.size()) {
-						i = 0;
+					if (i >= selectable.size()) {
+						i = -1;
 					}
 				}
 			}
 
-			setSelected(selectable[i]);
+			setSelected(i == -1 ? nullptr : selectable[i]);
 			return InputResult::BLOCK;
 		}
 	}

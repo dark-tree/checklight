@@ -103,12 +103,18 @@ bool SelectWidget::event(WidgetContext& context, const InputEvent& any) {
 					value = option;
 				} else {
 					option = value;
+
+					if (option == OPTION_NONE) {
+						option = 0;
+					}
 				}
 
 				unrolled = !unrolled;
 				pressed = unrolled;
 			}
+		}
 
+		if (keyboard->isTypedEvent()) {
 			if (keyboard->keycode == GLFW_KEY_DOWN && unrolled) {
 				option = std::min((int) options.size() - 1, option + 1);
 			}
