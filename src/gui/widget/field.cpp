@@ -84,6 +84,11 @@ void TextCursor::eraseBackward(utf8::UnicodeVector& text) {
 	}
 }
 
+void TextCursor::select(int start, int end) {
+	master = start;
+	slave = end;
+}
+
 int TextCursor::begin() const {
 	return std::min(master, slave);
 }
@@ -130,6 +135,22 @@ void FieldWidget::drawCursorSelection(ImmediateRenderer& immediate) {
 	}
 }
 
+utf8::UnicodeVector FieldWidget::getDisplayUnicodes() {
+	if (kind == PASSWORD) {
+		utf8::UnicodeVector result;
+		result.reserve(text.size());
+
+		for (uint32_t unicode : text) {
+			result.push_back('*');
+		}
+
+		return result;
+	}
+
+	return text;
+}
+
+
 void FieldWidget::draw(ImmediateRenderer& immediate) {
 
 	if (isFocused()) {
@@ -158,7 +179,7 @@ void FieldWidget::draw(ImmediateRenderer& immediate) {
 	immediate.setTextAlignment(HorizontalAlignment::LEFT);
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
 	immediate.setTextBox(w, h);
-	baked = immediate.bakeUnicode(x, y, text);
+	baked = immediate.bakeUnicode(x, y, getDisplayUnicodes());
 
 	if (text.empty()) {
 		immediate.setColor(50, 50, 50, 200);
@@ -183,11 +204,15 @@ bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 	}
 
 	if (auto* event = any.as<FrameEvent>()) {
-		if (hovered) event->cursor(CursorIcon::TEXT);
+		if (hovered) {
+			event->cursor(CursorIcon::TEXT);
+			return true;
+		}
+
 		return false;
 	}
 
-	InputWidget::event(context, any);
+	bool used = InputWidget::event(context, any);
 
 	if (const auto* button = any.as<ButtonEvent>()) {
 		if (button->isPressEvent()) {
@@ -201,6 +226,7 @@ bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 
 					if (button->isWithinBox(start, y, end - start, h)) {
 						cursor.seek(text, i, button->isShiftPressed());
+						used = true;
 						break;
 					}
 				}
@@ -213,30 +239,46 @@ bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 	}
 
 	if (const auto* unicode = any.as<UnicodeEvent>()) {
-		cursor.insert(text, unicode->unicode);
+		uint32_t codepoint = unicode->unicode;
+
+		if (kind == INTEGER) {
+			if (codepoint < '0') return false;
+			if (codepoint > '9') return false;
+		}
+
+		cursor.insert(text, codepoint);
 		cursor.move(text, +1, false);
+		return true;
 	}
 
 	if (const auto* keyboard = any.as<KeyboardEvent>()) {
-		if (keyboard->isTypedEvent()) {
+		if (keyboard->isCtrlPressed() && keyboard->wasPressed(GLFW_KEY_A)) {
+			cursor.select(0, text.size());
+			return true;
+		}
 
+		if (keyboard->isTypedEvent()) {
 			if (keyboard->keycode == GLFW_KEY_BACKSPACE) {
 				cursor.eraseBackward(text);
+				return true;
 			}
 
 			if (keyboard->keycode == GLFW_KEY_DELETE) {
 				cursor.eraseForward(text);
+				return true;
 			}
 
 			if (keyboard->keycode == GLFW_KEY_LEFT) {
 				cursor.move(text, -1, keyboard->isShiftPressed());
+				return true;
 			}
 
 			if (keyboard->keycode == GLFW_KEY_RIGHT) {
 				cursor.move(text, +1, keyboard->isShiftPressed());
+				return true;
 			}
 		}
 	}
 
-	return false;
+	return used;
 }

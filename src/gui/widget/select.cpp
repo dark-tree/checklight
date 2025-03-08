@@ -86,7 +86,9 @@ bool SelectWidget::event(WidgetContext& context, const InputEvent& any) {
 	if (auto* event = any.as<FrameEvent>()) {
 		if (hovered || unrolled) {
 			event->cursor(CursorIcon::POINTER);
+			return true;
 		}
+
 		return false;
 	}
 
@@ -96,6 +98,7 @@ bool SelectWidget::event(WidgetContext& context, const InputEvent& any) {
 				unrolled = false;
 				option = value;
 				pressed = false;
+				return true;
 			}
 
 			if (keyboard->keycode == GLFW_KEY_ENTER) {
@@ -111,20 +114,23 @@ bool SelectWidget::event(WidgetContext& context, const InputEvent& any) {
 
 				unrolled = !unrolled;
 				pressed = unrolled;
+				return true;
 			}
 		}
 
 		if (keyboard->isTypedEvent()) {
 			if (keyboard->keycode == GLFW_KEY_DOWN && unrolled) {
 				option = std::min((int) options.size() - 1, option + 1);
+				return true;
 			}
 
 			if (keyboard->keycode == GLFW_KEY_UP && unrolled) {
 				option = std::max(0, option - 1);
+				return true;
 			}
 		}
 
-		return true;
+		return false;
 	}
 
 	if (auto* positioned = any.as<PositionedEvent>()) {
@@ -144,22 +150,31 @@ bool SelectWidget::event(WidgetContext& context, const InputEvent& any) {
 		if (auto* button = positioned->as<ButtonEvent>()) {
 
 			if (isFocused() || hovered) {
+
+				// this is a bit of a hack as I couldn't get the
+				// logic below to comply with my desires, the multitude
+				// of flags and conditions here make this a real pain to deal with
+				// so we just force 'false' artificially here to cancel selection
+				if (!unrolled && !hovered && isFocused()) {
+					return false;
+				}
+
 				if (button->isPressEvent()) {
 					pressed = true;
 					setFocus(context);
+					return true;
 				}
 
 				if (button->isReleaseEvent()) {
 					pressed = false;
 					unrolled = hovered && !unrolled;
 					value = option;
+					return true;
 				}
 			}
 		}
 
-		return false;
 	}
-
 
 	return false;
 }

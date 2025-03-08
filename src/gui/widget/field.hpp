@@ -36,6 +36,9 @@ class TextCursor {
 		/// Apply the backspace key to the selection
 		void eraseBackward(utf8::UnicodeVector& text);
 
+		/// Select the specific text range, assumes the range is correct, but can be empty
+		void select(int start, int end);
+
 		/// Get leftmost extend of the selection, in range [0, text.size()]
 		int begin() const;
 
@@ -46,8 +49,17 @@ class TextCursor {
 
 class FieldWidget : public InputWidget {
 
+	public:
+
+		enum Kind {
+			INTEGER,
+			TEXT,
+			PASSWORD,
+		};
+
 	private:
 
+		Kind kind = TEXT;
 		std::string placeholder = "Text Input...";
 		TextCursor cursor;
 		std::optional<BakedText> baked {};
@@ -58,6 +70,9 @@ class FieldWidget : public InputWidget {
 
 		/// Draw the cursor, and selection
 		void drawCursorSelection(ImmediateRenderer& immediate);
+
+		/// Get a string to show as the field's value
+		utf8::UnicodeVector getDisplayUnicodes();
 
 	public:
 

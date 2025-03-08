@@ -58,7 +58,17 @@ InputResult WidgetContext::onEvent(const InputEvent& any) {
 		}
 	}
 
-	return root->event(*this, any) ? InputResult::BLOCK : InputResult::PASS;
+	const bool used = root->event(*this, any);
+
+	if (!used) {
+		if (any.as<ButtonEvent>()) {
+			setSelected(nullptr);
+		}
+
+		return InputResult::PASS;
+	}
+
+	return InputResult::BLOCK;
 }
 
 

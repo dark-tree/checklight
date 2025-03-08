@@ -56,8 +56,16 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 
 	// update mouse icon
 	if (const auto* event = any.as<FrameEvent>()) {
-		if (hovered) event->cursor(CursorIcon::POINTER);
-		if (pressed) event->cursor(CursorIcon::HORIZONTAL);
+		if (hovered) {
+			event->cursor(CursorIcon::POINTER);
+			return true;
+		}
+
+		if (pressed) {
+			event->cursor(CursorIcon::HORIZONTAL);
+			return true;
+		}
+
 		return false;
 	}
 
@@ -66,6 +74,7 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 		const float range = knob_size + 6; // interaction margin
 		const float half = range / 2;
 		hovered = positioned->isWithinBox(knob.x - half, knob.y - half, range, range);
+		bool used = false;
 
 		if (const auto* button = positioned->as<ButtonEvent>()) {
 			if (button->isWithinBox(x, y, w, h) || pressed || hovered) {
@@ -77,11 +86,12 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 				if (button->isReleaseEvent()) {
 					pressed = false;
 				}
+
+				used = true;
 			}
 		}
 
 		if (const auto* keyboard = any.as<KeyboardEvent>()) {
-
 			if (!isFocused()) {
 				return false;
 			}
@@ -104,7 +114,7 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 			updateValue();
 		}
 
-		return false;
+		return used;
 	}
 
 	return false;

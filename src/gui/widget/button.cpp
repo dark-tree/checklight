@@ -49,11 +49,15 @@ bool ButtonWidget::event(WidgetContext& context, const InputEvent& any) {
 	}
 
 	if (auto* event = any.as<FrameEvent>()) {
-		if (hovered) event->cursor(CursorIcon::POINTER);
+		if (hovered) {
+			event->cursor(CursorIcon::POINTER);
+			return true;
+		}
+
 		return false;
 	}
 
-	InputWidget::event(context, any);
+	bool used = InputWidget::event(context, any);
 
 	if (!isFocused()) {
 		return false;
@@ -79,5 +83,5 @@ bool ButtonWidget::event(WidgetContext& context, const InputEvent& any) {
 		}
 	}
 
-	return false;
+	return used;
 }

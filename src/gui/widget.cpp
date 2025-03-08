@@ -63,10 +63,12 @@ bool InputWidget::event(WidgetContext& context, const InputEvent& any) {
 			if (button->isPressEvent()) {
 				pressed = true;
 				setFocus(context);
+				return true;
 			}
 
 			if (button->isReleaseEvent()) {
 				pressed = false;
+				return true;
 			}
 		}
 	}
