@@ -2,7 +2,7 @@
 
 #include "gui/widget.hpp"
 
-class SelectWidget : public Widget {
+class SelectWidget : public InputWidget {
 
 	private:
 
@@ -25,6 +25,6 @@ class SelectWidget : public Widget {
 		SelectWidget(const std::function<void()>& callback);
 
 		void draw(ImmediateRenderer& immediate) override;
-		bool handle(const InputEvent &event) override;
+		bool event(WidgetContext& context, const InputEvent &event) override;
 
 };

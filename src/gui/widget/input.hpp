@@ -44,9 +44,9 @@ class TextCursor {
 
 };
 
-class InputWidget : public Widget {
+class FieldWidget : public InputWidget {
 
-	protected:
+	private:
 
 		std::string placeholder = "Text Input...";
 		TextCursor cursor;
@@ -61,9 +61,9 @@ class InputWidget : public Widget {
 
 	public:
 
-		InputWidget(const std::function<void()>& callback);
+		FieldWidget(const std::function<void()>& callback);
 
 		void draw(ImmediateRenderer& immediate) override;
-		bool handle(const InputEvent &event) override;
+		bool event(WidgetContext& context, const InputEvent &event) override;
 
 };

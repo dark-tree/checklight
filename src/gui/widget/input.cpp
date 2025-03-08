@@ -1,12 +1,9 @@
 
 #include "input.hpp"
 
-#include <input/event/button.hpp>
-#include <input/event/frame.hpp>
-#include <input/event/keyboard.hpp>
-#include <input/event/mouse.hpp>
-#include <input/event/unicode.hpp>
-#include <render/immediate.hpp>
+#include "input/input.hpp"
+#include "render/immediate.hpp"
+#include "gui/context.hpp"
 
 /*
  * TextCursor
@@ -96,13 +93,13 @@ int TextCursor::end() const {
 }
 
 /*
- * InputWidget
+ * FieldWidget
  */
 
-InputWidget::InputWidget(const std::function<void()>& callback)
-: Widget() {}
+FieldWidget::FieldWidget(const std::function<void()>& callback)
+: InputWidget() {}
 
-float InputWidget::getCursorOffset(int glyph) const {
+float FieldWidget::getCursorOffset(int glyph) const {
 	const auto& glyphs = baked->getQuads();
 	float ox = x;
 
@@ -114,7 +111,7 @@ float InputWidget::getCursorOffset(int glyph) const {
 	return ox;
 }
 
-void InputWidget::drawCursorSelection(ImmediateRenderer& immediate) {
+void FieldWidget::drawCursorSelection(ImmediateRenderer& immediate) {
 	float start = getCursorOffset(cursor.begin());
 	float end = getCursorOffset(cursor.end());
 
@@ -133,7 +130,13 @@ void InputWidget::drawCursorSelection(ImmediateRenderer& immediate) {
 	}
 }
 
-void InputWidget::draw(ImmediateRenderer& immediate) {
+void FieldWidget::draw(ImmediateRenderer& immediate) {
+
+	if (isFocused()) {
+		immediate.setRectRadius(5);
+		immediate.setColor(255, 255, 0);
+		immediate.drawRect2D(x - 8, y - 8, w + 16, h + 16);
+	}
 
 	if (enabled) {
 		if (hovered) {
@@ -165,28 +168,31 @@ void InputWidget::draw(ImmediateRenderer& immediate) {
 		immediate.drawText2D(0, 0, *baked);
 	}
 
-	immediate.setLineWidth(1);
-	drawCursorSelection(immediate);
+	if (isFocused()) {
+		immediate.setLineWidth(1);
+		drawCursorSelection(immediate);
+	}
 
 }
 
-bool InputWidget::handle(const InputEvent& any) {
+bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 
 	// some of the functions we invoke here expect the text to be baked
 	if (!enabled || !baked.has_value()) {
 		return false;
 	}
 
-	Widget::handle(any);
-
-	if (const auto* unicode = any.as<UnicodeEvent>()) {
-		cursor.insert(text, unicode->unicode);
-		cursor.move(text, +1, false);
+	if (auto* event = any.as<FrameEvent>()) {
+		if (hovered) event->cursor(CursorIcon::TEXT);
+		return false;
 	}
+
+	InputWidget::event(context, any);
 
 	if (const auto* button = any.as<ButtonEvent>()) {
 		if (button->isPressEvent()) {
 			if (button->isWithinBox(x, y, w, h)) {
+
 				for (int i = 0; i <= text.size(); i++) {
 					float target = getCursorOffset(i);
 
@@ -200,6 +206,15 @@ bool InputWidget::handle(const InputEvent& any) {
 				}
 			}
 		}
+	}
+
+	if (!isFocused()) {
+		return false;
+	}
+
+	if (const auto* unicode = any.as<UnicodeEvent>()) {
+		cursor.insert(text, unicode->unicode);
+		cursor.move(text, +1, false);
 	}
 
 	if (const auto* keyboard = any.as<KeyboardEvent>()) {

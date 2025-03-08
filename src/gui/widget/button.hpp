@@ -2,7 +2,7 @@
 
 #include "gui/widget.hpp"
 
-class ButtonWidget : public Widget {
+class ButtonWidget : public InputWidget {
 
 	private:
 
@@ -14,6 +14,6 @@ class ButtonWidget : public Widget {
 		ButtonWidget(const std::string &label, const std::function<void()>& callback);
 
 		void draw(ImmediateRenderer& immediate) override;
-		bool handle(const InputEvent &event) override;
+		bool event(WidgetContext& context, const InputEvent &event) override;
 
 };

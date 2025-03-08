@@ -1,19 +1,24 @@
 
 #include "slider.hpp"
 
-#include <input/event/button.hpp>
-#include <input/event/frame.hpp>
-#include <input/event/mouse.hpp>
-#include <render/immediate.hpp>
+#include "gui/context.hpp"
+#include "input/input.hpp"
+#include "render/immediate.hpp"
 
 SliderWidget::SliderWidget(const std::function<void()>& callback)
-: Widget(), callback(callback) {}
+: InputWidget(), callback(callback) {}
 
 glm::vec2 SliderWidget::getKnobPosition() {
 	return {x + value * w, y + h / 2};
 }
 
 void SliderWidget::draw(ImmediateRenderer& immediate) {
+
+	if (isFocused()) {
+		immediate.setRectRadius(5);
+		immediate.setColor(255, 255, 0);
+		immediate.drawRect2D(x - 8, y - 8, w + 16, h + 16);
+	}
 
 	glm::vec2 knob = getKnobPosition();
 
@@ -31,7 +36,7 @@ void SliderWidget::draw(ImmediateRenderer& immediate) {
 	immediate.drawCircle2D(knob.x, knob.y, knob_size);
 }
 
-bool SliderWidget::handle(const InputEvent& any) {
+bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 
 	if (!enabled) {
 		return false;
@@ -56,6 +61,7 @@ bool SliderWidget::handle(const InputEvent& any) {
 			if (button->isWithinBox(x, y, w, h) || pressed || hovered) {
 				if (button->isPressEvent()) {
 					pressed = true;
+					setFocus(context);
 				}
 
 				if (button->isReleaseEvent()) {

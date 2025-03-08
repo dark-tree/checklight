@@ -2,7 +2,7 @@
 
 #include "gui/widget.hpp"
 
-class SliderWidget : public Widget {
+class SliderWidget : public InputWidget {
 
 	private:
 
@@ -21,6 +21,6 @@ class SliderWidget : public Widget {
 		SliderWidget(const std::function<void()>& callback);
 
 		void draw(ImmediateRenderer& immediate) override;
-		bool handle(const InputEvent &event) override;
+		bool event(WidgetContext& context, const InputEvent &event) override;
 
 };

@@ -1,4 +1,7 @@
 
+#include <gui/context.hpp>
+#include <gui/widget/panel.hpp>
+
 #include "render/render.hpp"
 #include "input/input.hpp"
 #include "engine/engine.hpp"
@@ -18,21 +21,30 @@ int main() {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
-	// auto button = std::make_shared<ButtonWidget>("Hello", [] () {
-	// 	printf("DEBUG: Pressed button!\n");
-	// });
+	auto context = std::make_shared<WidgetContext>();
+	auto panel = std::make_shared<PanelWidget>();
 
-	auto button = std::make_shared<InputWidget>([] () {
+	auto button = std::make_shared<ButtonWidget>("Hello", [] () {
+		printf("DEBUG: Pressed button!\n");
+	});
+	button->setBounds(600, 400, 100, 50);
+
+	auto input = std::make_shared<FieldWidget>([] () {
 
 	});
+	input->setBounds(600, 500, 100, 50);
 
-	// auto button = std::make_shared<SelectWidget>([] () {
-	//
-	// });
+	auto select = std::make_shared<SelectWidget>([] () {
 
-	button->setBounds(600, 600, 100, 50);
+	});
+	select->setBounds(600, 600, 100, 50);
 
-	window.getInputDispatcher().registerListener(std::dynamic_pointer_cast<InputListener>(button));
+	context->setRoot(panel);
+	panel->addWidget(button);
+	panel->addWidget(input);
+	panel->addWidget(select);
+
+	window.getInputDispatcher().registerListener(std::dynamic_pointer_cast<InputListener>(context));
 	auto models = system.importObj("assets/models/checklight.obj");
 
 	BoardManager m(window);
@@ -58,8 +70,7 @@ int main() {
 		m.updateCycle();
 		std::shared_ptr<Board> current_board = m.getCurrentBoard().lock();
 
-
-		button->draw(system.getImmediateRenderer());
+		context->draw(system.getImmediateRenderer());
 
 		drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());
 

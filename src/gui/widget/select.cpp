@@ -1,15 +1,12 @@
 
 #include "select.hpp"
 
-#include <input/debug.hpp>
-#include <input/event/button.hpp>
-#include <input/event/frame.hpp>
-#include <input/event/keyboard.hpp>
-#include <input/event/mouse.hpp>
-#include <render/immediate.hpp>
+#include "input/input.hpp"
+#include "render/immediate.hpp"
+#include "gui/context.hpp"
 
 SelectWidget::SelectWidget(const std::function<void()>& callback)
-: Widget(), unrolled(false), callback(callback) {
+: InputWidget(), unrolled(false), callback(callback) {
 
 	for (int i = 0; i < 5; i ++) {
 		options.emplace_back("Option: " + std::to_string(i));
@@ -18,6 +15,14 @@ SelectWidget::SelectWidget(const std::function<void()>& callback)
 }
 
 void SelectWidget::draw(ImmediateRenderer& immediate) {
+
+	if (isFocused()) {
+		immediate.setRectRadius(5);
+		immediate.setColor(255, 255, 0);
+		immediate.drawRect2D(x - 8, y - 8, w + 16, h + 16);
+	} else {
+		unrolled = false;
+	}
 
 	if (enabled) {
 		if (hovered) {
@@ -72,20 +77,48 @@ void SelectWidget::draw(ImmediateRenderer& immediate) {
 
 }
 
-bool SelectWidget::handle(const InputEvent& any) {
-
-	DebugInputListener debugger {};
-	debugger.onEvent(any);
+bool SelectWidget::event(WidgetContext& context, const InputEvent& any) {
 
 	if (!enabled) {
 		return false;
 	}
 
 	if (auto* event = any.as<FrameEvent>()) {
-		if (hovered || (option != OPTION_NONE)) {
+		if (hovered || unrolled) {
 			event->cursor(CursorIcon::POINTER);
 		}
 		return false;
+	}
+
+	if (auto* keyboard = any.as<KeyboardEvent>()) {
+		if (keyboard->isReleaseEvent()) {
+			if (keyboard->keycode == GLFW_KEY_ESCAPE && unrolled) {
+				unrolled = false;
+				option = value;
+				pressed = false;
+			}
+
+			if (keyboard->keycode == GLFW_KEY_ENTER) {
+				if (unrolled) {
+					value = option;
+				} else {
+					option = value;
+				}
+
+				unrolled = !unrolled;
+				pressed = unrolled;
+			}
+
+			if (keyboard->keycode == GLFW_KEY_DOWN && unrolled) {
+				option = std::min((int) options.size() - 1, option + 1);
+			}
+
+			if (keyboard->keycode == GLFW_KEY_UP && unrolled) {
+				option = std::max(0, option - 1);
+			}
+		}
+
+		return true;
 	}
 
 	if (auto* positioned = any.as<PositionedEvent>()) {
@@ -104,46 +137,18 @@ bool SelectWidget::handle(const InputEvent& any) {
 
 		if (auto* button = positioned->as<ButtonEvent>()) {
 
-			if (button->isPressEvent()) {
-				pressed = true;
-			}
+			if (isFocused() || hovered) {
+				if (button->isPressEvent()) {
+					pressed = true;
+					setFocus(context);
+				}
 
-			if (button->isReleaseEvent()) {
-				pressed = false;
-				unrolled = hovered && !unrolled;
-				value = option;
-			}
-		}
-
-		if (auto* keyboard = positioned->as<KeyboardEvent>()) {
-
-			if (keyboard->isReleaseEvent()) {
-				if (keyboard->keycode == GLFW_KEY_ESCAPE && unrolled) {
-					unrolled = false;
-					option = value;
+				if (button->isReleaseEvent()) {
 					pressed = false;
-				}
-
-				if (keyboard->keycode == GLFW_KEY_ENTER) {
-					if (unrolled) {
-						value = option;
-					} else {
-						option = value;
-					}
-
-					unrolled = !unrolled;
-					pressed = unrolled;
-				}
-
-				if (keyboard->keycode == GLFW_KEY_DOWN && unrolled) {
-					option = std::min((int) options.size() - 1, option + 1);
-				}
-
-				if (keyboard->keycode == GLFW_KEY_UP && unrolled) {
-					option = std::max(0, option - 1);
+					unrolled = hovered && !unrolled;
+					value = option;
 				}
 			}
-
 		}
 
 		return false;

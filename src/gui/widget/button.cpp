@@ -1,18 +1,24 @@
 
 #include "button.hpp"
 
-#include <input/event/button.hpp>
-#include <input/event/frame.hpp>
-#include <input/event/mouse.hpp>
-#include <render/immediate.hpp>
+#include "input/input.hpp"
+#include "render/immediate.hpp"
+#include "gui/context.hpp"
+
 
 ButtonWidget::ButtonWidget(const std::string &label, const std::function<void()>& callback)
-: Widget(), label(label), callback(callback) {}
+: InputWidget(), label(label), callback(callback) {}
 
 void ButtonWidget::draw(ImmediateRenderer& immediate) {
 
+	if (isFocused()) {
+		immediate.setRectRadius(5);
+		immediate.setColor(255, 255, 0);
+		immediate.drawRect2D(x - 8, y - 8, w + 16, h + 16);
+	}
+
 	if (enabled) {
-		if (hovered) {
+		if (hovered || pressed) {
 			if (pressed) {
 				immediate.setColor(255, 100, 100);
 			} else {
@@ -34,21 +40,40 @@ void ButtonWidget::draw(ImmediateRenderer& immediate) {
 	immediate.drawString2D(x, y, label);
 }
 
-bool ButtonWidget::handle(const InputEvent& any) {
+bool ButtonWidget::event(WidgetContext& context, const InputEvent& any) {
 
 	if (!enabled) {
 		return false;
 	}
 
-	const bool was_pressed = pressed;
-	Widget::handle(any);
+	if (auto* event = any.as<FrameEvent>()) {
+		if (hovered) event->cursor(CursorIcon::POINTER);
+		return false;
+	}
 
-	if (was_pressed) {
-		if (auto* button = any.as<ButtonEvent>()) {
-			if (button->isReleaseEvent() && button->isWithinBox(x, y, w, h)) {
-				callback();
-				return true;
-			}
+	InputWidget::event(context, any);
+
+	if (!isFocused()) {
+		return false;
+	}
+
+	if (auto* button = any.as<ButtonEvent>()) {
+		if (button->isReleaseEvent() && button->isWithinBox(x, y, w, h)) {
+			callback();
+			return true;
+		}
+	}
+
+	if (auto* keyboard = any.as<KeyboardEvent>()) {
+		if (keyboard->wasPressed(GLFW_KEY_ENTER)) {
+			pressed = true;
+			return true;
+		}
+
+		if (keyboard->wasReleased(GLFW_KEY_ENTER)) {
+			callback();
+			pressed = false;
+			return true;
 		}
 	}
 

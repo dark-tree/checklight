@@ -6,6 +6,10 @@
  */
 
 void InputDispatcher::registerListener(const std::shared_ptr<InputListener>& listener, int priority) {
+	if (!listener) {
+		throw std::runtime_error {"Given input listener is null!"};
+	}
+
 	listeners.insert(priority, listener);
 }
 
