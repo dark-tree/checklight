@@ -96,8 +96,12 @@ int main() {
 		objects.push_back(object);
 	}
 
-	system.setDirectionalLight(glm::vec3(0.0, 3.5, -1.0), glm::vec3(1.5, 1.5, 1.5));
-	system.setAmbientLight(glm::vec3(0.0, 0.0, 0.0));
+	system.getParameters().setDirectionalLight(glm::vec3(0.0, 3.5, -1.0), glm::vec3(1.5, 1.5, 1.5));
+	system.getParameters().setAmbientLight(glm::vec3(0.0, 0.0, 0.0));
+
+	system.getParameters().setDenoise(true);
+	system.getParameters().setShadows(true);
+	system.getParameters().setGISamples(1);
 
 	while (!window.shouldClose()) {
 		window.poll();
@@ -112,7 +116,6 @@ int main() {
 		// do this once at the beginning of frame rendering
 		system.setProjectionMatrix(65.0f, 0.01f, 5000.0f);
 		system.setViewMatrix(current_board->getCamPos(), current_board->getCamForward());
-		system.setTime(glfwGetTime());
 
 		// render the scene
 		system.draw();

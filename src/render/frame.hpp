@@ -8,6 +8,8 @@
 
 class Renderer;
 
+using bool32 = uint32_t;
+
 struct SceneUniform {
 	glm::mat4 view;
 	glm::mat4 view_inv;
@@ -23,6 +25,9 @@ struct SceneUniform {
 	glm::vec3 dir_light_direction;
 	glm::vec3 dir_light_color;
 	glm::vec3 ambient_color;
+	int gi_samples;
+	bool32 denoise;
+	bool32 shadows;
 };
 
 class RenderFrame {

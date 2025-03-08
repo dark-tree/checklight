@@ -873,6 +873,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.descriptor(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.descriptor(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(4, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.done(device);
 
 	layout_denoise2 = DescriptorSetLayoutBuilder::begin()
@@ -1031,19 +1032,21 @@ void Renderer::draw() {
 		.bindDescriptorSet(frame.set_raytrace)
 		.traceRays(shader_table, width(), height());
 
-	// denoise
-	recorder.beginRenderPass(pass_denoise, current_image, swapchain.getExtend())
-		.bindPipeline(pipeline_denoise_2d)
-		.bindDescriptorSet(frame.set_denoise)
-		.draw(3)
-		.endRenderPass();
+	if (parameters.getDenoise()) {
+		// denoise
+		recorder.beginRenderPass(pass_denoise, current_image, swapchain.getExtend())
+			.bindPipeline(pipeline_denoise_2d)
+			.bindDescriptorSet(frame.set_denoise)
+			.draw(3)
+			.endRenderPass();
 
-	// second denoise pass
-	recorder.beginRenderPass(pass_denoise2, current_image, swapchain.getExtend())
-		.bindPipeline(pipeline_denoise2_2d)
-		.bindDescriptorSet(frame.set_denoise2)
-		.draw(3)
-		.endRenderPass();
+		// second denoise pass
+		recorder.beginRenderPass(pass_denoise2, current_image, swapchain.getExtend())
+			.bindPipeline(pipeline_denoise2_2d)
+			.bindDescriptorSet(frame.set_denoise2)
+			.draw(3)
+			.endRenderPass();
+	}
 
 	// compose final image
 	recorder.beginRenderPass(pass_compose, current_image, swapchain.getExtend())

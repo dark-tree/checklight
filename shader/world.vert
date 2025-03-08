@@ -1,5 +1,6 @@
 #version 450
 #extension GL_GOOGLE_include_directive : enable
+#extension GL_EXT_scalar_block_layout : enable
 
 #include "scene.glsl"
 
@@ -11,7 +12,7 @@ layout(location = 3) in uint iMaterial; // unused
 layout(location = 0) out vec4 vColor;
 layout(location = 1) out vec2 vTexture;
 
-layout(binding = 1, set = 0) uniform _SceneUniform { SceneUniform uSceneObject; };
+layout(binding = 1, set = 0, scalar) uniform _SceneUniform { SceneUniform uSceneObject; };
 
 layout(push_constant) uniform MeshConstant {
 	mat4 matrix;

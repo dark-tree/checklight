@@ -46,7 +46,7 @@ layout(binding = 5, set = 0, scalar) buffer MaterialBuffer { RenderMaterial i[];
 
 hitAttributeEXT vec2 attribs;
 
-// Returns true if the shadow ray hits an object
+// Returns true if the shadow ray hits an object (it means the point is in shadow)
 bool traceShadowRay(vec3 origin, vec3 normal, vec3 shadowRayDirection) {
 
 	vec3 shadowRayOrigin = origin + normal * 0.001;
@@ -141,7 +141,13 @@ void main() {
 		vec3 lightDirection = normalize(uSceneObject.dirLightDirection);
 		vec3 lightColor = uSceneObject.dirLightColor;
 
-		if (!traceShadowRay(positionWS, normalWS, lightDirection)) {
+		bool inShadow = false;
+
+		if (uSceneObject.shadows) {
+			inShadow = traceShadowRay(positionWS, normalWS, lightDirection);
+		}
+
+		if (!inShadow) {
 			diffuse = computeDiffuse(lightDirection, normalWS) * lightColor;
 			specular = computeSpecular(material, gl_WorldRayDirectionEXT, lightDirection, normalWS) * lightColor;
 		}

@@ -14,4 +14,7 @@ struct SceneUniform {
 	vec3 dirLightDirection;
 	vec3 dirLightColor;
 	vec3 ambientColor;
+	int giSamples;
+	bool denoise;
+	bool shadows;
 };

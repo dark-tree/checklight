@@ -56,8 +56,6 @@ void RenderSystem::setProjectionMatrix(float fov, float near_plane, float far_pl
 	glm::mat4 projection = glm::perspective(glm::radians(fov), (float) width() / (float) height(), near_plane, far_plane);
 	projection[1][1] *= -1;
 
-	getFrame().uniforms.prev_projection = getFrame().uniforms.projection;
-	getFrame().uniforms.prev_projection_inv = getFrame().uniforms.projection_inv;
 	getFrame().uniforms.projection = projection;
 	getFrame().uniforms.projection_inv = glm::inverse(projection);
 
@@ -66,23 +64,8 @@ void RenderSystem::setProjectionMatrix(float fov, float near_plane, float far_pl
 }
 
 void RenderSystem::setViewMatrix(glm::vec3 eye, glm::vec3 direction) {
-	getFrame().uniforms.prev_view = getFrame().uniforms.view;
-	getFrame().uniforms.prev_view_inv = getFrame().uniforms.view_inv;
 	getFrame().uniforms.view = glm::lookAt(eye, eye + direction, glm::vec3(0.0f, 1.0f, 0.0f));
 	getFrame().uniforms.view_inv = glm::inverse(getFrame().uniforms.view);
-}
-
-void RenderSystem::setTime(float time) {
-	getFrame().uniforms.time = time;
-}
-
-void RenderSystem::setDirectionalLight(glm::vec3 direction, glm::vec3 color) {
-	getFrame().uniforms.dir_light_direction = direction;
-	getFrame().uniforms.dir_light_color = color;
-}
-
-void RenderSystem::setAmbientLight(glm::vec3 color) {
-	getFrame().uniforms.ambient_color = color;
 }
 
 std::shared_ptr<RenderObject> RenderSystem::createRenderObject() {
@@ -207,4 +190,25 @@ std::vector<std::shared_ptr<RenderModel>> RenderSystem::importObj(const std::str
 
 void RenderSystem::closeModel(std::shared_ptr<RenderModel> model) {
 	model->close(system->device);
+}
+
+RenderParameters& RenderSystem::getParameters() {
+	return this->parameters;
+}
+
+void RenderSystem::draw() {
+
+	SceneUniform& scene = getFrame().uniforms;
+
+	scene.time = glfwGetTime();
+
+	parameters.updateSceneUniform(scene);
+
+	Renderer::draw();
+
+	scene.prev_projection = scene.projection;
+	scene.prev_projection_inv = scene.projection_inv;
+
+	scene.prev_view = scene.view;
+	scene.prev_view_inv = scene.view_inv;
 }

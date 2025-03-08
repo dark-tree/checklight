@@ -18,6 +18,7 @@ RenderFrame::RenderFrame(Renderer& renderer, const CommandPool& pool, const Logi
 	set_compose.sampler(1, renderer.attachment_illumination.getTexture(), VK_IMAGE_LAYOUT_GENERAL);
 	set_compose.sampler(2, renderer.attachment_normal.getTexture(), VK_IMAGE_LAYOUT_GENERAL);
 	set_compose.sampler(3, renderer.attachment_soild_illumination.getTexture(), VK_IMAGE_LAYOUT_GENERAL);
+	set_compose.buffer(4, uniform_buffer, sizeof(SceneUniform));
 
 	set_denoise2 = renderer.descriptor_pool.allocate(renderer.layout_denoise2);
 	set_denoise2.sampler(0, renderer.attachment_illum_transport.getTexture(), VK_IMAGE_LAYOUT_GENERAL);

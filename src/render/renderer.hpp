@@ -5,6 +5,7 @@
 #include "application.hpp"
 #include "window.hpp"
 #include "immediate.hpp"
+#include "parameters.hpp"
 
 #include "render/vulkan/setup/proxy.hpp"
 #include "render/vulkan/setup/instance.hpp"
@@ -59,6 +60,7 @@ class Renderer {
 		std::unique_ptr<Window> window;
 		ImmediateRenderer immediate;
 		MaterialManager materials;
+		RenderParameters parameters;
 
 		// early vulkan objects
 		VkFormat surface_format;
@@ -199,7 +201,7 @@ class Renderer {
 		Window& getWindow() const;
 
 		/// Render the next frame, all rendering should happen inside this call
-		void draw();
+		virtual void draw();
 
 		/// Synchronize all operations and wait for the GPU to idle
 		void wait();
