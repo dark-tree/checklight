@@ -54,7 +54,7 @@ bool InputWidget::event(WidgetContext& context, const InputEvent& any) {
 	if (auto* positioned = any.as<PositionedEvent>()) {
 		hovered = positioned->isWithinBox(x, y, w, h);
 
-		if (!hovered) {
+		if (!hovered && !positioned->as<KeyboardEvent>()) {
 			pressed = false;
 			return false;
 		}

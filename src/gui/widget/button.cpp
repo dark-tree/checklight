@@ -15,6 +15,8 @@ void ButtonWidget::draw(ImmediateRenderer& immediate) {
 		immediate.setRectRadius(5);
 		immediate.setColor(255, 255, 0);
 		immediate.drawRect2D(x - 8, y - 8, w + 16, h + 16);
+	} else {
+		pressed = false;
 	}
 
 	if (enabled) {

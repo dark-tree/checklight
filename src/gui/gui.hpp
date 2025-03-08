@@ -3,7 +3,7 @@
 #include "widget/button.hpp"
 #include "widget/slider.hpp"
 #include "widget/select.hpp"
-#include "widget/input.hpp"
+#include "widget/field.hpp"
 
 inline void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
 
@@ -32,17 +32,7 @@ inline void drawUserInterface(ImmediateRenderer& immediate, float width, float h
 	immediate.drawRect2D(0, height - 126, 310, 126);
 
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
-	// immediate.setFontSize(100);
-	// immediate.drawText2D(300, 200, "Cześć Świecie!");
-	//
-	// immediate.setColor(200, 0, 0);
-	// immediate.setSprite(OFF);
-	// immediate.setLineWidth(1);
-	// immediate.drawLine2D(300, 200, 800, 200);
-	//
-	// immediate.setColor(255, 255, 255);
 	immediate.setFontSize(30);
-	// immediate.drawText2D(300, 220, "Checklight - Game engine based on the Vulkan API");
 
 	immediate.setSprite("assets/image/corners.png");
 	immediate.setLineWidth(0.1);
@@ -59,11 +49,5 @@ inline void drawUserInterface(ImmediateRenderer& immediate, float width, float h
 	immediate.setColor(255, 255, 255);
 	immediate.setTextBox(300, 200);
 	immediate.drawString2D(100, 100, "Checkmate!");
-
-	// immediate.setTextBox(OFF);
-	// immediate.setSprite(OFF);
-	// immediate.setRectRadius(10, 20, 40, 80);
-	// // immediate.drawRect2D(100, 100, 300, 200);
-	// immediate.drawCircle2D(400, 400, 80);
 
 }
