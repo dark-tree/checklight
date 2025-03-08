@@ -14,6 +14,8 @@ struct GlyphInfo {
 };
 
 struct GlyphQuad {
+	float advance;
+
 	float x0, y0, s0, t0;
 	float x1, y1, s1, t1;
 

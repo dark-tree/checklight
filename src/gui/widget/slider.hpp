@@ -22,7 +22,7 @@ class SliderWidget : public Widget {
 
 		SliderWidget(const std::function<void()>& callback);
 
-		void draw(ImmediateRenderer &immediate) override;
+		void draw(ImmediateRenderer& immediate) override;
 		bool handle(const InputEvent &event) override;
 
 };

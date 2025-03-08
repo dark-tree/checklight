@@ -31,7 +31,7 @@ void ButtonWidget::draw(ImmediateRenderer& immediate) {
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
 	immediate.setColor(0, 0, 0);
 	immediate.setTextBox(w, h);
-	immediate.drawText2D(x, y, label);
+	immediate.drawString2D(x, y, label);
 }
 
 bool ButtonWidget::handle(const InputEvent& any) {

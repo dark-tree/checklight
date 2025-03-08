@@ -4,6 +4,8 @@
 
 namespace utf8 {
 
+	using UnicodeVector = std::vector<uint32_t>;
+
 	/**
 	 * Load the next Unicode character from the given UTF8 string,
 	 * When zero is returned the sequence is over, and calling loadNext will cause undefined behaviour.
@@ -16,6 +18,6 @@ namespace utf8 {
 	/**
 	 * Convert a standard utf encoded c-string into a vector of 43 bit Unicode code points.
 	 */
-	std::vector<uint32_t> toCodePoints(const char* utf8);
+	UnicodeVector toCodePoints(const char* utf8);
 
 }

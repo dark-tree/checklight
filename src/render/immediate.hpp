@@ -8,6 +8,7 @@
 #include "asset/sprite.hpp"
 #include "draw/channel.hpp"
 #include "draw/color.hpp"
+#include "draw/text.hpp"
 
 class CommandRecorder;
 
@@ -140,6 +141,10 @@ class ImmediateRenderer {
 		void setTextBox(Disabled disabled);
 		void setTextBox(int width, int height);
 
+		// Helpers
+		BakedText bakeString(float x, float y, const std::string& text) const;
+		BakedText bakeUnicode(float x, float y, const std::vector<uint32_t>& unicodes) const;
+
 		// 2D Primitives
 		void drawVertex2D(float x, float y, float u, float v);
 		void drawVertex2D(glm::vec2 pos, float u, float v);
@@ -151,7 +156,8 @@ class ImmediateRenderer {
 		void drawCircle2D(float x, float y, float radius);
 		void drawQuad2D(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
 		void drawBezier2D(float ax, float ay, float bx, float by, float cx, float cy, float dx, float dy);
-		void drawText2D(float x, float y, const std::string& str);
+		void drawString2D(float x, float y, const std::string& str);
+		void drawText2D(float x, float y, const BakedText& text);
 
 		// 3D Primitives
 		void drawVertex3D(float x, float y, float z, float u, float v);

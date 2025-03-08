@@ -32,7 +32,7 @@ void SelectWidget::draw(ImmediateRenderer& immediate) {
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
 	immediate.setColor(0, 0, 0);
 	immediate.setTextBox(w, h);
-	immediate.drawText2D(x, y, "Selected: " + std::to_string(value));
+	immediate.drawString2D(x, y, "Selected: " + std::to_string(value));
 
 	if (!unrolled) {
 		return;
@@ -59,7 +59,7 @@ void SelectWidget::draw(ImmediateRenderer& immediate) {
 		immediate.setFont("assets/font/OpenSans-Variable.ttf");
 		immediate.setColor(0, 0, 0);
 		immediate.setTextBox(w, h);
-		immediate.drawText2D(x, oy, "Option: " + std::to_string(i));
+		immediate.drawString2D(x, oy, "Option: " + std::to_string(i));
 	}
 
 }

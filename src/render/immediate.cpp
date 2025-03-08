@@ -344,6 +344,37 @@ void ImmediateRenderer::setTextBox(int width, int height) {
 	this->expanse = {width, height};
 }
 
+BakedText ImmediateRenderer::bakeString(float x, float y, const std::string& text) const {
+	return bakeUnicode(x, y, utf8::toCodePoints(text.c_str()));
+}
+
+BakedText ImmediateRenderer::bakeUnicode(float x, float y, const std::vector<uint32_t>& unicodes) const {
+	if (!font) {
+		throw std::runtime_error {"No font set!"};
+	}
+
+	uint32_t prev = 0;
+
+	std::vector<GlyphQuad> adjusted;
+	glm::vec2 alignment = getTextOffset(unicodes);
+	float size = font_size / 100.0f;
+	float baseline = y + alignment.y;
+
+	for (uint32_t unicode : unicodes) {
+		GlyphQuad q = font->getOrLoad(&x, &y, size, unicode, prev);
+		prev = unicode;
+
+		const float x0 = q.x0 - alignment.x;
+		const float x1 = q.x1 - alignment.x;
+		const float y0 = q.y0 + alignment.y;
+		const float y1 = q.y1 + alignment.y;
+
+		adjusted.emplace_back(q.advance, x0, y0, q.s0, q.t0, x1, y1, q.s1, q.t1);
+	}
+
+	return {adjusted, baseline, font_size};
+}
+
 void ImmediateRenderer::setFont(const std::string& path, int size) {
 	setFont(path);
 	setFontSize(size);
@@ -536,7 +567,7 @@ void ImmediateRenderer::drawBezier2D(float ax, float ay, float bx, float by, flo
 
 	while (t < 1.0f) {
 
-		// Calculate point on the bezier curve
+		// Calculate point on the Bézier curve
 		const float px = getBezierPoint(ax, bx, cx, dx, t);
 		const float py = getBezierPoint(ay, by, cy, dy, t);
 		const glm::vec2 point {px, py};
@@ -563,34 +594,31 @@ void ImmediateRenderer::drawBezier2D(float ax, float ay, float bx, float by, flo
 
 }
 
-void ImmediateRenderer::drawText2D(float x, float y, const std::string& str) {
+void ImmediateRenderer::drawString2D(float x, float y, const std::string& str) {
+	drawText2D(0, 0, bakeString(x, y, str));
+}
+
+void ImmediateRenderer::drawText2D(float x, float y, const BakedText& baked) {
 
 	if (!font) {
 		throw std::runtime_error {"No font set!"};
 	}
 
-	std::vector<uint32_t> unicodes = utf8::toCodePoints(str.c_str());
-	uint32_t prev = 0;
+	for (GlyphQuad quad : baked.getQuads()) {
+		if (quad.shouldDraw()) {
 
-	glm::vec2 alignment = getTextOffset(unicodes);
+			const float x0 = (quad.x0 + x) * iw - 1;
+			const float x1 = (quad.x1 + x) * iw - 1;
+			const float y0 = (quad.y0 + y) * ih - 1;
+			const float y1 = (quad.y1 + y) * ih - 1;
 
-	for (uint32_t unicode : unicodes) {
-		GlyphQuad q = font->getOrLoad(&x, &y, font_size / 100.0f, unicode, prev);
-		prev = unicode;
+			text.write(x0, y1, 0, active.r, active.g, active.b, active.a, quad.s0, quad.t1);
+			text.write(x0, y0, 0, active.r, active.g, active.b, active.a, quad.s0, quad.t0);
+			text.write(x1, y0, 0, active.r, active.g, active.b, active.a, quad.s1, quad.t0);
 
-		const float x0 = (q.x0 - alignment.x) * iw - 1;
-		const float x1 = (q.x1 - alignment.x) * iw - 1;
-		const float y0 = (q.y0 + alignment.y) * ih - 1;
-		const float y1 = (q.y1 + alignment.y) * ih - 1;
-
-		if (q.shouldDraw()) {
-			text.write(x0, y1, 0, active.r, active.g, active.b, active.a, q.s0, q.t1);
-			text.write(x0, y0, 0, active.r, active.g, active.b, active.a, q.s0, q.t0);
-			text.write(x1, y0, 0, active.r, active.g, active.b, active.a, q.s1, q.t0);
-
-			text.write(x0, y1, 0, active.r, active.g, active.b, active.a, q.s0, q.t1);
-			text.write(x1, y0, 0, active.r, active.g, active.b, active.a, q.s1, q.t0);
-			text.write(x1, y1, 0, active.r, active.g, active.b, active.a, q.s1, q.t1);
+			text.write(x0, y1, 0, active.r, active.g, active.b, active.a, quad.s0, quad.t1);
+			text.write(x1, y0, 0, active.r, active.g, active.b, active.a, quad.s1, quad.t0);
+			text.write(x1, y1, 0, active.r, active.g, active.b, active.a, quad.s1, quad.t1);
 		}
 	}
 }

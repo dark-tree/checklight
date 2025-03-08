@@ -3,6 +3,7 @@
 #include "widget/button.hpp"
 #include "widget/slider.hpp"
 #include "widget/select.hpp"
+#include "widget/input.hpp"
 
 inline void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
 
@@ -22,13 +23,9 @@ inline void drawUserInterface(ImmediateRenderer& immediate, float width, float h
 	immediate.setSprite("assets/image/wiesiu.png");
 	immediate.drawCircle2D(250, 50, 40);
 
-	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(4 + glfwGetTime() * 8) + 1) / 16, 0)));
-	immediate.setSprite("assets/image/magistermaks.png");
-	immediate.drawCircle2D(350, 50, 40);
-
 	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(5 + glfwGetTime() * 8) + 1) / 16, 0)));
 	immediate.setSprite("assets/image/mug12.png");
-	immediate.drawCircle2D(450, 50, 40);
+	immediate.drawCircle2D(350, 50, 40);
 	immediate.setMatrix2D(glm::identity<glm::mat4>());
 
 	immediate.setSprite("assets/image/vulkan-1.png");
@@ -61,7 +58,7 @@ inline void drawUserInterface(ImmediateRenderer& immediate, float width, float h
 
 	immediate.setColor(255, 255, 255);
 	immediate.setTextBox(300, 200);
-	immediate.drawText2D(100, 100, "Checkmate!");
+	immediate.drawString2D(100, 100, "Checkmate!");
 
 	// immediate.setTextBox(OFF);
 	// immediate.setSprite(OFF);

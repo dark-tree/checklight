@@ -124,9 +124,12 @@ GlyphQuad Font::getOrLoad(float* x, float* y, float scale, uint32_t unicode, int
 	}
 
 	GlyphInfo& info = pair->second;
+	quad.advance = info.advance * scale;
+	float width = info.xoff * scale;
+	float height = info.yoff * scale;
 
-	int round_x = (int) floor((*x + info.xoff * scale) + 0.5f);
-	int round_y = (int) floor((*y + info.yoff * scale) + 0.5f);
+	int round_x = (int) floor((*x + width) + 0.5f);
+	int round_y = (int) floor((*y + height) + 0.5f);
 
 	quad.x0 = round_x + kerning * 100 * scale;
 	quad.y0 = round_y;
@@ -138,7 +141,7 @@ GlyphQuad Font::getOrLoad(float* x, float* y, float scale, uint32_t unicode, int
 	quad.s1 = info.x1;
 	quad.t1 = info.y0;
 
-	*x += info.advance * scale;
+	*x += quad.advance;
 	return quad;
 
 }
