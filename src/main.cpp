@@ -24,22 +24,22 @@ int main() {
 	auto context = std::make_shared<WidgetContext>();
 	auto panel = std::make_shared<PanelWidget>();
 
-	auto slider = std::make_shared<SliderWidget>([] () {
+	auto slider = std::make_shared<SliderWidget>([] () noexcept {
 
 	});
 	slider->setBounds(600, 300, 100, 50);
 
-	auto button = std::make_shared<ButtonWidget>("Hello", [] () {
+	auto button = std::make_shared<ButtonWidget>("Hello", [] () noexcept {
 		printf("DEBUG: Pressed button!\n");
 	});
 	button->setBounds(600, 400, 100, 50);
 
-	auto input = std::make_shared<FieldWidget>([] () {
+	auto input = std::make_shared<FieldWidget>([] () noexcept {
 
 	});
 	input->setBounds(600, 500, 100, 50);
 
-	auto select = std::make_shared<SelectWidget>([] () {
+	auto select = std::make_shared<SelectWidget>([] () noexcept {
 
 	});
 	select->setBounds(600, 600, 100, 50);

@@ -7,7 +7,7 @@
 
 
 ButtonWidget::ButtonWidget(const std::string &label, const std::function<void()>& callback)
-: InputWidget(), label(label), callback(callback) {}
+: InputWidget(), callback(callback), label(label) {}
 
 void ButtonWidget::draw(ImmediateRenderer& immediate) {
 

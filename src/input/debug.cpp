@@ -64,7 +64,7 @@ InputResult DebugInputListener::onEvent(const InputEvent& any) {
 		printf("DEBUG: UnicodeEvent {unicode=%u, x=%d, y=%d}\n", event->unicode, (int) event->x, (int) event->y);
 	}
 
-	if (const auto* event = any.as<CloseEvent>()) {
+	if ([[maybe_unused]] const auto* event = any.as<CloseEvent>()) {
 		printf("DEBUG: CloseEvent {}\n");
 	}
 

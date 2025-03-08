@@ -14,7 +14,12 @@ Sprite DynamicAtlas::packSprite(ImageData& image) {
 
 	if (!box.empty()) {
 		atlas.blit(box.x, box.y, image);
-		return {box.x, box.y, box.x + box.w, box.y + box.h};
+		return {
+			static_cast<float>(box.x),
+			static_cast<float>(box.y),
+			static_cast<float>(box.x + box.w),
+			static_cast<float>(box.y + box.h)
+		};
 	}
 
 	int w = atlas.width();

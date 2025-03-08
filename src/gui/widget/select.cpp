@@ -52,7 +52,7 @@ void SelectWidget::draw(ImmediateRenderer& immediate) {
 	}
 
 	// options
-	for (int i = 0; i < options.size(); i ++) {
+	for (int i = 0; i < (int) options.size(); i ++) {
 		int oy = y + h * (i + 1);
 
 		// background
@@ -137,7 +137,7 @@ bool SelectWidget::event(WidgetContext& context, const InputEvent& any) {
 		hovered = positioned->isWithinBox(x, y, w, h);
 
 		if (unrolled) {
-			for (int i = 0; i < options.size(); i ++) {
+			for (int i = 0; i < (int) options.size(); i ++) {
 				int oy = y + h * (i + 1);
 				bool entry = positioned->isWithinBox(x, oy, w, h);
 

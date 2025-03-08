@@ -47,7 +47,7 @@ InputResult WidgetContext::onEvent(const InputEvent& any) {
 					i = std::distance(selectable.begin(), it) + 1;
 
 					// clamp to array size
-					if (i >= selectable.size()) {
+					if (i >= (int) selectable.size()) {
 						i = -1;
 					}
 				}

@@ -63,7 +63,7 @@ void TextCursor::eraseForward(utf8::UnicodeVector& text) {
 		return;
 	}
 
-	if (begin() < text.size()) {
+	if (begin() < (int) text.size()) {
 		text.erase(text.begin() + begin());
 	}
 }
@@ -74,7 +74,7 @@ void TextCursor::eraseBackward(utf8::UnicodeVector& text) {
 		return;
 	}
 
-	if (begin() <= text.size() && begin() > 0) {
+	if (begin() <= (int) text.size() && begin() > 0) {
 		text.erase(text.begin() + begin() - 1);
 	}
 
@@ -140,7 +140,7 @@ utf8::UnicodeVector FieldWidget::getDisplayUnicodes() {
 		utf8::UnicodeVector result;
 		result.reserve(text.size());
 
-		for (uint32_t unicode : text) {
+		for ([[maybe_unused]] uint32_t unicode : text) {
 			result.push_back('*');
 		}
 
@@ -218,7 +218,7 @@ bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 		if (button->isPressEvent()) {
 			if (button->isWithinBox(x, y, w, h)) {
 
-				for (int i = 0; i <= text.size(); i++) {
+				for (int i = 0; i <= (int) text.size(); i++) {
 					float target = getCursorOffset(i);
 
 					float start = (target + getCursorOffset(i - 1)) * 0.5f;
