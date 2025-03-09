@@ -150,6 +150,30 @@ utf8::UnicodeVector FieldWidget::getDisplayUnicodes() {
 	return text;
 }
 
+bool FieldWidget::applyCursorSelection(const PositionedEvent* event, bool drag) {
+	if (!pressed) {
+		return false;
+	}
+
+	// check each character in string
+	for (int i = 0; i <= (int) text.size(); i++) {
+		float target = getCursorOffset(i);
+
+		// make the selection box be start the middles of two
+		// neighbouring characters not just on the gap itself
+		float start = (target + getCursorOffset(i - 1)) * 0.5f;
+		float end = (target + getCursorOffset(i + 1)) * 0.5f;
+
+		// seek to gap n success
+		if (event->isWithinBox(start, y, end - start, h)) {
+			cursor.seek(text, i, drag);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 
 void FieldWidget::draw(ImmediateRenderer& immediate) {
 
@@ -214,24 +238,14 @@ bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 
 	bool used = InputWidget::event(context, any);
 
+	// handle dragging (make selection)
+	if (const auto* button = any.as<MouseEvent>()) {
+		used |= applyCursorSelection(button, true);
+	}
+
+	// handle click (begin selection) + shift-click (make selection)
 	if (const auto* button = any.as<ButtonEvent>()) {
-		if (button->isPressEvent()) {
-			if (button->isWithinBox(x, y, w, h)) {
-
-				for (int i = 0; i <= (int) text.size(); i++) {
-					float target = getCursorOffset(i);
-
-					float start = (target + getCursorOffset(i - 1)) * 0.5f;
-					float end = (target + getCursorOffset(i + 1)) * 0.5f;
-
-					if (button->isWithinBox(start, y, end - start, h)) {
-						cursor.seek(text, i, button->isShiftPressed());
-						used = true;
-						break;
-					}
-				}
-			}
-		}
+		used |= applyCursorSelection(button, button->isShiftPressed());
 	}
 
 	if (!isFocused()) {

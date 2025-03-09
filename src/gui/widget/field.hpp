@@ -74,6 +74,9 @@ class FieldWidget : public InputWidget {
 		/// Get a string to show as the field's value
 		utf8::UnicodeVector getDisplayUnicodes();
 
+		///
+		bool applyCursorSelection(const PositionedEvent* event, bool drag);
+
 	public:
 
 		FieldWidget(const std::function<void()>& callback);
