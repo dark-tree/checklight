@@ -21,6 +21,7 @@ class SelectWidget : public InputWidget {
 		std::vector<Option> options;
 		std::function<void()> callback;
 
+		/// Show or hide the dropdown menu
 		void setUnrolled(bool unrolled);
 
 	public:

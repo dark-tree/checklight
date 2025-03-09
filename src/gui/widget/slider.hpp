@@ -15,7 +15,10 @@ class SliderWidget : public InputWidget {
 		float knob_size = 8;
 		float rail_size = 3;
 
+		/// Updates the slider position to fall in valid range, and on a valid step
 		void updateValue();
+
+		/// Gets the knob x position in pixels based on slider value given
 		glm::vec2 getKnobPosition(float value);
 
 	public:

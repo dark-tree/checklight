@@ -63,3 +63,13 @@ size_t math::alignUp(size_t size, size_t alignment) {
 	return (size + alignment - 1) & ~(alignment - 1);
 }
 
+float math::easeInOut(float time) {
+	if (time < 0.5f) {
+		// ease-in (accelerating)
+		return 2 * time * time;
+	}
+
+	// ease-out (decelerating)
+	return -1 + (4 - 2 * time) * time;
+}
+

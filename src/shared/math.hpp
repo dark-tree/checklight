@@ -50,4 +50,12 @@ namespace math {
 	 */
 	size_t alignUp(size_t size, size_t alignment);
 
+	/**
+	 * PAn ease-in-out function, expects time to be in range [0, 1]
+	 *
+	 * @param time Linear time value in range [0, 1]
+	 * @return Eased value in range [0, 1]
+	 */
+	float easeInOut(float time);
+
 }

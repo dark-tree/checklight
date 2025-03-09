@@ -1,6 +1,8 @@
 
 #include "select.hpp"
 
+#include <shared/math.hpp>
+
 #include "input/input.hpp"
 #include "render/immediate.hpp"
 #include "gui/context.hpp"
@@ -16,20 +18,7 @@ SelectWidget::SelectWidget(const std::function<void()>& callback)
 
 void SelectWidget::setUnrolled(bool unrolled) {
 	this->unrolled = unrolled;
-
-	//if (unrolled) {
-		this->cooldown = glfwGetTime();
-	//}
-}
-
-float easeInOut(float t) {
-	// t: The current time (ranging from 0 to 1)
-
-	if (t < 0.5f) {
-		return 2 * t * t;  // ease-in (accelerating)
-	} else {
-		return -1 + (4 - 2 * t) * t;  // ease-out (decelerating)
-	}
+	this->cooldown = glfwGetTime();
 }
 
 void SelectWidget::draw(ImmediateRenderer& immediate) {
@@ -58,8 +47,14 @@ void SelectWidget::draw(ImmediateRenderer& immediate) {
 		immediate.setColor(70, 70, 70);
 	}
 
+	double speed = 8;
+	double time = std::clamp((glfwGetTime() - cooldown) * speed, 0.0, 1.0);
+	bool show = unrolled || (time <= 1.0);
+	if (!unrolled) time = 1 - time;
+	double delta = math::easeInOut(time);
+
 	// background
-	immediate.setRectRadius(0);
+	immediate.setRectRadius(10, (1 - delta) * 10);
 	immediate.drawRect2D(x, y, w, h);
 
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
@@ -67,18 +62,14 @@ void SelectWidget::draw(ImmediateRenderer& immediate) {
 	immediate.setTextBox(w, h);
 	immediate.drawString2D(x, y, "Selected: " + std::to_string(value));
 
-	double speed = 8;
-	double time = std::clamp((glfwGetTime() - cooldown) * speed, 0.0, 1.0);
+	if (!show) return;
+	const auto alpha = static_cast<uint8_t>(delta * 255);
 
-	if (!unrolled) {
-		if (time >= 1.0) {
-			return;
-		}
+	immediate.setRectRadius(0);
 
-		time = 1 - time;
-	}
-
-	uint8_t alpha = easeInOut(time) * 255;
+	immediate.setColor(50, 50, 50, alpha);
+	immediate.setLineWidth(1);
+	immediate.drawLine2D(x, y + h, x + w, y + h);
 
 	// options
 	for (int i = 0; i < (int) options.size(); i ++) {
@@ -122,7 +113,7 @@ bool SelectWidget::event(WidgetContext& context, const InputEvent& any) {
 	}
 
 	if (auto* keyboard = any.as<KeyboardEvent>()) {
-		if (keyboard->isReleaseEvent()) {
+		if (keyboard->isReleaseEvent() && isFocused()) {
 			if (keyboard->keycode == GLFW_KEY_ESCAPE && unrolled) {
 				setUnrolled(false);
 				option = value;
