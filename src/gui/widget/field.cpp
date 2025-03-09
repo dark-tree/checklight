@@ -122,9 +122,12 @@ void FieldWidget::drawCursorSelection(ImmediateRenderer& immediate) {
 
 	float height = 20; // TODO
 	float baseline = (h / 2) + y - height / 2;
+	bool show = shouldDrawCursor();
 
-	immediate.setColor(0, 0, 100);
-	immediate.drawLine2D(start, baseline, start, baseline + height);
+	if (show) {
+		immediate.setColor(0, 0, 100);
+		immediate.drawLine2D(start, baseline, start, baseline + height);
+	}
 
 	if (cursor.hasSelection()) {
 		immediate.drawLine2D(end, baseline, end, baseline + height);
@@ -149,6 +152,12 @@ utf8::UnicodeVector FieldWidget::getDisplayUnicodes() {
 
 	return text;
 }
+
+bool FieldWidget::shouldDrawCursor() {
+	const double time = glfwGetTime();
+	return cursor.hasSelection() || sin(time * 6) < 0 || (cooldown + 0.4 > time);
+}
+
 
 bool FieldWidget::applyCursorSelection(const PositionedEvent* event, bool drag) {
 	if (!pressed) {
@@ -246,6 +255,7 @@ bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 	// handle click (begin selection) + shift-click (make selection)
 	if (const auto* button = any.as<ButtonEvent>()) {
 		used |= applyCursorSelection(button, button->isShiftPressed());
+		cooldown = glfwGetTime();
 	}
 
 	if (!isFocused()) {
@@ -262,6 +272,7 @@ bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 
 		cursor.insert(text, codepoint);
 		cursor.move(text, +1, false);
+		cooldown = glfwGetTime();
 		return true;
 	}
 
@@ -274,21 +285,25 @@ bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 		if (keyboard->isTypedEvent()) {
 			if (keyboard->keycode == GLFW_KEY_BACKSPACE) {
 				cursor.eraseBackward(text);
+				cooldown = glfwGetTime();
 				return true;
 			}
 
 			if (keyboard->keycode == GLFW_KEY_DELETE) {
 				cursor.eraseForward(text);
+				cooldown = glfwGetTime();
 				return true;
 			}
 
 			if (keyboard->keycode == GLFW_KEY_LEFT) {
 				cursor.move(text, -1, keyboard->isShiftPressed());
+				cooldown = glfwGetTime();
 				return true;
 			}
 
 			if (keyboard->keycode == GLFW_KEY_RIGHT) {
 				cursor.move(text, +1, keyboard->isShiftPressed());
+				cooldown = glfwGetTime();
 				return true;
 			}
 		}

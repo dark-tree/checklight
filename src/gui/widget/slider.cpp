@@ -18,7 +18,7 @@ void SliderWidget::updateValue() {
 	}
 }
 
-glm::vec2 SliderWidget::getKnobPosition() {
+glm::vec2 SliderWidget::getKnobPosition(float value) {
 	return {x + value * w, y + h / 2};
 }
 
@@ -30,7 +30,9 @@ void SliderWidget::draw(ImmediateRenderer& immediate) {
 		immediate.drawRect2D(x - 8, y - 8, w + 16, h + 16);
 	}
 
-	glm::vec2 knob = getKnobPosition();
+	render = render * 0.95f + value * 0.05f;
+
+	glm::vec2 knob = getKnobPosition(render);
 
 	// background
 	immediate.setColor(255, 0, 0);
@@ -52,7 +54,7 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 		return false;
 	}
 
-	const glm::vec2 knob = getKnobPosition();
+	const glm::vec2 knob = getKnobPosition(value);
 
 	// update mouse icon
 	if (const auto* event = any.as<FrameEvent>()) {

@@ -14,11 +14,14 @@ class SelectWidget : public InputWidget {
 
 		int value = -1;
 
+		double cooldown = 0;
 		bool unrolled = false;
 		int option = OPTION_NONE;
 
 		std::vector<Option> options;
 		std::function<void()> callback;
+
+		void setUnrolled(bool unrolled);
 
 	public:
 

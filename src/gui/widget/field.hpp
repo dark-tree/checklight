@@ -59,6 +59,8 @@ class FieldWidget : public InputWidget {
 
 	private:
 
+		double cooldown = 0;
+
 		Kind kind = TEXT;
 		std::string placeholder = "Text Input...";
 		TextCursor cursor;
@@ -74,8 +76,11 @@ class FieldWidget : public InputWidget {
 		/// Get a string to show as the field's value
 		utf8::UnicodeVector getDisplayUnicodes();
 
-		///
+		/// Handles placing and dragging (selecting) the cursor
 		bool applyCursorSelection(const PositionedEvent* event, bool drag);
+
+		/// Used for cursor blink animation
+		bool shouldDrawCursor();
 
 	public:
 

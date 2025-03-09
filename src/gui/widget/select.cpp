@@ -14,6 +14,24 @@ SelectWidget::SelectWidget(const std::function<void()>& callback)
 
 }
 
+void SelectWidget::setUnrolled(bool unrolled) {
+	this->unrolled = unrolled;
+
+	//if (unrolled) {
+		this->cooldown = glfwGetTime();
+	//}
+}
+
+float easeInOut(float t) {
+	// t: The current time (ranging from 0 to 1)
+
+	if (t < 0.5f) {
+		return 2 * t * t;  // ease-in (accelerating)
+	} else {
+		return -1 + (4 - 2 * t) * t;  // ease-out (decelerating)
+	}
+}
+
 void SelectWidget::draw(ImmediateRenderer& immediate) {
 
 	if (isFocused()) {
@@ -21,7 +39,9 @@ void SelectWidget::draw(ImmediateRenderer& immediate) {
 		immediate.setColor(255, 255, 0);
 		immediate.drawRect2D(x - 8, y - 8, w + 16, h + 16);
 	} else {
-		unrolled = false;
+		if (unrolled) {
+			setUnrolled(false);
+		}
 	}
 
 	if (enabled) {
@@ -47,9 +67,18 @@ void SelectWidget::draw(ImmediateRenderer& immediate) {
 	immediate.setTextBox(w, h);
 	immediate.drawString2D(x, y, "Selected: " + std::to_string(value));
 
+	double speed = 8;
+	double time = std::clamp((glfwGetTime() - cooldown) * speed, 0.0, 1.0);
+
 	if (!unrolled) {
-		return;
+		if (time >= 1.0) {
+			return;
+		}
+
+		time = 1 - time;
 	}
+
+	uint8_t alpha = easeInOut(time) * 255;
 
 	// options
 	for (int i = 0; i < (int) options.size(); i ++) {
@@ -58,19 +87,19 @@ void SelectWidget::draw(ImmediateRenderer& immediate) {
 		// background
 		if (option == i) {
 			if (pressed) {
-				immediate.setColor(255, 100, 100);
+				immediate.setColor(255, 100, 100, alpha);
 			} else {
-				immediate.setColor(255, 80, 80);
+				immediate.setColor(255, 80, 80, alpha);
 			}
 		} else {
-			immediate.setColor(255, 0, 0);
+			immediate.setColor(255, 0, 0, alpha);
 		}
 
 		immediate.drawRect2D(x, oy, w, h);
 
 		// content
 		immediate.setFont("assets/font/OpenSans-Variable.ttf");
-		immediate.setColor(0, 0, 0);
+		immediate.setColor(0, 0, 0, alpha);
 		immediate.setTextBox(w, h);
 		immediate.drawString2D(x, oy, options.at(i).label);
 	}
@@ -95,7 +124,7 @@ bool SelectWidget::event(WidgetContext& context, const InputEvent& any) {
 	if (auto* keyboard = any.as<KeyboardEvent>()) {
 		if (keyboard->isReleaseEvent()) {
 			if (keyboard->keycode == GLFW_KEY_ESCAPE && unrolled) {
-				unrolled = false;
+				setUnrolled(false);
 				option = value;
 				pressed = false;
 				return true;
@@ -112,7 +141,7 @@ bool SelectWidget::event(WidgetContext& context, const InputEvent& any) {
 					}
 				}
 
-				unrolled = !unrolled;
+				setUnrolled(!unrolled);
 				pressed = unrolled;
 				return true;
 			}
@@ -167,7 +196,7 @@ bool SelectWidget::event(WidgetContext& context, const InputEvent& any) {
 
 				if (button->isReleaseEvent()) {
 					pressed = false;
-					unrolled = hovered && !unrolled;
+					setUnrolled(hovered && !unrolled);
 					value = option;
 					return true;
 				}
