@@ -9,10 +9,12 @@ layout(binding = 1) uniform sampler2D uIlluminationSampler;
 layout(binding = 2) uniform sampler2D uNormalSampler;
 layout(binding = 3) uniform sampler2D uSolidIlluminationSampler;
 layout(binding = 4, scalar) uniform _SceneUniform { SceneUniform uSceneObject; };
+layout(binding = 5) uniform sampler2D uPositionSampler;
 
 layout(location = 0) in vec2 vTexture;
 layout(location = 0) out vec4 fColor;
-layout(location = 1) out vec4 fPrevDepth;
+layout(location = 1) out vec4 fPrevNormal;
+layout(location = 2) out vec4 fPrevPosition;
 
 #include "denoisecommon.glsl"
 
@@ -24,20 +26,38 @@ void main() {
 	vec4 centerIllumSample = texture(uIlluminationSampler, vTexture);
 	vec4 centerNormal = texture(uNormalSampler, vTexture);
 	float centerDepth = centerNormal.w;
+	vec3 centerPositionWS = texture(uPositionSampler, vTexture).xyz;
 
-	float ageWeight = (200.0 - clamp(centerIllumSample.w - 100, 0, 200)) / 200.0;
-
+	float ageWeight = 1.0;//(200.0 - clamp(centerIllumSample.w - 100, 0, 200)) / 200.0;
+	vec4 color = texture(uAlbedoSampler, vTexture);
 	vec4 illumSum = vec4(centerIllumSample.rgb, 1.0);
 	if (uSceneObject.denoise){
-		illumSum += edgeAvoidingBlur(FILTER_RADIUS, STEP_SIZE, vTexture, centerDepth, centerNormal.xyz, ageWeight, uNormalSampler, uIlluminationSampler);  
+		illumSum += edgeAvoidingBlur(
+			FILTER_RADIUS, 
+			STEP_SIZE, 
+			vTexture,
+			centerDepth,
+			centerNormal.xyz, 
+			ageWeight, 
+			uNormalSampler,
+			uIlluminationSampler,
+			uPositionSampler, 
+			0.0,
+			centerPositionWS
+		);
+		
+		//color.xyz = vec3(illumSum.w / 9.0);
 		illumSum /= illumSum.w;
 	}
 
-	vec4 color = texture(uAlbedoSampler, vTexture);
+	
 	vec3 solidIllumination = texture(uSolidIlluminationSampler, vTexture).rgb;
 
 	fColor = vec4(color.rgb * (illumSum.rgb + solidIllumination), 1.0);
-	fPrevDepth = vec4(centerNormal.xyz, color.w);
+	//fColor = vec4(color.rgb, 1.0);
+	fPrevNormal = vec4(centerNormal.xyz, color.w);
 
 	gl_FragDepth = color.w;  
+
+	fPrevPosition = texture(uPositionSampler, vTexture);
 }

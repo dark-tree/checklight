@@ -328,9 +328,11 @@ void Renderer::createSwapchain() {
 	attachment_illumination.allocate(device, extent.width, extent.height, allocator);
 	attachment_prev_illumination.allocate(device, extent.width, extent.height, allocator);
 	attachment_normal.allocate(device, extent.width, extent.height, allocator);
-	attachment_prev_depth.allocate(device, extent.width, extent.height, allocator);
+	attachment_prev_normal.allocate(device, extent.width, extent.height, allocator);
 	attachment_illum_transport.allocate(device, extent.width, extent.height, allocator);
 	attachment_soild_illumination.allocate(device, extent.width, extent.height, allocator);
+	attachment_world_position.allocate(device, extent.width, extent.height, allocator);
+	attachment_prev_world_position.allocate(device, extent.width, extent.height, allocator);
 
 	// create framebuffers
 	pass_immediate.prepareFramebuffers(swapchain);
@@ -411,11 +413,11 @@ void Renderer::createAttachments() {
 		.setDebugName("Normal")
 		.createAttachment();
 
-	attachment_prev_depth = TextureBuilder::begin()
+	attachment_prev_normal = TextureBuilder::begin()
 		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-		.setDebugName("Prev Depth")
+		.setDebugName("Prev Normal")
 		.createAttachment();
 
 	attachment_illum_transport = TextureBuilder::begin()
@@ -430,6 +432,20 @@ void Renderer::createAttachments() {
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
 		.setDebugName("Solid Illumination")
+		.createAttachment();
+
+	attachment_world_position = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
+		.setDebugName("World Position")
+		.createAttachment();
+
+	attachment_prev_world_position = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+		.setDebugName("Prev World Position")
 		.createAttachment();
 
 	// very important UwU
@@ -491,7 +507,12 @@ void Renderer::createRenderPasses() {
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.next();
 
-		Attachment::Ref prev_depth = builder.addAttachment(attachment_prev_depth)
+		Attachment::Ref prev_normal = builder.addAttachment(attachment_prev_normal)
+			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_GENERAL)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_GENERAL)
+			.next();
+
+		Attachment::Ref prev_pos = builder.addAttachment(attachment_prev_world_position)
 			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_GENERAL)
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_GENERAL)
 			.next();
@@ -508,7 +529,8 @@ void Renderer::createRenderPasses() {
 
 		builder.addSubpass()
 			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.addOutput(prev_depth, VK_IMAGE_LAYOUT_GENERAL)
+			.addOutput(prev_normal, VK_IMAGE_LAYOUT_GENERAL)
+			.addOutput(prev_pos, VK_IMAGE_LAYOUT_GENERAL)
 			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.next();
 
@@ -722,9 +744,11 @@ void Renderer::lateClose() {
 	attachment_illumination.close(device);
 	attachment_prev_illumination.close(device);
 	attachment_normal.close(device);
-	attachment_prev_depth.close(device);
+	attachment_prev_normal.close(device);
 	attachment_illum_transport.close(device);
 	attachment_soild_illumination.close(device);
+	attachment_world_position.close(device);
+	attachment_prev_world_position.close(device);
 
 	swapchain.close();
 	closeFrames();
@@ -753,9 +777,11 @@ void Renderer::prepareForRendering(CommandRecorder& recorder) {
 	recorder.transitionLayout(attachment_illumination, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 	recorder.transitionLayout(attachment_prev_illumination, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 	recorder.transitionLayout(attachment_normal, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
-	recorder.transitionLayout(attachment_prev_depth, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+	recorder.transitionLayout(attachment_prev_normal, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 	recorder.transitionLayout(attachment_illum_transport, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 	recorder.transitionLayout(attachment_soild_illumination, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+	recorder.transitionLayout(attachment_world_position, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+	recorder.transitionLayout(attachment_prev_world_position, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 }
 
 RenderFrame& Renderer::getFrame() {
@@ -874,16 +900,19 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.descriptor(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.descriptor(4, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.done(device);
 
 	layout_denoise2 = DescriptorSetLayoutBuilder::begin()
 		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.descriptor(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.done(device);
 
 	layout_denoise = DescriptorSetLayoutBuilder::begin()
 		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.descriptor(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.done(device);
 
 	layout_raytrace = DescriptorSetLayoutBuilder::begin()
@@ -898,6 +927,8 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(8, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.descriptor(9, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.descriptor(10, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(11, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(12, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.done(device);
 
 	// add layouts to the pool so that they can be allocated

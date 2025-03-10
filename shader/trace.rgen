@@ -13,9 +13,11 @@ layout(binding = 0, set = 0) uniform accelerationStructureEXT TLAS;
 layout(binding = 1, set = 0, rgba32f) uniform image2D colorImage;              // W
 layout(binding = 6, set = 0, rgba32f) uniform image2D illuminationImage;       // W
 layout(binding = 7, set = 0, rgba32f) uniform image2D prevIlluminationImage;   // R
-layout(binding = 8, set = 0, rgba32f) uniform image2D normalsImage;            // W
-layout(binding = 9, set = 0, rgba32f) uniform image2D prevDepthImage;          // R
+layout(binding = 8, set = 0, rgba32f) uniform image2D normalImage;             // W
+layout(binding = 9, set = 0, rgba32f) uniform image2D prevNormalImage;         // R
 layout(binding = 10, set = 0, rgba32f) uniform image2D solidIlluminationImage; // W
+layout(binding = 11, set = 0, rgba32f) uniform image2D worldPosImage;          // W
+layout(binding = 12, set = 0, rgba32f) uniform image2D prevWorldPosImage;      // R
 
 layout(binding = 2, set = 0, scalar) uniform _SceneUniform { SceneUniform uSceneObject; };
 
@@ -29,30 +31,9 @@ bool inRange(ivec2 uv, ivec2 minv, ivec2 maxv) {
 	return all(greaterThanEqual(uv, minv)) && all(lessThanEqual(uv, maxv));
 }
 
-vec4 getDepthDiffAndNormal(ivec2 prevPixelCoord, HitPayload primaryPayload) {
-
-	vec4 prevDepthAndNormals = imageLoad(prevDepthImage, prevPixelCoord);
-	float prevDepth = prevDepthAndNormals.a;
-
-	vec2 ndcXY = vec2(prevPixelCoord) / gl_LaunchSizeEXT.xy * 2.0 - 1.0;
-	vec4 clipPos = vec4(ndcXY, prevDepth, 1.0);
-
-	vec4 viewPos = uSceneObject.prevProjectionInv * clipPos;
-	viewPos /= viewPos.w;
-
-	vec4 worldPos4 = uSceneObject.prevViewInv * viewPos;
-	vec3 prevWorldPos = worldPos4.xyz;
-
-	vec3 currWorldPos = primaryPayload.hit.xyz;
-
-	float worldPosDiff = distance(prevWorldPos, currWorldPos);
-
-	return vec4(prevDepthAndNormals.xyz, worldPosDiff);
-}
-
 vec4 samplePrevIllumination(vec2 uv, HitPayload primaryPayload) {
 
-	const float DEPTH_THRESHOLD = 0.2;
+	const float DEPTH_THRESHOLD = 0.5;
 	const float NORMAL_THRESHOLD = 0.2;
 
 	ivec2 texSize = imageSize(prevIlluminationImage);
@@ -66,22 +47,31 @@ vec4 samplePrevIllumination(vec2 uv, HitPayload primaryPayload) {
 	ivec2 pos2 = pos0 + ivec2(0, 1);
 	ivec2 pos3 = pos0 + ivec2(1, 1);
 
-	vec4 depthNormal0 = getDepthDiffAndNormal(pos0, primaryPayload);
-	vec4 depthNormal1 = getDepthDiffAndNormal(pos1, primaryPayload);
-	vec4 depthNormal2 = getDepthDiffAndNormal(pos2, primaryPayload);
-	vec4 depthNormal3 = getDepthDiffAndNormal(pos3, primaryPayload);
+	vec3 normal0 = imageLoad(prevNormalImage, pos0).xyz;
+	vec3 normal1 = imageLoad(prevNormalImage, pos1).xyz;
+	vec3 normal2 = imageLoad(prevNormalImage, pos2).xyz;
+	vec3 normal3 = imageLoad(prevNormalImage, pos3).xyz;
 
-	bool range0 = inRange(pos0, ivec2(0), texSize - ivec2(1)) && depthNormal0.w < DEPTH_THRESHOLD 
-		&& normalEdgeStoppingWeight(primaryPayload.normal.xyz, depthNormal0.xyz, 128.0) > NORMAL_THRESHOLD;
+	vec3 posWS0 = imageLoad(prevWorldPosImage, pos0).xyz;
+	vec3 posWS1 = imageLoad(prevWorldPosImage, pos1).xyz;
+	vec3 posWS2 = imageLoad(prevWorldPosImage, pos2).xyz;
+	vec3 posWS3 = imageLoad(prevWorldPosImage, pos3).xyz;
 
-	bool range1 = inRange(pos1, ivec2(0), texSize - ivec2(1)) && depthNormal1.w < DEPTH_THRESHOLD 
-		&& normalEdgeStoppingWeight(primaryPayload.normal.xyz, depthNormal1.xyz, 128.0) > NORMAL_THRESHOLD;
+	bool range0 = inRange(pos0, ivec2(0), texSize - ivec2(1))
+		&& planeDistanceWeight(primaryPayload.hit.xyz, posWS0, primaryPayload.normal.xyz) > DEPTH_THRESHOLD
+		&& normalEdgeStoppingWeight(primaryPayload.normal.xyz, normal0, 128.0) > NORMAL_THRESHOLD;
 
-	bool range2 = inRange(pos2, ivec2(0), texSize - ivec2(1)) && depthNormal2.w < DEPTH_THRESHOLD
-		&& normalEdgeStoppingWeight(primaryPayload.normal.xyz, depthNormal2.xyz, 128.0) > NORMAL_THRESHOLD;
+	bool range1 = inRange(pos1, ivec2(0), texSize - ivec2(1))
+		&& planeDistanceWeight(primaryPayload.hit.xyz, posWS1, primaryPayload.normal.xyz) > DEPTH_THRESHOLD
+		&& normalEdgeStoppingWeight(primaryPayload.normal.xyz, normal1, 128.0) > NORMAL_THRESHOLD;
 
-	bool range3 = inRange(pos3, ivec2(0), texSize - ivec2(1)) && depthNormal3.w < DEPTH_THRESHOLD
-		&& normalEdgeStoppingWeight(primaryPayload.normal.xyz, depthNormal3.xyz, 128.0) > NORMAL_THRESHOLD;
+	bool range2 = inRange(pos2, ivec2(0), texSize - ivec2(1))
+		&& planeDistanceWeight(primaryPayload.hit.xyz, posWS2, primaryPayload.normal.xyz) > DEPTH_THRESHOLD
+		&& normalEdgeStoppingWeight(primaryPayload.normal.xyz, normal2, 128.0) > NORMAL_THRESHOLD;
+
+	bool range3 = inRange(pos3, ivec2(0), texSize - ivec2(1))
+		&& planeDistanceWeight(primaryPayload.hit.xyz, posWS3, primaryPayload.normal.xyz) > DEPTH_THRESHOLD
+		&& normalEdgeStoppingWeight(primaryPayload.normal.xyz, normal3, 128.0) > NORMAL_THRESHOLD;
 
 	vec4 tex0 = range0 ? imageLoad(prevIlluminationImage, pos0) : vec4(0.0);
 	vec4 tex1 = range1 ? imageLoad(prevIlluminationImage, pos1) : vec4(0.0);
@@ -244,13 +234,15 @@ void main() {
 		}
 
 		imageStore(illuminationImage, ivec2(gl_LaunchIDEXT.xy), vec4(mixedLight, sampleAge));
-		imageStore(normalsImage, ivec2(gl_LaunchIDEXT.xy), vec4(primaryPayload.normal.xyz, depthValue));
+		imageStore(normalImage, ivec2(gl_LaunchIDEXT.xy), vec4(primaryPayload.normal.xyz, depthValue));
 		imageStore(solidIlluminationImage, ivec2(gl_LaunchIDEXT.xy), vec4(solidLight, 1.0));
+		imageStore(worldPosImage, ivec2(gl_LaunchIDEXT.xy), vec4(primaryPayload.hit.xyz, depthValue));
 	}
 	else {
 		imageStore(illuminationImage, ivec2(gl_LaunchIDEXT.xy), vec4(1.0));
-		imageStore(normalsImage, ivec2(gl_LaunchIDEXT.xy), vec4(0.0));
+		imageStore(normalImage, ivec2(gl_LaunchIDEXT.xy), vec4(0.0));
 		imageStore(solidIlluminationImage, ivec2(gl_LaunchIDEXT.xy), vec4(0.0));
+		imageStore(worldPosImage, ivec2(gl_LaunchIDEXT.xy), vec4(0.0));
 	}
 
 	/**

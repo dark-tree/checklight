@@ -102,9 +102,11 @@ class Renderer {
 		Attachment attachment_illumination;
 		Attachment attachment_prev_illumination;
 		Attachment attachment_normal;
-		Attachment attachment_prev_depth;
+		Attachment attachment_prev_normal;
 		Attachment attachment_illum_transport;
 		Attachment attachment_soild_illumination;
+		Attachment attachment_world_position;
+		Attachment attachment_prev_world_position;
 
 		// descriptors
 		DescriptorSetLayout layout_immediate;
