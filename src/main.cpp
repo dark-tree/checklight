@@ -5,23 +5,25 @@
 #include "sound/sound.hpp"
 
 SoundManager& sm = SoundManager::getInstance();
+auto sso1 = std::make_shared<SoundSourceObject>();
+auto sso2 = std::make_shared<SoundSourceObject>();
 
 class tmpInput : public InputListener{
 public:
 	InputResult onEvent(const InputEvent& event) {
 		if (const auto* nazwijtosobiejakosnpevent = event.as<KeyboardEvent>()) {
 			if(nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_S)){
-				sm.stopSound("s");
+				sm.stopSound(sso1);
 			}else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_P)) {
-				sm.playSound("s");
+				sm.playSound(sso1);
 			}else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_A)) {
-				sm.pauseSound("s");
+				sm.pauseSound(sso1);
 			}else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_N)) {
-				sm.playSound("sa");
+				sm.playSound(sso2);
 			}else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_M)) {
-				sm.stopSound("sa");
+				sm.stopSound(sso2);
 			}else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_B)) {
-				sm.pauseSound("sa");
+				sm.pauseSound(sso2);
 			}
 		}
 
@@ -54,17 +56,17 @@ int main() {
 	//@TODO oddzielny watek dla sound managera tak wektor sourcow
 	try {
 
-		sm.createSource("s");
+		sm.addSource(sso1);
 		sm.createClip("f");
 		sm.addAudioToClip("f", "assets/sounds/testOGG.ogg");
-		sm.connectClipWithSource("f", "s");
+		sm.connectClipWithSource("f", sso1);
 
-		sm.createSource("sa");
+		sm.addSource(sso2);
 		sm.createClip("fa");
 		sm.addAudioToClip("fa", "assets/sounds/test/2.ogg");
-		sm.connectClipWithSource("fa", "sa");
+		sm.connectClipWithSource("fa", sso2);
 
-		sm.playSound("s");
+		sm.playSound(sso1);
 
 		SoundListener::setPosition(0, 10, 0);
 		/*SoundClip sc;

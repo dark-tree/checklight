@@ -20,13 +20,17 @@ void SoundSourceObject::initSource(int number_of_sources){
 	}
 }
 
+// SoundSourceObject constructor to create object with only one sound source
+
 SoundSourceObject::SoundSourceObject(){
 	SoundSourceObject::initSource(1);
 }
 
-SoundSourceObject::SoundSourceObject(int number_of_sources){
-	SoundSourceObject::initSource(number_of_sources);
-}
+// SoundSourceObject constructor to create a many sound sources in one object
+
+//SoundSourceObject::SoundSourceObject(int number_of_sources){
+//	SoundSourceObject::initSource(number_of_sources);
+//}
 
 SoundSourceObject::~SoundSourceObject(){
 	alDeleteSources(this->number_of_sources,this->sso_sources);
@@ -56,6 +60,10 @@ void SoundSourceObject::setPosition(float x, float y, float z)
 //@TODO check if exist
 
 //@TODO reduce code lines, delete duplicates
+
+
+
+
 void SoundSourceObject::addBuffer(SoundClip clip){
 	ALuint buffer = clip.getBuffer(0);
 	if (buffer==0) {
@@ -86,10 +94,35 @@ void SoundSourceObject::addBuffer(std::shared_ptr<SoundClip> clip) {
 	}
 }
 
-void SoundSourceObject::addBuffers(SoundClip buffer){
+//void SoundSourceObject::addBuffers(SoundClip buffer){
+//
+//}
 
+
+void SoundSourceObject::addGroupParameters(std::shared_ptr<SoundGroup> sg) {
+	this->sso_sg_parameters = sg;
+	updateParameters();
 }
 
+void SoundSourceObject::updateParameters() {
+	//if sso_sg_parameter has nullptr set default parameters for this SSO
+	if (this->sso_sg_parameters == nullptr){
+		for (int i = 0;i < this->number_of_sources;i++){
+			alSourcef(this->sso_sources[i], AL_PITCH, 1.0f);
+			alSourcef(this->sso_sources[i], AL_GAIN, 1.0f);
+			alSourcei(this->sso_sources[i], AL_LOOPING, false);
+		}
+	}
+	else {
+		for (int i = 0;i < this->number_of_sources;i++) {
+			alSourcef(this->sso_sources[i], AL_PITCH, sso_sg_parameters.get()->getPitch());
+			alSourcef(this->sso_sources[i], AL_GAIN, sso_sg_parameters.get()->getGain());
+			alSourcei(this->sso_sources[i], AL_LOOPING, sso_sg_parameters.get()->getLooping());
+		}
+	}
+}
+
+\
 void SoundSourceObject::play(int source_number) {
 	if (source_number > this->number_of_sources || !alIsSource(this->sso_sources[source_number])) {
 		throw std::runtime_error("Source -> playSound: No valid sound source found!\f");

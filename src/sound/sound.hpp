@@ -2,3 +2,4 @@
 #include "source.hpp"
 #include "clip.hpp"
 #include "listener.hpp"
+#include "group.hpp"
