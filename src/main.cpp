@@ -8,7 +8,6 @@
 #include "gui/gui.hpp"
 
 int main() {
-
 	std::string path = std::filesystem::current_path().generic_string();
 	printf("INFO: Current working directory: %s\n", path.c_str());
 
@@ -23,32 +22,56 @@ int main() {
 
 	auto context = std::make_shared<WidgetContext>();
 	auto panel = std::make_shared<PanelWidget>();
+	auto sub = std::make_shared<PanelWidget>();
 
-	auto slider = std::make_shared<SliderWidget>([] () noexcept {
+	sub->width = Unit::px(100);
+	sub->height = Unit::px(100);
+	sub->g = 50;
+	sub->b = 200;
+	sub->vertical = VerticalAlignment::CENTER;
 
-	});
-	slider->setBounds(600, 300, 100, 50);
+	auto sub2 = std::make_shared<PanelWidget>();
 
-	auto button = std::make_shared<ButtonWidget>("Hello", [] () noexcept {
-		printf("DEBUG: Pressed button!\n");
-	});
-	button->setBounds(600, 400, 100, 50);
+	sub2->width = Unit::px(100);
+	sub2->height = Unit::px(100);
+	sub2->g = 200;
+	sub2->b = 50;
+	sub2->vertical = VerticalAlignment::CENTER;
+	sub2->horizontal = HorizontalAlignment::CENTER;
 
-	auto input = std::make_shared<FieldWidget>([] () noexcept {
+	panel->addWidget(sub);
+	panel->addWidget(sub2);
+	panel->width = Unit::px(400);
+	panel->height = Unit::px(400);
 
-	});
-	input->setBounds(600, 500, 100, 50);
+	panel->setBounds({10,10,0,0});
 
-	auto select = std::make_shared<SelectWidget>([] () noexcept {
 
-	});
-	select->setBounds(600, 600, 100, 50);
+	// auto slider = std::make_shared<SliderWidget>([] () noexcept {
+	//
+	// });
+	// slider->setBounds({600, 300, 100, 50});
+	//
+	// auto button = std::make_shared<ButtonWidget>("Hello", [] () noexcept {
+	// 	printf("DEBUG: Pressed button!\n");
+	// });
+	// button->setBounds({600, 400, 100, 50});
+	//
+	// auto input = std::make_shared<FieldWidget>([] () noexcept {
+	//
+	// });
+	// input->setBounds({600, 500, 100, 50});
+	//
+	// auto select = std::make_shared<SelectWidget>([] () noexcept {
+	//
+	// });
+	// select->setBounds({600, 600, 100, 50});
 
 	context->setRoot(panel);
-	panel->addWidget(slider);
-	panel->addWidget(button);
-	panel->addWidget(input);
-	panel->addWidget(select);
+	// panel->addWidget(slider);
+	// panel->addWidget(button);
+	// panel->addWidget(input);
+	// panel->addWidget(select);
 
 	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 	window.getInputDispatcher().registerListener(std::dynamic_pointer_cast<InputListener>(context));

@@ -38,16 +38,10 @@ inline void drawUserInterface(ImmediateRenderer& immediate, float width, float h
 	immediate.setLineWidth(0.1);
 	immediate.drawLine3D(0, 0, 0, sin(glfwGetTime() / 3) * 50, 10, cos(glfwGetTime() / 3) * 50);
 	immediate.drawRect3D(sin(glfwGetTime() / 3) * 50, 10, cos(glfwGetTime() / 3) * 50, 2, 2);
-
-	immediate.setTextAlignment(VerticalAlignment::CENTER);
-	immediate.setTextAlignment(HorizontalAlignment::CENTER);
-	immediate.setRectRadius(5);
 	immediate.setSprite(OFF);
-	immediate.setColor(0, 0, 0);
-	immediate.drawRect2D(100, 100, 300, 200);
 
-	immediate.setColor(255, 255, 255);
-	immediate.setTextBox(300, 200);
-	immediate.drawString2D(100, 100, "Checkmate!");
+	immediate.setColor(0, 0, 0);
+	glm::vec2 pos = RenderSystem::system->getWindow().getInputContext().getCursorPosition();
+	immediate.drawCircle2D(pos.x, pos.y, 5);
 
 }

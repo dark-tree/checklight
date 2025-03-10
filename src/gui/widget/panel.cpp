@@ -9,7 +9,7 @@ PanelWidget::PanelWidget() {
 
 void PanelWidget::draw(ImmediateRenderer& immediate) {
 	immediate.setRectRadius(10);
-	immediate.setColor(200, 195, 180);
+	immediate.setColor(r, g, b);
 	immediate.drawRect2D(padded);
 
 	for (auto& widget : children) {
@@ -29,6 +29,20 @@ bool PanelWidget::event(WidgetContext& context, const InputEvent& event) {
 
 void PanelWidget::addWidget(const std::shared_ptr<Widget>& widget) {
 	children.emplace_back(widget);
+}
+
+Box2D PanelWidget::getInherentBox() const {
+	return {0, 0, 0, 0};
+}
+
+void PanelWidget::setBounds(Box2D bounds) {
+	Widget::setBounds(bounds);
+	Box2D pool = content;
+
+	for (auto& widget : children) {
+		widget->setBounds(pool);
+		pool = widget->getRemainingBox(pool, widget.get());
+	}
 }
 
 void PanelWidget::appendSelectable(std::vector<std::shared_ptr<InputWidget>>& selectable) {
