@@ -14,7 +14,7 @@ void ButtonWidget::draw(ImmediateRenderer& immediate) {
 	if (isFocused()) {
 		immediate.setRectRadius(5);
 		immediate.setColor(255, 255, 0);
-		immediate.drawRect2D(x - 8, y - 8, w + 16, h + 16);
+		immediate.drawRect2D(padded.expand(8, 8, 8, 8));
 	} else {
 		pressed = false;
 	}
@@ -34,12 +34,12 @@ void ButtonWidget::draw(ImmediateRenderer& immediate) {
 	}
 
 	immediate.setRectRadius(10);
-	immediate.drawRect2D(x, y, w, h);
+	immediate.drawRect2D(padded);
 
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
 	immediate.setColor(0, 0, 0);
-	immediate.setTextBox(w, h);
-	immediate.drawString2D(x, y, label);
+	immediate.setTextBox(content.w, content.h);
+	immediate.drawString2D(content.x, content.y, label);
 }
 
 bool ButtonWidget::event(WidgetContext& context, const InputEvent& any) {
@@ -64,7 +64,7 @@ bool ButtonWidget::event(WidgetContext& context, const InputEvent& any) {
 	}
 
 	if (auto* button = any.as<ButtonEvent>()) {
-		if (button->isReleaseEvent() && button->isWithinBox(x, y, w, h)) {
+		if (button->isReleaseEvent() && button->isWithinBox(padded)) {
 			callback();
 			return true;
 		}

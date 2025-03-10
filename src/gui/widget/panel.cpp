@@ -10,7 +10,7 @@ PanelWidget::PanelWidget() {
 void PanelWidget::draw(ImmediateRenderer& immediate) {
 	immediate.setRectRadius(10);
 	immediate.setColor(200, 195, 180);
-	immediate.drawRect2D(x, y, w, h);
+	immediate.drawRect2D(padded);
 
 	for (auto& widget : children) {
 		widget->draw(immediate);

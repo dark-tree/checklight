@@ -416,6 +416,10 @@ void ImmediateRenderer::drawRect2D(float x, float y, float w, float h) {
 
 }
 
+void ImmediateRenderer::drawRect2D(const Box2D& box) {
+	drawRect2D(box.x, box.y, box.w, box.h);
+}
+
 void ImmediateRenderer::drawLine2D(float x1, float y1, float x2, float y2) {
 
 	glm::vec2 pa {x1, y1};

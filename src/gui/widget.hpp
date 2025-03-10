@@ -2,18 +2,27 @@
 
 #include "external.hpp"
 #include "input/input.hpp"
+#include "shared/box.hpp"
 
 class WidgetContext;
 class ImmediateRenderer;
 
 class InputWidget;
 
+struct Spacing {
+	int top, bottom, left, right;
+};
+
 class Widget : public std::enable_shared_from_this<Widget> {
 
 	protected:
 
-		/// position and dimensions, can be changed using setBounds()
-		int x, y, w, h;
+		Box2D padded { 0,0,0,0 };  // content box with padding added
+		Box2D content { 0,0,0,0 }; // content box
+
+		Box2D getContentBox() const;
+		Box2D getPaddingBox() const;
+		Box2D getMarginBox() const;
 
 	public:
 

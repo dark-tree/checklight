@@ -19,7 +19,7 @@ void SliderWidget::updateValue() {
 }
 
 glm::vec2 SliderWidget::getKnobPosition(float value) {
-	return {x + value * w, y + h / 2};
+	return {content.x + value * content.w, content.y + content.h / 2};
 }
 
 void SliderWidget::draw(ImmediateRenderer& immediate) {
@@ -27,7 +27,7 @@ void SliderWidget::draw(ImmediateRenderer& immediate) {
 	if (isFocused()) {
 		immediate.setRectRadius(5);
 		immediate.setColor(255, 255, 0);
-		immediate.drawRect2D(x - 8, y - 8, w + 16, h + 16);
+		immediate.drawRect2D(padded.expand(8, 8, 8, 8));
 	}
 
 	render = render * 0.95f + value * 0.05f;
@@ -37,11 +37,11 @@ void SliderWidget::draw(ImmediateRenderer& immediate) {
 	// background
 	immediate.setColor(255, 0, 0);
 	immediate.setRectRadius(10);
-	immediate.drawRect2D(x, y, w, h);
+	immediate.drawRect2D(padded);
 
 	// slider rail
 	immediate.setColor(0, 255, 0);
-	immediate.drawRect2D(x, knob.y - rail_size / 2, w, rail_size);
+	immediate.drawRect2D(content.x, knob.y - rail_size / 2, content.w, rail_size);
 
 	// slider knob
 	immediate.setColor(0, 0, 255);
@@ -58,13 +58,13 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 
 	// update mouse icon
 	if (const auto* event = any.as<FrameEvent>()) {
-		if (hovered) {
-			event->cursor(CursorIcon::POINTER);
+		if (pressed) {
+			event->cursor(CursorIcon::HORIZONTAL);
 			return true;
 		}
 
-		if (pressed) {
-			event->cursor(CursorIcon::HORIZONTAL);
+		if (hovered) {
+			event->cursor(CursorIcon::POINTER);
 			return true;
 		}
 
@@ -79,7 +79,7 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 		bool used = false;
 
 		if (const auto* button = positioned->as<ButtonEvent>()) {
-			if (button->isWithinBox(x, y, w, h) || pressed || hovered) {
+			if (button->isWithinBox(padded) || pressed || hovered) {
 				if (button->isPressEvent()) {
 					pressed = true;
 					setFocus(context);
@@ -112,7 +112,10 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 		}
 
 		if (pressed) {
-			value = (std::clamp(positioned->x, static_cast<double>(x), static_cast<double>(x) + w) - x) / w;
+			double lo = content.x;
+			double hi = content.x + content.w;
+
+			value = (std::clamp(positioned->x, lo, hi) - content.x) / content.w;
 			updateValue();
 		}
 

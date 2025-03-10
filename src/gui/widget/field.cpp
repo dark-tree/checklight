@@ -106,7 +106,7 @@ FieldWidget::FieldWidget(const std::function<void()>& callback)
 
 float FieldWidget::getCursorOffset(int glyph) const {
 	const auto& glyphs = baked->getQuads();
-	float ox = x;
+	float ox = content.x;
 
 	const int end = std::min((int) glyphs.size(), glyph);
 	for (int i = 0; i < end; i++) {
@@ -121,7 +121,7 @@ void FieldWidget::drawCursorSelection(ImmediateRenderer& immediate) {
 	float end = getCursorOffset(cursor.end());
 
 	float height = 20; // TODO
-	float baseline = (h / 2) + y - height / 2;
+	float baseline = (content.h * 0.5f) + content.y - height / 2;
 	bool show = shouldDrawCursor();
 
 	if (show) {
@@ -174,7 +174,7 @@ bool FieldWidget::applyCursorSelection(const PositionedEvent* event, bool drag) 
 		float end = (target + getCursorOffset(i + 1)) * 0.5f;
 
 		// seek to gap n success
-		if (event->isWithinBox(start, y, end - start, h)) {
+		if (event->isWithinBox(start, content.y, end - start, content.h)) {
 			cursor.seek(text, i, drag);
 			return true;
 		}
@@ -186,10 +186,12 @@ bool FieldWidget::applyCursorSelection(const PositionedEvent* event, bool drag) 
 
 void FieldWidget::draw(ImmediateRenderer& immediate) {
 
+	const Box2D padded = getPaddingBox();
+
 	if (isFocused()) {
 		immediate.setRectRadius(5);
 		immediate.setColor(255, 255, 0);
-		immediate.drawRect2D(x - 8, y - 8, w + 16, h + 16);
+		immediate.drawRect2D(padded.expand(8, 8, 8, 8));
 	}
 
 	if (enabled) {
@@ -207,16 +209,16 @@ void FieldWidget::draw(ImmediateRenderer& immediate) {
 	}
 
 	immediate.setRectRadius(10);
-	immediate.drawRect2D(x, y, w, h);
+	immediate.drawRect2D(padded);
 
 	immediate.setTextAlignment(HorizontalAlignment::LEFT);
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
-	immediate.setTextBox(w, h);
-	baked = immediate.bakeUnicode(x, y, getDisplayUnicodes());
+	immediate.setTextBox(content.w, content.h);
+	baked = immediate.bakeUnicode(content.x, content.y, getDisplayUnicodes());
 
 	if (text.empty()) {
 		immediate.setColor(50, 50, 50, 200);
-		immediate.drawString2D(x, y, placeholder);
+		immediate.drawString2D(content.x, content.y, placeholder);
 	} else {
 		immediate.setColor(0, 0, 0);
 		immediate.drawText2D(0, 0, *baked);

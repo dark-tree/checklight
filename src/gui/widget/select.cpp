@@ -26,7 +26,7 @@ void SelectWidget::draw(ImmediateRenderer& immediate) {
 	if (isFocused()) {
 		immediate.setRectRadius(5);
 		immediate.setColor(255, 255, 0);
-		immediate.drawRect2D(x - 8, y - 8, w + 16, h + 16);
+		immediate.drawRect2D(padded.expand(8, 8, 8, 8));
 	} else {
 		if (unrolled) {
 			setUnrolled(false);
@@ -55,12 +55,12 @@ void SelectWidget::draw(ImmediateRenderer& immediate) {
 
 	// background
 	immediate.setRectRadius(10, (1 - delta) * 10);
-	immediate.drawRect2D(x, y, w, h);
+	immediate.drawRect2D(padded);
 
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
 	immediate.setColor(0, 0, 0);
-	immediate.setTextBox(w, h);
-	immediate.drawString2D(x, y, "Selected: " + std::to_string(value));
+	immediate.setTextBox(content.w, content.h);
+	immediate.drawString2D(content.x, content.y, "Selected: " + std::to_string(value));
 
 	if (!show) return;
 	const auto alpha = static_cast<uint8_t>(delta * 255);
@@ -69,11 +69,11 @@ void SelectWidget::draw(ImmediateRenderer& immediate) {
 
 	immediate.setColor(50, 50, 50, alpha);
 	immediate.setLineWidth(1);
-	immediate.drawLine2D(x, y + h, x + w, y + h);
+	immediate.drawLine2D(padded.x, padded.y + padded.h, padded.x + padded.w, padded.y + padded.h);
 
 	// options
 	for (int i = 0; i < (int) options.size(); i ++) {
-		int oy = y + h * (i + 1);
+		int oy = padded.y + padded.h + content.h * i;
 
 		// background
 		if (option == i) {
@@ -86,13 +86,13 @@ void SelectWidget::draw(ImmediateRenderer& immediate) {
 			immediate.setColor(255, 0, 0, alpha);
 		}
 
-		immediate.drawRect2D(x, oy, w, h);
+		immediate.drawRect2D(padded.x, oy, padded.w, content.h);
 
 		// content
 		immediate.setFont("assets/font/OpenSans-Variable.ttf");
 		immediate.setColor(0, 0, 0, alpha);
-		immediate.setTextBox(w, h);
-		immediate.drawString2D(x, oy, options.at(i).label);
+		immediate.setTextBox(content.w, content.h);
+		immediate.drawString2D(content.x, oy, options.at(i).label);
 	}
 
 }
@@ -154,12 +154,12 @@ bool SelectWidget::event(WidgetContext& context, const InputEvent& any) {
 	}
 
 	if (auto* positioned = any.as<PositionedEvent>()) {
-		hovered = positioned->isWithinBox(x, y, w, h);
+		hovered = positioned->isWithinBox(padded);
 
 		if (unrolled) {
 			for (int i = 0; i < (int) options.size(); i ++) {
-				int oy = y + h * (i + 1);
-				bool entry = positioned->isWithinBox(x, oy, w, h);
+				int oy = padded.y + padded.h + content.h * i;
+				bool entry = positioned->isWithinBox(content.x, oy, content.w, content.h);
 
 				if (entry) {
 					option = i;

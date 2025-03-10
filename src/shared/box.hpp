@@ -14,6 +14,9 @@ struct Box2D {
 	/// Split this box into it's left and right parts
 	Box2D split_left_right(int offset);
 
+	/// Return a box with added space on each side
+	Box2D expand(int top, int bottom, int left, int right) const;
+
 	/// Check if no pixels are bound by this box
 	bool empty() const;
 

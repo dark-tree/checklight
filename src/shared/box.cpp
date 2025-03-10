@@ -30,6 +30,13 @@ Box2D Box2D::split_left_right(int width) {
 	return {xn, y, width, h};
 }
 
+Box2D Box2D::expand(int top, int bottom, int left, int right) const {
+	int dx = left + right;
+	int dy = top + bottom;
+
+	return Box2D {x - left, y - bottom, w + dx, h + dy};
+}
+
 bool Box2D::empty() const {
 	return (w == 0) || (h == 0);
 }

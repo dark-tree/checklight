@@ -1,5 +1,6 @@
 
 #include "positioned.hpp"
+#include "shared/box.hpp"
 
 /*
  * PositionedEvent
@@ -21,4 +22,8 @@ bool PositionedEvent::isWithinBox(int x, int y, int w, int h) const {
 	}
 
 	return true;
+}
+
+bool PositionedEvent::isWithinBox(const Box2D& box) const {
+	return isWithinBox(box.x, box.y, box.w, box.h);
 }

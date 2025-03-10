@@ -9,10 +9,20 @@
  */
 
 void Widget::setBounds(int x, int y, int w, int h) {
-	this->x = x;
-	this->y = y;
-	this->w = w;
-	this->h = h;
+	padded = {x, y, w, h};
+	content = padded.expand(-8, -8, -8, -8);
+}
+
+Box2D Widget::getContentBox() const {
+	return content;
+}
+
+Box2D Widget::getPaddingBox() const {
+	return padded;
+}
+
+Box2D Widget::getMarginBox() const {
+	return padded;
 }
 
 Widget::~Widget() {
@@ -52,7 +62,7 @@ bool InputWidget::event(WidgetContext& context, const InputEvent& any) {
 	}
 
 	if (auto* positioned = any.as<PositionedEvent>()) {
-		hovered = positioned->isWithinBox(x, y, w, h);
+		hovered = positioned->isWithinBox(padded);
 
 		if (!hovered && !positioned->as<KeyboardEvent>()) {
 			pressed = false;
