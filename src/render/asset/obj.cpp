@@ -197,7 +197,7 @@ std::vector<ObjObject> ObjObject::open(std::string path, const std::map<std::str
 			objects.back().groups.push_back(group);
 		}
 		else if (token == "usemtl") {
-			if (objects.back().groups.empty()) {
+			if (objects.back().groups.empty() || !objects.back().groups.back().indices.empty()) {
 				objects.back().groups.push_back(ObjGroup{});
 			}
 
