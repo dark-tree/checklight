@@ -22,7 +22,6 @@ void main() {
 	vec3 centerPositionWS = texture(uPositionSampler, vTexture).xyz;
 
 	vec4 illumSum = vec4(centerIllumSample.rgb, 1.0);
-	float ageBypass = 0.0;
 
 	illumSum += edgeAvoidingBlur(
 		FILTER_RADIUS, 
@@ -30,11 +29,9 @@ void main() {
 		vTexture,
 		centerDepth,
 		centerNormal.xyz, 
-		1.0, 
 		uNormalSampler,
 		uIlluminationSampler,
 		uPositionSampler, 
-		ageBypass,
 		centerPositionWS
 	);
 

@@ -28,36 +28,31 @@ void main() {
 	float centerDepth = centerNormal.w;
 	vec3 centerPositionWS = texture(uPositionSampler, vTexture).xyz;
 
-	float ageWeight = 1.0;//(200.0 - clamp(centerIllumSample.w - 100, 0, 200)) / 200.0;
 	vec4 color = texture(uAlbedoSampler, vTexture);
 	vec4 illumSum = vec4(centerIllumSample.rgb, 1.0);
+
 	if (uSceneObject.denoise){
+
 		illumSum += edgeAvoidingBlur(
 			FILTER_RADIUS, 
 			STEP_SIZE, 
 			vTexture,
 			centerDepth,
 			centerNormal.xyz, 
-			ageWeight, 
 			uNormalSampler,
 			uIlluminationSampler,
 			uPositionSampler, 
-			0.0,
 			centerPositionWS
 		);
 		
-		//color.xyz = vec3(illumSum.w / 9.0);
 		illumSum /= illumSum.w;
 	}
-
 	
 	vec3 solidIllumination = texture(uSolidIlluminationSampler, vTexture).rgb;
 
 	fColor = vec4(color.rgb * (illumSum.rgb + solidIllumination), 1.0);
-	//fColor = vec4(color.rgb, 1.0);
 	fPrevNormal = vec4(centerNormal.xyz, color.w);
+	fPrevPosition = texture(uPositionSampler, vTexture);
 
 	gl_FragDepth = color.w;  
-
-	fPrevPosition = texture(uPositionSampler, vTexture);
 }

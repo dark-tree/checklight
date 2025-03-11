@@ -114,7 +114,7 @@ int main() {
 
 		// update uniforms
 		// do this once at the beginning of frame rendering
-		system.setProjectionMatrix(65.0f, 0.01f, 5000.0f);
+		system.setProjectionMatrix(65.0f, 0.01f, 1000.0f);
 		system.setViewMatrix(current_board->getCamPos(), current_board->getCamForward());
 
 		// render the scene

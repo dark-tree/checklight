@@ -27,12 +27,10 @@ void main() {
 		STEP_SIZE, 
 		vTexture,
 		centerDepth,
-		centerNormal.xyz, 
-		1.0, 
+		centerNormal.xyz,
 		uNormalSampler,
 		uIlluminationSampler,
 		uPositionSampler, 
-		0.0,
 		centerPositionWS
 	);
 
