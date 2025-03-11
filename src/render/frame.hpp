@@ -22,8 +22,6 @@ struct SceneUniform {
 	float time;
 	float near;
 	float far;
-	glm::vec3 dir_light_direction;
-	glm::vec3 dir_light_color;
 	glm::vec3 ambient_color;
 	int gi_samples;
 	bool32 denoise;

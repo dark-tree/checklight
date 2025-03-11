@@ -94,7 +94,6 @@ class MaterialManager {
 
 	private:
 
-		size_t capacity;
 		TextureManager texture_manager;
 		std::vector<RenderMaterial> materials;
 		ReusableBuffer material_buffer;

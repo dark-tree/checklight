@@ -33,6 +33,19 @@ struct RenderObjectData {
 	mat4 portal;
 };
 
+#define LIGHT_TYPE_END 0
+#define LIGHT_TYPE_DIRECTIONAL 1
+#define LIGHT_TYPE_POINT 2
+
+struct Light {
+	uint type;
+	vec3 position;
+	vec3 color;
+	vec3 direction;
+	float intensity;
+	bool shadow;
+};
+
 layout(location = 0) rayPayloadInEXT HitPayload rPayload;
 layout(location = 1) rayPayloadEXT bool rShadowPayload;
 
@@ -43,11 +56,12 @@ layout(binding = 2, set = 0, scalar) uniform _SceneUniform { SceneUniform uScene
 layout(binding = 3, set = 0, scalar) buffer RenderObjectBuffer { RenderObjectData i[]; } renderObjectBuffer;
 layout(binding = 4, set = 0) uniform sampler2D textures[];
 layout(binding = 5, set = 0, scalar) buffer MaterialBuffer { RenderMaterial i[]; } materials;
+layout(binding = 13, set = 0, scalar) buffer LightBuffer { Light i[]; } lights;
 
 hitAttributeEXT vec2 attribs;
 
 // Returns true if the shadow ray hits an object (it means the point is in shadow)
-bool traceShadowRay(vec3 origin, vec3 normal, vec3 shadowRayDirection) {
+bool traceShadowRay(vec3 origin, vec3 normal, vec3 shadowRayDirection, float tmax) {
 
 	vec3 shadowRayOrigin = origin + normal * 0.001;
 
@@ -66,7 +80,7 @@ bool traceShadowRay(vec3 origin, vec3 normal, vec3 shadowRayDirection) {
 		shadowRayOrigin,       // ray origin
 		0.001,                 // ray min range
 		shadowRayDirection,    // ray direction
-		10000.0,               // ray max range
+		tmax,                  // ray max range
 		1                      // payload location
 	);
 
@@ -138,18 +152,46 @@ void main() {
 		vec3 diffuse = vec3(0.0);
 		vec3 specular = vec3(0.0);
 
-		vec3 lightDirection = normalize(uSceneObject.dirLightDirection);
-		vec3 lightColor = uSceneObject.dirLightColor;
+		for (int i = 0; i < lights.i.length(); i++) {
 
-		bool inShadow = false;
+			Light light = lights.i[i];
+			if (light.type == LIGHT_TYPE_END) {
+				break;
+			}
 
-		if (uSceneObject.shadows) {
-			inShadow = traceShadowRay(positionWS, normalWS, lightDirection);
-		}
+			vec3 lightColor = light.color * light.intensity;
+			
+			if (light.type == LIGHT_TYPE_DIRECTIONAL) {
+				vec3 lightDirection = normalize(light.direction);
+				bool inShadow = false;
 
-		if (!inShadow) {
-			diffuse = computeDiffuse(lightDirection, normalWS) * lightColor;
-			specular = computeSpecular(material, gl_WorldRayDirectionEXT, lightDirection, normalWS) * lightColor;
+				if (light.shadow && uSceneObject.shadows) {
+					inShadow = traceShadowRay(positionWS, normalWS, lightDirection, 10000.0);
+				}
+
+				if (!inShadow) {
+					diffuse += computeDiffuse(lightDirection, normalWS) * lightColor;
+					specular += computeSpecular(material, gl_WorldRayDirectionEXT, lightDirection, normalWS) * lightColor;
+				}
+			}
+			else if (light.type == LIGHT_TYPE_POINT) {
+				vec3 lightDirection = normalize(light.position - positionWS);
+				float distance = length(light.position - positionWS);
+				bool inShadow = false;
+
+				if (light.shadow && uSceneObject.shadows) {
+					inShadow = traceShadowRay(positionWS, normalWS, lightDirection, distance);
+				}
+
+				if (!inShadow) {
+					
+					float attenuation = 1.0 / (1.0 + 0.14 * distance + 0.07 * distance * distance);
+					lightColor *= attenuation;
+
+					diffuse += computeDiffuse(lightDirection, normalWS) * lightColor;
+					specular += computeSpecular(material, gl_WorldRayDirectionEXT, lightDirection, normalWS) * lightColor;
+				}
+			}
 		}
 	
 		color = clamp(mix(texture(textures[nonuniformEXT(material.albedoTextureIndex)], uv).rgb, material.emissive, length(material.emissive)), 0.0, 1.0);

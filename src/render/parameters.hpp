@@ -13,8 +13,6 @@ class RenderParameters {
 		bool denoise = true;
 		bool shadows = true;
 
-		glm::vec3 dir_light_direction = glm::vec3(1.0f);
-		glm::vec3 dir_light_color = glm::vec3(1.0f);
 		glm::vec3 ambient_color = glm::vec3(0.0f);
 
 	public:
@@ -30,7 +28,6 @@ class RenderParameters {
 		bool getShadows() const;
 		void setShadows(bool shadows);
 
-		void setDirectionalLight(glm::vec3 direction, glm::vec3 color);
 		void setAmbientLight(glm::vec3 color);
 		
 };

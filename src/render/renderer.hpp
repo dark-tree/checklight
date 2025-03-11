@@ -22,6 +22,7 @@
 #include "render/vulkan/raytrace/instance.hpp"
 #include "render/vulkan/raytrace/factory.hpp"
 #include "render/asset/material.hpp"
+#include "render/asset/light.hpp"
 
 class Renderer {
 
@@ -60,6 +61,7 @@ class Renderer {
 		std::unique_ptr<Window> window;
 		ImmediateRenderer immediate;
 		MaterialManager materials;
+		LightManager lights;
 		RenderParameters parameters;
 
 		// early vulkan objects
@@ -222,5 +224,8 @@ class Renderer {
 
 		/// Get the material manager
 		MaterialManager& getMaterialManager();
+
+		/// Get the light manager
+		LightManager& getLightManager();
 
 };

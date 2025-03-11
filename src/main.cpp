@@ -96,12 +96,26 @@ int main() {
 		objects.push_back(object);
 	}
 
-	system.getParameters().setDirectionalLight(glm::vec3(0.0, 3.5, -1.0), glm::vec3(1.5, 1.5, 1.5));
 	system.getParameters().setAmbientLight(glm::vec3(0.0, 0.0, 0.0));
-
 	system.getParameters().setDenoise(true);
 	system.getParameters().setShadows(true);
 	system.getParameters().setGISamples(1);
+
+	system.getLightManager().addLight({
+		.type = Light::DIRECTIONAL,
+		.color = glm::vec3(1.0, 1.0, 1.0),
+		.direction = glm::vec3(0.0, 3.5, -1.0),
+		.intensity = 1.5,
+		.shadow = true
+	});
+
+	system.getLightManager().addLight({
+		.type = Light::POINT,
+		.position = glm::vec3(3.0, 2.0, 18.0),
+		.color = glm::vec3(0.0, 0.0, 1.0),
+		.intensity = 100.0,
+		.shadow = true
+	});
 
 	while (!window.shouldClose()) {
 		window.poll();

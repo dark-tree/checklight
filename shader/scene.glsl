@@ -11,8 +11,6 @@ struct SceneUniform {
 	float time;
 	float near;
 	float far;
-	vec3 dirLightDirection;
-	vec3 dirLightColor;
 	vec3 ambientColor;
 	int giSamples;
 	bool denoise;

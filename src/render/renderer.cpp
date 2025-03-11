@@ -929,6 +929,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(10, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.descriptor(11, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
 		.descriptor(12, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(13, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
 		.done(device);
 
 	// add layouts to the pool so that they can be allocated
@@ -979,6 +980,7 @@ Renderer::~Renderer() {
 	instances.reset();
 	immediate.close(device);
 	materials.close(device);
+	lights.close();
 
 	// It's important to maintain the correct order
 	closeRenderPasses();
@@ -1047,6 +1049,10 @@ void Renderer::draw() {
 
 	auto& material_buffer = materials.getMaterialBuffer();
 	frame.set_raytrace.buffer(5, material_buffer.getBuffer(), material_buffer.getBuffer().size());
+
+	lights.flush(recorder);
+	auto& light_buffer = lights.getBuffer();
+	frame.set_raytrace.buffer(13, light_buffer.getBuffer(), light_buffer.getBuffer().size());
 
 	materials.getTextureManager().updateDescriptorSet(device, frame.set_raytrace, 4);
 
@@ -1134,4 +1140,8 @@ int Renderer::height() {
 
 MaterialManager& Renderer::getMaterialManager() {
 	return materials;
+}
+
+LightManager& Renderer::getLightManager() {
+	return lights;
 }
