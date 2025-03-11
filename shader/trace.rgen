@@ -175,7 +175,7 @@ void main() {
 
 	if (primaryPayload.hit.w > 0){
 
-		const int samples = uSceneObject.giSamples;
+		const int samples = (jump <= 1) ? uSceneObject.giSamples : 0;
 
 		vec3 giLight = vec3(0.0);
 		float seed = gl_LaunchIDEXT.x + gl_LaunchIDEXT.y * 3.43121412313 + fract(1.12345314312 * uSceneObject.time);
