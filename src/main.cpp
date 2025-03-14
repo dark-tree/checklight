@@ -55,16 +55,17 @@ int main() {
 	//test sound
 	//@TODO oddzielny watek dla sound managera tak wektor sourcow
 	try {
-
+		auto sc1 = std::make_shared<SoundClip>();
+		auto sc2 = std::make_shared<SoundClip>();
 		sm.addSource(sso1);
-		sm.createClip("f");
-		sm.addAudioToClip("f", "assets/sounds/testOGG.ogg");
-		sm.connectClipWithSource("f", sso1);
+		sm.addClip(sc1);
+		sm.addAudioToClip(sc1, "assets/sounds/testOGG.ogg");
+		sm.connectClipWithSource(sc1, sso1);
 
 		sm.addSource(sso2);
-		sm.createClip("fa");
-		sm.addAudioToClip("fa", "assets/sounds/test/2.ogg");
-		sm.connectClipWithSource("fa", sso2);
+		sm.addClip(sc2);
+		sm.addAudioToClip(sc2, "assets/sounds/test/2.ogg");
+		sm.connectClipWithSource(sc2, sso2);
 
 		sm.playSound(sso1);
 

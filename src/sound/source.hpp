@@ -10,6 +10,7 @@ private:
 	ALsizei number_of_sources;
 	
 	std::shared_ptr<SoundGroup> sso_sg_parameters;
+	std::weak_ptr<SoundClip> sc_buffer;
 
 	void initSource(int number_of_sources);
 	void play(int source_number);

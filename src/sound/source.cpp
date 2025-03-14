@@ -57,15 +57,10 @@ void SoundSourceObject::setPosition(float x, float y, float z)
 {
 	alSource3f(this->sso_sources[0], AL_POSITION, x, y, z);
 }
-//@TODO check if exist
-
-//@TODO reduce code lines, delete duplicates
-
-
 
 
 void SoundSourceObject::addBuffer(SoundClip clip){
-	ALuint buffer = clip.getBuffer(0);
+	ALuint buffer = clip.getBuffer();
 	if (buffer==0) {
 
 		throw std::runtime_error("Source -> addBuffer: Buffer doesnt exist\f");	//throw exception
@@ -80,23 +75,26 @@ void SoundSourceObject::addBuffer(SoundClip clip){
 }
 
 void SoundSourceObject::addBuffer(std::shared_ptr<SoundClip> clip) {
-	ALuint buffer = clip->getBuffer(0);
-	if (buffer == 0) {
+	if (clip->getBuffer() == 0) {
 
 		throw std::runtime_error("Source -> addBuffer: Buffer doesnt exist\f");	//throw exception
 	}
 
-	alSourcei(this->sso_sources[0], AL_BUFFER, buffer);
+	sc_buffer = clip;
+	auto lockedClip = sc_buffer.lock();
+	if (lockedClip){
+		alSourcei(this->sso_sources[0], AL_BUFFER, lockedClip->getBuffer());
+	}
+	else {
+		throw std::runtime_error("Source -> addBuffer: sc_buffer doesnt exist");
+	}
+	
 
 	ALenum error = alGetError();
 	if (error != AL_NO_ERROR) {
 		throw std::runtime_error("Source -> addBuffer: OpenAL error " + std::to_string(error)+"\f");
 	}
 }
-
-//void SoundSourceObject::addBuffers(SoundClip buffer){
-//
-//}
 
 
 void SoundSourceObject::addGroupParameters(std::shared_ptr<SoundGroup> sg) {

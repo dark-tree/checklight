@@ -29,17 +29,31 @@ SoundManager::~SoundManager(){
 
 void SoundManager::addSource(std::shared_ptr <SoundSourceObject> sso){
 	if (!sso) {
-		throw std::runtime_error("SoundManager -> createSource: SoundSourceObject not exist\f");
+		throw std::runtime_error("SoundManager -> addSource: SoundSourceObject not exist\f");
 	}
 
 	// check if exist a source with a given name
 	if (ums_sources.find(sso.get()) != ums_sources.end()){
-		throw std::runtime_error("SoundManager -> createSource: SoundSourceObject already exist\f");
+		throw std::runtime_error("SoundManager -> addSource: SoundSourceObject already exist\f");
 	}
 
 	ums_sources[sso.get()] = sso;
 }
 
+void SoundManager::addClip(std::shared_ptr <SoundClip> sc) {
+	if (!sc) {
+		throw std::runtime_error("SoundManager -> addClip: SoundClip not exist\f");
+	}
+
+	// check if exist a source with a given name
+	if (ums_clips.find(sc.get()) != ums_clips.end()) {
+		throw std::runtime_error("SoundManager -> addClip: SoundClip already exist\f");
+	}
+
+	ums_clips[sc.get()] = sc;
+}
+
+/*
 void SoundManager::createClip(const std::string& name) {
 
 	// check if exist a clip with a given name
@@ -59,24 +73,25 @@ void SoundManager::createClip(const std::string& name, int clip_size) {
 
 	ums_clips[name] = std::make_shared<SoundClip>(clip_size);
 }
+*/
 
-void SoundManager::addAudioToClip(const std::string& clip_name, const char* uri) {
+void SoundManager::addAudioToClip(std::shared_ptr <SoundClip> sc, const char* uri) {
 
 	// check if exist a clip with a given name
-	if (ums_clips.find(clip_name) == ums_clips.end()) {
-		throw std::runtime_error("SoundManager -> addAudioToClip: SoundClip with name: " + clip_name + " not already exist\f");
+	if (ums_clips.find(sc.get()) == ums_clips.end()) {
+		throw std::runtime_error("SoundManager -> addAudioToClip: SoundClip not already exist\f");
 	}
 
-	ums_clips[clip_name]->addAudio(uri);
+	ums_clips[sc.get()]->addAudio(uri);
 }
 
-void SoundManager::connectClipWithSource(const std::string& clip_name, std::shared_ptr <SoundSourceObject> sso) {
+void SoundManager::connectClipWithSource(std::shared_ptr<SoundClip> sc, std::shared_ptr <SoundSourceObject> sso) {
 	if (!sso) {
 		throw std::runtime_error("SoundManager -> connectClipWithSource: SoundSourceObject not exist\f");
 	}
 	// check if exist a clip with a given name
-	if (ums_clips.find(clip_name) == ums_clips.end()) {
-		throw std::runtime_error("SoundManager -> connectClipWithSource: SoundClip with name: " + clip_name + " not already exist\f");
+	if (ums_clips.find(sc.get()) == ums_clips.end()) {
+		throw std::runtime_error("SoundManager -> connectClipWithSource: SoundClip not already exist\f");
 	}
 
 	// check if exist a source with a given name
@@ -84,7 +99,7 @@ void SoundManager::connectClipWithSource(const std::string& clip_name, std::shar
 		throw std::runtime_error("SoundManager -> connectClipWithSource: SoundSourceObject not already exist in ums_sources. Please add to map (sm.addSource(sso))\f");
 	}
 
-	ums_sources[sso.get()]->addBuffer(ums_clips[clip_name]);
+	ums_sources[sso.get()]->addBuffer(ums_clips[sc.get()]);
 }
 
 void SoundManager::playSound(std::shared_ptr <SoundSourceObject> sso){
