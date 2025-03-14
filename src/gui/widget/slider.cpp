@@ -5,8 +5,8 @@
 #include "input/input.hpp"
 #include "render/immediate.hpp"
 
-SliderWidget::SliderWidget(const std::function<void()>& callback)
-: InputWidget(), callback(callback) {}
+SliderWidget::SliderWidget()
+: InputWidget(), callback({}) {}
 
 void SliderWidget::updateValue() {
 	if (value > 1.0) value = 1.0;

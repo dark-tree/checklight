@@ -7,8 +7,8 @@
 #include "render/immediate.hpp"
 #include "gui/context.hpp"
 
-SelectWidget::SelectWidget(const std::function<void()>& callback)
-: InputWidget(), unrolled(false), callback(callback) {
+SelectWidget::SelectWidget()
+: InputWidget(), callback([] () noexcept -> void {}) {
 
 	for (int i = 0; i < 5; i ++) {
 		options.emplace_back("Option: " + std::to_string(i));

@@ -9,33 +9,11 @@
 #include "draw/channel.hpp"
 #include "draw/color.hpp"
 #include "draw/text.hpp"
+#include "draw/arc.hpp"
+#include "draw/alignment.hpp"
 
 class CommandRecorder;
-
-enum struct ArcMode {
-	OPEN_PIE,
-	OPEN_CHORD
-};
-
-enum struct ArcQuality {
-	VERY_LOW   = 100,
-	LOW        =  75,
-	MEDIUM     =  45,
-	HIGH       =  33,
-	VERY_HIGH  =  25,
-};
-
-enum struct VerticalAlignment {
-	TOP    = 2,
-	CENTER = 1,
-	BOTTOM = 0
-};
-
-enum struct HorizontalAlignment {
-	LEFT   = 0,
-	CENTER = 1,
-	RIGHT  = 2
-};
+class AssetLoader;
 
 enum struct BillboardMode {
 	ONE_AXIS,
@@ -53,10 +31,8 @@ class ImmediateRenderer {
 
 		friend class Renderer;
 
+		AssetLoader& loader;
 		Sprite blank;
-		std::shared_ptr<DynamicAtlas> atlas;
-		DynamicImageAtlas images;
-		DynamicFontAtlas fonts;
 		std::shared_ptr<Font> font;
 
 		VertexChannel basic {"Textured 2D"};
@@ -110,7 +86,7 @@ class ImmediateRenderer {
 
 	public:
 
-		ImmediateRenderer();
+		ImmediateRenderer(AssetLoader& loader);
 
 		void clear();
 		Sprite getSprite(const std::string& path);

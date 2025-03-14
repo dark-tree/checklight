@@ -50,9 +50,7 @@ class RenderSystem : public Renderer {
 
 		/**
 		 * Specifies the perspective used, this should most likely stay constant
-		 * but needs to be called AT LEAST one window size changes to account for the aspect ratio
-		 *
-		 * @note This call modifies an uniform, remember to call updateUniforms() after it!
+		 * but needs to be called AT LEAST when window size changes to account for the aspect ratio
 		 *
 		 * @param fov  Camera field of view
 		 * @param near The closest anything can be to the camera and render
@@ -64,15 +62,13 @@ class RenderSystem : public Renderer {
 		 * Specifies the view used, this should be called ever frame
 		 * to account for the camera movement.
 		 *
-		 * @note This call modifies an uniform, remember to call updateUniforms() after it!
-		 *
 		 * @param eye     The position of the "eye" in 3D world space
 		 * @param facing  Directional vector that specific in which way the camera looks.
 		 */
 		void setViewMatrix(glm::vec3 eye, glm::vec3 facing);
 
 		/**
-		 * Create new InstanceDelegate, each delegate represents one object int the world
+		 * Create new RenderObject, each delegate represents one object in the world
 		 * each game object can be made from many render objects (delegates)
 		 * each delegate contains an affine transformation matrix you can access and modify to move the object
 		 * in the world space.
@@ -88,4 +84,17 @@ class RenderSystem : public Renderer {
 		 * Close RenderModel, the resources used by the model will be released.
 		 */
 		void closeModel(std::shared_ptr<RenderModel> model);
+
+		/**
+		 * Get asset manager, this class can be used to request many resources
+		 * used during rendering (sprites, fonts)
+		 */
+		AssetLoader& getAssetLoader();
+
+		/**
+		 * Get the immediate style GUI/Debug Renderer,
+		 * do note that the performance of this system is very low!
+		 */
+		ImmediateRenderer& getImmediateRenderer();
+
 };

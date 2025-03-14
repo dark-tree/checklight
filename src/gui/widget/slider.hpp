@@ -23,7 +23,7 @@ class SliderWidget : public InputWidget {
 
 	public:
 
-		SliderWidget(const std::function<void()>& callback);
+		SliderWidget();
 
 		void draw(ImmediateRenderer& immediate) override;
 		bool event(WidgetContext& context, const InputEvent &event) override;

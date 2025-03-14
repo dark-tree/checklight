@@ -181,3 +181,11 @@ std::vector<std::shared_ptr<RenderModel>> RenderSystem::importObj(const std::str
 void RenderSystem::closeModel(std::shared_ptr<RenderModel> model) {
 	model->close(system->device);
 }
+
+AssetLoader& RenderSystem::getAssetLoader() {
+	return assets;
+}
+
+ImmediateRenderer& RenderSystem::getImmediateRenderer() {
+	return immediate;
+}

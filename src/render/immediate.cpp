@@ -1,5 +1,7 @@
 
 #include "immediate.hpp"
+
+#include "system.hpp"
 #include "vulkan/command/recorder.hpp"
 #include "asset/atlas.hpp"
 #include "shared/unicode.hpp"
@@ -67,7 +69,7 @@ void ImmediateRenderer::upload(CommandRecorder& recorder) {
 	basic.upload(recorder);
 	basic_3d.upload(recorder);
 	text.upload(recorder);
-	bool dump = atlas->upload(recorder);
+	bool dump = loader.getSharedAtlas()->upload(recorder);
 
 	if (mapping != 0) {
 		throw std::runtime_error {"Texture mapping stack overflow!"};
@@ -75,7 +77,7 @@ void ImmediateRenderer::upload(CommandRecorder& recorder) {
 
 	#if ENGINE_DEBUG
 	if (dump) {
-		atlas->getImage().save("debug/atlas.png");
+		loader.getSharedAtlas()->getImage().save("debug/atlas.png");
 	}
 	#endif
 
@@ -90,11 +92,11 @@ void ImmediateRenderer::close(const LogicalDevice& device) {
 	basic.close();
 	text.close();
 	basic_3d.close();
-	atlas->close(device);
+	loader.getSharedAtlas()->close(device);
 }
 
 Texture& ImmediateRenderer::getAtlasTexture() {
-	return atlas->getTexture();
+	return loader.getSharedAtlas()->getTexture();
 }
 
 void ImmediateRenderer::clear() {
@@ -211,10 +213,9 @@ void ImmediateRenderer::useSecondaryColor() {
 	active = secondary;
 }
 
-ImmediateRenderer::ImmediateRenderer()
-: atlas(std::make_shared<DynamicAtlas>()), images(atlas), fonts(atlas) {
-	this->blank = images.getOrLoad(DynamicImageAtlas::BLANK_SPRITE);
-	setSprite(this->blank);
+ImmediateRenderer::ImmediateRenderer(AssetLoader& loader)
+: loader(loader), blank(loader.getBlankSprite()) {
+	setSprite(OFF);
 	setColor(255, 255, 255);
 	setResolution(1, 1);
 	setLineWidth(4);
@@ -230,7 +231,7 @@ ImmediateRenderer::ImmediateRenderer()
 }
 
 Sprite ImmediateRenderer::getSprite(const std::string& path) {
-	return images.getOrLoad(path);
+	return loader.getSprite(path);
 }
 
 void ImmediateRenderer::setPrimaryColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
@@ -291,7 +292,7 @@ void ImmediateRenderer::setSprite(Disabled disable) {
 }
 
 void ImmediateRenderer::setFont(const std::string& path) {
-	this->font = fonts.getOrLoad(path);
+	this->font = loader.getFont(path);
 }
 
 void ImmediateRenderer::setFontSize(int size) {

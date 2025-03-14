@@ -2,7 +2,7 @@
 
 #include "external.hpp"
 
-#include <render/asset/font.hpp>
+#include "render/asset/font.hpp"
 
 class BakedText {
 
@@ -22,6 +22,12 @@ class BakedText {
 
 		/// Get a specific glyph
 		GlyphQuad getGlyph(int glyph) const;
+
+};
+
+class TextBakery {
+
+
 
 };
 

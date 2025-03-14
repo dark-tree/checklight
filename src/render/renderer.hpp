@@ -21,6 +21,7 @@
 #include "render/vulkan/raytrace/instance.hpp"
 #include "render/vulkan/raytrace/factory.hpp"
 #include "render/asset/material.hpp"
+#include "render/asset/asset.hpp"
 
 class Renderer {
 
@@ -55,6 +56,7 @@ class Renderer {
 		/// this is used as an offset into a framebuffer set
 		uint32_t current_image;
 
+		AssetLoader assets;
 		WindowSystem windows;
 		std::unique_ptr<Window> window;
 		ImmediateRenderer immediate;
@@ -198,9 +200,6 @@ class Renderer {
 
 		/// Build pending acceleration structures
 		void rebuildBottomLevel(CommandRecorder& recorder);
-
-		/// Get the immediate style GUI/Debug Renderer
-		ImmediateRenderer& getImmediateRenderer();
 
 		/// Get the material manager
 		MaterialManager& getMaterialManager();

@@ -656,10 +656,6 @@ void Renderer::rebuildBottomLevel(CommandRecorder& recorder) {
 	bakery.bake(device, allocator, recorder);
 }
 
-ImmediateRenderer& Renderer::getImmediateRenderer() {
-	return immediate;
-}
-
 Fence Renderer::createFence(bool signaled) {
 	return {device.getHandle(), signaled};
 }
@@ -677,7 +673,7 @@ PushConstant Renderer::createPushConstant(VkShaderStageFlags stages, uint32_t by
 }
 
 Renderer::Renderer(ApplicationParameters& parameters)
-: windows(), window(windows.open(parameters.width, parameters.height, parameters.getTitle())) {
+: windows(), window(windows.open(parameters.width, parameters.height, parameters.getTitle())), immediate(assets) {
 
 	index = 0;
 	concurrent = 1;

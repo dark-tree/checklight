@@ -84,7 +84,7 @@ class FieldWidget : public InputWidget {
 
 	public:
 
-		FieldWidget(const std::function<void()>& callback);
+		FieldWidget();
 
 		void draw(ImmediateRenderer& immediate) override;
 		bool event(WidgetContext& context, const InputEvent &event) override;

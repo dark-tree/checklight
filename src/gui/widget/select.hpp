@@ -26,7 +26,7 @@ class SelectWidget : public InputWidget {
 
 	public:
 
-		SelectWidget(const std::function<void()>& callback);
+		SelectWidget();
 
 		void draw(ImmediateRenderer& immediate) override;
 		bool event(WidgetContext& context, const InputEvent &event) override;

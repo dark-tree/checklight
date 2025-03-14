@@ -6,8 +6,8 @@
 #include "gui/context.hpp"
 
 
-ButtonWidget::ButtonWidget(const std::string &label, const std::function<void()>& callback)
-: InputWidget(), callback(callback), label(label) {}
+ButtonWidget::ButtonWidget(const std::string &label)
+: InputWidget(), callback([] () noexcept -> void {}), label(label) {}
 
 void ButtonWidget::draw(ImmediateRenderer& immediate) {
 

@@ -101,7 +101,7 @@ int TextCursor::end() const {
  * FieldWidget
  */
 
-FieldWidget::FieldWidget(const std::function<void()>& callback)
+FieldWidget::FieldWidget()
 : InputWidget() {}
 
 float FieldWidget::getCursorOffset(int glyph) const {

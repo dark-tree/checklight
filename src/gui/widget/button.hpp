@@ -11,7 +11,7 @@ class ButtonWidget : public InputWidget {
 
 	public:
 
-		ButtonWidget(const std::string &label, const std::function<void()>& callback);
+		ButtonWidget(const std::string &label);
 
 		void draw(ImmediateRenderer& immediate) override;
 		bool event(WidgetContext& context, const InputEvent &event) override;
