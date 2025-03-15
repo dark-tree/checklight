@@ -185,7 +185,7 @@ void main() {
 
 				if (!inShadow) {
 					
-					float attenuation = 1.0 / (1.0 + 0.14 * distance + 0.07 * distance * distance);
+					float attenuation = 1.0 / (distance * distance);
 					lightColor *= attenuation;
 
 					diffuse += computeDiffuse(lightDirection, normalWS) * lightColor;

@@ -109,11 +109,11 @@ int main() {
 		.shadow = true
 	});
 
-	system.getLightManager().addLight({
+	auto point_light = system.getLightManager().addLight({
 		.type = Light::POINT,
 		.position = glm::vec3(3.0, 2.0, 18.0),
 		.color = glm::vec3(0.0, 0.0, 1.0),
-		.intensity = 100.0,
+		.intensity = 50.0,
 		.shadow = true
 	});
 
@@ -130,6 +130,11 @@ int main() {
 		// do this once at the beginning of frame rendering
 		system.setProjectionMatrix(65.0f, 0.01f, 1000.0f);
 		system.setViewMatrix(current_board->getCamPos(), current_board->getCamForward());
+
+		// update lights
+		point_light->position = glm::vec3(3.0, 2.0, 18.0 * sin(glfwGetTime() / 8));
+		point_light->color = glm::vec3(sin(glfwGetTime() / 2) * 0.5 + 0.5, sin(glfwGetTime() / 3 + 2) * 0.5 + 0.5, sin(glfwGetTime() / 5 + 4) * 0.5 + 0.5);
+		system.getLightManager().flush();
 
 		// render the scene
 		system.draw();

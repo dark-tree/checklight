@@ -37,17 +37,48 @@ class LightManager {
 
 		void close();
 
-		void addLight(Light light);
+		/**
+		 * Create a new light with the specified parameters and add it to the manager.
+		 * 
+		 * @param light Light parameters that will be used to create a new light
+		 * @return Pointer to the newly created light
+		 */
+		std::shared_ptr<Light> addLight(Light light);
 
+		/**
+		 * Add a light to the manager.
+		 * The flush() operation is called automatically, so there is no need to call it manually.
+		 *
+		 * @param light Light to add
+		 */
+		void addLight(std::shared_ptr<Light> light);
+
+		/**
+		 * Remove a light from the manager
+		 * The flush() operation is called automatically, so there is no need to call it manually.
+		 *
+		 * @param light Light to remove
+		 */
+		void removeLight(std::shared_ptr<Light> light);
+
+		/**
+		 * Flush the light buffer.
+		 * Call this to apply changes to the lights.
+		 */
 		void flush();
 
+		/**
+		 * Get the buffer containing the lights
+		 *
+		 * @return Buffer containing the lights
+		 */
 		const ReusableBuffer& getBuffer();
 
 		friend class Renderer;
 
 	private:
 
-		std::vector<Light> lights;
+		std::vector<std::shared_ptr<Light>> lights;
 		ReusableBuffer buffer;
 		bool dirty;
 

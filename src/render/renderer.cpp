@@ -423,7 +423,7 @@ void Renderer::createAttachments() {
 	attachment_illum_transport = TextureBuilder::begin()
 		.setFormat(VK_FORMAT_R16G16B16A16_SFLOAT)
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
-		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+		.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 		.setDebugName("Illum transport")
 		.createAttachment();
 
