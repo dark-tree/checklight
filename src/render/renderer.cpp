@@ -393,42 +393,42 @@ void Renderer::createAttachments() {
 		.createAttachment();
 
 	attachment_illumination = TextureBuilder::begin()
-		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
+		.setFormat(VK_FORMAT_R16G16B16A16_SFLOAT)
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 		.setDebugName("Illumination")
 		.createAttachment();
 
 	attachment_prev_illumination = TextureBuilder::begin()
-		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
+		.setFormat(VK_FORMAT_R16G16B16A16_SFLOAT)
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 		.setDebugName("Prev Illumination")
 		.createAttachment();
 
 	attachment_normal = TextureBuilder::begin()
-		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
+		.setFormat(VK_FORMAT_R16G16B16A16_SFLOAT)
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
 		.setDebugName("Normal")
 		.createAttachment();
 
 	attachment_prev_normal = TextureBuilder::begin()
-		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
+		.setFormat(VK_FORMAT_R16G16B16A16_SFLOAT)
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 		.setDebugName("Prev Normal")
 		.createAttachment();
 
 	attachment_illum_transport = TextureBuilder::begin()
-		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
+		.setFormat(VK_FORMAT_R16G16B16A16_SFLOAT)
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 		.setDebugName("Illum transport")
 		.createAttachment();
 
 	attachment_soild_illumination = TextureBuilder::begin()
-		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
+		.setFormat(VK_FORMAT_R16G16B16A16_SFLOAT)
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
 		.setDebugName("Solid Illumination")
