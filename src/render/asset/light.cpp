@@ -9,11 +9,6 @@ LightManager::LightManager()
 : buffer(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT), dirty(false) {
 	buffer.setDebugName("Light Buffer");
 
-	Light light {};
-	light.type = static_cast<Light::Type>(0);
-
-	addLight(light);
-
 }
 
 void LightManager::close() {
@@ -32,7 +27,7 @@ std::shared_ptr<Light> LightManager::addLight(Light light) {
 
 void LightManager::addLight(std::shared_ptr<Light> light) {
 	// new light is always added at the front
-	lights.insert(lights.begin(), light);
+	lights.push_back(light);
 	flush();
 }
 
