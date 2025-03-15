@@ -57,6 +57,7 @@ int main() {
 	try {
 		auto sc1 = std::make_shared<SoundClip>();
 		auto sc2 = std::make_shared<SoundClip>();
+
 		sm.addSource(sso1);
 		sm.addClip(sc1);
 		sm.addAudioToClip(sc1, "assets/sounds/testOGG.ogg");
@@ -67,7 +68,27 @@ int main() {
 		sm.addAudioToClip(sc2, "assets/sounds/test/2.ogg");
 		sm.connectClipWithSource(sc2, sso2);
 
-		sm.playSound(sso1);
+		//sm.playSound(sso1);
+
+		auto vec = sm.getVectorSoundClip();
+		for (auto v : vec) {
+			std::cout << v.expired();
+		}
+		std::cout << std::endl;
+		sso1 = nullptr;
+
+		vec = sm.getVectorSoundClip();
+		for (auto v : vec) {
+			std::cout << v.expired();
+		}
+		std::cout << std::endl;
+
+		sm.cleanupVectors();
+		vec = sm.getVectorSoundClip();
+		for (auto v : vec) {
+			std::cout << v.expired();
+		}
+		std::cout << std::endl;
 
 		SoundListener::setPosition(0, 10, 0);
 		/*SoundClip sc;

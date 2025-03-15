@@ -4,7 +4,7 @@
 #include "clip.hpp"
 #include "source.hpp"
 
-//@TODO Rebuild soundClip
+// @TODO add debug command, improve throw and exception
 
 class SoundManager {
 private:
@@ -15,9 +15,13 @@ private:
 	// Pointer to the openal context
 	ALCcontext* p_ALCContext;
 
-	// Unordered maps to storing sound clips with their names as a key 
-	std::unordered_map<SoundClip*, std::shared_ptr<SoundClip>> ums_clips;
-	std::unordered_map<SoundSourceObject*, std::shared_ptr<SoundSourceObject>> ums_sources;
+
+	//@TODO przerobic na vector <weak_ptr<SoundClip>>
+	// @TODO przerobic na vector <weak_ptr<SoundSourceObject>>
+	// Vector to storing sound clips 
+	std::vector<std::weak_ptr<SoundClip>> v_clips;
+	// Vector to storing sound source objects 
+	std::vector<std::weak_ptr<SoundSourceObject>> v_sources;
 
 	// Tools for managing the sound thread
 	std::mutex sound_manager_mutex;
@@ -37,29 +41,16 @@ public:
 
 	//ALCdevice* getDevice();
 	ALCcontext* getContext();
+	std::vector<std::weak_ptr<SoundSourceObject>> getVectorSoundSourceObject() { return v_sources; }
+	std::vector<std::weak_ptr<SoundClip>> getVectorSoundClip() { return v_clips; }
 
-	/// Add a SoundSourceObject to the unordermap ums_sources
+	/// Add a SoundSourceObject to the vector v_sources
 	/// @param sso Pointer to SoundSourceObject
 	void addSource(std::shared_ptr<SoundSourceObject> sso);
 
-	/// Add a SoundSourceObject to the unordermap ums_sources
-	/// @param sso Pointer to SoundSourceObject
-	void addClip(std::shared_ptr<SoundClip> sc);
-
-	/*
-	/// Create a new SoundClip
-	/// Add this object to ums_clips
-	void createClip();
-	/// Create a new SoundClip with a given name (default size: 1)
-	/// Add this object to ums_clips
-	/// @param name Name of new SoundClip
-	void createClip(const std::string& name);
-	/// Create a new SoundClip with a given name and size (default: 1)
-	/// Add this object to ums_clips
-	/// @param name Name of new SoundClip
-	/// @param buffer_size Size of buffers table in SoundClip
-	void createClip(const std::string& name, int buffer_size);
-	*/
+	/// Add a SoundClip to the vector v_clips
+	/// @param sc Pointer to SoundClip
+	void addClip(std::shared_ptr <SoundClip> sc);
 
 	/*
 	/// Load an OGG file from the given URI and add it to buffer[0] in SoundClip with clip_name
@@ -87,4 +78,7 @@ public:
 	/// Sound pause control funtion
 	/// @param sso SoundSourceObject object
 	void pauseSound(std::shared_ptr <SoundSourceObject> sso);
+
+	
+	void cleanupVectors();
 };
