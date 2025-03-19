@@ -15,6 +15,13 @@ bool GlyphQuad::shouldDraw() const {
 	return true;
 }
 
+void GlyphQuad::applyOffset(glm::vec2 vec) {
+	x0 += vec.x;
+	x1 += vec.x;
+	y0 += vec.y;
+	y1 += vec.y;
+}
+
 /*
  * Font
  */
@@ -102,8 +109,22 @@ Font::Font(std::shared_ptr<DynamicAtlas> atlas, std::string path, int weight) {
 
 	msdfgen::setFontVariationAxis(freetype, font, "Weight", weight);
 
+	metrics = new msdfgen::FontMetrics {};
+	msdfgen::getFontMetrics(*metrics, font, msdfgen::FONT_SCALING_EM_NORMALIZED);
+
 	FT_Face face = getFreeType();
 	printf("INFO: Loaded font '%s' from '%s'\n", face->family_name, path.c_str());
+
+	printf("DEBUG: Line height is %fem\n", getLineHeight());
+}
+
+Font::~Font() {
+	delete metrics;
+	msdfgen::destroyFont(font);
+}
+
+float Font::getLineHeight() const {
+	return metrics->lineHeight;
 }
 
 GlyphQuad Font::getOrLoad(float* x, float* y, float scale, uint32_t unicode, int prev) {

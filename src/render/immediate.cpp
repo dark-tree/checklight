@@ -179,32 +179,6 @@ glm::quat ImmediateRenderer::getBillboardRotation(glm::vec3 center) const {
 	return ry;
 }
 
-glm::vec2 ImmediateRenderer::getTextOffset(const std::vector<uint32_t>& text) const {
-
-	if (!font) {
-		throw std::runtime_error {"No font set!"};
-	}
-
-	float mx = static_cast<int>(horizontal) / 2.0f;
-	float my = static_cast<int>(vertical) / 2.0f;
-
-	glm::vec2 offset = {
-		+ expanse.x * mx,
-		- expanse.y * (1 - my),
-	};
-
-	uint32_t prev = 0;
-	float ox = 0;
-	float oy = font_size / 2;
-
-	for (uint32_t unicode : text) {
-		font->getOrLoad(&ox, &oy, font_size / 100.0f, unicode, prev);
-		prev = unicode;
-	}
-
-	return glm::vec2 {ox * mx, oy * my} - offset;
-}
-
 void ImmediateRenderer::usePrimaryColor() {
 	active = primary;
 }
@@ -224,10 +198,10 @@ ImmediateRenderer::ImmediateRenderer(AssetLoader& loader)
 	setQuality(ArcQuality::HIGH);
 	setBillboardMode(BillboardMode::ONE_AXIS);
 	setBillboardTarget({0, 0, 0});
-	setFontTilt(0);
 	setTextAlignment(VerticalAlignment::BOTTOM);
 	setTextAlignment(HorizontalAlignment::LEFT);
 	usePrimaryColor();
+	setWrapping(true);
 }
 
 Sprite ImmediateRenderer::getSprite(const std::string& path) {
@@ -292,11 +266,11 @@ void ImmediateRenderer::setSprite(Disabled disable) {
 }
 
 void ImmediateRenderer::setFont(const std::string& path) {
-	this->font = loader.getFont(path);
+	bakery.setFont(path);
 }
 
 void ImmediateRenderer::setFontSize(int size) {
-	this->font_size = size;
+	bakery.setSize(size);
 }
 
 void ImmediateRenderer::setQuality(ArcQuality quality) {
@@ -320,16 +294,12 @@ void ImmediateRenderer::setBillboardMode(BillboardMode mode) {
 	this->billboard = mode;
 }
 
-void ImmediateRenderer::setFontTilt(float tilt) {
-	this->font_tilt = tilt;
-}
-
 void ImmediateRenderer::setTextAlignment(VerticalAlignment alignment) {
-	this->vertical = alignment;
+	bakery.setAlignment(alignment);
 }
 
 void ImmediateRenderer::setTextAlignment(HorizontalAlignment alignment) {
-	this->horizontal = alignment;
+	bakery.setAlignment(alignment);
 }
 
 void ImmediateRenderer::setTextAlignment(VerticalAlignment vertical, HorizontalAlignment horizontal) {
@@ -342,38 +312,19 @@ void ImmediateRenderer::setTextBox(Disabled disabled) {
 }
 
 void ImmediateRenderer::setTextBox(int width, int height) {
-	this->expanse = {width, height};
+	bakery.setBounds(width, height);
 }
 
-BakedText ImmediateRenderer::bakeString(float x, float y, const std::string& text) const {
+void ImmediateRenderer::setWrapping(bool wrap) {
+	bakery.setWrapping(wrap);
+}
+
+BakedText ImmediateRenderer::bakeString(float x, float y, const std::string& text) {
 	return bakeUnicode(x, y, utf8::toCodePoints(text.c_str()));
 }
 
-BakedText ImmediateRenderer::bakeUnicode(float x, float y, const std::vector<uint32_t>& unicodes) const {
-	if (!font) {
-		throw std::runtime_error {"No font set!"};
-	}
-
-	uint32_t prev = 0;
-
-	std::vector<GlyphQuad> adjusted;
-	glm::vec2 alignment = getTextOffset(unicodes);
-	float size = font_size / 100.0f;
-	float baseline = y + alignment.y;
-
-	for (uint32_t unicode : unicodes) {
-		GlyphQuad q = font->getOrLoad(&x, &y, size, unicode, prev);
-		prev = unicode;
-
-		const float x0 = q.x0 - alignment.x;
-		const float x1 = q.x1 - alignment.x;
-		const float y0 = q.y0 + alignment.y;
-		const float y1 = q.y1 + alignment.y;
-
-		adjusted.emplace_back(q.advance, x0, y0, q.s0, q.t0, x1, y1, q.s1, q.t1);
-	}
-
-	return {adjusted, baseline, font_size};
+BakedText ImmediateRenderer::bakeUnicode(float x, float y, const std::vector<uint32_t>& unicodes) {
+	return bakery.bakeUnicode(x, y, unicodes);
 }
 
 void ImmediateRenderer::setFont(const std::string& path, int size) {
@@ -604,11 +555,6 @@ void ImmediateRenderer::drawString2D(float x, float y, const std::string& str) {
 }
 
 void ImmediateRenderer::drawText2D(float x, float y, const BakedText& baked) {
-
-	if (!font) {
-		throw std::runtime_error {"No font set!"};
-	}
-
 	for (GlyphQuad quad : baked.getQuads()) {
 		if (quad.shouldDraw()) {
 

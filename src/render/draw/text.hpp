@@ -1,8 +1,9 @@
 #pragma once
 
 #include "external.hpp"
-
 #include "render/asset/font.hpp"
+#include "shared/unicode.hpp"
+#include "render/draw/alignment.hpp"
 
 class BakedText {
 
@@ -25,9 +26,33 @@ class BakedText {
 
 };
 
+
 class TextBakery {
 
+	private:
 
+		std::shared_ptr<Font> font;
+		int width, height;
+		int size;
+		VerticalAlignment vertical;
+		HorizontalAlignment horizontal;
+		bool wrapping;
+
+		glm::vec2 getTextOffset(std::vector<GlyphQuad>& quads, int start, int end, float vertical) const;
+
+	public:
+
+		TextBakery& setFont(const std::string& path);
+		TextBakery& setFont(const std::shared_ptr<Font>& font);
+		TextBakery& setBounds(int width, int height);
+		TextBakery& setSize(int size);
+		TextBakery& setAlignment(VerticalAlignment alignment);
+		TextBakery& setAlignment(HorizontalAlignment alignment);
+		TextBakery& setAlignment(HorizontalAlignment horizontal, VerticalAlignment vertical);
+		TextBakery& setWrapping(bool wrap);
+
+		BakedText bakeUnicode(float x, float y, const utf8::UnicodeVector& unicodes);
+		BakedText bakeString(float x, float y, const std::string& string);
 
 };
 

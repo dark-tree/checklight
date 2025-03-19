@@ -31,8 +31,23 @@ inline void drawUserInterface(ImmediateRenderer& immediate, float width, float h
 	immediate.setSprite("assets/image/vulkan-1.png");
 	immediate.drawRect2D(0, height - 126, 310, 126);
 
+	int w = 100 + (sin(glfwGetTime()) + 1) * 100;
+	int h = 100;
+
+	immediate.setSprite(OFF);
+	immediate.setColor(100, 100, 200);
+	immediate.setRectRadius(5);
+	immediate.drawRect2D(500, 500, w, h);
+
+	immediate.setTextAlignment(VerticalAlignment::CENTER);
+	immediate.setTextAlignment(HorizontalAlignment::CENTER);
+	immediate.setColor(0, 0, 0);
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
 	immediate.setFontSize(30);
+	immediate.setTextBox(w, h);
+	immediate.drawString2D(500, 500, "Hello Lorem Ipsum Muggum World Ambassador Delight Silksong");
+
+
 
 	immediate.setSprite("assets/image/corners.png");
 	immediate.setLineWidth(0.1);

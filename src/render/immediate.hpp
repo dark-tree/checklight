@@ -33,7 +33,6 @@ class ImmediateRenderer {
 
 		AssetLoader& loader;
 		Sprite blank;
-		std::shared_ptr<Font> font;
 
 		VertexChannel basic {"Textured 2D"};
 		VertexChannel text {"Text 2D"};
@@ -48,14 +47,11 @@ class ImmediateRenderer {
 		Sprite sprite;
 		float tx, ty, tw, th;
 		int mapping = 0;
-		float font_size;
-		float font_tilt;
+
+		TextBakery bakery;
 		ArcQuality quality;
 		BillboardMode billboard;
 		glm::vec3 target;
-		VerticalAlignment vertical;
-		HorizontalAlignment horizontal;
-		glm::vec2 expanse;
 
 		void upload(CommandRecorder& recorder);
 		void close(const LogicalDevice& device);
@@ -63,7 +59,7 @@ class ImmediateRenderer {
 		float getMaxPixelError() const;
 		void drawBillboardVertex(glm::quat rotation, glm::vec3 offset, float x, float y, float u, float v);
 		glm::quat getBillboardRotation(glm::vec3 center) const;
-		glm::vec2 getTextOffset(const std::vector<uint32_t>& text) const;
+		// glm::vec2 getTextOffset(const std::vector<uint32_t>& text) const;
 		void usePrimaryColor();
 		void useSecondaryColor();
 
@@ -110,16 +106,16 @@ class ImmediateRenderer {
 		void setMatrix3D(const glm::mat4& matrix);
 		void setBillboardTarget(glm::vec3 pos);
 		void setBillboardMode(BillboardMode mode);
-		void setFontTilt(float tilt);
 		void setTextAlignment(VerticalAlignment alignment);
 		void setTextAlignment(HorizontalAlignment alignment);
 		void setTextAlignment(VerticalAlignment vertical, HorizontalAlignment horizontal);
 		void setTextBox(Disabled disabled);
 		void setTextBox(int width, int height);
+		void setWrapping(bool wrap);
 
 		// Helpers
-		BakedText bakeString(float x, float y, const std::string& text) const;
-		BakedText bakeUnicode(float x, float y, const std::vector<uint32_t>& unicodes) const;
+		BakedText bakeString(float x, float y, const std::string& text);
+		BakedText bakeUnicode(float x, float y, const std::vector<uint32_t>& unicodes);
 
 		// 2D Primitives
 		void drawVertex2D(float x, float y, float u, float v);

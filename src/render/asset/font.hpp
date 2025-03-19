@@ -2,6 +2,7 @@
 
 namespace msdfgen {
 	class FontHandle;
+	struct FontMetrics;
 }
 
 typedef struct FT_FaceRec_* FT_Face;
@@ -22,6 +23,8 @@ struct GlyphQuad {
 	/// can return false for glyphs with no visible elements
 	/// (e.g. spaces) to optimize the emitted vertex count
 	bool shouldDraw() const;
+
+	void applyOffset(glm::vec2 vec);
 };
 
 class Font {
@@ -32,6 +35,7 @@ class Font {
 
 	private:
 
+		msdfgen::FontMetrics* metrics;
 		msdfgen::FontHandle* font;
 		std::shared_ptr<DynamicAtlas> atlas;
 		std::string path;
@@ -46,6 +50,9 @@ class Font {
 	public:
 
 		Font(std::shared_ptr<DynamicAtlas> atlas, std::string path, int weight);
+		~Font();
+
+		float getLineHeight() const;
 
 		GlyphQuad getOrLoad(float* x, float* y, float scale, uint32_t unicode, int prev);
 
