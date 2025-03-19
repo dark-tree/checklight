@@ -142,14 +142,24 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 
 	BreakTracker breaker;
 
-	auto submit = [&] {
+	// sussy creepers
+	float spacing = size * 0.8;
+	float vertical = spacing;
+	y += size / 2;
+
+	const auto submit = [&] {
 		int start = lines.empty() ? 0 : lines.back().end;
 		lines.emplace_back(start, adjusted.size());
 	};
 
-	float spacing = size * 0.8;
-	float vertical = spacing;
-	y += size/2;
+	const auto advance = [&] {
+		submit();
+
+		y += spacing;
+		vertical += spacing;
+		x = sx;
+		prev = 0;
+	};
 
 	for (int i = 0; i < unicodes.size(); i++) {
 		const uint32_t unicode = unicodes[i];
@@ -161,19 +171,18 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 		GlyphQuad q = font->getOrLoad(&x, &y, scale, unicode, prev);
 		prev = unicode;
 
+		if (unicode == '\n') {
+			advance();
+			continue;
+		}
+
 		if (q.x1 > wrap && breaker.has()) {
 
 			// remove characters that will now be moved to the next line
 			// we will need to re-emit them, a bit wasteful but simple to implement
 			i = breaker.apply(adjusted);
 
-			submit();
-
-			y += spacing;
-			vertical += spacing;
-			x = sx;
-			prev = 0;
-
+			advance();
 			continue;
 		}
 

@@ -45,7 +45,7 @@ inline void drawUserInterface(ImmediateRenderer& immediate, float width, float h
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
 	immediate.setFontSize(30);
 	immediate.setTextBox(w, h);
-	immediate.drawString2D(500, 500, "Hello Lorem Ipsum Muggum World Ambassador Delight Silksong");
+	immediate.drawString2D(500, 500, "Hello Lorem Ipsum Muggum\n World Ambassador Delight Silksong");
 
 
 
