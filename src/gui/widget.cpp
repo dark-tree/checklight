@@ -53,8 +53,8 @@ void Widget::setBounds(Box2D bounds) {
 	const float ry = margined.y;
 
 	// align margined
-	const int cx = std::max(bounds.x, bounds.x + static_cast<int>((bounds.w - margined.w) * (static_cast<int>(this->horizontal) / 2.0f)));
-	const int cy = std::max(bounds.y, bounds.y + static_cast<int>((bounds.h - margined.h) * (1.0f - static_cast<int>(this->vertical) / 2.0f)));
+	const int cx = std::max(bounds.x, bounds.x + static_cast<int>((bounds.w - margined.w) * toAlignmentFactor(this->horizontal)));
+	const int cy = std::max(bounds.y, bounds.y + static_cast<int>((bounds.h - margined.h) * toAlignmentFactor(this->vertical)));
 
 	margined.x = cx;
 	margined.y = cy;

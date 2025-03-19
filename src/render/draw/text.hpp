@@ -5,6 +5,9 @@
 #include "shared/unicode.hpp"
 #include "render/draw/alignment.hpp"
 
+/**
+ * Represents a baked array of text quads that is ready for rendering
+ */
 class BakedText {
 
 	private:
@@ -26,12 +29,42 @@ class BakedText {
 
 };
 
+/**
+ * Used to track possible wrapping break points
+ */
+class BreakTracker {
 
+	private:
+
+		int offset = -1;
+		int previous = -1;
+
+	public:
+
+		/// Set a new breakpoint at the given offset
+		void set(std::vector<GlyphQuad>& quads, int offset);
+
+		/// Check if there is a breakpoint set
+		bool has() const;
+
+		/// Return to the previous breakpoint by dropping quads and returning the old code point offset
+		[[nodiscard]] int apply(std::vector<GlyphQuad>& quads);
+
+};
+
+/**
+ * A BakedText factory
+ */
 class TextBakery {
 
 	private:
 
-		std::shared_ptr<Font> font;
+		struct TextLine {
+			int start;
+			int end;
+		};
+
+		std::shared_ptr<Font> font = nullptr;
 		int width, height;
 		int size;
 		VerticalAlignment vertical;
@@ -39,6 +72,7 @@ class TextBakery {
 		bool wrapping;
 
 		glm::vec2 getTextOffset(std::vector<GlyphQuad>& quads, int start, int end, float vertical) const;
+		int getWrappingBound(int start) const;
 
 	public:
 
