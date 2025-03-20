@@ -140,7 +140,7 @@ GlyphQuad Font::getOrLoad(float* x, float* y, float scale, uint32_t unicode, int
 	auto pair = cdata.find(unicode);
 
 	if (pair == cdata.end()) {
-		loadUnicode(unicode, 64, 6);
+		loadUnicode(unicode, resolution * 0.7, 6);
 		return getOrLoad(x, y, scale, unicode, prev);
 	}
 
@@ -149,10 +149,10 @@ GlyphQuad Font::getOrLoad(float* x, float* y, float scale, uint32_t unicode, int
 	float width = info.xoff * scale;
 	float height = info.yoff * scale;
 
-	int round_x = (int) floor((*x + width) + 0.5f);
-	int round_y = (int) floor((*y + height) + 0.5f);
+	float round_x = *x + width;
+	float round_y = *y + height;
 
-	quad.x0 = round_x + kerning * 100 * scale;
+	quad.x0 = round_x + kerning * resolution * scale;
 	quad.y0 = round_y;
 	quad.x1 = round_x + (info.x1 - info.x0) * scale;
 	quad.y1 = round_y + (info.y1 - info.y0) * scale;

@@ -43,7 +43,7 @@ inline void drawUserInterface(ImmediateRenderer& immediate, float width, float h
 	immediate.setTextAlignment(HorizontalAlignment::CENTER);
 	immediate.setColor(0, 0, 0);
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
-	immediate.setFontSize(30);
+	immediate.setFontSize(20);
 	immediate.setTextBox(w, h);
 	immediate.drawString2D(500, 500, "Hello Lorem Ipsum Muggum\n World Ambassador Delight Silksong");
 

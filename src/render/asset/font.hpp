@@ -31,7 +31,7 @@ class Font {
 
 	public:
 
-		static constexpr int resolution = 64;
+		static constexpr int resolution = 128;
 
 	private:
 

@@ -138,7 +138,7 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 
 	std::vector<TextLine> lines;
 	std::vector<GlyphQuad> adjusted;
-	float scale = size / 100.0f;
+	float scale = size / float(Font::resolution);
 
 	BreakTracker breaker;
 
