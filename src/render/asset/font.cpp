@@ -76,7 +76,7 @@ bool Font::loadUnicode(uint32_t unicode, float scale, float range) {
 			}
 		}
 
-		Sprite sprite = atlas->submit(image);
+		Sprite sprite = atlas->submitWithMargin(image);
 		image.close();
 
 		info.x0 = sprite.u1;
