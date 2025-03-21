@@ -8,15 +8,15 @@
  * BakedText
  */
 
-BakedText::BakedText(const std::vector<GlyphQuad>& quads, float baseline, float height)
-: quads(quads), baseline(baseline), height(height) {}
+BakedText::BakedText(const std::vector<GlyphQuad>& quads, Metrics metrics)
+: quads(quads), metrics(metrics) {}
 
 const std::vector<GlyphQuad>& BakedText::getQuads() const {
 	return quads;
 }
 
-GlyphQuad BakedText::getGlyph(int glyph) const {
-	return quads[glyph];
+const BakedText::Metrics& BakedText::getMetrics() const {
+	return metrics;
 }
 
 /*
@@ -128,6 +128,9 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 		throw std::runtime_error {"No font set!"};
 	}
 
+	float horizontal = 0;
+	float line_width = 0;
+
 	// holds previous Unicode (or 0)
 	// used for querying kerning pairs
 	uint32_t prev = 0;
@@ -143,13 +146,19 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 	BreakTracker breaker;
 
 	// sussy creepers
-	float spacing = size * 0.8;
+	float spacing = size * Font::fraction;
 	float vertical = spacing;
 	y += size / 2;
 
 	const auto submit = [&] {
 		int start = lines.empty() ? 0 : lines.back().end;
 		lines.emplace_back(start, adjusted.size());
+
+		if (line_width > horizontal) {
+			horizontal = line_width;
+		}
+
+		line_width = 0;
 	};
 
 	const auto advance = [&] {
@@ -169,6 +178,7 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 		}
 
 		GlyphQuad q = font->getOrLoad(&x, &y, scale, unicode, prev);
+		line_width += q.advance;
 		prev = unicode;
 
 		if (unicode == '\n') {
@@ -201,6 +211,5 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 		};
 	}
 
-	return {adjusted, 0, spacing};
+	return {adjusted, BakedText::Metrics {horizontal, vertical}};
 }
-

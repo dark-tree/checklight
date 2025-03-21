@@ -10,22 +10,28 @@
  */
 class BakedText {
 
+	public:
+
+		struct Metrics {
+			float width;
+			float height;
+		};
+
 	private:
 
 		std::vector<GlyphQuad> quads;
+		Metrics metrics;
 
 	public:
 
-		float baseline, height;
-
 		BakedText() = default;
-		BakedText(const std::vector<GlyphQuad>& quads, float baseline, float height);
+		BakedText(const std::vector<GlyphQuad>& quads, Metrics metrics);
 
 		/// Get all underlying text quads
 		const std::vector<GlyphQuad>& getQuads() const;
 
-		/// Get a specific glyph
-		GlyphQuad getGlyph(int glyph) const;
+		/// Get information about the baked text
+		const Metrics& getMetrics() const;
 
 };
 

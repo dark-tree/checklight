@@ -140,22 +140,23 @@ GlyphQuad Font::getOrLoad(float* x, float* y, float scale, uint32_t unicode, int
 	auto pair = cdata.find(unicode);
 
 	if (pair == cdata.end()) {
-		loadUnicode(unicode, resolution * 0.7, 6);
+		loadUnicode(unicode, resolution * fraction, 6);
 		return getOrLoad(x, y, scale, unicode, prev);
 	}
 
 	GlyphInfo& info = pair->second;
 	quad.advance = info.advance * scale;
+
 	float width = info.xoff * scale;
 	float height = info.yoff * scale;
 
-	float round_x = *x + width;
-	float round_y = *y + height;
+	float bx = *x + width;
+	float by = *y + height;
 
-	quad.x0 = round_x + kerning * resolution * scale;
-	quad.y0 = round_y;
-	quad.x1 = round_x + (info.x1 - info.x0) * scale;
-	quad.y1 = round_y + (info.y1 - info.y0) * scale;
+	quad.x0 = bx + kerning * resolution * scale;
+	quad.y0 = by;
+	quad.x1 = bx + (info.x1 - info.x0) * scale;
+	quad.y1 = by + (info.y1 - info.y0) * scale;
 
 	quad.s0 = info.x0;
 	quad.t0 = info.y1;

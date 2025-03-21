@@ -32,6 +32,7 @@ class Font {
 	public:
 
 		static constexpr int resolution = 128;
+		static constexpr float fraction = 0.7;
 
 	private:
 

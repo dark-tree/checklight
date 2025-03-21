@@ -39,14 +39,21 @@ inline void drawUserInterface(ImmediateRenderer& immediate, float width, float h
 	immediate.setRectRadius(5);
 	immediate.drawRect2D(500, 500, w, h);
 
-	immediate.setTextAlignment(VerticalAlignment::CENTER);
-	immediate.setTextAlignment(HorizontalAlignment::CENTER);
-	immediate.setColor(0, 0, 0);
-	immediate.setFont("assets/font/OpenSans-Variable.ttf");
-	immediate.setFontSize(20);
-	immediate.setTextBox(w, h);
-	immediate.drawString2D(500, 500, "Hello Lorem Ipsum Muggum\n World Ambassador Delight Silksong");
+	TextBakery bakery;
+	bakery.setFont("assets/font/OpenSans-Variable.ttf");
+	bakery.setSize(20);
+	bakery.setWrapping(true);
+	bakery.setAlignment(VerticalAlignment::CENTER);
+	bakery.setAlignment(HorizontalAlignment::CENTER);
+	bakery.setBounds(w, h);
 
+	BakedText text = bakery.bakeString(500, 500, "Hello Lorem Ipsum Muggum\n World Ambassador Delight Silksong");
+
+	immediate.setColor(200, 50, 150);
+	immediate.drawRect2D(800, 500, text.getMetrics().width, text.getMetrics().height);
+
+	immediate.setColor(0, 0, 0);
+	immediate.drawText2D(0, 0, text);
 
 
 	immediate.setSprite("assets/image/corners.png");
