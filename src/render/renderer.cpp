@@ -379,7 +379,7 @@ void Renderer::createAttachments() {
 		.setFormat(surface_format)
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 		.setUsage(VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-		.setClearColor(3 / 255.0f, 169 / 255.0f, 252 / 255.0f, 1.0f)
+		.setClearColor(0.0f, 0.0f, 0.0f, 1.0f)
 		.setSampleCount(VK_SAMPLE_COUNT_8_BIT)
 		.setDebugName("Color MSAA")
 		.createAttachment();
@@ -417,7 +417,7 @@ void Renderer::createRenderPasses() {
 		RenderPassBuilder builder;
 
 		Attachment::Ref color = builder.addAttachment(attachment_color_msaa)
-			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			.next();
 
@@ -427,7 +427,7 @@ void Renderer::createRenderPasses() {
 			.next();
 
 		Attachment::Ref screen = builder.addAttachment(attachment_screen)
-			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
 			.next();
 
@@ -455,12 +455,12 @@ void Renderer::createRenderPasses() {
 
 		RenderPassBuilder builder;
 
-		Attachment::Ref color = builder.addAttachment(attachment_screen)
+		Attachment::Ref color = builder.addAttachment(attachment_color_msaa)
 			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			.next();
 
-		Attachment::Ref depth = builder.addAttachment(attachment_depth)
+		Attachment::Ref depth = builder.addAttachment(attachment_depth_msaa)
 			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.next();
