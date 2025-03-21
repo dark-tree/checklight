@@ -186,7 +186,7 @@ void Renderer::pickDevice() {
 		}
 
 		if (!features_base->features.shaderInt64) {
-			printf(" * Feature 'shader uint64_t' unsupported!\n");
+			printf(" * Feature 'shader int64_t' unsupported!\n");
 			fail = true;
 		}
 
@@ -308,7 +308,7 @@ void Renderer::createSwapchain() {
 	auto images = info.getImageCount(4);
 	auto transform = info.getTransform();
 
-	const VkFormat format = attachment_color.getFormat();
+	const VkFormat format = attachment_screen.getFormat();
 	const VkColorSpaceKHR space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 
 	if (!info.isFormatSupported(format, space)) {
@@ -323,8 +323,10 @@ void Renderer::createSwapchain() {
 	this->immediate.setResolution(width(), height());
 
 	// allocate all attachments (except for color)
-	attachment_depth.allocate(device, extent.width, extent.height, allocator);
-	attachment_albedo.allocate(device, extent.width, extent.height, allocator);
+	attachment_depth.allocate(device, extent, allocator);
+	attachment_albedo.allocate(device, extent, allocator);
+	attachment_color_msaa.allocate(device, extent, allocator);
+	attachment_depth_msaa.allocate(device, extent, allocator);
 
 	// create framebuffers
 	pass_immediate.prepareFramebuffers(swapchain);
@@ -358,11 +360,11 @@ void Renderer::createAttachments() {
 	 */
 
 	// this attachment is special - we will never allocate it
-	attachment_color = TextureBuilder::begin()
+	attachment_screen = TextureBuilder::begin()
 		.setFormat(surface_format)
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
-		.setClearColor(3 / 255.0f, 169 / 255.0f, 252 / 255.0f, 1.0f)
-		.setDebugName("Color")
+		.setClearColor(0.0f, 0.0f, 0.0f, 1.0f)
+		.setDebugName("Screen")
 		.createAttachment();
 
 	attachment_depth = TextureBuilder::begin()
@@ -373,6 +375,24 @@ void Renderer::createAttachments() {
 		.setDebugName("Depth")
 		.createAttachment();
 
+	attachment_color_msaa = TextureBuilder::begin()
+		.setFormat(surface_format)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+		.setClearColor(3 / 255.0f, 169 / 255.0f, 252 / 255.0f, 1.0f)
+		.setSampleCount(VK_SAMPLE_COUNT_8_BIT)
+		.setDebugName("Color MSAA")
+		.createAttachment();
+
+	attachment_depth_msaa = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_D32_SFLOAT)
+		.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT)
+		.setClearDepth(1.0f)
+		.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+		.setSampleCount(VK_SAMPLE_COUNT_8_BIT)
+		.setDebugName("Depth MSAA")
+		.createAttachment();
+
 	attachment_albedo = TextureBuilder::begin()
 		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
@@ -381,7 +401,7 @@ void Renderer::createAttachments() {
 		.createAttachment();
 
 	// very important UwU
-	attachment_color.markSwapchainBacked();
+	attachment_screen.markSwapchainBacked();
 
 }
 
@@ -396,14 +416,19 @@ void Renderer::createRenderPasses() {
 
 		RenderPassBuilder builder;
 
-		Attachment::Ref color = builder.addAttachment(attachment_color)
-			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+		Attachment::Ref color = builder.addAttachment(attachment_color_msaa)
+			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			.next();
 
-		Attachment::Ref depth = builder.addAttachment(attachment_depth)
+		Attachment::Ref depth = builder.addAttachment(attachment_depth_msaa)
 			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+			.next();
+
+		Attachment::Ref screen = builder.addAttachment(attachment_screen)
+			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
 			.next();
 
 		builder.addDependency()
@@ -419,6 +444,7 @@ void Renderer::createRenderPasses() {
 		builder.addSubpass()
 			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+			.addResolve(screen, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			.next();
 
 		pass_immediate = builder.build(device, "Immediate");
@@ -429,7 +455,7 @@ void Renderer::createRenderPasses() {
 
 		RenderPassBuilder builder;
 
-		Attachment::Ref color = builder.addAttachment(attachment_color)
+		Attachment::Ref color = builder.addAttachment(attachment_screen)
 			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			.next();
@@ -578,6 +604,8 @@ void Renderer::lateClose() {
 	// close all attachments
 	attachment_depth.close(device);
 	attachment_albedo.close(device);
+	attachment_color_msaa.close(device);
+	attachment_depth_msaa.close(device);
 
 	swapchain.close();
 	closeFrames();
@@ -585,6 +613,10 @@ void Renderer::lateClose() {
 }
 
 void Renderer::lateInit() {
+	// msaa is what will be really used for rendering
+	// change the getSampleCount argument to control intend
+	msaa = physical->getSampleCount(VK_SAMPLE_COUNT_8_BIT);
+
 	createSwapchain();
 	createPipelines();
 	createFrames();

@@ -41,6 +41,10 @@ VkImageAspectFlags Attachment::getAspect() const {
 	return settings.view_info.subresourceRange.aspectMask;
 }
 
+VkSampleCountFlagBits Attachment::getSamples() const {
+	return settings.vk_samples;
+}
+
 const Texture& Attachment::getTexture() const {
 	return texture;
 }
@@ -53,8 +57,8 @@ void Attachment::markSwapchainBacked(){
 	magicity = true;
 }
 
-void Attachment::allocate(LogicalDevice& device, int width, int height, Allocator& allocator) {
-	Image image = allocator.allocateImage(Memory::DEVICE, width, height, getFormat(), settings.vk_usage, 1, 1, settings.debug_name.c_str());
+void Attachment::allocate(LogicalDevice& device, VkExtent2D extent, Allocator& allocator) {
+	Image image = allocator.allocateImage(Memory::DEVICE, extent.width, extent.height, getFormat(), settings.vk_usage, 1, 1, settings.vk_samples, settings.debug_name.c_str());
 	texture = settings.buildTexture(device, image);
 }
 

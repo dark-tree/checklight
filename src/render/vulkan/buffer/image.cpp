@@ -338,7 +338,7 @@ MutableImage ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& 
 	}
 
 	Buffer staging = allocator.allocateBuffer(Memory::STAGED, total, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, "Image Staging");
-	Image image = allocator.allocateImage(Memory::DEVICE, layer_width, layer_height, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, layer_count, levels(), "Untitled");
+	Image image = allocator.allocateImage(Memory::DEVICE, layer_width, layer_height, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, layer_count, levels(), VK_SAMPLE_COUNT_1_BIT, "Untitled");
 
 	MutableImage uploader {staging, image};
 	int level = 0;
