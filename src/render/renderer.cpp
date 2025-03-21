@@ -380,7 +380,7 @@ void Renderer::createAttachments() {
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 		.setUsage(VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 		.setClearColor(0.0f, 0.0f, 0.0f, 1.0f)
-		.setSampleCount(VK_SAMPLE_COUNT_8_BIT)
+		.setSampleCount(msaa)
 		.setDebugName("Color MSAA")
 		.createAttachment();
 
@@ -389,7 +389,7 @@ void Renderer::createAttachments() {
 		.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT)
 		.setClearDepth(1.0f)
 		.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-		.setSampleCount(VK_SAMPLE_COUNT_8_BIT)
+		.setSampleCount(msaa)
 		.setDebugName("Depth MSAA")
 		.createAttachment();
 
@@ -613,9 +613,6 @@ void Renderer::lateClose() {
 }
 
 void Renderer::lateInit() {
-	// msaa is what will be really used for rendering
-	// change the getSampleCount argument to control intend
-	msaa = physical->getSampleCount(VK_SAMPLE_COUNT_8_BIT);
 
 	createSwapchain();
 	createPipelines();
@@ -765,6 +762,10 @@ Renderer::Renderer(ApplicationParameters& parameters)
 
 	// render pass used during mesh rendering
 	mesh_constant = createPushConstant(VK_SHADER_STAGE_VERTEX_BIT, sizeof(MeshConstant));
+
+	// msaa is what will be really used for rendering
+	// change the getSampleCount argument to control intend
+	msaa = physical->getSampleCount(VK_SAMPLE_COUNT_8_BIT);
 
 	createAttachments();
 	createRenderPasses();
