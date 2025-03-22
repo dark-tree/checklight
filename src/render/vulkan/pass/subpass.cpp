@@ -20,7 +20,7 @@ uint32_t Subpass::getAttachmentCount() const {
 VkAttachmentReference SubpassBuilder::getReference(uint32_t attachment, VkImageLayout layout) {
 
 	if (attachment >= attachment_count) {
-		throw std::runtime_error {"Attachment index " + std::to_string(attachment) + " out of bounds, only " + std::to_string(attachment_count) + " have been defined up to this point!"};
+		FAULT("Attachment index ", attachment, " out of bounds, only ", attachment_count, " have been defined up to this point!");
 	}
 
 	preserve.append(attachment);

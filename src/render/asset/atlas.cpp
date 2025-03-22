@@ -3,6 +3,7 @@
 #include "render/api/commander.hpp"
 #include "render/system.hpp"
 #include "sprite.hpp"
+#include "shared/logger.hpp"
 
 /*
  * DynamicAtlas
@@ -54,7 +55,7 @@ void DynamicAtlas::resize() {
 	rewrite = false;
 	resized = false;
 	commander->complete();
-	printf("INFO: Dynamic atlas was resized!\n");
+	out::info("Dynamic atlas was resized!");
 }
 
 DynamicAtlas::DynamicAtlas() {
@@ -96,7 +97,7 @@ bool DynamicAtlas::upload(CommandRecorder& recorder) {
 		image.upload(recorder);
 
 		rewrite = false;
-		printf("DEBUG: Dynamic atlas was re-uploaded!\n");
+		out::debug("Dynamic atlas was re-uploaded!");
 	}
 
 	return dump;

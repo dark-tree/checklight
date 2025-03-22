@@ -116,7 +116,7 @@ void Allocator::close() {
 }
 
 void Allocator::print() {
-	printf("INFO: There are %d memory types and %d memory heaps\n", vk_properties.memoryTypeCount, vk_properties.memoryHeapCount);
+	out::info("There are %d memory types and %d memory heaps", vk_properties.memoryTypeCount, vk_properties.memoryHeapCount);
 
 	size_t free = 0;
 
@@ -128,7 +128,7 @@ void Allocator::print() {
 		}
 	}
 
-	printf("INFO: Found %lu MiB of device local free memory\n", free);
+	out::info("Found %lu MiB of device local free memory", free);
 }
 
 Buffer Allocator::allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags usage, const char* name) {

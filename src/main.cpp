@@ -1,15 +1,15 @@
 
 #include <gui/context.hpp>
 #include <gui/widget/panel.hpp>
+#include <shared/args.hpp>
+#include <shared/logger.hpp>
 
 #include "render/render.hpp"
 #include "input/input.hpp"
 #include "engine/engine.hpp"
 #include "gui/gui.hpp"
 
-int main() {
-	std::string path = std::filesystem::current_path().generic_string();
-	printf("INFO: Current working directory: %s\n", path.c_str());
+void entry(Args& args) {
 
 	ApplicationParameters parameters;
 	parameters.setName("My Checklight Game!");
@@ -53,7 +53,7 @@ int main() {
 	// slider->setBounds({600, 300, 100, 50});
 	//
 	// auto button = std::make_shared<ButtonWidget>("Hello", [] () noexcept {
-	// 	printf("DEBUG: Pressed button!\n");
+	// 	out::debug("Pressed button!");
 	// });
 	// button->setBounds({600, 400, 100, 50});
 	//
@@ -125,5 +125,25 @@ int main() {
 	}
 
 	RenderSystem::system.reset();
+
+}
+
+int main(int argc, const char* argv[]) {
+
+	Args args {argc, argv};
+
+	std::string path = std::filesystem::current_path().generic_string();
+	out::info("Current working directory: %s", path.c_str());
+
+	if (args.has("--verbose")) {
+		out::logger.setLogLevelMask(Logger::LEVEL_VERBOSE);
+	}
+
+	entry(args);
+
+	// Try to close all engine systems before the logger shuts itself of
+	RenderSystem::system.reset();
+
+	return 0;
 
 }

@@ -17,7 +17,7 @@ RaytracePipelineBuilder RaytracePipelineBuilder::of(const LogicalDevice& device)
 
 RaytracePipelineBuilder& RaytracePipelineBuilder::withRecursionDepth(int depth) {
 	if (depth > limit) {
-		throw std::runtime_error {"Requested recursion depth of " + std::to_string(depth) + " is bigger that the supported value of " + std::to_string(limit)};
+		FAULT("Requested recursion depth of ", depth, " is bigger that the supported value of ", limit);
 	}
 
 	this->depth = depth;

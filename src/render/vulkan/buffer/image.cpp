@@ -92,7 +92,7 @@ void ImageData::save(const std::string& path) const {
 	file::createPathDirectories(path);
 
 	if (!stbi_write_png(path.c_str(), w, h, c, pixels, w * c)) {
-		throw std::runtime_error {"Failed to save image '" + path + "'"};
+		FAULT("Failed to save image '", path, "'");
 	}
 }
 
@@ -138,7 +138,7 @@ ImageData ImageData::loadFromFile(const std::string& path, int channels) {
 	void* pixels = stbi_load(path.c_str(), &w, &h, &ignored, channels);
 
 	if (!pixels) {
-		throw std::runtime_error {"Failed to load image from '" + path + "'"};
+		FAULT("Failed to load image from '" + path + "'");
 	}
 
 	return {Type::STB_IMAGE, pixels, w, h, channels};

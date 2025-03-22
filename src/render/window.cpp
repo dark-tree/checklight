@@ -1,14 +1,13 @@
 
 #include "window.hpp"
+
+#include <shared/logger.hpp>
+
 #include "input/input.hpp"
 
 /*
  * WindowSystem
  */
-
-void WindowSystem::glfwErrorCallback(int code, const char* description) {
-	printf("[GLFW] Error %d: %s\n", code, description);
-}
 
 WindowSystem::WindowSystem() {
 	if (!glfwInit()) {
@@ -19,12 +18,12 @@ WindowSystem::WindowSystem() {
 		throw std::runtime_error {"Failed to find vulkan loader!"};
 	}
 
-	glfwSetErrorCallback(glfwErrorCallback);
+	glfwSetErrorCallback(Window::glfwErrorCallback);
 }
 
 WindowSystem::~WindowSystem() {
 	glfwTerminate();
-	printf("INFO: GLFW terminated\n");
+	out::info("GLFW terminated");
 }
 
 std::vector<const char*> WindowSystem::getRequiredExtensions() const {
@@ -129,14 +128,13 @@ void Window::glfwWindowResizeCallback(GLFWwindow* glfw_window, int width, int he
 }
 
 void Window::glfwErrorCallback(int error_code, const char* description) {
-	printf("ERROR: GLFW [%d]: %s\n", error_code, description);
+	out::error("GLFW [%d]: %s", error_code, description);
 }
 
 Window::Window(uint32_t w, uint32_t h, std::string title_string) {
 
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE);
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwSetErrorCallback(glfwErrorCallback);
 
 	#if !defined(NDEBUG)
 	title_string += " (Debug Build)";
@@ -166,7 +164,7 @@ Window::~Window() {
 		glfwDestroyCursor(cursor);
 	}
 
-	printf("INFO: Unloaded %d cursors\n", (int) cursors.size());
+	out::info("Unloaded %d cursors", (int) cursors.size());
 	cursors.clear();
 }
 
@@ -228,7 +226,7 @@ void Window::setMouseIcon(CursorIcon::Icon cursor) {
 	if (it != cursors.end()) {
 		pointer = it->second;
 	} else {
-		printf("DEBUG: Loaded standard cursor icon '%s'\n", CursorIcon::toString(cursor));
+		out::debug("Loaded standard cursor icon '%s'", CursorIcon::toString(cursor));
 		pointer = glfwCreateStandardCursor(cursor);
 		cursors[cursor] = pointer;
 	}

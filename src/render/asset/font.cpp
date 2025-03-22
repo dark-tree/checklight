@@ -5,6 +5,8 @@
 #include "msdfgen.h"
 #include "msdfgen-ext.h"
 #include <ft2build.h>
+#include <shared/logger.hpp>
+
 #include FT_FREETYPE_H
 
 /*
@@ -95,7 +97,7 @@ bool Font::loadUnicode(uint32_t unicode, float scale, float range) {
 Font::Font(std::shared_ptr<DynamicAtlas> atlas, std::string path, int weight) {
 
 	if (!freetype) {
-		throw std::runtime_error {"Failed to initialize FreeType library!"};
+		FAULT("Failed to initialize FreeType library!");
 	}
 
 	this->font = msdfgen::loadFont(freetype, path.c_str());
@@ -104,7 +106,7 @@ Font::Font(std::shared_ptr<DynamicAtlas> atlas, std::string path, int weight) {
 	this->path = path;
 
 	if (!font) {
-		throw std::runtime_error {"Failed to open font: '" + path + "'"};
+		FAULT("Failed to open font: '", path, "'!");
 	}
 
 	msdfgen::setFontVariationAxis(freetype, font, "Weight", weight);
@@ -113,9 +115,8 @@ Font::Font(std::shared_ptr<DynamicAtlas> atlas, std::string path, int weight) {
 	msdfgen::getFontMetrics(*metrics, font, msdfgen::FONT_SCALING_EM_NORMALIZED);
 
 	FT_Face face = getFreeType();
-	printf("INFO: Loaded font '%s' from '%s'\n", face->family_name, path.c_str());
-
-	printf("DEBUG: Line height is %fem\n", getLineHeight());
+	out::info("Loaded font '%s' from '%s'", face->family_name, path.c_str());
+	out::debug("Line height of '%s' is %fem", face->family_name, getLineHeight());
 }
 
 Font::~Font() {

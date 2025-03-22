@@ -21,11 +21,9 @@ void ImmediateRenderer::upload(CommandRecorder& recorder) {
 		throw std::runtime_error {"Texture mapping stack overflow!"};
 	}
 
-	#if ENGINE_DEBUG
 	if (dump) {
 		loader.getSharedAtlas()->getImage().save("debug/atlas.png");
 	}
-	#endif
 
 	recorder.memoryBarrier()
 		.first(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT)
