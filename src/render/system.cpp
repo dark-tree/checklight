@@ -89,7 +89,6 @@ std::vector<std::shared_ptr<RenderModel>> RenderSystem::importObj(const std::str
 	auto imported = importMaterials(path);
 
 	auto open_texture = [&](std::string texture_path) -> TextureHandle {
-
 		TextureManager& manager = materials.getTextureManager();
 
 		if (std::filesystem::exists(texture_path)) {
@@ -105,22 +104,6 @@ std::vector<std::shared_ptr<RenderModel>> RenderSystem::importObj(const std::str
 
 		FAULT("Failed to find referenced object texture '", texture_path, "'");
 	};
-
-	// auto open_texture = [&](std::string texture_path) -> TextureHandle {
-	// 	try {
-	// 		return materials.getTextureManager().createTexture(texture_path);
-	// 	}
-	// 	catch (const std::exception& e) {
-	// 		try {
-	// 			texture_path = path.substr(0, path.find_last_of("/\\") + 1) + texture_path;
-	// 			return materials.getTextureManager().createTexture(texture_path);
-	// 		}
-	// 		catch (const std::exception& e) {
-	// 			std::cout << e.what() << std::endl;
-	// 			return TextureHandle {};
-	// 		}
-	// 	}
-	// };
 
 	std::map<std::shared_ptr<ObjMaterial>, RenderMaterial> render_materials;
 
