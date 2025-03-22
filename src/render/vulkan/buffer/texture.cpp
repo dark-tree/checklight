@@ -61,8 +61,8 @@ void TextureDelegate::checkImageFormat(VkFormat provided) const {
 	}
 }
 
-TextureDelegate::TextureDelegate(VkImageUsageFlags usage, VkClearValue clear, VkImageViewCreateInfo view, VkSamplerCreateInfo sampler, const std::string& debug_name)
-: debug_name(debug_name), vk_usage(usage), vk_clear(clear), view_info(view), sampler_info(sampler) {}
+TextureDelegate::TextureDelegate(VkImageUsageFlags usage, VkClearValue clear, VkImageViewCreateInfo view, VkSamplerCreateInfo sampler, VkSampleCountFlagBits samples, const std::string& debug_name)
+: debug_name(debug_name), vk_usage(usage), vk_clear(clear), view_info(view), sampler_info(sampler), vk_samples(samples) {}
 
 Texture TextureDelegate::buildTexture(LogicalDevice& device, const Image& image) const {
 
@@ -194,13 +194,18 @@ TextureBuilder& TextureBuilder::setFormat(VkFormat format) {
 	return *this;
 }
 
+TextureBuilder& TextureBuilder::setSampleCount(VkSampleCountFlagBits samples) {
+	vk_samples = samples;
+	return *this;
+}
+
 TextureBuilder& TextureBuilder::setUsage(VkImageUsageFlags usage) {
 	vk_usage = usage;
 	return *this;
 }
 
 TextureDelegate TextureBuilder::createDelegate() const {
-	return {vk_usage, vk_clear, view_info, sampler_info, debug_name};
+	return {vk_usage, vk_clear, view_info, sampler_info, vk_samples, debug_name};
 }
 
 Texture TextureBuilder::createTexture(LogicalDevice& device, const Image& image) const {

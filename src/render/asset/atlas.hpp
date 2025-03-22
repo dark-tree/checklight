@@ -32,8 +32,8 @@ class DynamicAtlas {
 		/// Get the image data containing all submitted images
 		ImageData& getImage();
 
-		/// Add image to atlas and return its coordinates
-		Sprite submit(ImageData& image);
+		/// Add image (with margin) to atlas and return its coordinates
+		Sprite submitWithMargin(ImageData& image);
 
 		/// Upload (or recreate) underlying vulkan texture
 		bool upload(CommandRecorder& recorder);

@@ -140,6 +140,45 @@ int PhysicalDevice::getMaxRaytraceRecursionDepth() const {
 	return ray_properties.maxRayRecursionDepth;
 }
 
+VkSampleCountFlagBits PhysicalDevice::getSampleCount(VkSampleCountFlagBits preferred) const {
+	const auto& limits = getLimits();
+	VkSampleCountFlags supported = limits.framebufferColorSampleCounts & limits.framebufferDepthSampleCounts;
+
+	// short-circuit in most cases
+	if (supported & preferred) {
+		return preferred;
+	}
+
+	std::array bits = {
+		VK_SAMPLE_COUNT_1_BIT,
+		VK_SAMPLE_COUNT_2_BIT,
+		VK_SAMPLE_COUNT_4_BIT,
+		VK_SAMPLE_COUNT_8_BIT,
+		VK_SAMPLE_COUNT_16_BIT,
+		VK_SAMPLE_COUNT_32_BIT,
+		VK_SAMPLE_COUNT_64_BIT,
+	};
+
+	auto it = std::find(bits.begin(), bits.end(), preferred);
+
+	if (it == bits.end()) {
+		printf("ERROR: Failed to find preferred sample count in internal array!\n");
+		return VK_SAMPLE_COUNT_1_BIT;
+	}
+
+	while (it != bits.begin()) {
+		if (supported & *it) {
+			return *it;
+		}
+
+		it --;
+	}
+
+	printf("WARN: Multisampling not supported on selected device!\n");
+	return VK_SAMPLE_COUNT_1_BIT;
+}
+
+
 /*
  * Logical Device
  */

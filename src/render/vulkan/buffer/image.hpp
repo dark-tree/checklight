@@ -11,11 +11,6 @@ enum struct ImageScaling {
 	NEAREST
 };
 
-enum struct ImageExpand {
-	UNDEFINED,
-	COPY_BORDER,
-};
-
 class MutableImage;
 class Image;
 
@@ -89,7 +84,7 @@ class ImageData {
 		 * Creates an image copy expanded in every direction by given number of pixels,
 		 * the new pixels are filled according to the given mode
 		 */
-		ImageData expand(int margin, ImageExpand mode);
+		ImageData expand(int margin);
 
 		/**
 		 * Returns an image data buffer for the image pointed to by the

@@ -53,6 +53,9 @@ class Attachment {
 		/// Get the aspect flags of this attachment
 		VkImageAspectFlags getAspect() const;
 
+		/// Get per-pixel sample count of this image
+		VkSampleCountFlagBits getSamples() const;
+
 		/// Get the underlying texture, use only after a call to allocate()
 		const Texture& getTexture() const;
 
@@ -63,7 +66,7 @@ class Attachment {
 		void markSwapchainBacked();
 
 		/// Create the underlying texture
-		void allocate(LogicalDevice& device, int width, int height, Allocator& allocator);
+		void allocate(LogicalDevice& device, VkExtent2D extent, Allocator& allocator);
 
 		/// Close the underlying texture
 		void close(LogicalDevice device);

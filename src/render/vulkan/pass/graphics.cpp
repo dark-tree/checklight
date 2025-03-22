@@ -221,6 +221,7 @@ GraphicsPipelineBuilder& GraphicsPipelineBuilder::withRenderPass(RenderPass& ren
 	blending.attachmentCount = render_pass.getSubpass(subpass_index).getAttachmentCount();
 	vk_pass = render_pass.vk_pass;
 	subpass = subpass_index;
+	multisampling.rasterizationSamples = render_pass.samples;
 	return *this;
 }
 
