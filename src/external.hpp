@@ -24,6 +24,7 @@
 #include <filesystem>
 #include <utility>
 #include <thread>
+#include <array>
 
 // GLFW
 #define GLFW_INCLUDE_VULKAN
