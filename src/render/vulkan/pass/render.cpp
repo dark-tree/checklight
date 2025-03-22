@@ -42,7 +42,7 @@ void RenderPassBuilder::setSampleCount(VkSampleCountFlagBits samples) {
 	}
 
 	if (count != VK_SAMPLE_COUNT_1_BIT && count != samples) {
-		throw std::runtime_error {"Consistent sample count must be used within a render pass!"};
+		FAULT("Consistent sample count must be used within a render pass!");
 	}
 
 	this->count = samples;
@@ -129,7 +129,7 @@ RenderPass RenderPassBuilder::build(const LogicalDevice& device, const char* nam
 	VkRenderPass render_pass;
 
 	if (vkCreateRenderPass(device.getHandle(), &create_info, nullptr, &render_pass) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create render pass!"};
+		FAULT("Failed to create render pass!");
 	}
 
 	VulkanDebug::setDebugName(device.getHandle(), VK_OBJECT_TYPE_RENDER_PASS, render_pass, name);

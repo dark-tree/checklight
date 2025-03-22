@@ -26,14 +26,14 @@ CommandRecorder::CommandRecorder(VkCommandBuffer vk_buffer, VkCommandBufferUsage
 	info.pInheritanceInfo = nullptr;
 
 	if (vkBeginCommandBuffer(vk_buffer, &info) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to begin recording a command buffer!"};
+		FAULT("Failed to begin recording a command buffer!");
 	}
 
 }
 
 void CommandRecorder::done() {
 	if (vkEndCommandBuffer(vk_buffer) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to record a command buffer!"};
+		FAULT("Failed to record a command buffer!");
 	}
 }
 

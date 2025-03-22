@@ -12,7 +12,7 @@ Shader::Shader(LogicalDevice& device, const uint32_t* data, uint32_t size, VkSha
 	create_info.pCode = data;
 
 	if (vkCreateShaderModule(vk_device, &create_info, nullptr, &vk_module) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create shader module!"};
+		FAULT("Failed to create shader module!");
 	}
 
 	VulkanDebug::setDebugName(device.getHandle(), VK_OBJECT_TYPE_SHADER_MODULE, vk_module, unit.c_str());

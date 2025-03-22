@@ -1,5 +1,6 @@
 #include "board.hpp"
 #include "entity/pawns/spatialPawn.hpp"
+#include "shared/logger.hpp"
 
 /*
  * Board
@@ -30,35 +31,31 @@ std::shared_ptr<Pawn> Board::findPawnByID(uint32_t id, size_t position) {
 	if (query_result.size() > position) {
 		return query_result[position];
 	}
-	else {
-		throw std::runtime_error("trying to get nonexistent Pawn");
-	}
+
+	FAULT("Trying to get nonexistent Pawn!");
 }
 
 
 std::shared_ptr<Pawn> Board::findPawnByID(int32_t id) {
 	if (id < 0) {
-		throw std::runtime_error("Id can't be negative");
+		FAULT("ID can't be negative!");
 	}
-	else {
-		return pawns.findByID((uint32_t)id);
-	}
+
+	return pawns.findByID((uint32_t)id);
 }
 
 
 std::shared_ptr<Pawn> Board::findPawnByID(int32_t id, size_t position) {
 	if (id < 0) {
-		throw std::runtime_error("Id can't be negative");
+		FAULT("ID can't be negative!");
 	}
-	else {
-		std::vector query_result = pawns.findAllByID(static_cast<uint32_t>(id));
-		if (query_result.size() > position) {
-			return query_result[position];
-		}
-		else {
-			throw std::runtime_error("trying to get nonexistent Pawn");
-		}
+
+	std::vector query_result = pawns.findAllByID(static_cast<uint32_t>(id));
+	if (query_result.size() > position) {
+		return query_result[position];
 	}
+
+	FAULT("Trying to get nonexistent Pawn!");
 }
 
 
@@ -77,9 +74,8 @@ std::shared_ptr<Pawn> Board::findPawnByName(const std::string& name, size_t posi
 	if (query_result.size() > position) {
 		return query_result[position];
 	}
-	else {
-		throw std::runtime_error("trying to get nonexistent Pawn");
-	}
+
+	FAULT("Trying to get nonexistent Pawn!");
 }
 
 

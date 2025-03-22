@@ -50,7 +50,7 @@ Framebuffer FramebufferBuilder::build(VkDevice vk_device, uint32_t presentation_
 	VkFramebuffer framebuffer;
 
 	if (vkCreateFramebuffer(vk_device, &create_info, nullptr, &framebuffer) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create a framebuffer!"};
+		FAULT("Failed to create a framebuffer!");
 	}
 
 	return {framebuffer, vk_device, presentation_index};
@@ -87,7 +87,7 @@ void FramebufferSet::construct(VkRenderPass vk_pass, VkDevice vk_device, const S
 	views.reserve(attachments.size());
 
 	if (attachments.empty()) {
-		throw std::runtime_error {"Can't create an empty framebuffer set!"};
+		FAULT("Can't create an empty framebuffer set!");
 	}
 
 	std::vector<VkImageView> surfaces;
@@ -155,7 +155,7 @@ void FramebufferSet::construct(VkRenderPass vk_pass, VkDevice vk_device, const S
 
 Framebuffer& FramebufferSet::byPresentationIndex(uint32_t index) {
 	if (framebuffers.empty()) {
-		throw std::runtime_error {"No framebuffer available!"};
+		FAULT("No framebuffer available!");
 	}
 
 	return framebuffers.at(index % framebuffers.size());

@@ -98,7 +98,7 @@ void ImageData::save(const std::string& path) const {
 
 ImageData ImageData::expand(int margin) {
 	if (margin < 0) {
-		throw std::runtime_error {"Invalid image margin!"};
+		FAULT("Invalid image margin ", margin, "!");
 	}
 
 	ImageData result = ImageData::allocate(w + margin * 2, h + margin * 2, channels());
@@ -222,7 +222,7 @@ void ManagedImageDataSet::resize(int ws, int hs) {
 
 	// once we have layers you can no longer resize the image vertically
 	if ((layer != 0) && (hs != 1)) {
-		throw std::runtime_error {"Can't resize the image vertically after a layer was already added!"};
+		FAULT("Can't resize the image vertically after a layer was already added!");
 	}
 
 	// actually resize all the image levels
@@ -258,7 +258,7 @@ void ManagedImageDataSet::addLayer(ImageData image, ImageScaling scaling) {
 
 	// width never changes when adding layers, the image only gets longer
 	if (image.width() != level(0).width() || image.height() != height) {
-		throw std::runtime_error {"Image dimensions don't match the sprite array!"};
+		FAULT("Image dimensions don't match the sprite array!");
 	}
 
 	// check the "capacity", if too small, double the image in height
@@ -330,7 +330,7 @@ MutableImage ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& 
 
 	// verify the given format again the first level (all levels are the same)
 	if (getFormatInfo(format).size != (size_t) level(0).channels()) {
-		throw std::runtime_error {"The specified image format doesn't match pixel size!"};
+		FAULT("The specified image format doesn't match pixel size!");
 	}
 
 	Buffer staging = allocator.allocateBuffer(Memory::STAGED, total, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, "Image Staging");
@@ -453,7 +453,7 @@ ImageView ImageView::create(VkDevice device, const Image& image, VkImageViewType
 	VkImageView view;
 
 	if (vkCreateImageView(device, &create_info, nullptr, &view) != VK_SUCCESS) {
-		throw std::runtime_error ("Failed to create image view!");
+		FAULT("Failed to create image view!");
 	}
 
 	return ImageView {view};

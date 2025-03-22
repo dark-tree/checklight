@@ -44,7 +44,7 @@ VkSubpassDescription SubpassBuilder::finalize(const std::vector<uint32_t>& prese
 	uint32_t resolve_count = resolves.size();
 
 	if (resolve_count != 0 && resolve_count != color_count) {
-		throw std::runtime_error {"Invalid number of resolve attachments! Must be 0 or equal to the number of color attachments!"};
+		FAULT("Invalid number of resolve attachments! Must be 0 or equal to the number of color attachments!");
 	}
 
 	description.inputAttachmentCount = input_count;

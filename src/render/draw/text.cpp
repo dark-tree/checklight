@@ -125,7 +125,7 @@ BakedText TextBakery::bakeString(float x, float y, const std::string& string) {
 BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& unicodes) {
 
 	if (!font) {
-		throw std::runtime_error {"No font set!"};
+		FAULT("No font set!");
 	}
 
 	float horizontal = 0;
@@ -170,7 +170,7 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 		prev = 0;
 	};
 
-	for (int i = 0; i < unicodes.size(); i++) {
+	for (int i = 0; i < (int) unicodes.size(); i++) {
 		const uint32_t unicode = unicodes[i];
 
 		if (unicode == ' ') {

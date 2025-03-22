@@ -228,7 +228,7 @@ GraphicsPipelineBuilder& GraphicsPipelineBuilder::withRenderPass(RenderPass& ren
 GraphicsPipeline GraphicsPipelineBuilder::build() {
 
 	if (subpass == -1) {
-		throw std::runtime_error {"Render pass needs to be specified!"};
+		FAULT("Render pass needs to be specified!");
 	}
 
 	finalize();
@@ -270,7 +270,7 @@ GraphicsPipeline GraphicsPipelineBuilder::build() {
 	VkPipeline pipeline;
 
 	if (vkCreateGraphicsPipelines(vk_device, VK_NULL_HANDLE, 1, &create_info, nullptr, &pipeline) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create graphics pipeline!"};
+		FAULT("Failed to create graphics pipeline!");
 	}
 
 	return {PipelineType::RASTER, pipeline, pipeline_layout, vk_device};

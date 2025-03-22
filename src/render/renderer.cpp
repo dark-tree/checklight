@@ -82,7 +82,7 @@ void Renderer::createInstance(ApplicationParameters& parameters) {
 	VkInstance vk_instance;
 
 	if (vkCreateInstance(&create_info, nullptr, &vk_instance) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create Vulkan instance!"};
+		FAULT("Failed to create Vulkan instance!");
 	}
 
 	// store for later use
@@ -95,7 +95,7 @@ void Renderer::createInstance(ApplicationParameters& parameters) {
 
 		// create the messenger
 		if (Proxy::vkCreateDebugUtilsMessengerEXT(vk_instance, &messenger_info, nullptr, &messenger) != VK_SUCCESS) {
-			throw std::runtime_error {"Failed to create debug messenger!"};
+			FAULT("Failed to create debug messenger!");
 		}
 	#endif
 
@@ -214,7 +214,7 @@ void Renderer::pickDevice() {
 		out::logger.print(" * No valid queue!\n");
 	}
 
-	throw std::runtime_error {"No device could have been selected!"};
+	FAULT("No device could have been selected!");
 }
 
 void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family queue_family, std::vector<const char*>& extensions, std::vector<const char*>& optionals) {
@@ -284,7 +284,7 @@ void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family que
 	VkDevice vk_device;
 
 	if (vkCreateDevice(physical->getHandle(), &create_info, nullptr, &vk_device) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create logical device!"};
+		FAULT("Failed to create logical device!");
 	}
 
 	// load all device functions
@@ -310,7 +310,7 @@ void Renderer::createSwapchain() {
 	const VkColorSpaceKHR space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 
 	if (!info.isFormatSupported(format, space)) {
-		throw std::runtime_error {"The preferred surface format is not supported!"};
+		FAULT("The preferred surface format is not supported!");
 	}
 
 	SwapchainBuilder builder {format, space, extent, images, transform};
@@ -693,7 +693,7 @@ Semaphore Renderer::createSemaphore() {
 
 PushConstant Renderer::createPushConstant(VkShaderStageFlags stages, uint32_t bytes) {
 	if (bytes > physical->getLimits().maxPushConstantsSize) {
-		throw std::runtime_error {"The reqested push constant is too large!"};
+		FAULT("The requested push constant is too large!");
 	}
 
 	return {stages, bytes};

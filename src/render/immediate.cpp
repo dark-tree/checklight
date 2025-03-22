@@ -18,7 +18,7 @@ void ImmediateRenderer::upload(CommandRecorder& recorder) {
 	bool dump = loader.getSharedAtlas()->upload(recorder);
 
 	if (mapping != 0) {
-		throw std::runtime_error {"Texture mapping stack overflow!"};
+		FAULT("Texture mapping stack overflow!");
 	}
 
 	if (dump) {
@@ -51,7 +51,7 @@ void ImmediateRenderer::clear() {
 
 void ImmediateRenderer::drawVertex2D(float x, float y) {
 	if (!mapping) {
-		throw std::runtime_error {"No texture mapped!"};
+		FAULT("No texture mapped!");
 	}
 
 	float du = sprite.u2 - sprite.u1;

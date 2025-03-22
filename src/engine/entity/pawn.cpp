@@ -2,6 +2,7 @@
 #include "pawns/rootPawn.hpp"
 #include "../pawnTree.hpp"
 #include "../board.hpp"
+#include "shared/logger.hpp"
 
 /*
  * Pawn
@@ -82,17 +83,15 @@ void Pawn::addChild(std::shared_ptr<Pawn> new_child) {
 	children.push_back(new_child); //cannot be std move (it would destroy the argument)
 	if (isRooted()) {
 		if (rootPawn.expired()) {
-			throw std::runtime_error("It shouldnt be expired after isRooted() function, sth went wrong");
+			FAULT("Root Pawn shouldn't have expired after isRooted() call!");
 		}
-		else {
-			PawnTree* pt = rootPawn.lock()->getTree();
-			if (pt == nullptr) {
-				throw std::runtime_error("It shouldnt be null here, all rootPawns should be a children of one pawnTree");
-			}
-			else {
-				pt->mountPawn(new_child);
-			}
+
+		PawnTree* pt = rootPawn.lock()->getTree();
+		if (pt == nullptr) {
+			FAULT("Pawn Tree shouldn't be null, all Root Pawns should be children of one Pawn Tree!");
 		}
+
+		pt->mountPawn(new_child);
 	}
 }
 

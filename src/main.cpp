@@ -9,7 +9,7 @@
 #include "engine/engine.hpp"
 #include "gui/gui.hpp"
 
-void entry(Args& args) {
+static void entry(Args& args) {
 
 	ApplicationParameters parameters;
 	parameters.setName("My Checklight Game!");

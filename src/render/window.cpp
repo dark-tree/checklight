@@ -11,11 +11,11 @@
 
 WindowSystem::WindowSystem() {
 	if (!glfwInit()) {
-		throw std::runtime_error {"Failed to initialize GLFW!"};
+		FAULT("Failed to initialize GLFW!");
 	}
 
 	if (!glfwVulkanSupported()) {
-		throw std::runtime_error {"Failed to find vulkan loader!"};
+		FAULT("Failed to find Vulkan loader!");
 	}
 
 	glfwSetErrorCallback(Window::glfwErrorCallback);
@@ -142,7 +142,7 @@ Window::Window(uint32_t w, uint32_t h, std::string title_string) {
 
 	handle = glfwCreateWindow(w, h, title_string.c_str(), nullptr, nullptr);
 	if (handle == nullptr) {
-		throw std::runtime_error {"Failed to create GLFW window!"};
+		FAULT("Failed to create GLFW window!");
 	}
 
 	glfwSetWindowUserPointer(handle, this);

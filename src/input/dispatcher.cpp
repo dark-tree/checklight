@@ -1,5 +1,6 @@
 
 #include "dispatcher.hpp"
+#include "shared/logger.hpp"
 
 /*
  * InputDispatcher
@@ -7,7 +8,7 @@
 
 void InputDispatcher::registerListener(const std::shared_ptr<InputListener>& listener, int priority) {
 	if (!listener) {
-		throw std::runtime_error {"Given input listener is null!"};
+		FAULT("Given input listener is null!");
 	}
 
 	listeners.insert(priority, listener);

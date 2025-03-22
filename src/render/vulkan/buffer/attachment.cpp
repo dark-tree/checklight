@@ -21,7 +21,7 @@ Attachment::Attachment(const TextureDelegate& settings)
 	this->settings.debug_name += " Attachment";
 
 	if (settings.view_info.format == VK_FORMAT_UNDEFINED) {
-		throw std::runtime_error {"Attachment format can't be left undefined!"};
+		FAULT("Attachment format can't be left undefined!");
 	}
 }
 

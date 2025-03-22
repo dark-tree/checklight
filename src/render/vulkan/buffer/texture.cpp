@@ -57,7 +57,7 @@ void TextureDelegate::checkImageFormat(VkFormat provided) const {
 	}
 
 	if (view_info.format != provided) {
-		throw std::runtime_error {"Image format incompatible, was the contain set intentionally?"};
+		FAULT("Image format incompatible, was the format set intentionally?");
 	}
 }
 
@@ -81,11 +81,11 @@ Texture TextureDelegate::buildTexture(LogicalDevice& device, const Image& image)
 	VkSampler sampler;
 
 	if (vkCreateImageView(device.getHandle(), &view_info, nullptr, &view) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create image view!"};
+		FAULT("Failed to create image view!");
 	}
 
 	if (vkCreateSampler(device.getHandle(), &sampler_info, nullptr, &sampler) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create image sampler!"};
+		FAULT("Failed to create image sampler!");
 	}
 
 	VulkanDebug::beginLifetime(VK_OBJECT_TYPE_IMAGE_VIEW, view, debug_name.c_str());

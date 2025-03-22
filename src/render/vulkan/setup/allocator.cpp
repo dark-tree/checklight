@@ -105,7 +105,7 @@ Allocator::Allocator(LogicalDevice& logical, PhysicalDevice& physical, Instance&
 	create_info.pAllocationCallbacks = nullptr;
 
 	if (vmaCreateAllocator(&create_info, &vma_allocator) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create allocator!"};
+		FAULT("Failed to create allocator!");
 	}
 
 	vkGetPhysicalDeviceMemoryProperties(physical.getHandle(), &vk_properties);
@@ -145,7 +145,7 @@ Buffer Allocator::allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags
 	VmaAllocation allocation;
 
 	if (vmaCreateBuffer(vma_allocator, &create_info, &allocation_info, &buffer, &allocation, nullptr) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to allocate buffer!"};
+		FAULT("Failed to allocate buffer!");
 	}
 
 	if (!name) {
@@ -181,7 +181,7 @@ Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat fo
 	VmaAllocation allocation;
 
 	if (vmaCreateImage(vma_allocator, &create_info, &allocation_info, &image, &allocation, nullptr) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to allocate image!"};
+		FAULT("Failed to allocate image!");
 	}
 
 	if (!name) {
@@ -210,7 +210,7 @@ AccelStruct Allocator::allocateAcceleration(VkAccelerationStructureTypeKHR type,
 	VkAccelerationStructureKHR structure;
 
 	if (Proxy::vkCreateAccelerationStructureKHR(vk_device, &create_info, nullptr, &structure) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to allocate acceleration structure!"};
+		FAULT("Failed to allocate acceleration structure!");
 	}
 
 	VulkanDebug::beginLifetime(VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR, structure, name);

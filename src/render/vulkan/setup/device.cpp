@@ -162,7 +162,7 @@ VkSampleCountFlagBits PhysicalDevice::getSampleCount(VkSampleCountFlagBits prefe
 	auto it = std::find(bits.begin(), bits.end(), preferred);
 
 	if (it == bits.end()) {
-		printf("ERROR: Failed to find preferred sample count in internal array!\n");
+		out::error("Failed to find preferred sample count in internal array!");
 		return VK_SAMPLE_COUNT_1_BIT;
 	}
 
@@ -174,7 +174,7 @@ VkSampleCountFlagBits PhysicalDevice::getSampleCount(VkSampleCountFlagBits prefe
 		it --;
 	}
 
-	printf("WARN: Multisampling not supported on selected device!\n");
+	out::warn("Multisampling not supported on selected device!");
 	return VK_SAMPLE_COUNT_1_BIT;
 }
 
