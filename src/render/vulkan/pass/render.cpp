@@ -6,8 +6,8 @@
  * RenderPass
  */
 
-RenderPass::RenderPass(VkDevice vk_device, VkRenderPass vk_pass, std::vector<VkClearValue>& values, std::vector<Subpass>& subpass_info, FramebufferSet& framebuffer)
-: framebuffer(framebuffer), vk_device(vk_device), vk_pass(vk_pass), values(values), subpasses(subpass_info) {
+RenderPass::RenderPass(VkDevice vk_device, VkRenderPass vk_pass, std::vector<VkClearValue>& values, std::vector<Subpass>& subpass_info, FramebufferSet& framebuffer, VkSampleCountFlagBits samples)
+: framebuffer(framebuffer), vk_device(vk_device), vk_pass(vk_pass), values(values), subpasses(subpass_info), samples(samples) {
 	values.shrink_to_fit();
 }
 
@@ -36,15 +36,28 @@ VkFramebuffer RenderPass::getFramebuffer(uint32_t i) {
  * RenderPassBuilder
  */
 
+void RenderPassBuilder::setSampleCount(VkSampleCountFlagBits samples) {
+	if (samples == VK_SAMPLE_COUNT_1_BIT) {
+		return;
+	}
+
+	if (count != VK_SAMPLE_COUNT_1_BIT && count != samples) {
+		throw std::runtime_error {"Consistent sample count must be used within a render pass!"};
+	}
+
+	this->count = samples;
+}
+
 Attachment::Ref RenderPassBuilder::addAttachment(AttachmentBuilder& builder) {
 	attachments.push_back(builder);
 	framebuffer.addAttachment(builder.attachment);
 	return Attachment::Ref::of(attachments.size() - 1);
 }
 
-AttachmentBuilder RenderPassBuilder::addAttachment(const Attachment& attachment, VkSampleCountFlagBits samples) {
+AttachmentBuilder RenderPassBuilder::addAttachment(const Attachment& attachment) {
 	values.push_back(attachment.getClearValue());
-	return {*this, attachment, samples};
+	setSampleCount(attachment.getSamples());
+	return {*this, attachment};
 }
 
 RenderPassBuilder& RenderPassBuilder::addSubpass(SubpassBuilder& builder) {
@@ -122,6 +135,6 @@ RenderPass RenderPassBuilder::build(const LogicalDevice& device, const char* nam
 	VulkanDebug::setDebugName(device.getHandle(), VK_OBJECT_TYPE_RENDER_PASS, render_pass, name);
 	framebuffer.setDebugName(name);
 
-	return {device.getHandle(), render_pass, values, subpass_info, framebuffer};
+	return {device.getHandle(), render_pass, values, subpass_info, framebuffer, count};
 
 }

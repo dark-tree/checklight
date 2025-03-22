@@ -96,7 +96,7 @@ void ImageData::save(const std::string& path) const {
 	}
 }
 
-ImageData ImageData::expand(int margin, ImageExpand mode) {
+ImageData ImageData::expand(int margin) {
 	if (margin < 0) {
 		throw std::runtime_error {"Invalid image margin!"};
 	}
@@ -109,25 +109,21 @@ ImageData ImageData::expand(int margin, ImageExpand mode) {
 		return result;
 	}
 
-	if (mode == ImageExpand::COPY_BORDER) {
+	for (int i = 1; i <= margin; i ++) {
 
-		for (int i = 1; i <= margin; i ++) {
+		int start = margin - i;
+		int end = margin + i;
+		int last = end - 1;
 
-			int start = margin - i;
-			int end = margin + i;
-			int last = end - 1;
-
-			for (int y = start; y < (h + end); y ++) {
-				memcpy(result.pixel(start, y), result.pixel(start + 1, y), channels());
-				memcpy(result.pixel(w + last, y), result.pixel(w + last - 1, y), channels());
-			}
-
-			for (int x = start; x < (w + end); x ++) {
-				memcpy(result.pixel(x, start), result.pixel(x, start + 1), channels());
-				memcpy(result.pixel(x, h + last), result.pixel(x, h + last - 1), channels());
-			}
+		for (int y = start; y < (h + end); y ++) {
+			memcpy(result.pixel(start, y), result.pixel(start + 1, y), channels());
+			memcpy(result.pixel(w + last, y), result.pixel(w + last - 1, y), channels());
 		}
 
+		for (int x = start; x < (w + end); x ++) {
+			memcpy(result.pixel(x, start), result.pixel(x, start + 1), channels());
+			memcpy(result.pixel(x, h + last), result.pixel(x, h + last - 1), channels());
+		}
 	}
 
 	return result;
@@ -338,7 +334,7 @@ MutableImage ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& 
 	}
 
 	Buffer staging = allocator.allocateBuffer(Memory::STAGED, total, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, "Image Staging");
-	Image image = allocator.allocateImage(Memory::DEVICE, layer_width, layer_height, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, layer_count, levels(), "Untitled");
+	Image image = allocator.allocateImage(Memory::DEVICE, layer_width, layer_height, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, layer_count, levels(), VK_SAMPLE_COUNT_1_BIT, "Untitled");
 
 	MutableImage uploader {staging, image};
 	int level = 0;

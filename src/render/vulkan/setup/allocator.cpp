@@ -157,7 +157,7 @@ Buffer Allocator::allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags
 	return {buffer, {vma_allocator, allocation}, bytes};
 }
 
-Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels, const char* name) {
+Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels, VkSampleCountFlagBits samples, const char* name) {
 	VmaAllocationCreateInfo allocation_info {};
 	fromMemoryGroup(&allocation_info, memory);
 
@@ -174,7 +174,7 @@ Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat fo
 	create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	create_info.usage = usage;
 	create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+	create_info.samples = samples;
 	create_info.flags = 0;
 
 	VkImage image;

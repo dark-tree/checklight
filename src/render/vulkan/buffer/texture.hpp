@@ -41,6 +41,7 @@ class TextureDelegate {
 		VkClearValue vk_clear {};
 		VkImageViewCreateInfo view_info {};
 		VkSamplerCreateInfo sampler_info {};
+		VkSampleCountFlagBits vk_samples;
 
 		friend class TextureBuilder;
 		friend class Attachment;
@@ -50,7 +51,7 @@ class TextureDelegate {
 	public:
 
 		TextureDelegate() = default;
-		TextureDelegate(VkImageUsageFlags usage, VkClearValue clear, VkImageViewCreateInfo view, VkSamplerCreateInfo sampler, const std::string& debug_name);
+		TextureDelegate(VkImageUsageFlags usage, VkClearValue clear, VkImageViewCreateInfo view, VkSamplerCreateInfo sampler, VkSampleCountFlagBits samples, const std::string& debug_name);
 
 		Texture buildTexture(LogicalDevice& device, const Image& image) const;
 		Attachment buildAttachment();
@@ -66,6 +67,7 @@ class TextureBuilder {
 		VkClearValue vk_clear {};
 		VkImageViewCreateInfo view_info {};
 		VkSamplerCreateInfo sampler_info {};
+		VkSampleCountFlagBits vk_samples = VK_SAMPLE_COUNT_1_BIT;
 
 	public:
 
@@ -110,6 +112,9 @@ class TextureBuilder {
 
 		/// Relevant for attachments only, set the expected image format
 		TextureBuilder& setFormat(VkFormat format);
+
+		/// Relevant for attachments only, set the per-pixel sample count
+		TextureBuilder& setSampleCount(VkSampleCountFlagBits samples);
 
 		/// Relevant for attachments only, set attachment image usage
 		TextureBuilder& setUsage(VkImageUsageFlags usage);

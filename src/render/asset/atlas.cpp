@@ -73,13 +73,13 @@ ImageData & DynamicAtlas::getImage() {
 	return atlas;
 }
 
-Sprite DynamicAtlas::submit(ImageData& image) {
+Sprite DynamicAtlas::submitWithMargin(ImageData& image) {
 	rewrite = true;
-	ImageData extended = image.expand(1, ImageExpand::COPY_BORDER);
+
+	ImageData extended = image.expand(4);
 	Sprite sprite = packSprite(extended);
 	extended.close();
-
-	return sprite.shrink(1);
+	return sprite.shrink(4);
 }
 
 bool DynamicAtlas::upload(CommandRecorder& recorder) {
@@ -117,7 +117,7 @@ DynamicImageAtlas::DynamicImageAtlas(const std::shared_ptr<DynamicAtlas>& atlas)
 
 	ImageData blank = ImageData::allocate(16, 16);
 	blank.clear({255, 255, 255, 255});
-	sprites[BLANK_SPRITE] = atlas->submit(blank);
+	sprites[BLANK_SPRITE] = atlas->submitWithMargin(blank);
 	blank.close();
 
 }
@@ -130,7 +130,7 @@ Sprite DynamicImageAtlas::getOrLoad(const std::string& path) {
 	}
 
 	ImageData data = ImageData::loadFromFile(path, 4);
-	Sprite sprite = atlas->submit(data);
+	Sprite sprite = atlas->submitWithMargin(data);
 	data.close();
 
 	sprites[path] = sprite;

@@ -94,8 +94,10 @@ class Renderer {
 		Shader shader_blit_fragment;
 
 		// attachments
-		Attachment attachment_color;
+		Attachment attachment_screen;
 		Attachment attachment_depth;
+		Attachment attachment_color_msaa;
+		Attachment attachment_depth_msaa;
 		Attachment attachment_albedo;
 
 		// descriptors
@@ -125,6 +127,9 @@ class Renderer {
 
 		// push constants
 		PushConstant mesh_constant;
+
+		// current multisampling anti-aliasing setting
+		VkSampleCountFlagBits msaa;
 
 	private:
 
