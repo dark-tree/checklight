@@ -102,7 +102,7 @@ void FramebufferSet::construct(VkRenderPass vk_pass, VkDevice vk_device, const S
 
 			// there can only be one swapchain-backed attachment per framebuffer
 			if (screen != -1) {
-				throw std::runtime_error {"Swapchain attachment already assigned to framebuffer at index: " + std::to_string(screen)};
+				FAULT("Swapchain attachment already assigned to framebuffer at index: ", screen);
 			}
 
 			// nothing to View here! (ha! did you get the pun?)
@@ -113,7 +113,7 @@ void FramebufferSet::construct(VkRenderPass vk_pass, VkDevice vk_device, const S
 		}
 
 		if (view == VK_NULL_HANDLE) {
-			throw std::runtime_error {"Null handle found during framebuffer creation at index: " + std::to_string(i)};
+			FAULT("Null handle found during framebuffer creation at index: ", i);
 		}
 
 		views.push_back(view);

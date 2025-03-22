@@ -3,6 +3,8 @@
 #include <vstl.hpp>
 
 // checklight include
+#include <shared/args.hpp>
+
 #include "shared/pyramid.hpp"
 #include "shared/weighed.hpp"
 
@@ -126,5 +128,34 @@ TEST(util_weighed_set_repeated) {
 	set.remove(321);
 
 	CHECK(set.size(), 3);
+
+};
+
+TEST(util_program_args) {
+
+	const char* argv[] = {
+		"program.exe", "--verbose", "--test", "value", "--another", "-f", "X", "-r", "-w"
+	};
+
+	int argc = sizeof(argv) / sizeof(char*);
+
+	Args args(argc, argv);
+
+	CHECK(args.name(), "program.exe");
+
+	ASSERT(args.has("--verbose"));
+	ASSERT(args.has("--test"));
+	ASSERT(args.has("--another"));
+	ASSERT(args.has("-f"));
+	ASSERT(args.has("-r"));
+	ASSERT(args.has("-w"));
+
+	CHECK(args.get("--test"), "value");
+	CHECK(args.get("-f"), "X");
+
+	CHECK(args.get("--verbose"), "");
+	CHECK(args.get("--another"), "");
+	CHECK(args.get("-r"), "");
+	CHECK(args.get("-w"), "");
 
 };

@@ -10,6 +10,7 @@
 #include "render/api/vertex.hpp"
 #include "render/api/model.hpp"
 #include "render/vulkan/shader/group.hpp"
+#include "shared/logger.hpp"
 
 /*
  * Renderer
@@ -22,13 +23,11 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanMessageCallback(VkDebugUtilsMessageSeverity
 VkBool32 Renderer::onMessage(VkDebugUtilsMessageSeverityFlagBitsEXT severity, const VkDebugUtilsMessengerCallbackDataEXT* data) {
 
 	if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-		printf("ERROR: %s\n", data->pMessage);
-		return VK_FALSE;
+		out::error("%s", data->pMessage);
 	}
 
 	if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-		printf("WARN: %s\n", data->pMessage);
-		return VK_FALSE;
+		out::warn("%s", data->pMessage);
 	}
 
 	return VK_FALSE;
@@ -55,7 +54,7 @@ void Renderer::createInstance(ApplicationParameters& parameters) {
 	#if ENGINE_DEBUG
 		layers.push_back("VK_LAYER_KHRONOS_validation");
 		extension.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-		printf("INFO: Starting renderer in debug mode, performance will be affected!\n");
+		out::info("Starting renderer in debug mode, performance will be affected!");
 	#endif
 
 	// configure the messenger, this will later be used during instance creation and right after it
@@ -107,9 +106,9 @@ void Renderer::createInstance(ApplicationParameters& parameters) {
 void Renderer::pickDevice() {
 
 	auto devices = instance.getDevices();
-	printf("INFO: Detected %d physical devices\n", (int) devices.size());
+	out::info("Detected %d physical devices", (int) devices.size());
 
-	std::vector<const char*> required_extensions = {
+	std::vector required_extensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 		VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
 		VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
@@ -123,19 +122,19 @@ void Renderer::pickDevice() {
 
 	for (auto& device : devices) {
 
-		printf("INFO: Checking device '%s'...\n", device->getName());
+		out::info("Checking device '%s'...", device->getName());
 		bool fail = false;
 
 		// we need the device to be able to render to our window
 		if (!device->canUseSurface(surface)) {
-			printf(" * Can't use window's surface!\n");
+			out::logger.print(" * Can't use window's surface!\n");
 			fail = true;
 		}
 
 		// check for support of required extensions
 		for (auto name : required_extensions) {
 			if (!device->hasExtension(name)) {
-				printf(" * Missing required extension '%s'!\n", name);
+				out::logger.print(" * Missing required extension '%s'!\n", name);
 				fail = true;
 			}
 		}
@@ -146,47 +145,47 @@ void Renderer::pickDevice() {
 		auto* features_accel = (const VkPhysicalDeviceAccelerationStructureFeaturesKHR*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR);
 
 		if (!features_vk12->bufferDeviceAddress) {
-			printf(" * Feature 'buffer device address' unsupported!\n");
+			out::logger.print(" * Feature 'buffer device address' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_ray->rayTracingPipeline) {
-			printf(" * Feature 'ray tracing pipeline' unsupported!\n");
+			out::logger.print(" * Feature 'ray tracing pipeline' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_accel->accelerationStructure) {
-			printf(" * Feature 'acceleration structure' unsupported!\n");
+			out::logger.print(" * Feature 'acceleration structure' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_vk12->scalarBlockLayout) {
-			printf(" * Feature 'scalar block layout' unsupported!\n");
+			out::logger.print(" * Feature 'scalar block layout' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_vk12->storageBuffer8BitAccess) {
-			printf(" * Feature 'storage buffer 8bit access' unsupported!\n");
+			out::logger.print(" * Feature 'storage buffer 8bit access' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_vk12->shaderInt8) {
-			printf(" * Feature 'shader int8_t' unsupported!\n");
+			out::logger.print(" * Feature 'shader int8_t' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_vk12->runtimeDescriptorArray) {
-			printf(" * Feature 'runtime descriptor array' unsupported!\n");
+			out::logger.print(" * Feature 'runtime descriptor array' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_vk12->shaderSampledImageArrayNonUniformIndexing) {
-			printf(" * Feature 'shader sampled image array non uniform indexing' unsupported!\n");
+			out::logger.print(" * Feature 'shader sampled image array non uniform indexing' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_base->features.shaderInt64) {
-			printf(" * Feature 'shader int64_t' unsupported!\n");
+			out::logger.print(" * Feature 'shader int64_t' unsupported!\n");
 			fail = true;
 		}
 
@@ -212,20 +211,19 @@ void Renderer::pickDevice() {
 			return;
 		}
 
-		printf(" * No valid queue!\n");
-
+		out::logger.print(" * No valid queue!\n");
 	}
 
 	throw std::runtime_error {"No device could have been selected!"};
 }
 
 void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family queue_family, std::vector<const char*>& extensions, std::vector<const char*>& optionals) {
-	printf("INFO: Selected '%s' (queue #%d)\n", physical->getName(), queue_family.getIndex());
+	out::info("Selected '%s' (queue #%d)", physical->getName(), queue_family.getIndex());
 
 	// enable supported optional extensions
 	for (auto name : optionals) {
 		if (!physical->hasExtension(name)) {
-			printf("WARN: Missing optional extension '%s'!\n", name);
+			out::warn("Missing optional extension '%s'!", name);
 			continue;
 		}
 
@@ -332,7 +330,7 @@ void Renderer::createSwapchain() {
 	pass_immediate.prepareFramebuffers(swapchain);
 	pass_compose.prepareFramebuffers(swapchain);
 
-	printf("INFO: Swapchain ready\n");
+	out::info("Swapchain ready!");
 
 }
 
@@ -649,7 +647,7 @@ void Renderer::presentFramebuffer() {
 
 	if (swapchain.present(queue, semaphore, this->current_image)) {
 		reload();
-		printf("WARN: Reloading during framebuffer presentation!\n");
+		out::warn("Reloading during framebuffer presentation!");
 	}
 }
 
@@ -824,7 +822,7 @@ Renderer::~Renderer() {
 	device.close();
 	instance.close();
 
-	printf("INFO: Renderer deinitialized, goodbye!\n");
+	out::info("Renderer deinitialized, goodbye!");
 
 }
 

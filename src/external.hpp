@@ -24,6 +24,7 @@
 #include <filesystem>
 #include <utility>
 #include <thread>
+#include <sstream>
 #include <array>
 
 // GLFW

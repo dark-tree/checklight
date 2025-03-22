@@ -4,6 +4,7 @@
 #include "render/vulkan/buffer/query.hpp"
 #include "render/api/model.hpp"
 #include "render/system.hpp"
+#include "shared/logger.hpp"
 
 /*
  * AccelStructFactory
@@ -24,7 +25,7 @@ void AccelStructFactory::reserveScratchSpace(Allocator& allocator, uint32_t byte
 	if (scratch.size() < bytes) {
 		scratch.close();
 		scratch = allocator.allocateBuffer(Memory::DEVICE, bytes, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, "Scratch");
-		printf("INFO: Reallocated scratch buffer, now using %d bytes of device memory\n", bytes);
+		out::info("Reallocated scratch buffer, now using %d bytes of device memory", bytes);
 	}
 }
 
@@ -40,7 +41,7 @@ void AccelStructFactory::reserveQueryPool(const LogicalDevice& device, int size)
 
 		query = QueryPool {device, VK_QUERY_TYPE_ACCELERATION_STRUCTURE_COMPACTED_SIZE_KHR, size};
 		query.setDebugName("Compaction Query Pool");
-		printf("INFO: Reallocated compaction query pool, now using %d slots\n", size);
+		out::info("Reallocated compaction query pool, now using %d slots", size);
 	}
 }
 

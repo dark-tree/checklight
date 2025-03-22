@@ -3,6 +3,7 @@
 #include "external.hpp"
 #include "family.hpp"
 #include "queue.hpp"
+#include "shared/logger.hpp"
 
 class Buffer;
 class SwapchainInfo;
@@ -127,7 +128,7 @@ class LogicalDevice {
 			PFN_vkVoidFunction address = vkGetDeviceProcAddr(vk_device, name);
 
 			if (address == nullptr) {
-				printf("ERROR: Device function '%s' failed to load!\n", name);
+				out::error("Device function '%s' failed to load!", name);
 			}
 
 			return (F) address;

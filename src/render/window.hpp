@@ -9,10 +9,6 @@ class Window;
 
 class WindowSystem {
 
-	private:
-
-		static void glfwErrorCallback(int code, const char* description);
-
 	public:
 
 		WindowSystem();

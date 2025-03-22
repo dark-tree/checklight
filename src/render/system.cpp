@@ -68,27 +68,20 @@ std::shared_ptr<RenderObject> RenderSystem::createRenderObject() {
 }
 
 std::map<std::string, std::shared_ptr<ObjMaterial>> RenderSystem::importMaterials(const std::string& path) {
-	std::map<std::string, std::shared_ptr<ObjMaterial>> materials;
-	std::string mtl_path = "";
+	std::string mtl_path = ObjObject::getMtllib(path);
 
-	try {
-		mtl_path = ObjObject::getMtllib(path);
-
-		if (!mtl_path.empty()) {
-			materials = ObjMaterial::open(mtl_path);
-		}
-	}
-	catch (const std::exception& e) {
-		try {
-			mtl_path = path.substr(0, path.find_last_of("/\\") + 1) + mtl_path;
-			materials = ObjMaterial::open(mtl_path);
-		}
-		catch (const std::exception& e) {
-			std::cout << e.what() << std::endl;
-		}
+	if (std::filesystem::exists(mtl_path)) {
+		return ObjMaterial::open(mtl_path);
 	}
 
-	return materials;
+	auto base = std::filesystem::path {path};
+	auto material = base.parent_path() / mtl_path;
+
+	if (std::filesystem::exists(material)) {
+		return ObjMaterial::open(material.generic_string());
+	}
+
+	FAULT("Failed to find referenced object material '", mtl_path, "'");
 }
 
 std::vector<std::shared_ptr<RenderModel>> RenderSystem::importObj(const std::string& path) {
@@ -96,19 +89,20 @@ std::vector<std::shared_ptr<RenderModel>> RenderSystem::importObj(const std::str
 	auto imported = importMaterials(path);
 
 	auto open_texture = [&](std::string texture_path) -> TextureHandle {
-		try {
-			return materials.getTextureManager().createTexture(texture_path);
+		TextureManager& manager = materials.getTextureManager();
+
+		if (std::filesystem::exists(texture_path)) {
+			return manager.createTexture(texture_path);
 		}
-		catch (const std::exception& e) {
-			try {
-				texture_path = path.substr(0, path.find_last_of("/\\") + 1) + texture_path;
-				return materials.getTextureManager().createTexture(texture_path);
-			}
-			catch (const std::exception& e) {
-				std::cout << e.what() << std::endl;
-				return TextureHandle {};
-			}
+
+		auto base = std::filesystem::path {path};
+		auto material = base.parent_path() / texture_path;
+
+		if (std::filesystem::exists(material)) {
+			return manager.createTexture(material.generic_string());
 		}
+
+		FAULT("Failed to find referenced object texture '", texture_path, "'");
 	};
 
 	std::map<std::shared_ptr<ObjMaterial>, RenderMaterial> render_materials;

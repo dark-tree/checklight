@@ -1,5 +1,6 @@
 
 #include "obj.hpp"
+#include "shared/logger.hpp"
 
 /*
  * ObjMaterial
@@ -10,7 +11,7 @@ std::map<std::string, std::shared_ptr<ObjMaterial>> ObjMaterial::open(std::strin
 
 	std::ifstream file(path);
 	if (!file.is_open()) {
-		throw std::runtime_error("Failed to open file: " + path);
+		FAULT("Failed to open material file '", path, "'");
 	}
 
 	std::shared_ptr<ObjMaterial> material = std::make_shared<ObjMaterial>();
@@ -109,7 +110,7 @@ std::map<std::string, std::shared_ptr<ObjMaterial>> ObjMaterial::open(std::strin
 std::string ObjObject::getMtllib(std::string path) {
 	std::ifstream file(path);
 	if (!file.is_open()) {
-		throw std::runtime_error("Failed to open file: " + path);
+		FAULT("Failed to open object file '", path, "'");
 	}
 
 	std::string line;
@@ -133,7 +134,7 @@ std::vector<ObjObject> ObjObject::open(std::string path, const std::map<std::str
 
 	std::ifstream file(path);
 	if (!file.is_open()) {
-		throw std::runtime_error("Failed to open file: " + path);
+		FAULT("Failed to open object file '", path, "'");
 	}
 
 	std::vector<glm::vec3> global_normals;

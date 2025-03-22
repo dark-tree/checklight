@@ -1,5 +1,8 @@
 
 #include "debug.hpp"
+
+#include <shared/logger.hpp>
+
 #include "proxy.hpp"
 
 static std::unordered_map<void*, std::string>* objects = new std::unordered_map<void*, std::string> {};
@@ -91,10 +94,10 @@ void VulkanDebug::assertAlive(void* object) {
 void VulkanDebug::assertAllDead() {
 	#if ENGINE_DEBUG
 	if (!objects->empty()) {
-		printf("ERROR: An 'All Dead' assertion reached but:\n");
+		out::error("An 'All Dead' assertion reached but:");
 
 		for (auto& pair : *objects) {
-			printf(" * 0x%016lx: %s is still alive!\n", (std::intptr_t) pair.first, pair.second.c_str());
+			out::logger.print(" * 0x%016lx: %s is still alive!\n", (std::intptr_t) pair.first, pair.second.c_str());
 		}
 
 		throw std::runtime_error {"Some object still live!"};
