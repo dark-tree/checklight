@@ -15,9 +15,6 @@ private:
 	// Pointer to the openal context
 	ALCcontext* p_ALCContext;
 
-
-	//@TODO przerobic na vector <weak_ptr<SoundClip>>
-	// @TODO przerobic na vector <weak_ptr<SoundSourceObject>>
 	// Vector to storing sound clips 
 	std::vector<std::weak_ptr<SoundClip>> v_clips;
 	// Vector to storing sound source objects 
@@ -30,6 +27,25 @@ private:
 	SoundManager();
 	// Destructor
 	~SoundManager();
+
+
+	/// Function to finding a shared pointer object (spt) in vector (vec)
+	/// @param vec Vector where we want to find
+	/// @param spt Shared pointer object to finded
+	template <typename T>
+	auto find_in_vector(std::vector< std::weak_ptr<T>>& vec, std::shared_ptr<T> spt);
+
+	/// Function to finding a weak pointer object (spt) in vector (vec)
+	/// @param vec Vector where we want to find
+	/// @param wptr Weak pointer object to finded
+	template <typename T>
+	auto find_in_vector(std::vector< std::weak_ptr<T>>& vec, std::weak_ptr<T> wptr);
+
+	/// Remove every expired weak pointers in vector
+	/// @param vec Vector where we want to remove every expired pointers
+	template <typename T>
+	void removeExpired(std::vector<std::weak_ptr<T>>& vec);
+
 
 public:
 	
@@ -71,7 +87,7 @@ public:
 
 	/// Sound play control funtion
 	/// @param sso SoundSourceObject object
-	void playSound(std::shared_ptr <SoundSourceObject> sso);
+	void playSound(std::weak_ptr <SoundSourceObject> sso);
 	/// Sound stop control funtion
 	/// @param sso SoundSourceObject object
 	void stopSound(std::shared_ptr <SoundSourceObject> sso);

@@ -70,26 +70,6 @@ int main() {
 
 		//sm.playSound(sso1);
 
-		auto vec = sm.getVectorSoundClip();
-		for (auto v : vec) {
-			std::cout << v.expired();
-		}
-		std::cout << std::endl;
-		sso1 = nullptr;
-
-		vec = sm.getVectorSoundClip();
-		for (auto v : vec) {
-			std::cout << v.expired();
-		}
-		std::cout << std::endl;
-
-		sm.cleanupVectors();
-		vec = sm.getVectorSoundClip();
-		for (auto v : vec) {
-			std::cout << v.expired();
-		}
-		std::cout << std::endl;
-
 		SoundListener::setPosition(0, 10, 0);
 		/*SoundClip sc;
 		sc.addClip("assets/sounds/testOGG.ogg");

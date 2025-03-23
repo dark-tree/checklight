@@ -1,20 +1,27 @@
 #include "manager.hpp"
 
+
+// ================================== PRIVATE ==================================
+
+
 SoundManager::SoundManager(){
 	p_ALCDevice = alcOpenDevice(nullptr);
 	if (!p_ALCDevice) {
-		throw std::runtime_error("OpenAL -> init: Failed to open device\f");  //throw exception
+		std::cerr << ("OpenAL -> init: Failed to open device\f");  //throw exception
+		return;
 	}
 
 	p_ALCContext = alcCreateContext(p_ALCDevice, nullptr);
 	if (!p_ALCContext || !alcMakeContextCurrent(p_ALCContext)) {
 		alcCloseDevice(p_ALCDevice);
-		throw std::runtime_error("OpenAL -> init: Failed to load context on the device\f");  //throw exception
+		std::cerr << ("OpenAL -> init: Failed to load context on the device\f");  //throw exception
+		return;
 	}
 
 	printf("OpenAL initialized successfully.\n");
 
 }
+
 
 SoundManager::~SoundManager(){
 
@@ -29,13 +36,36 @@ SoundManager::~SoundManager(){
 
 }
 
+
 template <typename T>
-auto find_in_vector(std::vector< std::weak_ptr<T>>& vec, std::shared_ptr<T> spt) {
+auto SoundManager::find_in_vector(std::vector< std::weak_ptr<T>>& vec, std::shared_ptr<T> spt) {
 	return std::find_if(vec.begin(), vec.end(),
 		[spt](const std::weak_ptr<T>& wp) {
 			return !wp.expired() && wp.lock() == spt;
 		});
 }
+
+
+template <typename T>
+auto SoundManager::find_in_vector(std::vector< std::weak_ptr<T>>& vec, std::weak_ptr<T> wptr) {
+	return std::find_if(vec.begin(), vec.end(),
+		[wptr](const std::weak_ptr<T>& wp) {
+			return !wp.expired() && wp.lock() == wptr.lock();
+		});
+}
+
+
+template <typename T>
+void SoundManager::removeExpired(std::vector<std::weak_ptr<T>>& vec) {
+	vec.erase(std::remove_if(vec.begin(), vec.end(),
+		[](const std::weak_ptr<T>& wp) {
+			return wp.expired();
+		}), vec.end());
+}
+
+
+// ================================== PUBLIC ==================================
+
 
 void SoundManager::addSource(std::shared_ptr <SoundSourceObject> sso){
 	if (!sso) {
@@ -52,14 +82,17 @@ void SoundManager::addSource(std::shared_ptr <SoundSourceObject> sso){
 	v_sources.push_back(sso);
 }
 
+
 void SoundManager::addClip(std::shared_ptr <SoundClip> sc) {
 	if (!sc) {
-		throw std::runtime_error("SoundManager -> addClip: SoundClip not exist\f");
+		std::cerr << ("SoundManager -> addClip: SoundClip not exist\f");
+		return;
 	}
 
 	// check if exist a source with a given name
 	if (find_in_vector(v_clips,sc) != v_clips.end()) {
-		throw std::runtime_error("SoundManager -> addClip: SoundClip already exist\f");
+		std::cerr << ("SoundManager -> addClip: SoundClip already exist\f");
+		return;
 	}
 
 	v_clips.push_back(sc);
@@ -68,27 +101,30 @@ void SoundManager::addClip(std::shared_ptr <SoundClip> sc) {
 
 void SoundManager::addAudioToClip(std::shared_ptr <SoundClip> sc, const char* uri) {
 	if (!sc) {
-		throw std::runtime_error("SoundManager -> addAudioToClip: Shared pointer SoundClip sc is nullptr\f");
+		std::cerr << ("SoundManager -> addAudioToClip: Shared pointer SoundClip sc is nullptr\f");
+		return;
 	}
 	
 	auto clip_find = find_in_vector(v_clips, sc);
 	// check if exist a clip with a given name
 	if (clip_find == v_clips.end()) {
-		throw std::runtime_error("SoundManager -> addAudioToClip: SoundClip not already exist\f");
+		std::cerr << ("SoundManager -> addAudioToClip: SoundClip not already exist\f");
+		return;
 	}
 	
 	sc->addAudio(uri);
 }
 
 
-
 void SoundManager::connectClipWithSource(std::shared_ptr<SoundClip> sc, std::shared_ptr <SoundSourceObject> sso) {
 	if (!sso) {
-		throw std::runtime_error("SoundManager -> connectClipWithSource: SoundSourceObject not exist\f");
+		std::cerr << ("SoundManager -> connectClipWithSource: SoundSourceObject not exist\f");
+		return;
 	}
 
 	if (!sc) {
-		throw std::runtime_error("SoundManager -> connectClipWithSource: SoundClip not exist\f");
+		std::cerr << ("SoundManager -> connectClipWithSource: SoundClip not exist\f");
+		return;
 	}
 
 	auto source_find = find_in_vector(v_sources, sso);
@@ -98,24 +134,26 @@ void SoundManager::connectClipWithSource(std::shared_ptr<SoundClip> sc, std::sha
 
 	// check if exist a clip with a given name
 	if (clip_find == v_clips.end()) {
-		throw std::runtime_error("SoundManager -> connectClipWithSource: SoundClip not already exist\f");
+		std::cerr << ("SoundManager -> connectClipWithSource: SoundClip not already exist\f");
+		return;
 	}
 
 	// check if exist a source with a given name
 	if (source_find == v_sources.end()) {
-		throw std::runtime_error("SoundManager -> connectClipWithSource: SoundSourceObject not already exist in v_sources. Please add to map (sm.addSource(sso))\f");
+		std::cerr << ("SoundManager -> connectClipWithSource: SoundSourceObject not already exist in v_sources. Please add to map (sm.addSource(sso))\f");
+		return;
 	}
 
 	sso->addBuffer(sc);
 }
 
 
-
-void SoundManager::playSound(std::shared_ptr <SoundSourceObject> sso){
+void SoundManager::playSound(std::weak_ptr <SoundSourceObject> sso){
 	//std::lock_guard<std::mutex> lock(sound_manager_mutex);
 
-	if (!sso) {
-		throw std::runtime_error("SoundManager -> connectClipWithSource: SoundSourceObject not exist\f");
+	if (sso.expired()) {
+		std::cerr << ("SoundManager -> playSound: SoundSourceObject not exist\f");
+		return;
 	}
 	
 
@@ -123,58 +161,58 @@ void SoundManager::playSound(std::shared_ptr <SoundSourceObject> sso){
 
 	// check if exist a source with a given name
 	if (source_find == v_sources.end()) {
-		throw std::runtime_error("SoundManager -> playSound: SoundSourceObject not already exist in v_sources. Please add to map (sm.addSource(sso))\f");
+		std::cerr << ("SoundManager -> playSound: SoundSourceObject not already exist in v_sources. Please add to map (sm.addSource(sso))\f");
+		return;
 	}
 
-	sso->playSound();
+	sso.lock()->playSound();
 }
-
 
 
 void SoundManager::stopSound(std::shared_ptr <SoundSourceObject> sso) {
 	std::lock_guard<std::mutex> lock(sound_manager_mutex);
 	if (!sso) {
-		throw std::runtime_error("SoundManager -> connectClipWithSource: SoundSourceObject not exist\f");
+		std::cerr << ("SoundManager -> stopSound: SoundSourceObject not exist\f");
+		return;
 	}
 
 	auto source_find = find_in_vector(v_sources, sso);
 	// check if exist a source with a given name
 	if (source_find == v_sources.end()) {
-		throw std::runtime_error("SoundManager -> stopSound: SoundSourceObject not already exist in ums_sources. Please add to map (sm.addSource(sso))\f");
+		std::cerr << ("SoundManager -> stopSound: SoundSourceObject not already exist in ums_sources. Please add to map (sm.addSource(sso))\f");
+		return;
 	}
 	sso->stopSound();
 }
 
+
 void SoundManager::pauseSound(std::shared_ptr <SoundSourceObject> sso) {
 	std::lock_guard<std::mutex> lock(sound_manager_mutex);
 	if (!sso) {
-		throw std::runtime_error("SoundManager -> connectClipWithSource: SoundSourceObject not exist\f");
+		std::cerr << ("SoundManager -> pauseSound: SoundSourceObject not exist\f");
+		return;
 	}
 
 	auto source_find = find_in_vector(v_sources, sso);
 	// check if exist a source with a given name
 	if (source_find == v_sources.end()) {
-		throw std::runtime_error("SoundManager -> stopSound: SoundSourceObject not already exist in ums_sources. Please add to map (sm.addSource(sso))\f");
+		std::cerr << ("SoundManager -> pauseSound: SoundSourceObject not already exist in ums_sources. Please add to map (sm.addSource(sso))\f");
+		return;
 	}
 	sso->pauseSound();
 }
 
+
 ALCcontext* SoundManager::getContext(){
 	return this->p_ALCContext;
 }
+
 
 //ALCdevice* SoundManager::getDevice()
 //{
 //	return this->p_ALCDevice();
 //}
 
-template <typename T>
-void removeExpired(std::vector<std::weak_ptr<T>>& vec) {
-	vec.erase(std::remove_if(vec.begin(),vec.end(),
-		[](const std::weak_ptr<T>& wp) {
-			return wp.expired();
-		}),vec.end());
-}
 
 void SoundManager::cleanupVectors() {
 	removeExpired(v_sources);
