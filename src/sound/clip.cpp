@@ -8,7 +8,8 @@ SoundClip::SoundClip(){
 	
 	ALenum error;
 	if ((error = alGetError()) != AL_NO_ERROR){
-		throw std::runtime_error("Clip -> SCinit: Failed to generate buffers\f");  //throw exception
+		std::cerr << ("Clip -> SCinit: Failed to generate buffers\f");  //throw exception
+		return;
 	}
 }
 
@@ -39,7 +40,7 @@ void SoundClip::addAudio(const char* filename){
 	ALsizei size_block = stb_vorbis_decode_filename(filename, &channels, &sample_rate, &output);
 
 	if (size_block == -1){
-		printf("SoundClip -> OGG file load error\f");
+		std::cerr << ("SoundClip -> OGG file load error\f");
 		return;
 	}
 	this->uri = filename;
@@ -53,7 +54,8 @@ void SoundClip::addAudio(const char* filename){
 
 	ALenum error;
 	if ((error = alGetError()) != AL_NO_ERROR){
-		throw std::runtime_error("Clip -> addClip: Failed to load file to buffer\f");  //throw exception
+		std::cerr << ("Clip -> addClip: Failed to load file to buffer\f");  //throw exception
+		return;
 	}
 
 	printf("SoundClip -> OGG file loaded\f");

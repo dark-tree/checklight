@@ -7,7 +7,8 @@ void SoundSourceObject::initSource(int number_of_sources){
 	alGenSources(this->number_of_sources, sso_sources);
 	ALenum error;
 	if ((error = alGetError()) != AL_NO_ERROR){
-		throw std::runtime_error("Sound -> SSOinit: Failed to generate sources\f");  //throw exception
+		std::cerr<<("Sound -> SSOinit: Failed to generate sources\f");  //throw exception
+		return;
 	}
 
 	for (int i = 0;i < this->number_of_sources;i++)
@@ -62,22 +63,23 @@ void SoundSourceObject::setPosition(float x, float y, float z)
 void SoundSourceObject::addBuffer(SoundClip clip){
 	ALuint buffer = clip.getBuffer();
 	if (buffer==0) {
-
-		throw std::runtime_error("Source -> addBuffer: Buffer doesnt exist\f");	//throw exception
+		std::cerr << ("Source -> addBuffer: Buffer doesnt exist\f");	//throw exception
+		return;
 	}
 
 	alSourcei(this->sso_sources[0], AL_BUFFER, buffer);
 
 	ALenum error = alGetError();
 	if (error != AL_NO_ERROR) {
-		throw std::runtime_error("Source -> addBuffer: OpenAL error " + std::to_string(error) +"\f");
+		std::cerr << ("Source -> addBuffer: OpenAL error " + std::to_string(error) +"\f");
+		return;
 	}
 }
 
 void SoundSourceObject::addBuffer(std::shared_ptr<SoundClip> clip) {
 	if (clip->getBuffer() == 0) {
-
-		throw std::runtime_error("Source -> addBuffer: Buffer doesnt exist\f");	//throw exception
+		std::cerr << ("Source -> addBuffer: Buffer doesnt exist\f");	//throw exception
+		return;
 	}
 
 	sc_buffer = clip;
@@ -86,13 +88,15 @@ void SoundSourceObject::addBuffer(std::shared_ptr<SoundClip> clip) {
 		alSourcei(this->sso_sources[0], AL_BUFFER, lockedClip->getBuffer());
 	}
 	else {
-		throw std::runtime_error("Source -> addBuffer: sc_buffer doesnt exist");
+		std::cerr << ("Source -> addBuffer: sc_buffer doesnt exist");
+		return;
 	}
 	
 
 	ALenum error = alGetError();
 	if (error != AL_NO_ERROR) {
-		throw std::runtime_error("Source -> addBuffer: OpenAL error " + std::to_string(error)+"\f");
+		std::cerr << ("Source -> addBuffer: OpenAL error " + std::to_string(error)+"\f");
+		return;
 	}
 }
 
@@ -123,13 +127,15 @@ void SoundSourceObject::updateParameters() {
 \
 void SoundSourceObject::play(int source_number) {
 	if (source_number > this->number_of_sources || !alIsSource(this->sso_sources[source_number])) {
-		throw std::runtime_error("Source -> playSound: No valid sound source found!\f");
+		std::cerr << ("Source -> playSound: No valid sound source found!\f");
+		return;
 	}
 
 	alSourcePlay(this->sso_sources[source_number]);
 	ALenum error = alGetError();
 	if ((error = alGetError()) != AL_NO_ERROR) {
-		throw std::runtime_error("Sound -> playSound: Failed to play clip\f");  //throw exception
+		std::cerr << ("Sound -> playSound: Failed to play clip\f");  //throw exception
+		return;
 	}
 }
 
@@ -139,13 +145,15 @@ void SoundSourceObject::playSound(){
 
 void SoundSourceObject::stop(int source_number) {
 	if (source_number > this->number_of_sources || !alIsSource(this->sso_sources[source_number])) {
-		throw std::runtime_error("Source -> stopSound: No valid sound source found!\f");
+		std::cerr << ("Source -> stopSound: No valid sound source found!\f");
+		return;
 	}
 
 	alSourceStop(this->sso_sources[source_number]);
 	ALenum error = alGetError();
 	if ((error = alGetError()) != AL_NO_ERROR) {
-		throw std::runtime_error("Sound -> stopSound: Failed to stop clip\f");  //throw exception
+		std::cerr << ("Sound -> stopSound: Failed to stop clip\f");  //throw exception
+		return;
 	}
 }
 
@@ -155,13 +163,15 @@ void SoundSourceObject::stopSound(){
 
 void SoundSourceObject::pause(int source_number) {
 	if (source_number > this->number_of_sources || !alIsSource(this->sso_sources[source_number])) {
-		throw std::runtime_error("Source -> pauseSound: No valid sound source found!\f");
+		std::cerr << ("Source -> pauseSound: No valid sound source found!\f");
+		return;
 	}
 
 	alSourcePause(this->sso_sources[source_number]);
 	ALenum error = alGetError();
 	if ((error = alGetError()) != AL_NO_ERROR) {
-		throw std::runtime_error("Sound -> pauseSound: Failed to pause clip\f");  //throw exception
+		std::cerr << ("Sound -> pauseSound: Failed to pause clip\f");  //throw exception
+		return;
 	}
 }
 
