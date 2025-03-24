@@ -9,7 +9,7 @@ private:
 	ALuint* sso_sources;
 	ALsizei number_of_sources;
 	
-	std::shared_ptr<SoundGroup> sso_sg_parameters;
+	std::shared_ptr<SoundGroupParameters> sso_sg_parameters;
 	std::weak_ptr<SoundClip> sc_buffer;
 
 	void initSource(int number_of_sources);
@@ -36,7 +36,7 @@ public:
 	void addBuffer(std::shared_ptr<SoundClip> buffer);
 	//void addBuffers(SoundClip buffer);
 
-	void addGroupParameters(std::shared_ptr <SoundGroup> sg);
+	void addGroupParameters(std::shared_ptr <SoundGroupParameters> sg);
 
 	void playSound();
 	void stopSound();

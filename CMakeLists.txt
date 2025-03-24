@@ -122,29 +122,29 @@ target_include_directories(checklight_common INTERFACE
 )
 
 file(GLOB_RECURSE CHECKLIGHT_RENDER_SOURCES "src/render/*.cpp")
-add_library(checklight_render_system ${CHECKLIGHT_RENDER_SOURCES})
+add_library(checklight_render_system ${CHECKLIGHT_RENDER_SOURCES} )
 
 file(GLOB_RECURSE CHECKLIGHT_SHARED_SOURCES "src/shared/*.cpp")
-add_library(checklight_shared_system ${CHECKLIGHT_SHARED_SOURCES})
+add_library(checklight_shared_system ${CHECKLIGHT_SHARED_SOURCES} )
 
 file(GLOB_RECURSE CHECKLIGHT_INPUT_SOURCES "src/input/*.cpp")
-add_library(checklight_input_system ${CHECKLIGHT_INPUT_SOURCES})
+add_library(checklight_input_system ${CHECKLIGHT_INPUT_SOURCES} )
 
 file(GLOB_RECURSE CHECKLIGHT_SOUND_SOURCES "src/sound/*.cpp")
-add_library(checklight_sound_system ${CHECKLIGHT_SOUND_SOURCES})
+add_library(checklight_sound_system ${CHECKLIGHT_SOUND_SOURCES} )
 
 add_library(checklight_external
 		lib/stb_image.cpp
 		lib/stb_image_write.cpp
 		lib/stb_vorbis.cpp
 		lib/vk_mem_alloc.cpp
-)
+ )
 
 target_include_directories(checklight_external PRIVATE
 		${CHECKLIGHT_LIBRARIES}
 )
 
-add_executable(checklight "src/main.cpp")
+add_executable(checklight "src/main.cpp" )
 
 target_link_libraries(checklight_render_system PRIVATE
 		checklight_common

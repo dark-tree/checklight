@@ -3,3 +3,4 @@
 #include "clip.hpp"
 #include "listener.hpp"
 #include "group.hpp"
+#include "functions.hpp"

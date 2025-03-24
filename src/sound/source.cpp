@@ -101,7 +101,7 @@ void SoundSourceObject::addBuffer(std::shared_ptr<SoundClip> clip) {
 }
 
 
-void SoundSourceObject::addGroupParameters(std::shared_ptr<SoundGroup> sg) {
+void SoundSourceObject::addGroupParameters(std::shared_ptr<SoundGroupParameters> sg) {
 	this->sso_sg_parameters = sg;
 	updateParameters();
 }

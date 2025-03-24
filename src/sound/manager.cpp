@@ -37,33 +37,6 @@ SoundManager::~SoundManager(){
 }
 
 
-template <typename T>
-auto SoundManager::find_in_vector(std::vector< std::weak_ptr<T>>& vec, std::shared_ptr<T> spt) {
-	return std::find_if(vec.begin(), vec.end(),
-		[spt](const std::weak_ptr<T>& wp) {
-			return !wp.expired() && wp.lock() == spt;
-		});
-}
-
-
-template <typename T>
-auto SoundManager::find_in_vector(std::vector< std::weak_ptr<T>>& vec, std::weak_ptr<T> wptr) {
-	return std::find_if(vec.begin(), vec.end(),
-		[wptr](const std::weak_ptr<T>& wp) {
-			return !wp.expired() && wp.lock() == wptr.lock();
-		});
-}
-
-
-template <typename T>
-void SoundManager::removeExpired(std::vector<std::weak_ptr<T>>& vec) {
-	vec.erase(std::remove_if(vec.begin(), vec.end(),
-		[](const std::weak_ptr<T>& wp) {
-			return wp.expired();
-		}), vec.end());
-}
-
-
 // ================================== PUBLIC ==================================
 
 

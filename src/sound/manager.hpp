@@ -3,6 +3,7 @@
 #include "external.hpp"
 #include "clip.hpp"
 #include "source.hpp"
+#include "functions.hpp"
 
 // @TODO add debug command, improve throw and exception
 
@@ -27,24 +28,6 @@ private:
 	SoundManager();
 	// Destructor
 	~SoundManager();
-
-
-	/// Function to finding a shared pointer object (spt) in vector (vec)
-	/// @param vec Vector where we want to find
-	/// @param spt Shared pointer object to finded
-	template <typename T>
-	auto find_in_vector(std::vector< std::weak_ptr<T>>& vec, std::shared_ptr<T> spt);
-
-	/// Function to finding a weak pointer object (spt) in vector (vec)
-	/// @param vec Vector where we want to find
-	/// @param wptr Weak pointer object to finded
-	template <typename T>
-	auto find_in_vector(std::vector< std::weak_ptr<T>>& vec, std::weak_ptr<T> wptr);
-
-	/// Remove every expired weak pointers in vector
-	/// @param vec Vector where we want to remove every expired pointers
-	template <typename T>
-	void removeExpired(std::vector<std::weak_ptr<T>>& vec);
 
 
 public:
@@ -94,7 +77,8 @@ public:
 	/// Sound pause control funtion
 	/// @param sso SoundSourceObject object
 	void pauseSound(std::shared_ptr <SoundSourceObject> sso);
-
 	
+	/// Remove every expired pointer from vectors
 	void cleanupVectors();
+
 };
