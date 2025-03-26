@@ -11,8 +11,10 @@ protected:
     glm::vec3 position; /// Position of the object in 3D space as a 3-dimensional vector
     glm::vec3 velocity; /// Velocity of the object in 3D space as a 3-dimensional vector
     glm::quat rotation; /// Rotation of the object in 3D space as a quaternion
-    std::vector<glm::vec3> vertices; /// Vertices forming the shape of the object's collider
-    std::vector<glm::ivec3> triangles; /// Faces of the object's collider as triplets of vertices indexes
+    glm::quat angular_velocity; /// angular_velocity of the object in 3D space as a quaternion
+    glm::vec3 center_of_mass; /// Center of mass of the object in 3D space as a 3-dimensional vector
+    std::vector<glm::vec3> vertices; /// Vertices forming the shape of the object's collider (point 0, 0, 0 must be contained withing the shape)
+    std::vector<glm::ivec3> triangles; /// Faces of the object's collider as triplets of vertices indexes (point 0, 0, 0 must be contained withing the shape)
     bool is_static; /// Whether the object can be moved by external forces
     bool is_sphere; /// Whether the collider of the object is to be a perfect sphere, if yes vertices and triangles will be disregarded in operations
     float gravity_scale; /// Value by which gravity's acceleration is multiplied
@@ -67,6 +69,7 @@ public:
                 sphere_collider_radius = glm::length(vec3);
             }
         }
+        center_of_mass = findCenterOfMass();
     }
 
     /// Sets the vec3 of the object
@@ -201,6 +204,39 @@ public:
             }
         }
         return returnal + position;
+    }
+
+    glm::vec3 findCenterOfMass()
+    {
+        double total_volume = 0;
+        glm::vec3 center = glm::vec3 (0, 0, 0);
+
+        for (glm::ivec3 triangle : triangles)
+        {
+            //get vertices of a given face
+            glm::vec3 v1 = vertices[triangle[0]];
+            glm::vec3 v2 = vertices[triangle[1]];
+            glm::vec3 v3 = vertices[triangle[2]];
+
+            //Compute volume of a tetrahedron made of given face and origin point(0, 0, 0)
+            //                          1 | v1x v1y v1z |
+            // given by the formula V = — | v2x v2y v2z |
+            //                          6 | v3x v3y v3z |
+            float volume = (v1[0]*(v2[1]*v3[2] - v2[2]*v3[1])
+                           - v1[1]*(v2[0]*v3[2] - v2[2]*v3[0])
+                           + v1[2]*(v2[0]*v3[1] - v2[1]*v3[0])) / 6.0;
+
+            //compute center of given tetrahedron
+            glm::vec3 centroid = glm::vec3((v1[0] + v2[0] + v3[0]) / 4.0, (v1[1] + v2[1] + v3[1]) / 4.0, (v1[2] + v2[2] + v3[2]) / 4.0);
+
+            //update volume and center of mass
+            total_volume += volume;
+            center += centroid * volume;
+        }
+        //normalize the center of mass by total volume
+        center /= total_volume;
+
+        return center;
     }
 };
 
