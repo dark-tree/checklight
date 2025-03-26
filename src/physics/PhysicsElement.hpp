@@ -205,6 +205,21 @@ public:
         return sphere_collider_radius;
     }
 
+    /** Sets the center of mass of the object
+     * @warning Incorrectly setting the center of mass can result in horrible force application miscalculations
+     */
+    void setCenterOfMass(glm::vec3& vec3) {
+        center_of_mass = vec3;
+    }
+
+    /** Sets the center of mass of the object
+     * @warning Incorrectly setting the center of mass can result in horrible force application miscalculations
+     */
+    void setCenterOfMass(float x, float y, float z)
+    {
+        this->center_of_mass = glm::vec3(x, y, z);
+    }
+
     /// Returns the center of mass of the object
     glm::vec3 getCenterOfMass()
     {
@@ -234,6 +249,8 @@ public:
         return returnal + position;
     }
 
+protected:
+    /// Used to calculate center of mass of an object. Assumes uniform mass distribution
     glm::vec3 findCenterOfMass()
     {
         double total_volume = 0;
