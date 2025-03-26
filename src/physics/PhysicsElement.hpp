@@ -11,7 +11,7 @@ protected:
     glm::vec3 position; /// Position of the object in 3D space as a 3-dimensional vector
     glm::vec3 velocity; /// Velocity of the object in 3D space as a 3-dimensional vector
     glm::quat rotation; /// Rotation of the object in 3D space as a quaternion
-    glm::quat angular_velocity; /// angular_velocity of the object in 3D space as a quaternion
+    glm::vec3 angular_velocity; /// angular_velocity of the object in 3D space as a 3-dimensional vector. Direction represents the axis of rotation, magnitude represents the speed of rotation (radians/s)
     glm::vec3 center_of_mass; /// Center of mass of the object in 3D space as a 3-dimensional vector
     std::vector<glm::vec3> vertices; /// Vertices forming the shape of the object's collider (point 0, 0, 0 must be contained withing the shape)
     std::vector<glm::ivec3> triangles; /// Faces of the object's collider as triplets of vertices indexes (point 0, 0, 0 must be contained withing the shape)
@@ -26,8 +26,13 @@ public:
      */
     void update(float time_step, float gravity)
     {
+        //integrate position over time with respect to acceleration
+        velocity += glm::vec3(0, -gravity * gravity_scale / 2, 0);
         position += velocity * time_step;
-        position += glm::vec3(0, -gravity * gravity_scale, 0);
+        position += glm::vec3(0, -gravity * gravity_scale / 2, 0);
+
+        //apply angular velocity
+        rotation += normalize((0.5f * rotation * glm::quat(0.0, angular_velocity) * time_step));
     }
 
     PhysicsElement()
@@ -108,7 +113,7 @@ public:
         return velocity;
     }
 
-    /// Sets the quat of the object
+    /// Sets the rotation of the object
     void setRotation(glm::quat& quat)
     {
         this->rotation = quat;
@@ -124,6 +129,23 @@ public:
     glm::quat getRotation()
     {
         return rotation;
+    }
+
+    /// Sets the angular velocity of the object
+    void setAngularVelocity(glm::vec3& vec3) {
+        angular_velocity = vec3;
+    }
+
+    /// Sets the angular velocity of the object
+    void setAngularVelocity(float x, float y, float z)
+    {
+        this->angular_velocity = glm::vec3(x, y, z);
+    }
+
+    /// Returns the rotation of an object
+    glm::quat getAngularVelocity()
+    {
+        return angular_velocity;
     }
 
     /// Sets the is_static property of the object (whether it is affected by external forces)
@@ -183,6 +205,12 @@ public:
         return sphere_collider_radius;
     }
 
+    /// Returns the center of mass of the object
+    glm::vec3 getCenterOfMass()
+    {
+        return center_of_mass;
+    }
+
     /// Returns the furthest point from object origin in a given direction
     glm::vec3 furthestPoint(glm::vec3& direction)
     {
@@ -238,6 +266,7 @@ public:
 
         return center;
     }
+
 };
 
 
