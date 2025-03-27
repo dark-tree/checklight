@@ -16,75 +16,44 @@ static void entry(Args& args) {
 	parameters.setDimensions(1200, 800);
 
 	RenderSystem::init(parameters);
+	Models::init();
 
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
-	auto context = std::make_shared<WidgetContext>();
-	auto panel = std::make_shared<PanelWidget>();
-	auto sub = std::make_shared<PanelWidget>();
-
-	sub->width = Unit::px(100);
-	sub->height = Unit::px(100);
-	sub->g = 50;
-	sub->b = 200;
-	sub->vertical = VerticalAlignment::CENTER;
-
-	auto sub2 = std::make_shared<PanelWidget>();
-
-	sub2->width = Unit::px(100);
-	sub2->height = Unit::px(100);
-	sub2->g = 200;
-	sub2->b = 50;
-	sub2->vertical = VerticalAlignment::CENTER;
-	sub2->horizontal = HorizontalAlignment::CENTER;
-
-	panel->addWidget(sub);
-	panel->addWidget(sub2);
-	panel->width = Unit::px(400);
-	panel->height = Unit::px(400);
-
-	panel->setBounds({10,10,0,0});
-
-
-	// auto slider = std::make_shared<SliderWidget>([] () noexcept {
-	//
-	// });
-	// slider->setBounds({600, 300, 100, 50});
-	//
-	// auto button = std::make_shared<ButtonWidget>("Hello", [] () noexcept {
-	// 	out::debug("Pressed button!");
-	// });
-	// button->setBounds({600, 400, 100, 50});
-	//
-	// auto input = std::make_shared<FieldWidget>([] () noexcept {
-	//
-	// });
-	// input->setBounds({600, 500, 100, 50});
-	//
-	// auto select = std::make_shared<SelectWidget>([] () noexcept {
-	//
-	// });
-	// select->setBounds({600, 600, 100, 50});
-
-	context->setRoot(panel);
-	// panel->addWidget(slider);
-	// panel->addWidget(button);
-	// panel->addWidget(input);
-	// panel->addWidget(select);
-
-	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
-	window.getInputDispatcher().registerListener(std::dynamic_pointer_cast<InputListener>(context));
 	auto models = system.importObj("assets/models/checklight.obj");
 
-	BoardManager m(window);
+	BoardManager manager(window);
 
-	std::shared_ptr<Pawn> p = std::make_shared<Pawn>();
-	p->setName("Test");
+	std::shared_ptr<Pawn> pawn = std::make_shared<Pawn>();
 
-	m.getCurrentBoard().lock()->addPawnToRoot(p);
+
+	auto pawnThatRendersTheCube = std::make_shared<SpatialPawn>();
+	auto pawnThatRendersTheSphere = std::make_shared<SpatialPawn>();
+
+	pawnThatRendersTheCube->setPosition({-2,1,-2});
+
+	pawnThatRendersTheSphere->setPosition({2,1,2});
+
+	std::shared_ptr<Component> renderSphere = std::make_shared<RenderComponent>(Models::SPHERE);
+	std::shared_ptr<Component> renderCube = std::make_shared<RenderComponent>(Models::CUBE);
+
+
+	pawnThatRendersTheSphere->addComponent(renderSphere);
+	pawnThatRendersTheCube->addComponent(renderCube);
+
+	pawn->setName("Test");
+
+	std::shared_ptr<Board> sp = manager.getCurrentBoard().lock();
+
+	sp->addPawnToRoot(pawn);
+	sp->addPawnToRoot(pawnThatRendersTheCube);
+	sp->addPawnToRoot(pawnThatRendersTheSphere);
+
 
 	std::vector<std::shared_ptr<RenderObject>> objects;
+
+
 
 	for (auto& model : models) {
 		auto object = system.createRenderObject();
@@ -96,13 +65,15 @@ static void entry(Args& args) {
 	while (!window.shouldClose()) {
 		window.poll();
 
+
+		pawnThatRendersTheCube->setRotation(glm::rotate(pawnThatRendersTheCube->getRotation(),0.01f,{1.0f,1.0f,1.0f}));
+
 		//physics update before rendering
-		m.updateCycle();
-		std::shared_ptr<Board> current_board = m.getCurrentBoard().lock();
+		manager.updateCycle();
+		std::shared_ptr<Board> current_board = manager.getCurrentBoard().lock();
 
-		context->draw(system.getImmediateRenderer());
 
-		drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());
+		//drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());
 
 		// update uniforms
 		// do this once at the beginning of frame rendering

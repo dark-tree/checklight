@@ -24,7 +24,7 @@ public:
 	/**
 	 * adds a pawn as a child of pawn tree
 	 */
-	void addPawnToRoot(std::shared_ptr<Pawn>& pawn);
+	void addPawnToRoot(const std::shared_ptr<Pawn>& pawn);
 
 	/**
 	 * returns first pawn by its id

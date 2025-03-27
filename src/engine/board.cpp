@@ -16,7 +16,7 @@ void Board::fixedUpdateBoard() {
 }
 
 
-void Board::addPawnToRoot(std::shared_ptr<Pawn>& pawn) {
+void Board::addPawnToRoot(const std::shared_ptr<Pawn>& pawn) {
 	pawns.addToRoot(pawn);
 }
 
@@ -32,7 +32,7 @@ std::shared_ptr<Pawn> Board::findPawnByID(uint32_t id, size_t position) {
 		return query_result[position];
 	}
 
-	FAULT("Trying to get nonexistent Pawn!");
+	FAULT("Trying to get nonexistent Pawn!"); //TODO
 }
 
 
@@ -55,7 +55,7 @@ std::shared_ptr<Pawn> Board::findPawnByID(int32_t id, size_t position) {
 		return query_result[position];
 	}
 
-	FAULT("Trying to get nonexistent Pawn!");
+	FAULT("Trying to get nonexistent Pawn!"); //TODO
 }
 
 
@@ -75,7 +75,7 @@ std::shared_ptr<Pawn> Board::findPawnByName(const std::string& name, size_t posi
 		return query_result[position];
 	}
 
-	FAULT("Trying to get nonexistent Pawn!");
+	FAULT("Trying to get nonexistent Pawn!"); //TODO
 }
 
 

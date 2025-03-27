@@ -178,7 +178,7 @@ void Window::poll() {
 	FrameEvent event {};
 	dispatcher.onEvent(event);
 
-	//setMouseCapture(event.capture_flag); TODO
+	setMouseCapture(event.capture_flag);
 	setShouldClose(event.close_flag);
 	setMouseIcon(event.icon);
 }
