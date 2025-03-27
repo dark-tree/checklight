@@ -89,7 +89,7 @@ public:
     }
 
     /// Used to calculate a support point of the minkowski difference in a given direction
-    glm::vec3 calculateSupport(PhysicsElement& a, PhysicsElement& b, glm::vec3 direction)
+    glm::vec3 calculateSupport(PhysicsElement& a, PhysicsElement& b, glm::vec3& direction)
     {
         return a.furthestPoint(direction) - b.furthestPoint(-direction);
     }
@@ -368,6 +368,106 @@ public:
         goto face_check2;
 
         return false;
+    }
+
+    /// Functional expansion to the GJK algorithm, used for finding the depth and normal of the collision
+    std::pair<int, glm::vec3> expandingPolytope(std::vector<glm::vec3>& simplex, PhysicsElement& a, PhysicsElement& b)
+    {
+        //create a copy of end simplex to be turned into a polytope
+        std::vector<glm::vec3> polytope(simplex.begin(), simplex.end());
+        std::vector<glm::ivec3> faces = {
+                {0, 1, 2},
+                {0, 3, 1},
+                {0, 2, 3},
+                {1, 3, 2}
+        };
+
+        auto [normal_list, closest_face] = getFaceNormals(polytope, faces);
+
+        //set up return values
+        glm::vec3 min_normal(0, 0, 0);
+        float min_distance = INFINITY;
+
+        //run loop until there are no more points beyond the closest face
+        while (min_distance == INFINITY)
+        {
+            //assign the closes face to the min normal and min distance
+            min_normal[0] = normal_list[closest_face][0];
+            min_normal[1] = normal_list[closest_face][1];
+            min_normal[2] = normal_list[closest_face][2];
+            min_distance = normal_list[closest_face][3];
+
+            glm::vec3 support_point = calculateSupport(a, b, min_normal);
+            float next_point_distance = glm::dot(min_normal, support_point);
+
+            //Check if the support point in the direction of the closest face is a vertex belonging to that face.
+            //This works cause the distance from point a to a plane B is equal to the got product of
+            //the normalized normal of plane B and vector ab, where b is any point lying on plane B
+            //(this works cause a . b = |a| * |b| * cos(Θ)).
+            //
+            //We cannot directly compare min_distance == next_point_distance tho due to a very real possibility of a
+            //floating point error occurring caused by the support function returning 1 of the faces vertices that isn't
+            //the same point we used to calculate min distance (point a). Trigonometry just funky like that.
+            //I assume that 0.0001 is a sensible value, under which a floating point error will fly, but not a point that
+            //is just close to the plane.
+            //
+            //This, however, can very much break calculating the depth of collision on very, very small objects. I suppose
+            //the dev will just have to keep this in mind. If they use items small enough to break this, they:
+            //a) will most likely not notice the errors stemming from this
+            //b) will most likely have bigger problems with the physics engine than this (continuous collision detection when?)
+            //c) have to be making a game way too ambitious for this engine anyway
+            //As such I deem this "good enough", but if you have a better idea please let me know
+            if (abs(next_point_distance - min_distance) > 0.0001)
+            {
+                min_distance = INFINITY;
+                //todo implement the inside of this
+            }
+
+
+        }
+
+        //better to overcompensate the correction distance than under compensate and cause this whole mess to run again
+        return {min_distance * 1.01, min_normal};
+    }
+
+    std::pair<std::vector<glm::vec4>, int> getFaceNormals(std::vector<glm::vec3>& polytope,const std::vector<glm::ivec3>& faces)
+    {
+        //prepare variables needed for finding face normals and the closes face
+        std::vector<glm::vec4> normal_list;
+        int closest_face = 0;
+        float min_distance = INFINITY;
+
+        //check normal for each face
+        for (int i = 0; i < faces.size(); ++i) {
+            //a, b and c are the points making up the face
+            glm::vec3 a = polytope[faces[i][0]];
+            glm::vec3 b = polytope[faces[i][1]];
+            glm::vec3 c = polytope[faces[i][2]];
+
+            //find the normal of a given face from the cross product of vector AB and AC
+            glm::vec3 normal = glm::normalize(glm::cross(b - a, c - a));
+            //find distance to the face from the dot product of normal and one of its points
+            float distance = glm::dot(normal, a);
+
+            //check if normal is pointing into the polytope
+            if (distance < 0)
+            {
+                //if so flip the direction of the normal
+                normal *= -1;
+                distance *= -1;
+            }
+            //append the normal to the list
+            normal_list.emplace_back(normal, distance);
+
+            //check if current face is the closest face
+            if (distance < min_distance)
+            {
+                closest_face = i;
+                min_distance = distance;
+            }
+        }
+
+        return {normal_list, closest_face};
     }
 
     glm::vec3 tripleCrossProduct(glm::vec3& a, glm::vec3& b)

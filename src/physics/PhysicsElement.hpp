@@ -32,7 +32,8 @@ public:
         position += glm::vec3(0, -gravity * gravity_scale / 2, 0);
 
         //apply angular velocity
-        rotation += normalize((0.5f * rotation * glm::quat(0.0, angular_velocity) * time_step));
+        rotation += (0.5f * rotation * glm::quat(0.0, angular_velocity) * time_step);
+        rotation = glm::normalize(rotation);
     }
 
     PhysicsElement()
@@ -227,7 +228,7 @@ public:
     }
 
     /// Returns the furthest point from object origin in a given direction
-    glm::vec3 furthestPoint(glm::vec3& direction)
+    glm::vec3 furthestPoint(glm::vec3 direction)
     {
         if (is_sphere)
         {
