@@ -419,18 +419,75 @@ public:
             //As such I deem this "good enough", but if you have a better idea please let me know
             if (abs(next_point_distance - min_distance) > 0.0001)
             {
+                //run the loop again
                 min_distance = INFINITY;
-                //todo implement the inside of this
+
+                //The rest of what we do in here is adding a new support point, and deleting all faces pointing at it.
+                //We do this to avoid duplicate faces inside the polytope
+                //
+                //We begin the process by finding which edges face the same direction and then check for the uniqueness
+                //of their edges
+                std::vector<std::pair<int, int>> unique_edges;
+
+                for (int i = 0; i < normal_list.size(); i++)
+                {
+                    //check for direction
+                    if (glm::dot( glm::vec3(normal_list[i][0], normal_list[i][1], normal_list[i][2]), support_point) > 0)
+                    {
+                        //check whether the 3 faces of a given edge are unique and add them to the edge list.
+                        addUniqueEdge(unique_edges, faces, i, 0, 1);
+                        addUniqueEdge(unique_edges, faces, i, 1, 2);
+                        addUniqueEdge(unique_edges, faces, i, 2, 0);
+
+                        //delete the face
+                        faces[i] = faces.back();
+                        faces.pop_back();           //sidenote: I have no idea why .pop_back() does not return the value.
+                        normal_list[i] = normal_list.back();
+                        normal_list.pop_back();
+                        //We use pop-erasing and un-iterate i to not screw up the loop
+                        i--;
+                    }
+                }
+
+                //now that we deleted the non-needed faces, we need to construct new ones that touch the new support point
+                std::vector<glm::ivec3> new_faces;
+                for (auto [edge, edge2] : unique_edges)
+                {
+                    new_faces.emplace_back(edge, edge2, polytope.size()); //this is the part, where I am not sure whether the order remains clockwise
+                }
+
+                //add the new support to the polytope
+                polytope.emplace_back(support_point);
+
+                //find normals for the new faces
+                auto [new_norml_list, new_closest_face] = getFaceNormals(polytope, new_faces);
+
+                //find the new closest face by comparing the closest of the old and new faces
+                float old_min_distance = INFINITY;
+                for (int i = 0; i < normal_list.size(); i++)
+                {
+                    if (normal_list[i][3] < old_min_distance)
+                    {
+                        closest_face = i;
+                        old_min_distance = normal_list[i][3];
+                    }
+                }
+                if (new_norml_list[new_closest_face][3] < old_min_distance)
+                {
+                    closest_face = new_closest_face + normal_list.size();
+                }
+
+                //insert the new faces and their normals
+                faces.insert(faces.end(), new_faces.begin(), new_faces.end());
+                normal_list.insert(normal_list.end(), new_norml_list.begin(), new_norml_list.end());
             }
-
-
         }
 
         //better to overcompensate the correction distance than under compensate and cause this whole mess to run again
         return {min_distance * 1.01, min_normal};
     }
 
-    std::pair<std::vector<glm::vec4>, int> getFaceNormals(std::vector<glm::vec3>& polytope,const std::vector<glm::ivec3>& faces)
+    std::pair<std::vector<glm::vec4>, int> getFaceNormals(std::vector<glm::vec3>& polytope, std::vector<glm::ivec3>& faces)
     {
         //prepare variables needed for finding face normals and the closes face
         std::vector<glm::vec4> normal_list;
@@ -468,6 +525,27 @@ public:
         }
 
         return {normal_list, closest_face};
+    }
+
+    void addUniqueEdge(std::vector<std::pair<int, int>>& edges, std::vector<glm::ivec3> faces, int face_num, int a, int b)
+    {
+        //create edge from 2 vertices given as a and b
+        auto edge = std::find(edges.begin(),edges.end(),std::make_pair(faces[face_num][b], faces[face_num][a]));
+        auto edge2 = std::find(edges.begin(),edges.end(),std::make_pair(faces[face_num][a], faces[face_num][b]));
+
+        //check if the edge already exists, if it does, it means that the edge would lead to a duplicate face creation, and as such it must be destroyed.
+        if (edge != edges.end()) {            //sidenote: if I implemented everything correctly there would be no need to check both orders, only ba
+            edges.erase(edge);        //but I don't trust myself enough to not make absolutely sure this works
+        }                                     //      0--<--3
+        else if (edge2 != edges.end())        //     / \ B /   A: 2-0
+        {                                     //    / A \ /    B: 0-2
+            edges.erase(edge2);       //   1-->--2
+        }                                    //If everything was clockwise (as above) the same edge for face A would a reverse of it for B
+
+        //if face is unique add it to the unique edges
+        else {
+            edges.emplace_back(faces[face_num][a], faces[face_num][b]);
+        }
     }
 
     glm::vec3 tripleCrossProduct(glm::vec3& a, glm::vec3& b)
