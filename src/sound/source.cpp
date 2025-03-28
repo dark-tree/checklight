@@ -1,5 +1,6 @@
 #include "source.hpp"
 
+
 void SoundSourceObject::initSource(int number_of_sources){
 	alGetError();
 	this->number_of_sources = number_of_sources;
@@ -11,14 +12,8 @@ void SoundSourceObject::initSource(int number_of_sources){
 		return;
 	}
 
-	for (int i = 0;i < this->number_of_sources;i++)
-	{
-		alSourcef(this->sso_sources[i], AL_PITCH, 1.f);
-		alSourcef(this->sso_sources[i], AL_GAIN, 1.f);
-		alSource3f(this->sso_sources[i], AL_POSITION, 0,0,0);
-		alSource3f(this->sso_sources[i], AL_VELOCITY, 0, 0, 0);
-		alSourcei(this->sso_sources[i], AL_LOOPING, false);
-	}
+	updateParameters();
+	updateMovement();
 }
 
 // SoundSourceObject constructor to create object with only one sound source
@@ -27,11 +22,6 @@ SoundSourceObject::SoundSourceObject(){
 	SoundSourceObject::initSource(1);
 }
 
-// SoundSourceObject constructor to create a many sound sources in one object
-
-//SoundSourceObject::SoundSourceObject(int number_of_sources){
-//	SoundSourceObject::initSource(number_of_sources);
-//}
 
 SoundSourceObject::~SoundSourceObject(){
 	alDeleteSources(this->number_of_sources,this->sso_sources);
@@ -46,6 +36,7 @@ ALuint SoundSourceObject::getSource(){
 	return 0;
 }
 
+
 ALuint SoundSourceObject::getSource(int number){
 	if (alIsSource(sso_sources[number]) == AL_TRUE){
 		return sso_sources[number];
@@ -53,6 +44,7 @@ ALuint SoundSourceObject::getSource(int number){
 
 	return 0;
 }
+
 
 void SoundSourceObject::setPosition(float x, float y, float z)
 {
@@ -75,6 +67,7 @@ void SoundSourceObject::addBuffer(SoundClip clip){
 		return;
 	}
 }
+
 
 void SoundSourceObject::addBuffer(std::shared_ptr<SoundClip> clip) {
 	if (clip->getBuffer() == 0) {
@@ -101,14 +94,18 @@ void SoundSourceObject::addBuffer(std::shared_ptr<SoundClip> clip) {
 }
 
 
-void SoundSourceObject::addGroupParameters(std::shared_ptr<SoundGroupParameters> sg) {
-	this->sso_sg_parameters = sg;
+void SoundSourceObject::addGroupParameters(std::shared_ptr<SoundGroup> sg) {
+	this->sso_sg = sg;
 	updateParameters();
+	updateMovement();
 }
 
+
+//@TODO poprawic update sg jako offset dla parametrow sso
+//@TODO dodac parametry dla sso
 void SoundSourceObject::updateParameters() {
 	//if sso_sg_parameter has nullptr set default parameters for this SSO
-	if (this->sso_sg_parameters == nullptr){
+	if (this->sso_sg == nullptr){
 		for (int i = 0;i < this->number_of_sources;i++){
 			alSourcef(this->sso_sources[i], AL_PITCH, 1.0f);
 			alSourcef(this->sso_sources[i], AL_GAIN, 1.0f);
@@ -117,14 +114,32 @@ void SoundSourceObject::updateParameters() {
 	}
 	else {
 		for (int i = 0;i < this->number_of_sources;i++) {
-			alSourcef(this->sso_sources[i], AL_PITCH, sso_sg_parameters.get()->getPitch());
-			alSourcef(this->sso_sources[i], AL_GAIN, sso_sg_parameters.get()->getGain());
-			alSourcei(this->sso_sources[i], AL_LOOPING, sso_sg_parameters.get()->getLooping());
+			alSourcef(this->sso_sources[i], AL_PITCH, sso_sg.get()->getPitch());
+			alSourcef(this->sso_sources[i], AL_GAIN, sso_sg.get()->getGain());
+			alSourcei(this->sso_sources[i], AL_LOOPING, sso_sg.get()->getLooping());
 		}
 	}
 }
 
-\
+
+void SoundSourceObject::updateMovement() {
+	if (this->sso_sg == nullptr) {
+		for (int i = 0;i < this->number_of_sources;i++) {
+			alSource3f(this->sso_sources[i], AL_POSITION, 0, 0, 0);
+			alSource3f(this->sso_sources[i], AL_VELOCITY, 0, 0, 0);
+			alSource3f(this->sso_sources[i], AL_DIRECTION, 0, 0, 0);
+		}
+	}
+	else {
+		for (int i = 0;i < this->number_of_sources;i++) {
+			alSourcefv(this->sso_sources[i], AL_POSITION, sso_sg.get()->getPositionfv());
+			alSourcefv(this->sso_sources[i], AL_VELOCITY, sso_sg.get()->getVelocityfv());
+			alSourcefv(this->sso_sources[i], AL_DIRECTION, sso_sg.get()->getDirectionfv());
+		}
+	}
+}
+
+
 void SoundSourceObject::play(int source_number) {
 	if (source_number > this->number_of_sources || !alIsSource(this->sso_sources[source_number])) {
 		std::cerr << ("Source -> playSound: No valid sound source found!\f");
@@ -139,9 +154,11 @@ void SoundSourceObject::play(int source_number) {
 	}
 }
 
+
 void SoundSourceObject::playSound(){
 	play(0);
 }
+
 
 void SoundSourceObject::stop(int source_number) {
 	if (source_number > this->number_of_sources || !alIsSource(this->sso_sources[source_number])) {
@@ -157,9 +174,11 @@ void SoundSourceObject::stop(int source_number) {
 	}
 }
 
+
 void SoundSourceObject::stopSound(){
 	stop(0);
 }
+
 
 void SoundSourceObject::pause(int source_number) {
 	if (source_number > this->number_of_sources || !alIsSource(this->sso_sources[source_number])) {
@@ -175,9 +194,11 @@ void SoundSourceObject::pause(int source_number) {
 	}
 }
 
+
 void SoundSourceObject::pauseSound() {
 	pause(0);
 }
+
 
 bool SoundSourceObject::isPlaying(){
 	ALint state;

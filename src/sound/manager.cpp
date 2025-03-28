@@ -47,7 +47,7 @@ void SoundManager::addSource(std::shared_ptr <SoundSourceObject> sso){
 	}
 
 	// check if exist a source with a given name
-	if (find_in_vector(v_sources,sso) != v_sources.end()) {
+	if (findInVector(v_sources,sso) != v_sources.end()) {
 		std::cerr << ("SoundManager -> addSource: SoundSourceObject already exist\f");
 		return;
 	}
@@ -63,7 +63,7 @@ void SoundManager::addClip(std::shared_ptr <SoundClip> sc) {
 	}
 
 	// check if exist a source with a given name
-	if (find_in_vector(v_clips,sc) != v_clips.end()) {
+	if (findInVector(v_clips,sc) != v_clips.end()) {
 		std::cerr << ("SoundManager -> addClip: SoundClip already exist\f");
 		return;
 	}
@@ -78,7 +78,7 @@ void SoundManager::addAudioToClip(std::shared_ptr <SoundClip> sc, const char* ur
 		return;
 	}
 	
-	auto clip_find = find_in_vector(v_clips, sc);
+	auto clip_find = findInVector(v_clips, sc);
 	// check if exist a clip with a given name
 	if (clip_find == v_clips.end()) {
 		std::cerr << ("SoundManager -> addAudioToClip: SoundClip not already exist\f");
@@ -100,8 +100,8 @@ void SoundManager::connectClipWithSource(std::shared_ptr<SoundClip> sc, std::sha
 		return;
 	}
 
-	auto source_find = find_in_vector(v_sources, sso);
-	auto clip_find = find_in_vector(v_clips, sc);
+	auto source_find = findInVector(v_sources, sso);
+	auto clip_find = findInVector(v_clips, sc);
 
 	//@TODO Maybe intead of an exception we should create a Clip or SourceObjecy
 
@@ -130,7 +130,7 @@ void SoundManager::playSound(std::weak_ptr <SoundSourceObject> sso){
 	}
 	
 
-	auto source_find = find_in_vector(v_sources, sso);
+	auto source_find = findInVector(v_sources, sso);
 
 	// check if exist a source with a given name
 	if (source_find == v_sources.end()) {
@@ -149,7 +149,7 @@ void SoundManager::stopSound(std::shared_ptr <SoundSourceObject> sso) {
 		return;
 	}
 
-	auto source_find = find_in_vector(v_sources, sso);
+	auto source_find = findInVector(v_sources, sso);
 	// check if exist a source with a given name
 	if (source_find == v_sources.end()) {
 		std::cerr << ("SoundManager -> stopSound: SoundSourceObject not already exist in ums_sources. Please add to map (sm.addSource(sso))\f");
@@ -166,7 +166,7 @@ void SoundManager::pauseSound(std::shared_ptr <SoundSourceObject> sso) {
 		return;
 	}
 
-	auto source_find = find_in_vector(v_sources, sso);
+	auto source_find = findInVector(v_sources, sso);
 	// check if exist a source with a given name
 	if (source_find == v_sources.end()) {
 		std::cerr << ("SoundManager -> pauseSound: SoundSourceObject not already exist in ums_sources. Please add to map (sm.addSource(sso))\f");

@@ -4,67 +4,74 @@
 
 class SoundSourceObject;
 #include "source.hpp"
-
-//@TODO naprawic include recursive (include guards)
-//@TODO dodac observer patern
-//@TODO jakos uniezaleznic 2 groupy ale wciaz mialy wspolony kod zeby nie pisac go 2 razy
-
+#include "functions.hpp"
 
 // shared struct with parameters for SoundSourceObjects
-struct SoundGroupParameters {
+
+//@TODO poprawic kopiowanie obiektow
+//@TODO dodac odczepianie od sg w sso
+
+//@TODO SG JAKO srodek ciezkosci a nie parametry stricte dla sso
+//@TODO sg to offset parametrow sso
+//@TODO sso ma wlasne parametry
+
+// ===============================SoundGroup===============================
+
+
+struct SoundGroup {
 private:
-	float sso_pitch;
-	float sso_gain;
-	bool sso_looping; 
-	
+	//parameters
+	float sso_pitch = 1.0f;
+	float sso_gain = 1.0f;
+	bool sso_looping = false;
+
+	//movement
+	glm::vec3 sso_position = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 sso_velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 sso_direction = glm::vec3(0.0f, 0.0f, 0.0f);
+
 	std::vector<std::weak_ptr<SoundSourceObject>> observers_vector_sso;
-
+	void notifyObserversSSO(void (SoundSourceObject::* method)());
 public:
-	SoundGroupParameters()
-		:sso_pitch(1.0f), sso_gain(1.0f), sso_looping(false) {}
-	~SoundGroupParameters() { observers_vector_sso.clear(); }
+	void addObserversSoundSourceObject(std::shared_ptr<SoundSourceObject> sso);
 
+	SoundGroup& operator= (const SoundGroup& right) {
+		if (this != &right) {
+			observers_vector_sso = right.observers_vector_sso;
+		}
+		return *this;
+	};
+
+
+	//===============================Parameters===============================
+	//getter
 	float getPitch() { return sso_pitch; }
 	float getGain() { return sso_gain; }
 	bool getLooping() { return sso_looping; }
 
-	void setPitch(float pitch) { sso_pitch = pitch; }
-	void setGain(float gain) { sso_gain = gain; }
-	void setLooping(bool looping) { sso_looping = looping; }
 
-	void addObserversSoundSourceObject(std::shared_ptr<SoundSourceObject> sso) {
-		if (!sso) {
-			std::cerr << ("SoundGroupParameters -> addObserversSoundSourceObject: SoundSourceObject not exist\f");
-			return;
-		}
+	//setter
+	void setPitch(float pitch);
+	void setGain(float gain);
+	void setLooping(bool looping);
 
-		// check if exist a source with a given name
-		if (find_in_vector(observers_vector_sso, sso) != observers_vector_sso.end()) {
-			std::cerr << ("SoundGroupParameters -> addObserversSoundSourceObject: SoundSourceObject already exist\f");
-			return;
-		}
 
-		observers_vector_sso.push_back(sso); 
-	}
+	//===============================Movements===============================
+	//getter
+	glm::vec3 getPositionv3() { return sso_position; }
+	glm::vec3 getVelocityv3() { return sso_velocity; }
+	glm::vec3 getDirectionv3() { return sso_direction; }
 
-};
+	float* getPositionfv() { return &sso_position[0]; }
+	float* getVelocityfv() { return &sso_velocity[0]; }
+	float* getDirectionfv() { return &sso_direction[0]; }
 
-struct SoundGroupMovement {
-private:
-	glm::vec3 sso_position;
-	glm::vec3 sso_velocity;
-	glm::vec3 sso_direction;
-public:
-	SoundGroupMovement()
-		:	sso_position((0.0f, 0.0f, 0.0f)),
-			sso_velocity((0.0f, 0.0f, 0.0f)),
-			sso_direction((0.0f, 0.0f, 0.0f)) {}
 
-	glm::vec3 getPosition() { return sso_position; }
-	glm::vec3 getVelocity() { return sso_velocity; }
-	glm::vec3 getDirection() { return sso_direction; }
+	//setter
+	void setPosition(glm::vec3 position);
+	void setVelocity(glm::vec3 velocity);
+	void setDirection(glm::vec3 direction);
 
-	void setPosition(glm::vec3 position) { sso_position = position; }
-	void setVelocity(glm::vec3 velocity) { sso_velocity = velocity; }
-	void setDirection(glm::vec3 direction) { sso_direction = direction; }
+
+	~SoundGroup() { observers_vector_sso.clear(); }
 };
