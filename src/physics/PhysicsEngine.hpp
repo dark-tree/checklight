@@ -12,7 +12,7 @@
 class PhysicsEngine {
 protected:
 
-    float gravity_strength; /// Acceleration due to gravity
+    glm::vec3 gravity_strength; /// Acceleration due to gravity as a 3-dimensional vector
 
 public:
     //this is here for testing only todo move into protected after testing

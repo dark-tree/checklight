@@ -24,12 +24,12 @@ public:
      * @param time_step length of time between the last 2 frames (const for physics update)
      * @param gravity gravitational acceleration strength
      */
-    void update(float time_step, float gravity)
+    void update(float time_step, glm::vec3 gravity)
     {
         //integrate position over time with respect to acceleration
-        velocity += glm::vec3(0, -gravity * gravity_scale / 2, 0);
+        velocity += gravity * (gravity_scale / 2.0f);
         position += velocity * time_step;
-        position += glm::vec3(0, -gravity * gravity_scale / 2, 0);
+        position += gravity * (gravity_scale / 2.0f);
 
         //apply angular velocity
         rotation += (0.5f * rotation * glm::quat(0.0, angular_velocity) * time_step);
