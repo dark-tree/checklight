@@ -460,7 +460,7 @@ public:
                 polytope.emplace_back(support_point);
 
                 //find normals for the new faces
-                auto [new_norml_list, new_closest_face] = getFaceNormals(polytope, new_faces);
+                auto [new_normal_list, new_closest_face] = getFaceNormals(polytope, new_faces);
 
                 //find the new closest face by comparing the closest of the old and new faces
                 float old_min_distance = INFINITY;
@@ -472,14 +472,14 @@ public:
                         old_min_distance = normal_list[i][3];
                     }
                 }
-                if (new_norml_list[new_closest_face][3] < old_min_distance)
+                if (new_normal_list[new_closest_face][3] < old_min_distance)
                 {
                     closest_face = new_closest_face + normal_list.size();
                 }
 
                 //insert the new faces and their normals
                 faces.insert(faces.end(), new_faces.begin(), new_faces.end());
-                normal_list.insert(normal_list.end(), new_norml_list.begin(), new_norml_list.end());
+                normal_list.insert(normal_list.end(), new_normal_list.begin(), new_normal_list.end());
             }
         }
 
