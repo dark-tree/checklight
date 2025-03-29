@@ -22,27 +22,45 @@ static void entry(Args& args) {
 
 	auto context = std::make_shared<WidgetContext>();
 	auto panel = std::make_shared<PanelWidget>();
-	auto sub = std::make_shared<PanelWidget>();
 
-	sub->width = Unit::grow(1);
-	sub->height = Unit::px(100);
-	sub->g = 50;
-	sub->b = 200;
+	{
+		auto sub = std::make_shared<PanelWidget>();
+		panel->addWidget(sub);
 
-	auto sub2 = std::make_shared<PanelWidget>();
+		sub->width = Unit::grow(1);
+		sub->height = Unit::px(100);
+		sub->r = 0x55;
+		sub->g = 0xcd;
+		sub->b = 0xfc;
+	}
 
-	sub2->width = Unit::grow(2);
-	sub2->height = Unit::grow();
-	sub2->g = 200;
-	sub2->b = 50;
+	{
+		auto sub = std::make_shared<PanelWidget>();
+		panel->addWidget(sub);
 
-	panel->addWidget(sub);
-	panel->addWidget(sub2);
+		sub->width = Unit::grow(1);
+		sub->height = Unit::px(100);
+		sub->r = 0xf7;
+		sub->g = 0xa8;
+		sub->b = 0xb8;
+	}
+
+	{
+		auto sub = std::make_shared<PanelWidget>();
+		panel->addWidget(sub);
+
+		sub->width = Unit::grow(1);
+		sub->height = Unit::px(100);
+		sub->r = 255;
+		sub->g = 255;
+		sub->b = 255;
+	}
+
 	panel->width = Unit::px(400);
 	panel->height = Unit::fit();
 	panel->flow = Flow::LEFT_TO_RIGHT;
 	panel->padding = Unit::px(10);
-	panel->gap = Unit::px(10);
+	panel->gap = Unit::px(0);
 
 	panel->rebuild(10, 10);
 

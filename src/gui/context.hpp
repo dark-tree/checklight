@@ -1,6 +1,7 @@
 #pragma once
 
 #include "external.hpp"
+#include "navigator.hpp"
 #include "input/listener.hpp"
 
 class ImmediateRenderer;
@@ -11,14 +12,11 @@ class WidgetContext : public InputListener {
 
 	private:
 
-		/// Pointer to the selected element.
-		std::shared_ptr<InputWidget> selected = nullptr;
+		/// Used for keyboard navigation of the UI
+		Navigator navigator;
 
 		/// The root element of this GUI tree, most likely a PanelWidget
 		std::shared_ptr<Widget> root;
-
-		/// Recursively scan widget tree for all selectable elements
-		std::vector<std::shared_ptr<InputWidget>> getSelectableWidgets() const;
 
 	public:
 

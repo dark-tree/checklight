@@ -19,7 +19,4 @@ class TextWidget : public Widget {
 		void draw(ImmediateRenderer& immediate) override;
 		bool event(WidgetContext& context, const InputEvent &event) override;
 
-		virtual Box2D getInherentBox() const;
-		// virtual void setBounds(Box2D bounds);
-
 };

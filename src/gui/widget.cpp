@@ -3,6 +3,7 @@
 #include "input/input.hpp"
 #include "render/immediate.hpp"
 #include "context.hpp"
+#include "navigator.hpp"
 
 /*
  * Widget
@@ -16,10 +17,6 @@ void Widget::rebuild(int x, int y) {
 	applyGrowSizing(Channel::HEIGHT);
 
 	applyPositioning(x, y);
-}
-
-Box2D Widget::getInherentBox() const {
-	return {0, 0, 100, 100};
 }
 
 Box2D Widget::getContentBox() const {
@@ -189,8 +186,10 @@ bool Widget::event(WidgetContext& context, const InputEvent& any) {
 	return false;
 }
 
-void Widget::appendSelectable(std::vector<std::shared_ptr<InputWidget>>& selectable) {
-	// no-op base virtual method
+void Widget::scan(Navigator& navigator) {
+	for (auto& widget : children) {
+		widget->scan(navigator);
+	}
 }
 
 /*
@@ -204,7 +203,6 @@ bool InputWidget::isFocused() const {
 void InputWidget::setFocus(WidgetContext& context) {
 	context.setSelected(std::dynamic_pointer_cast<InputWidget>(shared_from_this()));
 }
-
 
 void InputWidget::setSelected(bool selected) {
 	this->selected = selected;
@@ -242,6 +240,6 @@ bool InputWidget::event(WidgetContext& context, const InputEvent& any) {
 	return false;
 }
 
-void InputWidget::appendSelectable(std::vector<std::shared_ptr<InputWidget>>& selectable) {
-	selectable.push_back(std::dynamic_pointer_cast<InputWidget>(shared_from_this()));
+void InputWidget::scan(Navigator& navigator) {
+	navigator.addWidget(std::dynamic_pointer_cast<InputWidget>(shared_from_this()));
 }

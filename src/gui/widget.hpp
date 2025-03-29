@@ -10,7 +10,7 @@
 
 class WidgetContext;
 class ImmediateRenderer;
-
+class Navigator;
 class InputWidget;
 
 struct Spacing {
@@ -47,7 +47,6 @@ class Widget : public std::enable_shared_from_this<Widget> {
 		Box2D padded { {},{},{},{} };   // content box with padding added
 		Box2D content { {},{},{},{} };  // content box
 
-		virtual Box2D getInherentBox() const;
 		Box2D getContentBox() const;
 		Box2D getPaddingBox() const;
 		Box2D getMarginBox() const;
@@ -58,6 +57,7 @@ class Widget : public std::enable_shared_from_this<Widget> {
 		/// Compute element size based on its children (absolute & fit content)
 		void applyFitSizing(Channel channel);
 
+		/// Adjust element's children sizes to fill remaining space
 		void applyGrowSizing(Channel channel);
 
 		/// Create final binding boxes based on sizing information
@@ -68,7 +68,7 @@ class Widget : public std::enable_shared_from_this<Widget> {
 		virtual ~Widget();
 		virtual void draw(ImmediateRenderer& immediate) = 0;
 		virtual bool event(WidgetContext& context, const InputEvent& event);
-		virtual void appendSelectable(std::vector<std::shared_ptr<InputWidget>>& selectable);
+		virtual void scan(Navigator& navigator);
 
 	public:
 
@@ -90,7 +90,7 @@ class InputWidget : public Widget {
 
 	private:
 
-		friend class WidgetContext;
+		friend class Navigator;
 
 		/// Never invoke this method yourself!
 		void setSelected(bool selected);
@@ -98,6 +98,6 @@ class InputWidget : public Widget {
 	public:
 
 		virtual bool event(WidgetContext& context, const InputEvent& event);
-		virtual void appendSelectable(std::vector<std::shared_ptr<InputWidget>>& selectable);
+		virtual void scan(Navigator& navigator);
 
 };
