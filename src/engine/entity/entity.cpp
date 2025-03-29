@@ -8,6 +8,7 @@ Entity::Entity() {
 	id = id_number++;
 	active = true;
 	to_remove = false;
+
 }
 
 Entity::~Entity() {

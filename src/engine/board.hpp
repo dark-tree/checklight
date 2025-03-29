@@ -4,7 +4,7 @@
 class SpatialPawn;
 
 //Its a Scene dumbass
-class Board {
+class Board : public std::enable_shared_from_this<Board> {
 private:
 	PawnTree pawns;
 	std::weak_ptr<SpatialPawn> cameraPawn;
@@ -69,7 +69,14 @@ public:
 	/**
 	 * DEBUG ONLY - prints whole pawn tree (DONT USE IN RELEASE VERSION) 
 	 */
-	std::string printBoardTree();
+	void printBoardTree();
+
+	/**
+	 * DEBUG ONLY - prints whole pawn tree with great detail (DONT USE IN RELEASE VERSION)
+	 */
+	void printBoardTreeVerbose();
+
+
 	
 	/**
 	 * set name of a board

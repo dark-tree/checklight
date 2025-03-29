@@ -18,6 +18,7 @@ void Board::fixedUpdateBoard() {
 
 void Board::addPawnToRoot(const std::shared_ptr<Pawn>& pawn) {
 	pawns.addToRoot(pawn);
+	pawn->setBoard(this);
 }
 
 
@@ -84,10 +85,13 @@ std::vector<std::shared_ptr<Pawn>> Board::findPawnsByName(const std::string& nam
 }
 
 
-std::string Board::printBoardTree() {
-	return pawns.print();
+void Board::printBoardTree() {
+	out::debug("Entity Tree:\n%s",(pawns.toString() + " ").c_str());
 }
 
+void Board::printBoardTreeVerbose() {
+	out::debug("Entity Tree:\n%s",(pawns.toStringVerbose() + " ").c_str());
+}
 
 void Board::setBoardName(const std::string& new_name) {
 	name = new_name;
@@ -109,5 +113,7 @@ glm::vec3 Board::getCamPos() {
 glm::vec3 Board::getCamForward() {
     return cameraPawn.lock()->getForwardVector();
 }
+
+
 
 

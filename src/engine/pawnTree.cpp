@@ -53,7 +53,8 @@ void PawnTree::addToRoot(std::shared_ptr<Pawn> pawn) {
 
 void PawnTree::mountPawn(std::shared_ptr<Pawn> pawn) {
 	bool isCopy = false;
-	bool isChanged = pawn->isStructureChanged();
+	bool isChanged = pawn->unregisteredChildAdded();
+
 	if (idMap.count(pawn->getEntityID()) > 0) {
 		auto range = idMap.equal_range(pawn->getEntityID());
 		for (auto r = range.first; r != range.second; ++r) {
@@ -73,6 +74,7 @@ void PawnTree::mountPawn(std::shared_ptr<Pawn> pawn) {
 
 	if (isChanged) {
 		updatePawnsChildren(pawn);
+		isChanged = false;
 	}
 }
 
@@ -121,25 +123,45 @@ void PawnTree::fixedUpdareTreeRecursion(std::shared_ptr<Pawn> pawn_to_fixed_upda
 	}
 }
 
-std::string PawnTree::print() {
-	std::string result = "";
-	result += "\"" + root.getName() + "\"" + "\n";
-	for (auto c : root.getChildren()) {
-		result += recursivePrint(c, 1);
+std::string PawnTree::toString() {
+	return printStart(false);
+}
+
+
+std::string PawnTree::toStringVerbose() {
+	return printStart(true);
+}
+
+std::string PawnTree::printStart(bool verbose) {
+	std::string result;
+	std::string n;
+	if(!verbose) n = root.toString();
+	else n = root.toStringVerbose();
+	result += "\"" + n + "\"" + "\n";
+	for (const auto& c : root.getChildren()) {
+		result += recursiveString(c, 1, verbose);
 	}
 	return result;
 }
 
-std::string PawnTree::recursivePrint(std::shared_ptr<Pawn> p, int depth) {
+
+std::string PawnTree::recursiveString(std::shared_ptr<Pawn> p, int depth, bool verbose) {
 	std::string result = "";
 	for (int i = 0; i < depth; i++) {
 		result += "  ";
 	}
-	result += "\"" + p->getName() + "\"" + "\n";
+
+	std::string n;
+	if(!verbose) n = p->toString();
+	else n = p->toStringVerbose();
+
+	result += "\"" + n + "\"" + "\n";
 
 	std::vector<std::shared_ptr<Pawn>> test = p->getChildren();
 	for (size_t i = 0; i < test.size(); i++) {
-		result += recursivePrint(test[i], depth + 1);
+		result += recursiveString(test[i], depth + 1, verbose);
 	}
 	return result;
 }
+
+

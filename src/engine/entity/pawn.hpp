@@ -5,17 +5,25 @@
 #include "context.hpp"
 
 class PawnTree;
-class Scene;
+class Board;
 class RootPawn;
 
 class Pawn : public Entity, public std::enable_shared_from_this<Pawn> {
 protected:
 	friend class PawnTree;
+	friend class Board;
 	std::vector<std::shared_ptr<Pawn>> children;
 	std::weak_ptr<Pawn> parent;
-	bool is_mounted_to_scene;
-	bool changed_pawn_struture;
-	std::weak_ptr<Scene> scene;
+	bool to_remove;
+
+	bool is_mounted_to_board;
+
+	/// checks if there is a complex structure of pawns and uses that for mounting a child into data structures
+	bool unregistered_child_added;
+
+	/// checks if there is a child, that is to be removed or children of its children are to be removed etc... used to delete objects at the end of update processing
+	bool child_to_be_removed;
+	Board* board;
 	std::string name;
 	std::weak_ptr<RootPawn> rootPawn;
 
@@ -30,6 +38,8 @@ protected:
 	 * All the things that happens on fixed update of the engine (fixed intervals between updates, updates with the same frequency as physics)
 	 */
 	virtual void onFixedUpdate();
+
+	void setBoard(Board* s);
 
 public:
 
@@ -63,6 +73,11 @@ public:
 	std::weak_ptr<Pawn> getParent();
 
 	/**
+	 * Returns the board of which it is a part of, or null if there is no such scene
+	 */
+	Board* getScene();
+
+	/**
 	 * Returns all of the pawns children
 	 */
 	std::vector<std::shared_ptr<Pawn>> getChildren();
@@ -89,7 +104,29 @@ public:
 	virtual bool isRoot();
 
 	/**
-	 * returns true if there were some changes to pawn tree (like new children added) that requires changes to PawnTree structure
+	 * returns true if there were some additive changes to pawn tree (like new children added) that requires changes to PawnTree structure
 	 */
-	bool isStructureChanged();
+	bool unregisteredChildAdded() const;
+
+	/**
+	 * returns true if there were some subtractive changes to pawn tree (like removed a children) that requires changes to PawnTree structure
+	 */
+	bool childToBeRemoved() const;
+
+	/**
+	 * returns true if the pawn is a part of a board
+	 */
+	bool isMountedToBoard() const;
+
+	/**
+	 * returns small amount of information about the pawn ina a string format, currently only a name [for full description use toStringVerbose]
+	 */
+	std::string toString() const;
+
+	/**
+	 * returns information about the pawn in a string string
+	 */
+	std::string toStringVerbose() const;
+
+	std::shared_ptr<RootPawn> getRoot();
 };

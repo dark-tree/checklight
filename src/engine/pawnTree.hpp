@@ -22,7 +22,12 @@ protected:
 	/**
 	 * returns part of a pawn tree in a string format, triggered by print() function
 	 */
-	std::string recursivePrint(std::shared_ptr<Pawn> p, int depth);
+	std::string recursiveString(std::shared_ptr<Pawn> p, int depth, bool verbose);
+
+	/**
+	 * manages verbose/non-verbose printing
+	 */
+	std::string printStart(bool verbose);
 
 public:
 
@@ -89,5 +94,10 @@ public:
 	/**
 	 * returns whole pawn tree in string format
 	 */
-	std::string print();
+	std::string toString();
+
+	/**
+	 * returns whole pawn tree in string format
+	 */
+	std::string toStringVerbose();
 };

@@ -27,7 +27,6 @@ static void entry(Args& args) {
 
 	std::shared_ptr<Pawn> pawn = std::make_shared<Pawn>();
 
-
 	auto pawnThatRendersTheCube = std::make_shared<SpatialPawn>();
 	auto pawnThatRendersTheSphere = std::make_shared<SpatialPawn>();
 
@@ -62,15 +61,19 @@ static void entry(Args& args) {
 		objects.push_back(object);
 	}
 
+	uint64_t a = 0;
 	while (!window.shouldClose()) {
 		window.poll();
-
+		a++;
 
 		pawnThatRendersTheCube->setRotation(glm::rotate(pawnThatRendersTheCube->getRotation(),0.01f,{1.0f,1.0f,1.0f}));
 
 		//physics update before rendering
 		manager.updateCycle();
 		std::shared_ptr<Board> current_board = manager.getCurrentBoard().lock();
+		if(a % 1000 == 1){
+			current_board->printBoardTreeVerbose();
+		}
 
 
 		//drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());
