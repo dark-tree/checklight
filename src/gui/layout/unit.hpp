@@ -35,8 +35,8 @@ class Unit {
 			return {0, Metric::FIT};
 		}
 
-		static constexpr Unit grow(double fraction) {
-			return {fraction, Metric::GROW};
+		static constexpr Unit grow(int fraction = 1) {
+			return {static_cast<double>(fraction), Metric::GROW};
 		}
 
 		static constexpr Unit px(double value) {

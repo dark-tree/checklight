@@ -24,23 +24,23 @@ static void entry(Args& args) {
 	auto panel = std::make_shared<PanelWidget>();
 	auto sub = std::make_shared<PanelWidget>();
 
-	sub->width = Unit::px(100);
+	sub->width = Unit::grow(1);
 	sub->height = Unit::px(100);
 	sub->g = 50;
 	sub->b = 200;
 
 	auto sub2 = std::make_shared<PanelWidget>();
 
-	sub2->width = Unit::px(100);
-	sub2->height = Unit::px(100);
+	sub2->width = Unit::grow(2);
+	sub2->height = Unit::grow();
 	sub2->g = 200;
 	sub2->b = 50;
 
 	panel->addWidget(sub);
 	panel->addWidget(sub2);
-	panel->width = Unit::fit();
+	panel->width = Unit::px(400);
 	panel->height = Unit::fit();
-	panel->flow = Flow::TOP_TO_BOTTOM;
+	panel->flow = Flow::LEFT_TO_RIGHT;
 	panel->padding = Unit::px(10);
 	panel->gap = Unit::px(10);
 

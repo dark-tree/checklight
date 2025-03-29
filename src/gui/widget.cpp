@@ -11,9 +11,9 @@
 void Widget::rebuild(int x, int y) {
 
 	applyFitSizing(Channel::WIDTH);
-	applyGrowSizing(Channel::WIDTH, sizing.width());
+	applyGrowSizing(Channel::WIDTH);
 	applyFitSizing(Channel::HEIGHT);
-	applyGrowSizing(Channel::HEIGHT, sizing.height());
+	applyGrowSizing(Channel::HEIGHT);
 
 	applyPositioning(x, y);
 }
@@ -76,18 +76,81 @@ void Widget::applyFitSizing(Channel channel) {
 		}
 
 		sizing.get(channel) = value;
-		return;
 	}
 
-	if (unit.metric == Metric::GROW) {
-		FAULT("GROW sizing not yet implemented");
-	}
+	// ignore GROW sizing, that is handled in applyGrowSizing()
 
 }
 
-void Widget::applyGrowSizing(Channel channel, int parent) {
+void Widget::applyGrowSizing(Channel channel) {
 
-	// TODO
+	const bool along = getFlowChannel(flow) == channel;
+	const int spacing = gap.toPixels(); /* TODO ensure that gap is absolute */
+
+	int remaining = sizing.get(channel);
+
+	int total = 0;
+	int fractions = 0;
+	std::vector<std::pair<int, std::shared_ptr<Widget>>> growable;
+
+	for (const std::shared_ptr<Widget>& widget : children) {
+		Unit unit = (channel == Channel::WIDTH) ? widget->width : widget->height;
+		const int outer = widget->getOuterSizing(channel);
+
+		// subtract elements from out total size
+		// to get at the still unused space
+		remaining -= outer + spacing;
+
+		// GROW elements will be saved for later use
+		if (unit.metric == Metric::GROW) {
+
+			if (along) {
+				growable.emplace_back(unit.value, widget);
+				fractions += unit.value;
+				total += outer;
+				continue;
+			}
+
+			// in case our element wants to grow across just set it
+			// to 100% of the parent sizing component
+			widget->sizing.get(channel) = sizing.get(channel);
+
+		}
+	}
+
+	// remove trailing element gap
+	if (!children.empty()) {
+		remaining += spacing;
+	}
+
+	if (fractions < growable.size()) {
+		out::error("Invalid fractional size found during grow apply, %d is less then the element count %d!", fractions, growable.size());
+		fractions = growable.size();
+	}
+
+	if (!growable.empty() && remaining > 0) {
+
+		// total space that can be taken by grow elements
+		total += remaining;
+		int part = total / fractions;
+		int reminder = total % fractions;
+
+		for (auto [fraction, widget] : growable) {
+			int extension = fraction * part;
+
+			if (reminder) {
+				extension ++;
+				reminder --;
+			}
+
+			// subtract old size and do it as an addition so we don't have to worry about padding
+			widget->sizing.get(channel) += extension - widget->getOuterSizing(channel);
+		}
+	}
+
+	for (const std::shared_ptr<Widget>& widget : children) {
+		widget->applyGrowSizing(channel);
+	}
 
 }
 

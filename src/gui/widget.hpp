@@ -58,7 +58,7 @@ class Widget : public std::enable_shared_from_this<Widget> {
 		/// Compute element size based on its children (absolute & fit content)
 		void applyFitSizing(Channel channel);
 
-		void applyGrowSizing(Channel channel, int parent);
+		void applyGrowSizing(Channel channel);
 
 		/// Create final binding boxes based on sizing information
 		void applyPositioning(int x, int y);
