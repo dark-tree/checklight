@@ -28,7 +28,6 @@ static void entry(Args& args) {
 	sub->height = Unit::px(100);
 	sub->g = 50;
 	sub->b = 200;
-	sub->vertical = VerticalAlignment::CENTER;
 
 	auto sub2 = std::make_shared<PanelWidget>();
 
@@ -36,15 +35,16 @@ static void entry(Args& args) {
 	sub2->height = Unit::px(100);
 	sub2->g = 200;
 	sub2->b = 50;
-	sub2->vertical = VerticalAlignment::CENTER;
-	sub2->horizontal = HorizontalAlignment::CENTER;
 
 	panel->addWidget(sub);
 	panel->addWidget(sub2);
-	panel->width = Unit::px(400);
-	panel->height = Unit::px(400);
+	panel->width = Unit::fit();
+	panel->height = Unit::fit();
+	panel->flow = Flow::TOP_TO_BOTTOM;
+	panel->padding = Unit::px(10);
+	panel->gap = Unit::px(10);
 
-	panel->setBounds({10,10,0,0});
+	panel->rebuild(10, 10);
 
 
 	// auto slider = std::make_shared<SliderWidget>([] () noexcept {
@@ -102,7 +102,7 @@ static void entry(Args& args) {
 
 		context->draw(system.getImmediateRenderer());
 
-		drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());
+		//drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());
 
 		// update uniforms
 		// do this once at the beginning of frame rendering

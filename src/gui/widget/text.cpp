@@ -22,8 +22,8 @@ Box2D TextWidget::getInherentBox() const {
 	return {0, 0, 0, 0};
 }
 
-void TextWidget::setBounds(Box2D bounds) {
-	Widget::setBounds(bounds);
-}
+// void TextWidget::setBounds(Box2D bounds) {
+// 	Widget::setBounds(bounds);
+// }
 
 

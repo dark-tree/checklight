@@ -5,96 +5,17 @@
 #include "context.hpp"
 
 /*
- * Spacing
- */
-
-Box2D Spacing::apply(int width, int height, const Box2D& initial) {
-	return initial.expand(
-		top.resolve(height),
-		bottom.resolve(height),
-		left.resolve(width),
-		right.resolve(width)
-	);
-}
-
-Box2D Spacing::remove(int width, int height, const Box2D& initial) {
-	return initial.expand(
-		-top.resolve(height),
-		-bottom.resolve(height),
-		-left.resolve(width),
-		-right.resolve(width)
-	);
-}
-
-/*
  * Widget
  */
 
-void Widget::setBounds(Box2D bounds) {
+void Widget::rebuild(int x, int y) {
 
-	Box2D inherent = getInherentBox();
-	Box2D intermediate = padding.apply(inherent.w, inherent.h, inherent);
+	applyFitSizing(Channel::WIDTH);
+	applyGrowSizing(Channel::WIDTH, sizing.width());
+	applyFitSizing(Channel::HEIGHT);
+	applyGrowSizing(Channel::HEIGHT, sizing.height());
 
-	// calculate width in pixels based on parent
-	int explicit_width = width.resolve(bounds.w);
-	int explicit_height = height.resolve(bounds.h);
-
-	// width, height control the padded-box (css border box)
-	padded = intermediate.reserve(explicit_width, explicit_height);
-
-	// undo the padding to get the final content box
-	content = padding.remove(padded.w, padded.h, padded);
-
-	// finally calculate the outer element bounds
-	margined = margin.apply(bounds.w, bounds.w /* intentionally */, padded);
-
-	// needed to later offset content and padded
-	const float rx = margined.x;
-	const float ry = margined.y;
-
-	// align margined
-	const int cx = std::max(bounds.x, bounds.x + static_cast<int>((bounds.w - margined.w) * toAlignmentFactor(this->horizontal)));
-	const int cy = std::max(bounds.y, bounds.y + static_cast<int>((bounds.h - margined.h) * toAlignmentFactor(this->vertical)));
-
-	margined.x = cx;
-	margined.y = cy;
-
-	padded.x = padded.x - rx + cx;
-	padded.y = padded.y - ry + cy;
-
-	content.x = content.x - rx + cx;
-	content.y = content.y - ry + cy;
-
-}
-
-Box2D Widget::getRemainingBox(const Box2D& bounds, const Widget* child) const {
-	Display effective = child->getEffectiveDisplay();
-
-	const int ew = child->margined.x - bounds.x + child->margined.w;
-	const int eh = child->margined.y - bounds.y + child->margined.h;
-
-	if (effective == Display::GREEDY) return {bounds.x, bounds.y + eh, 0, 0};
-	if (effective == Display::VERTICAL) return {bounds.x + ew, bounds.y, std::max(0, bounds.w - ew), bounds.h};
-	if (effective == Display::HORIZONTAL) return {bounds.x, bounds.y + eh, bounds.w, std::max(0, bounds.h - eh)};
-
-	// AUTO display is resolved by getEffectiveDisplay()
-	UNREACHABLE;
-}
-
-Display Widget::getEffectiveDisplay() const {
-	if (display != Display::AUTO) {
-		return display;
-	}
-
-	bool vertical = (this->vertical != VerticalAlignment::TOP);
-	bool horizontal = (this->horizontal != HorizontalAlignment::LEFT);
-
-	if (vertical && horizontal) return Display::GREEDY;
-	if (horizontal) return Display::HORIZONTAL;
-
-	// We treat vertical a bit like INLINE,
-	// so just return that both when the element is vertical and when there is no alignment
-	return Display::VERTICAL;
+	applyPositioning(x, y);
 }
 
 Box2D Widget::getInherentBox() const {
@@ -111,6 +32,90 @@ Box2D Widget::getPaddingBox() const {
 
 Box2D Widget::getMarginBox() const {
 	return padded;
+}
+
+int Widget::getOuterSizing(Channel channel) {
+	return sizing.get(channel) + padding.left.toPixels() + padding.right.toPixels();
+}
+
+void Widget::applyFitSizing(Channel channel) {
+
+	// fit sizing must be computed bottom-up
+	// but even for absolute sizing we still need to call applyFitSizing on the children
+	for (const std::shared_ptr<Widget>& widget : children) {
+		widget->applyFitSizing(channel);
+	}
+
+	Unit unit = (channel == Channel::WIDTH) ? width : height;
+
+	// handle the simple case - size is specified explicitly
+	if (unit.isAbsolute()) {
+		sizing.get(channel) = unit.toPixels();
+		return;
+	}
+
+	// try to fit children along channel
+	if (unit.metric == Metric::FIT) {
+		int value = 0;
+
+		const bool along = getFlowChannel(flow) == channel;
+		const int spacing = gap.toPixels(); /* TODO ensure that gap is absolute */
+
+		// get widths of all children
+		for (const std::shared_ptr<Widget>& widget : children) {
+			int inherent = widget->getOuterSizing(channel);
+
+			value = along
+				? value + inherent + spacing     // along flow direction
+				: std::max(value, inherent); // acros flow direction
+		}
+
+		// remove trailing element gap
+		if (along) {
+			value -= gap.toPixels();
+		}
+
+		sizing.get(channel) = value;
+		return;
+	}
+
+	if (unit.metric == Metric::GROW) {
+		FAULT("GROW sizing not yet implemented");
+	}
+
+}
+
+void Widget::applyGrowSizing(Channel channel, int parent) {
+
+	// TODO
+
+}
+
+void Widget::applyPositioning(int x, int y) {
+
+	// TODO maybe rename it to vector?
+	Sizing position {x, y};
+
+	content = Box2D {x, y, sizing.width(), sizing.height()};
+
+	// TODO
+	int pl = padding.left.toPixels();
+	int pt = padding.top.toPixels();
+	int pw = pl + padding.right.toPixels();
+	int ph = pt + padding.bottom.toPixels();
+
+	padded = Box2D {x - pl, y - pt, sizing.width() + pw, sizing.height() + ph};
+
+	// this is used to effectively change the iteration direction
+	const bool invert = getFlowDirection(flow) == -1;
+	const Channel channel = getFlowChannel(flow);
+
+	for (int i = 0; i < children.size(); i++) {
+		const std::shared_ptr<Widget>& widget = children[invert ? (children.size() - i - 1) : i];
+		widget->applyPositioning(position.width() /* x */, position.height() /* y */);
+		position.get(channel) += widget->getOuterSizing(channel) + gap.toPixels();
+	}
+
 }
 
 Widget::~Widget() {

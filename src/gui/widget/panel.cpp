@@ -35,15 +35,15 @@ Box2D PanelWidget::getInherentBox() const {
 	return {0, 0, 0, 0};
 }
 
-void PanelWidget::setBounds(Box2D bounds) {
-	Widget::setBounds(bounds);
-	Box2D pool = content;
-
-	for (auto& widget : children) {
-		widget->setBounds(pool);
-		pool = widget->getRemainingBox(pool, widget.get());
-	}
-}
+// void PanelWidget::setBounds(Box2D bounds) {
+// 	// Widget::setBounds(bounds);
+// 	// Box2D pool = content;
+// 	//
+// 	// for (auto& widget : children) {
+// 	// 	widget->setBounds(pool);
+// 	// 	pool = widget->getRemainingBox(pool, widget.get());
+// 	// }
+// }
 
 void PanelWidget::appendSelectable(std::vector<std::shared_ptr<InputWidget>>& selectable) {
 	for (auto& widget : children) {

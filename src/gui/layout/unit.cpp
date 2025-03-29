@@ -1,8 +1,13 @@
 #include "unit.hpp"
 
-int Unit::resolve(int parent) const {
-	if (metric == Metric::PX) return static_cast<int>(value);
-	if (metric == Metric::PR) return static_cast<int>(value * parent);
+#include <shared/logger.hpp>
 
-	return 0;
+bool Unit::isAbsolute() const {
+	return metric == Metric::PX;
+}
+
+int Unit::toPixels() const {
+	if (metric == Metric::PX) return value;
+
+	FAULT("Can't convert non-absolute unit to pixels!");
 }

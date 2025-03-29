@@ -10,7 +10,7 @@ class PanelWidget : public Widget {
 
 	public: // FIXME
 
-		std::vector<std::shared_ptr<Widget>> children;
+		// std::vector<std::shared_ptr<Widget>> children;
 
 		uint8_t r = 200;
 		uint8_t g = 195;
@@ -27,6 +27,6 @@ class PanelWidget : public Widget {
 		void addWidget(const std::shared_ptr<Widget>& widget);
 
 		virtual Box2D getInherentBox() const;
-		virtual void setBounds(Box2D bounds);
+		// virtual void setBounds(Box2D bounds);
 
 };

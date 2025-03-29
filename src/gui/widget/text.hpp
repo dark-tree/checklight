@@ -20,6 +20,6 @@ class TextWidget : public Widget {
 		bool event(WidgetContext& context, const InputEvent &event) override;
 
 		virtual Box2D getInherentBox() const;
-		virtual void setBounds(Box2D bounds);
+		// virtual void setBounds(Box2D bounds);
 
 };
