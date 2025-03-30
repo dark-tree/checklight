@@ -4,7 +4,7 @@
 class PawnTree {
 protected:
 
-	RootPawn root;
+	std::shared_ptr<RootPawn> root;
 
 	std::unordered_multimap<std::string, std::shared_ptr<Pawn>> nameMap;
 	std::unordered_multimap<uint32_t, std::shared_ptr<Pawn>> idMap;
@@ -30,6 +30,8 @@ protected:
 	std::string printStart(bool verbose);
 
 public:
+
+	PawnTree();
 
 	/**
 	 * finds a pawn by name
@@ -79,7 +81,7 @@ public:
 	/**
 	 * returns a RootPawn of given tree
 	 */
-	RootPawn getRoot();
+	std::shared_ptr<RootPawn> getRoot();
 
 	/**
 	 * performs standard game update on all the tree elements

@@ -8,24 +8,39 @@ class PawnTree;
 class Board;
 class RootPawn;
 
+
+namespace PawnState {
+	enum State{
+		NEW,
+		LOCAL,
+		TRACKED,
+		UNPINNED,
+		REMOVED,
+		UNLISTED,
+		SINGLE
+	};
+
+	std::string to_str(State p);
+}
+
+
 class Pawn : public Entity, public std::enable_shared_from_this<Pawn> {
 protected:
 	friend class PawnTree;
 	friend class Board;
-	std::vector<std::shared_ptr<Pawn>> children;
+	std::vector<std::shared_ptr<Pawn>> children; //TODO updating this to make sure its up to date when removing children
 	std::weak_ptr<Pawn> parent;
 	bool to_remove;
+	PawnState::State pawn_state;
 
 	bool is_mounted_to_board;
 
 	/// checks if there is a complex structure of pawns and uses that for mounting a child into data structures
 	bool unregistered_child_added;
 
-	/// checks if there is a child, that is to be removed or children of its children are to be removed etc... used to delete objects at the end of update processing
-	bool child_to_be_removed;
 	Board* board;
 	std::string name;
-	std::weak_ptr<RootPawn> rootPawn;
+	std::weak_ptr<RootPawn> root_pawn;
 
 	std::vector<std::shared_ptr<Component>> components; //TODO unique ptr ???
 
@@ -68,9 +83,9 @@ public:
 	std::string getPawnName() const;
 
 	/**
-	 * Returns a pawns parent
+	 * Returns a pawns parent or nullptr if empty
 	 */
-	std::weak_ptr<Pawn> getParent();
+	std::shared_ptr<Pawn> getParent() const;
 
 	/**
 	 * Returns the board of which it is a part of, or null if there is no such scene
@@ -111,7 +126,7 @@ public:
 	/**
 	 * returns true if there were some subtractive changes to pawn tree (like removed a children) that requires changes to PawnTree structure
 	 */
-	bool childToBeRemoved() const;
+	//bool childToBeRemoved() const;
 
 	/**
 	 * returns true if the pawn is a part of a board

@@ -4,6 +4,10 @@
  * PawnTree
  */
 
+PawnTree::PawnTree() {
+	root = std::make_shared<RootPawn>();
+}
+
 std::shared_ptr<Pawn> PawnTree::findByName(const std::string& name) {
 	std::unordered_multimap<std::string, std::shared_ptr<Pawn>>::iterator result = nameMap.find(name);
 	if (result != nameMap.end()) {
@@ -47,7 +51,7 @@ size_t PawnTree::idHitSize(uint32_t id) {
 }
 
 void PawnTree::addToRoot(std::shared_ptr<Pawn> pawn) {
-	root.addChild(pawn);
+	root->addChild(pawn);
 	mountPawn(pawn);
 }
 
@@ -85,12 +89,12 @@ void PawnTree::updatePawnsChildren(std::shared_ptr<Pawn>& pawn) {
 	}
 }
 
-RootPawn PawnTree::getRoot() {
+std::shared_ptr<RootPawn> PawnTree::getRoot() {
 	return root;
 }
 
 void PawnTree::updateTree() {
-	std::vector<std::shared_ptr<Pawn>> pawn_children = root.getChildren();
+	std::vector<std::shared_ptr<Pawn>> pawn_children = root->getChildren();
 	for (std::shared_ptr<Pawn> pawn_child : pawn_children) {
 		updateTreeRecursion(pawn_child);
 	}
@@ -107,7 +111,7 @@ void PawnTree::updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update) {
 }
 
 void PawnTree::fixedUpdateTree() {
-	std::vector<std::shared_ptr<Pawn>> pawn_children = root.getChildren();
+	std::vector<std::shared_ptr<Pawn>> pawn_children = root->getChildren();
 	for (std::shared_ptr<Pawn> pawn_child : pawn_children) {
 		fixedUpdareTreeRecursion(pawn_child);
 	}
@@ -135,10 +139,10 @@ std::string PawnTree::toStringVerbose() {
 std::string PawnTree::printStart(bool verbose) {
 	std::string result;
 	std::string n;
-	if(!verbose) n = root.toString();
-	else n = root.toStringVerbose();
-	result += "\"" + n + "\"" + "\n";
-	for (const auto& c : root.getChildren()) {
+	if(!verbose) n = root->toString();
+	else n = root->toStringVerbose();
+	result += "Root:" + n + "\n";
+	for (const auto& c : root->getChildren()) {
 		result += recursiveString(c, 1, verbose);
 	}
 	return result;
@@ -155,11 +159,20 @@ std::string PawnTree::recursiveString(std::shared_ptr<Pawn> p, int depth, bool v
 	if(!verbose) n = p->toString();
 	else n = p->toStringVerbose();
 
-	result += "\"" + n + "\"" + "\n";
+	result += "Pawn:" + n + "\n";
 
-	std::vector<std::shared_ptr<Pawn>> test = p->getChildren();
-	for (size_t i = 0; i < test.size(); i++) {
-		result += recursiveString(test[i], depth + 1, verbose);
+	if(verbose){
+		for (auto component : p->components){
+			for (int i = 0; i <= depth; i++) {
+				result += "  ";
+			}
+			result += "Component:" + component->toString() + "\n";
+		}
+	}
+
+	std::vector<std::shared_ptr<Pawn>> p_children = p->getChildren();
+	for (size_t i = 0; i < p_children.size(); i++) {
+		result += recursiveString(p_children[i], depth + 1, verbose);
 	}
 	return result;
 }

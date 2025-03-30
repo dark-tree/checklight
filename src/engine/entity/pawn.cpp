@@ -6,6 +6,24 @@
 #include "../board.hpp"
 #include "shared/logger.hpp"
 
+
+/*
+ * PawnState
+ */
+
+std::string PawnState::to_str(PawnState::State p) {
+	switch (p) {
+		case State::NEW: return "new";
+		case State::LOCAL: return "local";
+		case State::TRACKED: return "tracked";
+		case State::UNPINNED: return "unpinned";
+		case State::REMOVED: return "removed";
+		case State::UNLISTED: return "unlisted";
+		case State::SINGLE: return "single";
+		default: return "unknown";
+	}
+}
+
 /*
  * Pawn
  */
@@ -28,9 +46,9 @@ void Pawn::onFixedUpdate() {
 Pawn::Pawn() : Entity() {
 	is_mounted_to_board = false;
 	unregistered_child_added = false;
-	child_to_be_removed = false;
 	to_remove = false;
 	board = nullptr;
+	pawn_state = PawnState::NEW;
 }
 
 
@@ -57,7 +75,7 @@ Pawn::createComponent() {
 }
 
 bool Pawn::isRooted() {
-	if (!rootPawn.expired()) {
+	if (!root_pawn.expired()) {
 		return true;
 	}
 
@@ -68,9 +86,9 @@ bool Pawn::isRooted() {
 	while (recursive_parent) {
 		if (recursive_parent->isRoot()/*std::dynamic_pointer_cast<RootPawn>(recursive_parent.lock())*/) {
 			rooted = true;
-			rootPawn = std::static_pointer_cast<RootPawn>(recursive_parent);
+			root_pawn = std::static_pointer_cast<RootPawn>(recursive_parent);
 		}
-		recursive_parent = recursive_parent->getParent().lock();
+		recursive_parent = recursive_parent->getParent();
 	}
 	return rooted;
 }
@@ -79,8 +97,9 @@ std::string Pawn::getPawnName() const {
 	return std::remove_reference_t<decltype(*this)>::class_name;
 }
 
-std::weak_ptr<Pawn> Pawn::getParent() {
-	return parent;
+std::shared_ptr<Pawn> Pawn::getParent() const {
+	if(parent.expired()) return nullptr;
+	else return parent.lock();
 }
 
 Board* Pawn::getScene() {
@@ -93,13 +112,20 @@ std::vector<std::shared_ptr<Pawn>> Pawn::getChildren() {
 }
 
 void Pawn::addChild(std::shared_ptr<Pawn> new_child) {
+	//std::shared_ptr<Pawn> parent = new_child->getParent();
+	//new_child->parent = std:: this; TODO
+	new_child->parent = shared_from_this();
+
+	if(pawn_state == PawnState::NEW){
+		pawn_state = PawnState::LOCAL;
+	}
 	children.push_back(new_child); //cannot be std move (it would destroy the argument)
 	if (isRooted()) {
-		if (rootPawn.expired()) {
+		if (root_pawn.expired()) {
 			FAULT("Root Pawn shouldn't have expired after isRooted() call!");
 		}
 
-		PawnTree* pt = rootPawn.lock()->getTree();
+		PawnTree* pt = root_pawn.lock()->getTree();
 		if (pt == nullptr) {
 			FAULT("Pawn Tree shouldn't be null, all Root Pawns should be children of one Pawn Tree!");
 		}
@@ -129,10 +155,6 @@ bool Pawn::unregisteredChildAdded() const {
 	return unregistered_child_added;
 }
 
-bool Pawn::childToBeRemoved() const{
-	return child_to_be_removed;
-}
-
 bool Pawn::isMountedToBoard() const{
 	return is_mounted_to_board;
 }
@@ -145,24 +167,29 @@ std::string Pawn::toString() const{
 std::string Pawn::toStringVerbose() const{
 	std::string result;
 	result +=
-			"{ pawn: " +
+			"{ id: " +
+			std::to_string(id) +
+			", name: \"" +
 			Pawn::toString() +
-			", children: " +
+			"\", children: " +
 			std::to_string(children.size()) +
 			", update: " +
 			std::to_string(unregistered_child_added) +
 			", remove: " +
-			std::to_string(child_to_be_removed) +
+			std::to_string(to_remove) +
+			", state: " +
+			PawnState::to_str(pawn_state) +
 			", components: " +
 			std::to_string(components.size()) +
+			", parent: " +
+			(getParent() != nullptr ? "1" : "0") +
 			"}";
 	return result;
 }
 
 std::shared_ptr<RootPawn> Pawn::getRoot() {
-	if(isRooted()) return rootPawn.lock();
+	if(isRooted()) return root_pawn.lock();
 	else return nullptr;
 }
-
 
 

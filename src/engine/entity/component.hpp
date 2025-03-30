@@ -28,7 +28,10 @@ public:
 	 * TODO make it into a virtual function, that returns const char* lub std::string_view, potentially remove name form entity???? check if that breaks sth in pawn
 	 */
 	std::string getComponentName() const;
+
 	void onAdded();
+
+	std::string toString();
 
 	friend class Pawn;
 };

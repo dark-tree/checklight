@@ -4,6 +4,8 @@
  * Camera
  */
 
+
+
 Camera::Camera() : GameComponent() {
 	position = { 0,0,0 };
 	direction = { 1,0,0 };
