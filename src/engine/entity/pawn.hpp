@@ -20,7 +20,15 @@ namespace PawnState {
 		SINGLE
 	};
 
+	/**
+	 * string representation of the State enum
+	 */
 	std::string to_str(State p);
+
+	/**
+	 * Select state both for child and parent after adding a child to a parent (avoid using manually)
+	 */
+	bool convert(Pawn* new_child,Pawn* new_parent);
 }
 
 
@@ -28,6 +36,7 @@ class Pawn : public Entity, public std::enable_shared_from_this<Pawn> {
 protected:
 	friend class PawnTree;
 	friend class Board;
+	friend bool PawnState::convert(Pawn* new_child,Pawn* new_parent);
 	std::vector<std::shared_ptr<Pawn>> children; //TODO updating this to make sure its up to date when removing children
 	std::weak_ptr<Pawn> parent;
 	bool to_remove;
@@ -143,5 +152,13 @@ public:
 	 */
 	std::string toStringVerbose() const;
 
+	/**
+	 * returns root pawn or nullptr if root pawn doesn't exists
+	 */
 	std::shared_ptr<RootPawn> getRoot();
+
+	/**
+	 * returns information about the state of pawn in regards to the way its stored and its visibility
+	 */
+	PawnState::State getState() const;
 };

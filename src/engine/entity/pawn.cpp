@@ -24,6 +24,181 @@ std::string PawnState::to_str(PawnState::State p) {
 	}
 }
 
+bool PawnState::convert(Pawn* new_child,Pawn* new_parent) {
+	PawnState::State childState = new_child->getState();
+	switch (new_parent->getState()){
+		case NEW:
+			switch (childState) {
+				case NEW:       //parent - NEW, child - NEW
+					new_child->pawn_state = LOCAL;
+					break;
+				case LOCAL:     //parent - NEW, child - LOCAL
+					new_child->pawn_state = LOCAL;
+					break;
+				case TRACKED:   //parent - NEW, child - TRACKED
+					new_child->pawn_state = UNLISTED;
+					break;
+				case UNPINNED:  //parent - NEW, child - UNPINNED
+					new_child->pawn_state = UNLISTED;
+					break;
+				case REMOVED:   //parent - NEW, child - REMOVED
+					FAULT("Cant add child, the child is marked as REMOVED");
+					break;
+				case UNLISTED:  //parent - NEW, child - UNLISTED
+					new_child->pawn_state = UNLISTED;
+					break;
+				case SINGLE:    //parent - NEW, child - SINGLE
+					new_child->pawn_state = LOCAL;
+					break;
+				default:        //parent - NEW, child - UNKNOWN
+					FAULT("Unknown child pawn state");
+			}
+			new_parent->pawn_state = LOCAL;
+			break;
+		case LOCAL:
+			switch (childState) {
+				case NEW:      // parent - LOCAL, child - NEW
+					new_child->pawn_state = LOCAL;
+					break;
+				case LOCAL:    // parent - LOCAL, child - LOCAL
+					new_child->pawn_state = LOCAL;
+					break;
+				case TRACKED:  // parent - LOCAL, child - TRACKED
+					new_child->pawn_state = UNLISTED;
+					break;
+				case UNPINNED: // parent - LOCAL, child - UNPINNED
+					new_child->pawn_state = UNLISTED;
+					break;
+				case REMOVED:  // parent - LOCAL, child - REMOVED
+					FAULT("Cant add child, the child is marked as REMOVED");
+					break;
+				case UNLISTED: // parent - LOCAL, child - UNLISTED
+					new_child->pawn_state = UNLISTED;
+					break;
+				case SINGLE:   // parent - LOCAL, child - SINGLE
+					new_child->pawn_state = LOCAL;
+					break;
+				default:       // parent - LOCAL, child - UNKNOWN
+					FAULT("Unknown child pawn state");
+			}
+			break;
+		case TRACKED:
+			switch (childState) {
+				case NEW:      // parent - TRACKED, child - NEW
+					new_child->pawn_state = TRACKED;
+					break;
+				case LOCAL:    // parent - TRACKED, child - LOCAL
+					new_child->pawn_state = TRACKED;
+					break;
+				case TRACKED:  // parent - TRACKED, child - TRACKED
+					new_child->pawn_state = TRACKED;
+					break;
+				case UNPINNED: // parent - TRACKED, child - UNPINNED
+					new_child->pawn_state = TRACKED;
+					break;
+				case REMOVED:  // parent - TRACKED, child - REMOVED
+					FAULT("Cant add child, the child is marked as REMOVED");
+					break;
+				case UNLISTED: // parent - TRACKED, child - UNLISTED
+					new_child->pawn_state = TRACKED;
+					break;
+				case SINGLE:   // parent - TRACKED, child - SINGLE
+					new_child->pawn_state = TRACKED;
+					break;
+				default:       // parent - TRACKED, child - UNKNOWN
+					FAULT("Unknown child pawn state");
+			}
+			break;
+		case UNPINNED:
+			switch (childState) {
+				case NEW:      // parent - UNPINNED, child - NEW
+					new_child->pawn_state = UNPINNED;
+					break;
+				case LOCAL:    // parent - UNPINNED, child - LOCAL
+					new_child->pawn_state = UNPINNED;
+					break;
+				case TRACKED:  // parent - UNPINNED, child - TRACKED
+					new_child->pawn_state = UNPINNED;
+					break;
+				case UNPINNED: // parent - UNPINNED, child - UNPINNED
+					new_child->pawn_state = UNPINNED;
+					break;
+				case REMOVED:  // parent - UNPINNED, child - REMOVED
+					FAULT("Cant add child, the child is marked as REMOVED");
+					break;
+				case UNLISTED: // parent - UNPINNED, child - UNLISTED
+					new_child->pawn_state = UNPINNED;
+					break;
+				case SINGLE:   // parent - UNPINNED, child - SINGLE
+					new_child->pawn_state = UNPINNED;
+					break;
+				default:       // parent - UNPINNED, child - UNKNOWN
+					FAULT("Unknown child pawn state");
+			}
+			break;
+		case REMOVED:
+			FAULT("Cant add child, the parent is marked as REMOVED");
+		case UNLISTED:
+			switch (childState) {
+				case NEW:      // parent - UNLISTED, child - NEW
+					new_child->pawn_state = LOCAL;
+					break;
+				case LOCAL:    // parent - UNLISTED, child - LOCAL
+					new_child->pawn_state = LOCAL;
+					break;
+				case TRACKED:  // parent - UNLISTED, child - TRACKED
+					new_child->pawn_state = UNLISTED;
+					break;
+				case UNPINNED: // parent - UNLISTED, child - UNPINNED
+					new_child->pawn_state = UNLISTED;
+					break;
+				case REMOVED:  // parent - UNLISTED, child - REMOVED
+					FAULT("Cant add child, the child is marked as REMOVED");
+					break;
+				case UNLISTED: // parent - UNLISTED, child - UNLISTED
+					new_child->pawn_state = UNLISTED;
+					break;
+				case SINGLE:   // parent - UNLISTED, child - SINGLE
+					new_child->pawn_state = LOCAL;
+					break;
+				default:       // parent - UNLISTED, child - UNKNOWN
+					FAULT("Unknown child pawn state");
+			}
+			break;
+		case SINGLE:
+			switch (childState) {
+				case NEW:      // parent - SINGLE, child - NEW
+					new_child->pawn_state = LOCAL;
+					break;
+				case LOCAL:    // parent - SINGLE, child - LOCAL
+					new_child->pawn_state = LOCAL;
+					break;
+				case TRACKED:  // parent - SINGLE, child - TRACKED
+					new_child->pawn_state = UNLISTED;
+					break;
+				case UNPINNED: // parent - SINGLE, child - UNPINNED
+					new_child->pawn_state = UNLISTED;
+					break;
+				case REMOVED:  // parent - SINGLE, child - REMOVED
+					FAULT("Cant add child, the child is marked as REMOVED");
+					break;
+				case UNLISTED: // parent - SINGLE, child - UNLISTED
+					new_child->pawn_state = UNLISTED;
+					break;
+				case SINGLE:   // parent - SINGLE, child - SINGLE
+					new_child->pawn_state = LOCAL;
+					break;
+				default:       // parent - SINGLE, child - UNKNOWN
+					FAULT("Unknown child pawn state");
+			}
+			new_parent->pawn_state = LOCAL;
+			break;
+		default:               // parent - UNKNOWN child - ...
+			FAULT("Unknown parent pawn state");
+	}
+	return true;
+}
+
 /*
  * Pawn
  */
@@ -112,13 +287,10 @@ std::vector<std::shared_ptr<Pawn>> Pawn::getChildren() {
 }
 
 void Pawn::addChild(std::shared_ptr<Pawn> new_child) {
-	//std::shared_ptr<Pawn> parent = new_child->getParent();
-	//new_child->parent = std:: this; TODO
 	new_child->parent = shared_from_this();
+	//converts state of child and this pawn based on their previous state
+	PawnState::convert(new_child.get(), this);
 
-	if(pawn_state == PawnState::NEW){
-		pawn_state = PawnState::LOCAL;
-	}
 	children.push_back(new_child); //cannot be std move (it would destroy the argument)
 	if (isRooted()) {
 		if (root_pawn.expired()) {
@@ -187,9 +359,13 @@ std::string Pawn::toStringVerbose() const{
 	return result;
 }
 
-std::shared_ptr<RootPawn> Pawn::getRoot() {
+std::shared_ptr<RootPawn> Pawn::getRoot(){
 	if(isRooted()) return root_pawn.lock();
 	else return nullptr;
+}
+
+PawnState::State Pawn::getState() const {
+	return pawn_state;
 }
 
 

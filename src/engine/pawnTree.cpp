@@ -6,6 +6,8 @@
 
 PawnTree::PawnTree() {
 	root = std::make_shared<RootPawn>();
+	//TODO adding root to hashmap?
+	root->pawn_state = PawnState::TRACKED;
 }
 
 std::shared_ptr<Pawn> PawnTree::findByName(const std::string& name) {
