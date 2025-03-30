@@ -129,7 +129,6 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 	}
 
 	float horizontal = 0;
-	float line_width = 0;
 
 	// holds previous Unicode (or 0)
 	// used for querying kerning pairs
@@ -152,13 +151,17 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 
 	const auto submit = [&] {
 		int start = lines.empty() ? 0 : lines.back().end;
-		lines.emplace_back(start, adjusted.size());
 
-		if (line_width > horizontal) {
-			horizontal = line_width;
+		if (start == adjusted.size() - 1) {
+			return;
 		}
 
-		line_width = 0;
+		lines.emplace_back(start, adjusted.size());
+		const float length = adjusted.back().x1 - adjusted[start].x0;
+
+		if (length > horizontal) {
+			horizontal = length;
+		}
 	};
 
 	const auto advance = [&] {
@@ -178,7 +181,6 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 		}
 
 		GlyphQuad q = font->getOrLoad(&x, &y, scale, unicode, prev);
-		line_width += q.advance;
 		prev = unicode;
 
 		if (unicode == '\n') {

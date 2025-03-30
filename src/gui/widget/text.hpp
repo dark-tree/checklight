@@ -10,7 +10,11 @@ class TextWidget : public Widget {
 
 	public: // FIXME
 
+		bool wrap = true;
 		std::string text;
+
+		int min_content;
+		int max_content;
 
 	public:
 
@@ -18,5 +22,7 @@ class TextWidget : public Widget {
 
 		void draw(ImmediateRenderer& immediate) override;
 		bool event(WidgetContext& context, const InputEvent &event) override;
+
+		void setText(const std::string& text);
 
 };

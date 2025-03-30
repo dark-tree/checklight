@@ -242,4 +242,5 @@ bool InputWidget::event(WidgetContext& context, const InputEvent& any) {
 
 void InputWidget::scan(Navigator& navigator) {
 	navigator.addWidget(std::dynamic_pointer_cast<InputWidget>(shared_from_this()));
+	Widget::scan(navigator);
 }

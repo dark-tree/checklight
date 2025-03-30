@@ -1,6 +1,7 @@
 
 #include <gui/context.hpp>
 #include <gui/widget/panel.hpp>
+#include <gui/widget/text.hpp>
 #include <shared/args.hpp>
 #include <shared/logger.hpp>
 
@@ -24,36 +25,33 @@ static void entry(Args& args) {
 	auto panel = std::make_shared<PanelWidget>();
 
 	{
-		auto sub = std::make_shared<PanelWidget>();
+		auto sub = std::make_shared<TextWidget>("Lorem ipsum dolor sit amet");
 		panel->addWidget(sub);
-
-		sub->width = Unit::grow(1);
-		sub->height = Unit::px(100);
-		sub->r = 0x55;
-		sub->g = 0xcd;
-		sub->b = 0xfc;
 	}
 
 	{
 		auto sub = std::make_shared<PanelWidget>();
 		panel->addWidget(sub);
 
-		sub->width = Unit::grow(1);
+		sub->width = Unit::px(100);
 		sub->height = Unit::px(100);
-		sub->r = 0xf7;
-		sub->g = 0xa8;
-		sub->b = 0xb8;
+		sub->r = 100;
+		sub->g = 100;
+		sub->b = 250;
 	}
 
 	{
 		auto sub = std::make_shared<PanelWidget>();
 		panel->addWidget(sub);
 
-		sub->width = Unit::grow(1);
-		sub->height = Unit::px(100);
-		sub->r = 255;
-		sub->g = 255;
-		sub->b = 255;
+		sub->width = Unit::fit();
+		sub->height = Unit::fit();
+		sub->r = 250;
+		sub->g = 100;
+		sub->b = 100;
+
+		auto text = std::make_shared<TextWidget>("Język lechicki z grupy zachodniosłowiańskiej");
+		sub->addWidget(text);
 	}
 
 	panel->width = Unit::px(400);
