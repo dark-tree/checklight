@@ -71,7 +71,7 @@ glm::vec2 TextBakery::getTextOffset(std::vector<GlyphQuad>& quads, int start, in
 int TextBakery::getWrappingBound(int start) const {
 	int wrap = std::numeric_limits<int>::max();
 
-	if (wrapping && width != 0) {
+	if (wrapping) {
 		wrap = start + width;
 	}
 

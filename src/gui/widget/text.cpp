@@ -21,6 +21,7 @@ void TextWidget::draw(ImmediateRenderer& immediate) {
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
 	immediate.setColor(0, 0, 0);
 	immediate.setTextBox(content.w, content.h);
+	immediate.setWrapping(true);
 	immediate.drawString2D(content.x, content.y, text.c_str());
 }
 
@@ -38,7 +39,7 @@ void TextWidget::setText(const std::string& text) {
 	bakary.setAlignment(HorizontalAlignment::LEFT);
 	bakary.setSize(20);
 
-	bakary.setBounds(0, 0); // todo this will not work
+	bakary.setBounds(0, 0);
 	bakary.setWrapping(true);
 	BakedText::Metrics wrapped = bakary.bakeString(0, 0, text).getMetrics();
 
