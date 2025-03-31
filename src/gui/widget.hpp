@@ -35,9 +35,10 @@ class Widget : public std::enable_shared_from_this<Widget> {
 
 		std::vector<std::shared_ptr<Widget>> children;
 		Sizing sizing;
+		Sizing minimal;
 
 		Flow flow = Flow::LEFT_TO_RIGHT;
-		Unit width, height, gap;
+		Unit width, height, gap, min_width, min_height;
 		Spacing margin, padding;
 
 		// VerticalAlignment vertical = VerticalAlignment::TOP;
@@ -53,6 +54,9 @@ class Widget : public std::enable_shared_from_this<Widget> {
 
 		/// Can be called after the given channel was already computed with applyFitSizing()
 		int getOuterSizing(Channel channel);
+
+		/// Called after the on-flow dimension has ben computed, can be used to adjust content the acros-flow dimension
+		virtual void applyWrapSizing();
 
 		/// Compute element size based on its children (absolute & fit content)
 		void applyFitSizing(Channel channel);

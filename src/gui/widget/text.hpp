@@ -16,6 +16,8 @@ class TextWidget : public Widget {
 		int min_content;
 		int max_content;
 
+		void applyWrapSizing() override;
+
 	public:
 
 		TextWidget(const std::string& text);

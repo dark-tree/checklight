@@ -26,8 +26,6 @@ static void entry(Args& args) {
 
 	{
 		auto sub = std::make_shared<TextWidget>("Lorem ipsum dolor sit amet");
-		sub->width = Unit::grow();
-
 		panel->addWidget(sub);
 	}
 
@@ -37,6 +35,8 @@ static void entry(Args& args) {
 
 		sub->width = Unit::px(100);
 		sub->height = Unit::px(100);
+		sub->min_width = Unit::px(100);
+		sub->min_height = Unit::px(100);
 		sub->r = 100;
 		sub->g = 100;
 		sub->b = 250;
@@ -53,8 +53,6 @@ static void entry(Args& args) {
 		sub->b = 100;
 
 		auto text = std::make_shared<TextWidget>("Język lechicki z grupy zachodniosłowiańskiej");
-		text->width = Unit::grow();
-
 		sub->addWidget(text);
 	}
 

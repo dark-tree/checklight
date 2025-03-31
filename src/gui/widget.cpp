@@ -13,10 +13,11 @@ void Widget::rebuild(int x, int y) {
 
 	applyFitSizing(Channel::WIDTH);
 	applyGrowSizing(Channel::WIDTH);
+	applyWrapSizing();
 	applyFitSizing(Channel::HEIGHT);
-	applyGrowSizing(Channel::HEIGHT);
-
+	// applyGrowSizing(Channel::HEIGHT); // TODO this breaks text
 	applyPositioning(x, y);
+
 }
 
 Box2D Widget::getContentBox() const {
@@ -35,6 +36,12 @@ int Widget::getOuterSizing(Channel channel) {
 	return sizing.get(channel) + padding.left.toPixels() + padding.right.toPixels();
 }
 
+void Widget::applyWrapSizing() {
+	for (const std::shared_ptr<Widget>& widget : children) {
+		widget->applyWrapSizing();
+	}
+}
+
 void Widget::applyFitSizing(Channel channel) {
 
 	// fit sizing must be computed bottom-up
@@ -43,16 +50,19 @@ void Widget::applyFitSizing(Channel channel) {
 		widget->applyFitSizing(channel);
 	}
 
-	Unit unit = (channel == Channel::WIDTH) ? width : height;
+	Unit sizing_unit = (channel == Channel::WIDTH) ? width : height;
+	Unit minimal_unit = (channel == Channel::WIDTH) ? min_width : min_height;
+
+	int preferred = 0;
+	int low_bound = minimal_unit.toPixels();
 
 	// handle the simple case - size is specified explicitly
-	if (unit.isAbsolute()) {
-		sizing.get(channel) = unit.toPixels();
-		return;
+	if (sizing_unit.isAbsolute()) {
+		preferred = std::max(sizing_unit.toPixels(), low_bound);
 	}
 
 	// try to fit children along channel
-	if (unit.metric == Metric::FIT) {
+	if (sizing_unit.metric == Metric::FIT) {
 		int value = 0;
 
 		const bool along = getFlowChannel(flow) == channel;
@@ -72,10 +82,23 @@ void Widget::applyFitSizing(Channel channel) {
 			value -= gap.toPixels();
 		}
 
-		sizing.get(channel) = value;
+		preferred = std::max(value, low_bound);
 	}
 
 	// ignore GROW sizing, that is handled in applyGrowSizing()
+
+	// get the highest minimal size
+	for (const std::shared_ptr<Widget>& widget : children) {
+		int min = widget->minimal.get(channel);
+
+		if (min > low_bound) {
+			low_bound = min;
+		}
+	}
+
+	// apply calculated size
+	sizing.get(channel) = preferred;
+	minimal.get(channel) = low_bound;
 
 }
 
@@ -143,6 +166,75 @@ void Widget::applyGrowSizing(Channel channel) {
 			// subtract old size and do it as an addition so we don't have to worry about padding
 			widget->sizing.get(channel) += extension - widget->getOuterSizing(channel);
 		}
+	}
+
+	// not enough space!
+	if (remaining < 0) {
+
+		bool notify = true;
+		bool done = false;
+		int overflow = -remaining;
+
+		// this loop will only in rare cases run more than once
+		for (int i = 0; i < children.size(); i ++) {
+
+			// TODO yeah this is royal a mess
+			total = 0;
+
+			int shrinkable = 0;
+
+			for (const std::shared_ptr<Widget>& widget : children) {
+				const int value = widget->sizing.get(channel);
+
+				shrinkable += value - widget->minimal.get(channel);
+				total += value;
+			}
+
+			// not really an error but good to know
+			if (notify && (shrinkable < overflow)) {
+				out::debug("Can't shrink elements enough, shrinkable space is %dpx, while the overflow is %dpx!", shrinkable, overflow);
+				notify = false;
+			}
+
+			double sacrifice = std::min(overflow, shrinkable);
+			double shrinkage = sacrifice / total;
+			int shrunk = 0;
+
+			for (const std::shared_ptr<Widget>& widget : children) {
+				const int value = widget->sizing.get(channel);
+
+				int pixels = std::max(1, static_cast<int>(value * shrinkage));
+				int maximum = widget->sizing.get(channel) - widget->minimal.get(channel);
+
+				// never shrink below minimum
+				if (pixels > maximum) {
+					pixels = maximum;
+				}
+
+				shrunk += pixels;
+				widget->sizing.get(channel) -= pixels;
+
+				// try not to over-shrink, can happen dues to our
+				// little hack to for at least try shaving a single pixel each time
+				if (shrunk >= sacrifice) {
+					break;
+				}
+			}
+
+			// we did the job, if this fails that means some min sizing shenanigans got in the way
+			// and we need to reevaluate the sizing by re-running this loop
+			if (shrunk >= sacrifice) {
+				done = true;
+				break;
+			}
+
+			overflow -= shrunk;
+		}
+
+		if (!done) {
+			out::warn("Element shrink algorithm bailed out after iteration limit was reached!");
+		}
+
 	}
 
 	for (const std::shared_ptr<Widget>& widget : children) {
