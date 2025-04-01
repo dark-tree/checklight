@@ -1,8 +1,7 @@
+#pragma once
 
 #define ENGINE_VERSION VK_MAKE_VERSION(1, 0, 0)
 #define ENGINE_NAME "Checklight"
-
-#define SPAM_ME
 
 /*
  * If ENGINE_DEBUG true engine performs extra checks, and generate extra fields unnecessary for working correctly,
@@ -13,3 +12,5 @@
 #else
 #	define ENGINE_DEBUG false
 #endif
+
+#define TICK_DURATION 0.02

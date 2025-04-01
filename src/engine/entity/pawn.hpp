@@ -82,6 +82,9 @@ protected:
 	 * Sets tracked_on_hash variable
 	 */
 	void setTracked(bool v);
+
+
+	void removeComponents();
 public:
 
 	Pawn();

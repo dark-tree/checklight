@@ -10,3 +10,10 @@ void Models::init(){
 std::shared_ptr<RenderModel> Models::getShape(Shape s){
 	return models[(int)s];
 }
+
+void Models::terminate() {
+	for(const auto& m : models){
+		RenderSystem::system->closeModel(m); //this should be in destructor >:(
+	}
+	models.clear(); //:)
+}

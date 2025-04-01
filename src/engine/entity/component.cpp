@@ -6,7 +6,6 @@
  * Component
  */
 
-
 Component::Component() : Entity() {
 	parent = nullptr;
 }
@@ -19,7 +18,4 @@ std::string Component::toString() {
 	return "{ id: " + std::to_string(id) + " type: \"" + getComponentName() + "\" }";
 }
 
-void Component::onAdded() {
-
-}
 

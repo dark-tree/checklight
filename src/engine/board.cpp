@@ -28,6 +28,10 @@ void Board::queueRemove(const std::shared_ptr<Pawn>& pToRemove) {
 	}
 }
 
+void Board::queueRemove(const std::shared_ptr<Component> &pToRemove) {
+	components_to_remove->push(pToRemove);
+}
+
 void Board::updateBoard() {
 	pawns.updateTree();
 }
@@ -190,6 +194,8 @@ void Board::dequeueRemove(size_t amount) {
 		pawns_to_remove_from_hashmap->pop();
 	}
 }
+
+
 
 
 

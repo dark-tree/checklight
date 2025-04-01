@@ -14,5 +14,6 @@ public:
 	};
 
 	static void init();
+	static void terminate();
 	static std::shared_ptr<RenderModel> getShape(Shape s);
 };

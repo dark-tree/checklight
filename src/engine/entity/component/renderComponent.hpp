@@ -5,15 +5,20 @@
 
 class RenderComponent : public GameComponent{
 protected:
-	std::shared_ptr<RenderObject> renderObject{};
+	std::shared_ptr<RenderObject> renderObject;
 public:
-	RenderComponent(Models::Shape s);
+	explicit RenderComponent(Models::Shape s);
+
 protected:
-	bool active;
+	bool rendering;
 
 	void onUpdate(Context c) override;
 
 	void onFixedUpdate(FixedContext c) override;
 
+	void onConnected() override;
+
 	InputResult onEvent(const InputEvent &event) override;
+
+	void setRendering(bool is_rendering);
 };

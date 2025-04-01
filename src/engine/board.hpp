@@ -13,11 +13,17 @@ private:
 	std::string name;
 	std::queue<std::shared_ptr<Pawn>>* pawns_to_remove;
 	std::queue<std::shared_ptr<Pawn>>* pawns_to_remove_from_hashmap;
+	std::queue<std::shared_ptr<Component>>* components_to_remove;
 
 	/**
 	 * queue remove a pawn
 	 */
 	 void queueRemove(const std::shared_ptr<Pawn>& pToRemove);
+
+	/**
+	 * queue remove a component
+	 */
+	 void queueRemove(const std::shared_ptr<Component>& pToRemove);
 
 	 void dequeueRemove(size_t amount);
 

@@ -24,6 +24,8 @@ protected:
 
 	void onFixedUpdate(FixedContext c) override;
 
+	void onConnected() override;
+
 	InputResult onEvent(const InputEvent& event) override;
 
 public:

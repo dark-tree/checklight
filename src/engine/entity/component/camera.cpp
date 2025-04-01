@@ -135,3 +135,7 @@ InputResult Camera::onEvent(const InputEvent &event) {
 	}
 	return InputResult::PASS;
 }
+
+void Camera::onConnected() {
+
+}

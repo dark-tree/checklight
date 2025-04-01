@@ -84,6 +84,7 @@ static void entry(Args& args) {
 	}
 
 	system.wait();
+	Models::terminate();//temporary
 
 	for (auto& object : objects) {
 		object.reset();
@@ -111,9 +112,9 @@ int main(int argc, const char* argv[]) {
 
 	entry(args);
 
+	Models::terminate();//temporary
+
 	// Try to close all engine systems before the logger shuts itself of
 	RenderSystem::system.reset();
-
 	return 0;
-
 }

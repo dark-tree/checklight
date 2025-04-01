@@ -231,6 +231,7 @@ Pawn::Pawn() : Entity() {
 void Pawn::addComponent(std::shared_ptr<Component>& c) {
 	if (c->checkValidity(*this)) {
 		c->parent = this;
+		c->onConnected();
 		components.push_back(std::move(c));
 	}
 }
@@ -392,9 +393,20 @@ bool Pawn::remove() {
 
 		board->queueRemove(shared_from_this());
 
+		//removing components
+		for(const auto& c : components){
+			c->queueRemove(true);
+			board->queueRemove(c);
+		}
+
 		return true;
 	}
 	else{
+#ifdef ENGINE_DEBUG
+		for(const auto& c : components){
+			if(c->to_remove) FAULT("all children should be removed in a pawn described as removed!");
+		}
+#endif
 		out::warn("Trying to remove() the same pawn more than once!");
 		return false;
 	}
@@ -427,6 +439,12 @@ bool Pawn::safeRemove(){
 
 void Pawn::setTracked(bool v) {
 	is_tracked_on_hash = v;
+}
+
+void Pawn::removeComponents() {
+	for(const auto& c : components){
+		c->setActive(false);
+	}
 }
 
 
