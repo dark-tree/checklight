@@ -15,7 +15,7 @@ void Widget::rebuild(int x, int y) {
 	applyGrowSizing(Channel::WIDTH);
 	applyWrapSizing();
 	applyFitSizing(Channel::HEIGHT);
-	// applyGrowSizing(Channel::HEIGHT); // TODO this breaks text
+	applyGrowSizing(Channel::HEIGHT);
 	applyPositioning(x, y);
 
 }

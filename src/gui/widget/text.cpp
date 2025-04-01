@@ -18,7 +18,7 @@ void TextWidget::applyWrapSizing() {
 	bakary.setWrapping(true);
 	BakedText wrapped = bakary.bakeString(0, 0, text);
 
-	height = Unit::px(wrapped.getMetrics().height);
+	min_height = Unit::px(wrapped.getMetrics().height);
 }
 
 TextWidget::TextWidget(const std::string& text) {
