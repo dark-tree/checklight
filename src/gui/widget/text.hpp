@@ -13,9 +13,6 @@ class TextWidget : public Widget {
 		bool wrap = true;
 		std::string text;
 
-		int min_content;
-		int max_content;
-
 		void applyWrapSizing() override;
 
 	public:

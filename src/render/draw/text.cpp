@@ -157,7 +157,11 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 		}
 
 		lines.emplace_back(start, adjusted.size());
-		const float length = adjusted.back().x1 - adjusted[start].x0;
+		float length = 0;
+
+		for (int i = start; i < adjusted.size(); i++) {
+			length += adjusted[i].advance;
+		}
 
 		if (length > horizontal) {
 			horizontal = length;

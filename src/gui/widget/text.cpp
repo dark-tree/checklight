@@ -27,11 +27,14 @@ TextWidget::TextWidget(const std::string& text) {
 
 void TextWidget::draw(ImmediateRenderer& immediate) {
 
-	// immediate.setRectRadius(0);
-	// immediate.setColor(0, 0, 0);
-	// immediate.drawRect2D(content.x, content.y, content.w, content.h);
-	// immediate.setColor(255, 255, 255);
-	// immediate.drawRect2D(content.x + 2, content.y + 2, content.w - 4, content.h - 4);
+	immediate.setRectRadius(0);
+	immediate.setColor(0, 0, 0);
+	immediate.drawRect2D(content.x, content.y, content.w, content.h);
+	immediate.setColor(255, 255, 255);
+	immediate.drawRect2D(content.x + 2, content.y + 2, content.w - 4, content.h - 4);
+
+	immediate.setColor(255, 0, 0);
+	immediate.drawRect2D(content.x, content.y, minimal.width(), 4);
 
 	// todo
 	immediate.setTextAlignment(VerticalAlignment::TOP);
@@ -42,6 +45,9 @@ void TextWidget::draw(ImmediateRenderer& immediate) {
 	immediate.setTextBox(content.w, content.h);
 	immediate.setWrapping(true);
 	immediate.drawString2D(content.x, content.y, text.c_str());
+
+	immediate.setColor(255, 0, 0);
+	immediate.drawString2D(content.x, content.y + sizing.height(), std::to_string(minimal.width()));
 }
 
 bool TextWidget::event(WidgetContext& context, const InputEvent& event) {
