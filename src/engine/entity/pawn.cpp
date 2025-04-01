@@ -224,6 +224,7 @@ Pawn::Pawn() : Entity() {
 	to_remove = false;
 	board = nullptr;
 	pawn_state = PawnState::NEW;
+	is_tracked_on_hash = false;
 }
 
 
@@ -238,6 +239,11 @@ void Pawn::setBoard(Board* s) {
 	board = s;
 }
 
+void Pawn::propagateRemove() {
+	for(const std::shared_ptr<Pawn>& c : children){
+		c->safeRemove();
+	}
+}
 
 template <typename T>
 typename std::enable_if<std::is_base_of<Component, T>::value, void>::type
@@ -282,11 +288,11 @@ Board* Pawn::getScene() {
 	else return nullptr;
 }
 
-std::vector<std::shared_ptr<Pawn>> Pawn::getChildren() {
+std::vector<std::shared_ptr<Pawn>>& Pawn::getChildren() {
 	return children;
 }
 
-void Pawn::addChild(std::shared_ptr<Pawn> new_child) {
+void Pawn::addChild(const std::shared_ptr<Pawn>& new_child) {
 	new_child->parent = shared_from_this();
 	//converts state of child and this pawn based on their previous state
 	PawnState::convert(new_child.get(), this);
@@ -367,5 +373,61 @@ std::shared_ptr<RootPawn> Pawn::getRoot(){
 PawnState::State Pawn::getState() const {
 	return pawn_state;
 }
+
+bool Pawn::remove() {
+	if(isRoot()){
+		FAULT("Cant remove root pawn!");
+	}
+	if(!to_remove){
+		#ifdef ENGINE_DEBUG
+				if(pawn_state == PawnState::REMOVED)
+					FAULT("Pawn state is REMOVED before using remove() function on it");
+		#endif
+		to_remove = true;
+
+		//this needs to be before destroying children and setting pawn state, otherwise it will break
+		propagateRemove();
+
+		pawn_state = PawnState::REMOVED;
+
+		board->queueRemove(shared_from_this());
+
+		return true;
+	}
+	else{
+		out::warn("Trying to remove() the same pawn more than once!");
+		return false;
+	}
+}
+
+bool Pawn::safeRemove(){
+#ifdef ENGINE_DEBUG
+	if(isRoot()){
+		FAULT("This shouldn't be root as its as this function should only be called for children of removed pawn");
+	}
+#endif
+	if(to_remove){
+#ifdef ENGINE_DEBUG
+		if(pawn_state == PawnState::REMOVED)
+			FAULT("Pawn state is REMOVED before using remove() function on it");
+#endif
+		to_remove = true;
+
+		propagateRemove();
+
+		board->queueRemove(shared_from_this());
+
+		return true;
+	}
+	else{
+		out::warn("While removing children of an object Engine tried to remove() the same pawn more than once!");
+		return false;
+	}
+}
+
+void Pawn::setTracked(bool v) {
+	is_tracked_on_hash = v;
+}
+
 
 

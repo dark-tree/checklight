@@ -2,6 +2,7 @@
 #include "board.hpp"
 #include "engine/entity/pawns/spatialPawn.hpp"
 #include "engine/entity/component/camera.hpp"
+#include "shared/logger.hpp"
 
 
 
@@ -37,21 +38,39 @@ void BoardManager::standardSetup(){
 void BoardManager::updateCycle() {
 
 	//initate
+	std::shared_ptr<Board> usingBoard;
 
+	if(!current_board.expired()) usingBoard = current_board.lock();
+	else{
+		FAULT("unhandled yet...");
+		//TODO
+	}
 
 	//update
-	if (!current_board.expired()) {
-		current_board.lock()->updateBoard();
+	usingBoard->updateBoard();
+
+	//hardcoded updates
+	if(globalTickNumber == 3000){
+		usingBoard->pawns.findByID(4)->remove();
 	}
+
+	/*
+	auto p = std::make_shared<Pawn>();
+	usingBoard->addPawnToRoot(p);*/
 
 	//communicate with renderer
 
 
 	//remove
-
+	usingBoard->dequeueRemove(100);
 
 	//debug
 
+	/*
+	if(globalTickNumber % 2000 == 1){
+		out::info("tick: %d", globalTickNumber);
+		usingBoard->printBoardTreeVerbose();
+	}*/
 	globalTickNumber++;
 }
 

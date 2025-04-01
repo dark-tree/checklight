@@ -10,7 +10,6 @@
 #include "gui/gui.hpp"
 
 static void entry(Args& args) {
-
 	ApplicationParameters parameters;
 	parameters.setName("My Checklight Game!");
 	parameters.setDimensions(1200, 800);
@@ -71,9 +70,6 @@ static void entry(Args& args) {
 		//physics update before rendering
 		manager.updateCycle();
 		std::shared_ptr<Board> current_board = manager.getCurrentBoard().lock();
-		if(a % 1000 == 1){
-			current_board->printBoardTreeVerbose();
-		}
 
 
 		//drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());

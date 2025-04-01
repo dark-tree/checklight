@@ -47,6 +47,9 @@ protected:
 	/// checks if there is a complex structure of pawns and uses that for mounting a child into data structures
 	bool unregistered_child_added;
 
+	///checks if the pawn is saved to hashmap
+	bool is_tracked_on_hash;
+
 	Board* board;
 	std::string name;
 	std::weak_ptr<RootPawn> root_pawn;
@@ -65,6 +68,20 @@ protected:
 
 	void setBoard(Board* s);
 
+	/**
+	 * Removes all the children of a pawn
+	 */
+	void propagateRemove();
+
+	/**
+	 * Similar to remove function, but there is no need to check if the pawn is root
+	 */
+	bool safeRemove();
+
+	/**
+	 * Sets tracked_on_hash variable
+	 */
+	void setTracked(bool v);
 public:
 
 	Pawn();
@@ -104,12 +121,12 @@ public:
 	/**
 	 * Returns all of the pawns children
 	 */
-	std::vector<std::shared_ptr<Pawn>> getChildren();
+	std::vector<std::shared_ptr<Pawn>>& getChildren();
 
 	/**
 	 * Adds a new children to a pawn
 	 */
-	void addChild(std::shared_ptr<Pawn> new_child);
+	void addChild(const std::shared_ptr<Pawn>& new_child);
 
 	/**
 	 * Returns a name that is specific to that instance of a pawn
@@ -161,4 +178,9 @@ public:
 	 * returns information about the state of pawn in regards to the way its stored and its visibility
 	 */
 	PawnState::State getState() const;
+
+	/**
+	 * mark a Pawn and all its children as "Removed", unpin it from Pawn Tree
+	 */
+	bool remove();
 };

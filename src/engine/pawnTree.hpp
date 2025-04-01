@@ -2,8 +2,8 @@
 #include "entity/pawns/rootPawn.hpp"
 
 class PawnTree {
+	friend Board;
 protected:
-
 	std::shared_ptr<RootPawn> root;
 
 	std::unordered_multimap<std::string, std::shared_ptr<Pawn>> nameMap;
@@ -28,6 +28,13 @@ protected:
 	 * manages verbose/non-verbose printing
 	 */
 	std::string printStart(bool verbose);
+
+	/**
+	 * removes a pawn from hashmaps, returns true if operation was successful
+	 */
+	bool removeFromMaps(const std::string &name, uint32_t id);
+
+	void addPawnToHash(const std::string& p_name, uint32_t p_id, std::shared_ptr<Pawn> p);
 
 public:
 

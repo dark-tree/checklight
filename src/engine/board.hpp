@@ -6,10 +6,25 @@ class SpatialPawn;
 //Its a Scene dumbass
 class Board : public std::enable_shared_from_this<Board> {
 private:
+	friend class BoardManager;
+	friend class Pawn;
 	PawnTree pawns;
 	std::weak_ptr<SpatialPawn> cameraPawn;
 	std::string name;
+	std::queue<std::shared_ptr<Pawn>>* pawns_to_remove;
+	std::queue<std::shared_ptr<Pawn>>* pawns_to_remove_from_hashmap;
+
+	/**
+	 * queue remove a pawn
+	 */
+	 void queueRemove(const std::shared_ptr<Pawn>& pToRemove);
+
+	 void dequeueRemove(size_t amount);
+
 public:
+	Board();
+
+	~Board();
 
 	/**
 	 * performs standard update on a pawn tree
@@ -76,8 +91,6 @@ public:
 	 */
 	void printBoardTreeVerbose();
 
-
-	
 	/**
 	 * set name of a board
 	 */

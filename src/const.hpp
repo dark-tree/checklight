@@ -2,6 +2,12 @@
 #define ENGINE_VERSION VK_MAKE_VERSION(1, 0, 0)
 #define ENGINE_NAME "Checklight"
 
+#define SPAM_ME
+
+/*
+ * If ENGINE_DEBUG true engine performs extra checks, and generate extra fields unnecessary for working correctly,
+ * but to ensure its working as intended. define NDEBUG for release build
+ */
 #ifndef NDEBUG
 #	define ENGINE_DEBUG true
 #else
