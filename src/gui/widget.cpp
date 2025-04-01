@@ -175,19 +175,34 @@ void Widget::applyGrowSizing(Channel channel) {
 		bool done = false;
 		int overflow = -remaining;
 
+		std::list<std::shared_ptr<Widget>> candidates;
+
+		for (const std::shared_ptr<Widget>& widget : children) {
+			candidates.push_back(widget);
+		}
+
 		// this loop will only in rare cases run more than once
 		for (int i = 0; i < children.size(); i ++) {
 
-			// TODO yeah this is royal a mess
+			// TODO yeah this is a royal mess
 			total = 0;
 
 			int shrinkable = 0;
 
-			for (const std::shared_ptr<Widget>& widget : children) {
-				const int value = widget->sizing.get(channel);
+			for (auto it = candidates.begin(); it != candidates.end();) {
+				auto& widget = *it;
 
-				shrinkable += value - widget->minimal.get(channel);
+				const int value = widget->sizing.get(channel);
+				const int maximum = value - widget->minimal.get(channel);
+
+				if (maximum <= 0) {
+					it = candidates.erase(it);
+					continue;
+				}
+
+				shrinkable += maximum;
 				total += value;
+				std::advance(it, 1);
 			}
 
 			// not really an error but good to know
@@ -196,11 +211,19 @@ void Widget::applyGrowSizing(Channel channel) {
 				notify = false;
 			}
 
+			if (candidates.empty()) {
+				out::debug("No elements are left to shrink, bailing out with overflow of %dpx!", overflow);
+				done = true;
+				break;
+			}
+
+			out::debug("Will try to shrink %d elements of total size %dpx by %dpx, the shrinkable space is %dpx", candidates.size(), total, overflow, shrinkable);
+
 			double sacrifice = std::min(overflow, shrinkable);
 			double shrinkage = sacrifice / total;
 			int shrunk = 0;
 
-			for (const std::shared_ptr<Widget>& widget : children) {
+			for (const std::shared_ptr<Widget>& widget : candidates) {
 				const int value = widget->sizing.get(channel);
 
 				int pixels = std::max(1, static_cast<int>(value * shrinkage));
