@@ -59,9 +59,10 @@ void BoardManager::updateCycle() {
 	usingBoard->updateBoard();
 
 	//hardcoded updates
+	/*
 	if(globalTickNumber == 3000){
 		usingBoard->pawns.findByID(4)->remove();
-	}
+	}*/
 
 	/*
 	auto p = std::make_shared<Pawn>();
@@ -75,11 +76,11 @@ void BoardManager::updateCycle() {
 
 	//debug
 
-	/*
+
 	if(globalTickNumber % 2000 == 1){
 		out::info("tick: %d", globalTickNumber);
 		usingBoard->printBoardTreeVerbose();
-	}*/
+	}
 	globalTickNumber++;
 }
 

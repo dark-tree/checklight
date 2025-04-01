@@ -3,23 +3,29 @@
 
 
 class MatrixAnimation : public GameComponent {
+public:
 	enum AnimationType{
 		NONE,
 		ROTATE,
 		TRANSLATE,
 		SHAPE
 	};
-
+protected:
 	AnimationType type;
-	int animationSpeed;
-	float percentage;
+	double animationSpeed;
+	double percentage;
+	double old_percentage;
 
 	void rotation();
 	void translation();
 	void shape();
 
 public:
+
+
 	MatrixAnimation();
+
+	MatrixAnimation(AnimationType type);
 
 	void setAnimation(AnimationType newType);
 

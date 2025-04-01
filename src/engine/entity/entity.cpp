@@ -23,8 +23,3 @@ void Entity::setActive(bool value) {
 	active = value;
 }
 
-void Entity::queueRemove(bool value) {
-	to_remove = value;
-}
-
-

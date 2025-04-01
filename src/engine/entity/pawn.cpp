@@ -394,10 +394,11 @@ bool Pawn::remove() {
 		board->queueRemove(shared_from_this());
 
 		//removing components
-		for(const auto& c : components){
-			c->queueRemove(true);
+		for(auto c : components){
+			c->to_remove = true;
 			board->queueRemove(c);
 		}
+
 
 		return true;
 	}

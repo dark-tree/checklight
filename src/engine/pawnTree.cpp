@@ -33,11 +33,13 @@ bool PawnTree::removeFromMaps(const std::string &name, uint32_t id) {
 
 	auto results = nameMap.equal_range(name);
 
-	for (auto r = results.first; r != results.second; ++r) {
-		if(r->second->id == id){
-			r = nameMap.erase(r);
+	for (auto it = results.first; it != results.second;) {
+		if(it->second->id == id){
+			it = nameMap.erase(it);
 			erasedAmount++;
+			continue;
 		}
+		it ++;
 	}
 
 	if(erasedAmount == 1){

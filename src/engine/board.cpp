@@ -10,6 +10,7 @@
 Board::Board() {
 	pawns_to_remove = new std::queue<std::shared_ptr<Pawn>>();
 	pawns_to_remove_from_hashmap = new std::queue<std::shared_ptr<Pawn>>();
+	components_to_remove = new std::queue<std::shared_ptr<Component>>();
 }
 
 void Board::queueRemove(const std::shared_ptr<Pawn>& pToRemove) {
@@ -28,7 +29,7 @@ void Board::queueRemove(const std::shared_ptr<Pawn>& pToRemove) {
 	}
 }
 
-void Board::queueRemove(const std::shared_ptr<Component> &pToRemove) {
+void Board::queueRemove(const std::shared_ptr<Component>& pToRemove) {
 	components_to_remove->push(pToRemove);
 }
 
@@ -192,6 +193,13 @@ void Board::dequeueRemove(size_t amount) {
 		pawns.removeFromMaps((*to_be_removed)->name,(*to_be_removed)->id);
 
 		pawns_to_remove_from_hashmap->pop();
+	}
+	for(size_t i = 0; i < (components_to_remove->size() > amount ? amount : components_to_remove->size()); i++){
+		std::shared_ptr<Component>* to_be_removed = &components_to_remove->front();
+
+		//todo removing from components hashmap after adding it
+
+		components_to_remove->pop();
 	}
 }
 

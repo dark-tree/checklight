@@ -8,6 +8,7 @@
 #include "input/input.hpp"
 #include "engine/engine.hpp"
 #include "gui/gui.hpp"
+#include "engine/entity/component/matrixAnimation.hpp"
 
 static void entry(Args& args) {
 	ApplicationParameters parameters;
@@ -36,9 +37,16 @@ static void entry(Args& args) {
 	std::shared_ptr<Component> renderSphere = std::make_shared<RenderComponent>(Models::SPHERE);
 	std::shared_ptr<Component> renderCube = std::make_shared<RenderComponent>(Models::CUBE);
 
+	std::shared_ptr<Component> rotateCube = std::make_shared<MatrixAnimation>(MatrixAnimation::ROTATE);
+	std::shared_ptr<Component> moveSphere = std::make_shared<MatrixAnimation>(MatrixAnimation::TRANSLATE);
+
 
 	pawnThatRendersTheSphere->addComponent(renderSphere);
+	pawnThatRendersTheSphere->addComponent(moveSphere);
+
 	pawnThatRendersTheCube->addComponent(renderCube);
+	pawnThatRendersTheCube->addComponent(rotateCube);
+
 
 	pawn->setName("Test");
 
@@ -64,8 +72,6 @@ static void entry(Args& args) {
 	while (!window.shouldClose()) {
 		window.poll();
 		a++;
-
-		pawnThatRendersTheCube->setRotation(glm::rotate(pawnThatRendersTheCube->getRotation(),0.01f,{1.0f,1.0f,1.0f}));
 
 		//physics update before rendering
 		manager.updateCycle();
