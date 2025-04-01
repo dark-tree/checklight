@@ -45,10 +45,19 @@ void SoundClip::addAudio(const char* filename){
 	}
 	this->uri = filename;
 
-	ALenum format = (channels == 1) ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
+	
+	
+	if (channels == 2) {
+		short* output2 = new short[size_block];
 
-	ALsizei audio_size = size_block * channels * sizeof(short);
+		for (int i = 0;i < size_block;i++) {
+			output2[i] = output[i*2];
+		}
+		output = output2;
+	}
 
+	ALenum format = AL_FORMAT_MONO16;
+	ALsizei audio_size = size_block * sizeof(short);
 	// Create buffer
 	alBufferData(this->sc_buffers[0], format, output, audio_size, sample_rate);
 

@@ -1,4 +1,3 @@
-
 #include "render/system.hpp"
 #include "render/model/importer.hpp"
 #include "input/input.hpp"
@@ -7,6 +6,8 @@
 SoundManager& sm = SoundManager::getInstance();
 auto sso1 = std::make_shared<SoundSourceObject>();
 auto sso2 = std::make_shared<SoundSourceObject>();
+auto sg = std::make_shared<SoundGroup>();
+SoundListener listener;
 
 class tmpInput : public InputListener{
 public:
@@ -25,13 +26,30 @@ public:
 			}else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_B)) {
 				sm.pauseSound(sso2);
 			}
-		}
+			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_H)) {
+				sg->setMute(true);
+			}
+			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_J)) {
+				sg->setMute(false);
+			}
+			//NIE WYCZUWALNA ROZNICA DO NAPRAWY 
+			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_UP)) {
+				listener.setPosition(1000, 10, 0);
+				listener.print();
+				//sso1->print();
 
+				//sso1->setPosition(900000.0f,0.0f,5.0f);
+			}
+			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_DOWN)) {
+				listener.setPosition(0, 00, 0);
+				//sso1->setPosition(0.0f,0.0f,0.0f);
+				//listener.print();
+				//sso1->print();
+			}
+		}
 
 		return InputResult::PASS;
 	}
-
-	
 	
 };
 
@@ -55,8 +73,10 @@ int main() {
 	//test sound
 	//@TODO oddzielny watek dla sound managera tak wektor sourcow
 	try {
+		
 		auto sc1 = std::make_shared<SoundClip>();
 		auto sc2 = std::make_shared<SoundClip>();
+		
 
 		sm.addSource(sso1);
 		sm.addClip(sc1);
@@ -69,8 +89,26 @@ int main() {
 		sm.connectClipWithSource(sc2, sso2);
 
 		//sm.playSound(sso1);
+		listener.setDistanceModel(AL_INVERSE_DISTANCE);
+		listener.setPosition(1000.0f, 10.0f, 1000.0f);
 
-		SoundListener::setPosition(0, 10, 0);
+		
+		//sso1->addGroupParameters(sg);
+		//sg->addObserversSoundSourceObject(sso1);
+		//sg->setPitch(0.5f);
+		sso1->setGain(0.5f);
+		sso1->setPitch(0.5f);
+		sso1->setMaxDistance(100.0f);
+		sso1->setReferenceDistance(1.0f);
+		sso1->setRolloffFactor(1.0f);
+		sso1->setMinGain(0.0f);
+
+		//sg->setMaxDistance(0.0f);
+		//sg->setReferenceDistance(0.0f);
+		//sg->setRolloffFactor(0.0f);
+		//sg->setMinGain(0.0f);
+		//sso1->setMute(true);
+
 		/*SoundClip sc;
 		sc.addClip("assets/sounds/testOGG.ogg");
 		SoundSourceObject sso;

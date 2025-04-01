@@ -1,6 +1,8 @@
 #pragma once
 #include "external.hpp"
 
+//@TODO poprawic wczytywanie plikow audio stereo, kilka bufferow dla jednego pliku, rozdzielic kanaly na mono 
+
 // Object to management of buffers
 //In this version provide management only on one buffer
 class SoundClip {
