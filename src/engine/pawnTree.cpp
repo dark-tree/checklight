@@ -35,7 +35,7 @@ bool PawnTree::removeFromMaps(const std::string &name, uint32_t id) {
 
 	for (auto r = results.first; r != results.second; ++r) {
 		if(r->second->id == id){
-			nameMap.erase(r);
+			r = nameMap.erase(r);
 			erasedAmount++;
 		}
 	}
