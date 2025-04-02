@@ -3,11 +3,19 @@
 #include "external.hpp"
 #include "render/vulkan/pass/tracer.hpp"
 #include "render/vulkan/descriptor/push.hpp"
+#include "barrier.hpp"
 
+struct AccelStructBakedConfig;
 class Buffer;
 class Image;
 class GraphicsPipeline;
 class DescriptorSet;
+class AccelStruct;
+class QueryPool;
+class Queue;
+class Fence;
+class ShaderTable;
+class Attachment;
 
 class CommandRecorder {
 
@@ -15,12 +23,14 @@ class CommandRecorder {
 
 		VkCommandBuffer vk_buffer;
 		VkPipelineLayout vk_layout;
+		VkPipelineBindPoint vk_bind;
 		RenderPassTracer tracer;
+		VkCommandBufferUsageFlags flags;
 
 	public:
 
 		CommandRecorder() = default;
-		CommandRecorder(VkCommandBuffer vk_buffer);
+		CommandRecorder(VkCommandBuffer vk_buffer, VkCommandBufferUsageFlags flags);
 
 		/// Buffer recording must always end with a done() call
 		void done();
@@ -31,10 +41,19 @@ class CommandRecorder {
 		/// Copy data from buffer to image
 		CommandRecorder& copyBufferToImage(Image dst, Buffer src, size_t offset, size_t width, size_t height, size_t layers, size_t level);
 
-		/// Insert pipeline layout barrier
-		CommandRecorder& transitionLayout(Image image, VkImageLayout dst, VkImageLayout src, size_t layers, size_t levels);
+		/// Update buffer from host memory
+		CommandRecorder& updateBuffer(Buffer buffer, void* data);
 
-		/// Insert pipeline barrier that waits for the given stage
+		/// Insert pipeline layout barrier
+		CommandRecorder& transitionLayout(Attachment& attachment, VkImageLayout dst, VkImageLayout src);
+
+		/// Insert pipeline layout barrier
+		CommandRecorder& transitionLayout(Image image, VkImageLayout dst, VkImageLayout src, VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT);
+
+		/// Begin a simple to use memory barrier builder
+		MemoryBarrier memoryBarrier();
+
+		/// Insert pipeline barrier that waits for a WRITE before a READ access
 		CommandRecorder& bufferTransferBarrier(VkPipelineStageFlags dst);
 
 		/// Begins the first subpass in the given render pass
@@ -66,4 +85,25 @@ class CommandRecorder {
 
 		/// Writes data to the pipeline's push constant, the data is immediately available to the subsequent draw calls
 		CommandRecorder& writePushConstant(const PushConstant& constant, const void* data);
+
+		/// Builds or updates an acceleration structure given a preconfigured struct
+		CommandRecorder& buildAccelerationStructure(const AccelStructBakedConfig& config);
+
+		/// Copy data from one acceleration structure to another, potentially compacting the data during the operation
+		CommandRecorder& copyAccelerationStructure(AccelStruct& dst, AccelStruct& src, bool compact);
+
+		/// Used to get some post-creation detail about a acceleration structure
+		CommandRecorder& queryAccelStructProperties(QueryPool& pool, const std::vector<VkAccelerationStructureKHR>& structures, VkQueryType type);
+
+		/// Please don't use this command :skull:
+		CommandRecorder& quickFenceSubmit(Fence& fence, Queue& queue);
+
+		/// Resets the given query pool, pools need to be reset after creation and between uses
+		CommandRecorder& resetQueryPool(QueryPool& pool);
+
+		/// Invokes the raytracing machinery using the provided shader table
+		CommandRecorder& traceRays(ShaderTable& shaders, int width, int height);
+
+		/// Blit one image into another
+		CommandRecorder& blit(const Image& dst, VkImageLayout layout_dst, const Image& src, VkImageLayout layout_src);
 };

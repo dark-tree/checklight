@@ -44,6 +44,7 @@ const char* VulkanDebug::getObjectName(VkObjectType type) {
 	if (type == VK_OBJECT_TYPE_DESCRIPTOR_SET) return "Descriptor Set";
 	if (type == VK_OBJECT_TYPE_FRAMEBUFFER) return "Framebuffer";
 	if (type == VK_OBJECT_TYPE_COMMAND_POOL) return "Command Pool";
+	if (type == VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR) return "Acceleration";
 	#endif
 
 	return "Unknown Object";

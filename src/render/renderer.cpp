@@ -7,6 +7,9 @@
 #include "render/vulkan/pass/render.hpp"
 #include "render/vulkan/buffer/buffer.hpp"
 #include "render/vulkan/setup/debug.hpp"
+#include "render/api/vertex.hpp"
+#include "render/api/model.hpp"
+#include "render/vulkan/shader/group.hpp"
 
 /*
  * Renderer
@@ -17,6 +20,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanMessageCallback(VkDebugUtilsMessageSeverity
 }
 
 VkBool32 Renderer::onMessage(VkDebugUtilsMessageSeverityFlagBitsEXT severity, const VkDebugUtilsMessengerCallbackDataEXT* data) {
+
 	if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
 		printf("ERROR: %s\n", data->pMessage);
 		return VK_FALSE;
@@ -43,16 +47,12 @@ void Renderer::createInstance(ApplicationParameters& parameters) {
 	app_info.applicationVersion = VK_MAKE_VERSION(parameters.major, parameters.minor, parameters.patch);
 	app_info.pEngineName = ENGINE_NAME;
 	app_info.engineVersion = ENGINE_VERSION;
-	app_info.apiVersion = VK_API_VERSION_1_0;
+	app_info.apiVersion = VK_API_VERSION_1_2;
 
 	std::vector<const char*> extension = windows.getRequiredExtensions();
 	std::vector<const char*> layers;
 
-	// needed for the vkGetPhysicalDeviceFeatures2KHR which we will need to
-	// use any extensions or new vulkan features
-	extension.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-
-	#ifdef ENGINE_DEBUG
+	#if ENGINE_DEBUG
 		layers.push_back("VK_LAYER_KHRONOS_validation");
 		extension.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		printf("INFO: Starting renderer in debug mode, performance will be affected!\n");
@@ -76,7 +76,7 @@ void Renderer::createInstance(ApplicationParameters& parameters) {
 	create_info.ppEnabledLayerNames = layers.data();
 
 	// attach debug messenger during instance creation
-	#ifdef ENGINE_DEBUG
+	#if ENGINE_DEBUG
 		create_info.pNext = &messenger_info;
 	#endif
 
@@ -90,7 +90,7 @@ void Renderer::createInstance(ApplicationParameters& parameters) {
 	this->instance = vk_instance;
 
 	// attach debug messenger for all calls after instance creation
-	#ifdef ENGINE_DEBUG
+	#if ENGINE_DEBUG
 		// load functions from debug utils extension
 		Proxy::loadMessengerFunctions(instance);
 
@@ -109,20 +109,93 @@ void Renderer::pickDevice() {
 	auto devices = instance.getDevices();
 	printf("INFO: Detected %d physical devices\n", (int) devices.size());
 
-	for (const auto& device : devices) {
+	std::vector<const char*> required_extensions = {
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+		VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+		VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+		VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+	};
+
+	std::vector<const char*> optional_extensions = {
+	};
+
+	std::vector<std::string> debug;
+
+	for (auto& device : devices) {
+
+		printf("INFO: Checking device '%s'...\n", device->getName());
+		bool fail = false;
 
 		// we need the device to be able to render to our window
-		if (!device.canUseSurface(surface)) {
-			continue;
+		if (!device->canUseSurface(surface)) {
+			printf(" * Can't use window's surface!\n");
+			fail = true;
 		}
 
 		// check for support of required extensions
-		if (!device.hasExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)) {
+		for (auto name : required_extensions) {
+			if (!device->hasExtension(name)) {
+				printf(" * Missing required extension '%s'!\n", name);
+				fail = true;
+			}
+		}
+
+		auto* features_base = (const VkPhysicalDeviceFeatures2*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2);
+		auto* features_vk12 = (const VkPhysicalDeviceVulkan12Features*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES);
+		auto* features_ray = (const VkPhysicalDeviceRayTracingPipelineFeaturesKHR*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR);
+		auto* features_accel = (const VkPhysicalDeviceAccelerationStructureFeaturesKHR*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR);
+
+		if (!features_vk12->bufferDeviceAddress) {
+			printf(" * Feature 'buffer device address' unsupported!\n");
+			fail = true;
+		}
+
+		if (!features_ray->rayTracingPipeline) {
+			printf(" * Feature 'ray tracing pipeline' unsupported!\n");
+			fail = true;
+		}
+
+		if (!features_accel->accelerationStructure) {
+			printf(" * Feature 'acceleration structure' unsupported!\n");
+			fail = true;
+		}
+
+		if (!features_vk12->scalarBlockLayout) {
+			printf(" * Feature 'scalar block layout' unsupported!\n");
+			fail = true;
+		}
+
+		if (!features_vk12->storageBuffer8BitAccess) {
+			printf(" * Feature 'storage buffer 8bit access' unsupported!\n");
+			fail = true;
+		}
+
+		if (!features_vk12->shaderInt8) {
+			printf(" * Feature 'shader int8_t' unsupported!\n");
+			fail = true;
+		}
+
+		if (!features_vk12->runtimeDescriptorArray) {
+			printf(" * Feature 'runtime descriptor array' unsupported!\n");
+			fail = true;
+		}
+
+		if (!features_vk12->shaderSampledImageArrayNonUniformIndexing) {
+			printf(" * Feature 'shader sampled image array non uniform indexing' unsupported!\n");
+			fail = true;
+		}
+
+		if (!features_base->features.shaderInt64) {
+			printf(" * Feature 'shader uint64_t' unsupported!\n");
+			fail = true;
+		}
+
+		if (fail) {
 			continue;
 		}
 
 		// find a queue family of our liking
-		for (Family queue_family : device.getFamilies()) {
+		for (Family queue_family : device->getFamilies()) {
 
 			// needs to be able to present to our window...
 			if (!queue_family.hasPresentation(surface)) {
@@ -135,21 +208,29 @@ void Renderer::pickDevice() {
 			}
 
 			// we found the one, continue with this device and family
-			createDevice(device, queue_family);
+			createDevice(std::move(device), queue_family, required_extensions, optional_extensions);
 			return;
 		}
+
+		printf(" * No valid queue!\n");
 
 	}
 
 	throw std::runtime_error {"No device could have been selected!"};
 }
 
-void Renderer::createDevice(const PhysicalDevice& physical, Family queue_family) {
-	printf("INFO: Selected '%s' (queue #%d)\n", physical.getName(), queue_family.getIndex());
+void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family queue_family, std::vector<const char*>& extensions, std::vector<const char*>& optionals) {
+	printf("INFO: Selected '%s' (queue #%d)\n", physical->getName(), queue_family.getIndex());
 
-	// list device extensions we need
-	std::vector<const char*> extensions;
-	extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+	// enable supported optional extensions
+	for (auto name : optionals) {
+		if (!physical->hasExtension(name)) {
+			printf("WARN: Missing optional extension '%s'!\n", name);
+			continue;
+		}
+
+		extensions.emplace_back(name);
+	}
 
 	// we use only one queue at this time
 	const float priority = 1.0f;
@@ -160,9 +241,34 @@ void Renderer::createDevice(const PhysicalDevice& physical, Family queue_family)
 	queue_info.queueCount = 1;
 	queue_info.pQueuePriorities = &priority;
 
-	// features we want to enable
+	// AccelStruct features
+	VkPhysicalDeviceAccelerationStructureFeaturesKHR feature_accel {};
+	feature_accel.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+	feature_accel.pNext = nullptr;
+	feature_accel.accelerationStructure = true;
+
+	// Raytracing features
+	VkPhysicalDeviceRayTracingPipelineFeaturesKHR features_ray {};
+	features_ray.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+	features_ray.pNext = &feature_accel;
+	features_ray.rayTracingPipeline = true;
+
+	// Vulkan 1.2 features
+	VkPhysicalDeviceVulkan12Features features_vk12 {};
+	features_vk12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+	features_vk12.pNext = &features_ray;
+	features_vk12.bufferDeviceAddress = true; // need for raytracing, allow creating the funny universal pointers
+	features_vk12.scalarBlockLayout = true; // needed for the shader
+	features_vk12.storageBuffer8BitAccess = true; // needed for the shader RGBA block
+	features_vk12.shaderInt8 = true; // needed for the shader RGBA block
+	features_vk12.runtimeDescriptorArray = true; // needed for the shader
+	features_vk12.shaderSampledImageArrayNonUniformIndexing = true; // needed for the shader
+
+	// Basic device features
 	VkPhysicalDeviceFeatures2KHR features {};
 	features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+	features.pNext = &features_vk12;
+	features.features.shaderInt64 = true; // needed for the shader
 
 	// we will now connect with the selected driver
 	VkDeviceCreateInfo create_info {};
@@ -179,21 +285,20 @@ void Renderer::createDevice(const PhysicalDevice& physical, Family queue_family)
 
 	VkDevice vk_device;
 
-	if (vkCreateDevice(physical.getHandle(), &create_info, nullptr, &vk_device) != VK_SUCCESS) {
+	if (vkCreateDevice(physical->getHandle(), &create_info, nullptr, &vk_device) != VK_SUCCESS) {
 		throw std::runtime_error {"Failed to create logical device!"};
 	}
 
 	// load all device functions
-	this->physical = std::make_unique<PhysicalDevice>(physical);
-	this->device = vk_device;
+	this->device = {vk_device, physical};
 	this->family = queue_family;
+	this->physical = std::move(physical);
 
-	#ifdef ENGINE_DEBUG
+	#if ENGINE_DEBUG
 		Proxy::loadDebugDeviceFunctions(this->device);
 	#endif
 
 	Proxy::loadDeviceFunctions(this->device);
-
 }
 
 void Renderer::createSwapchain() {
@@ -215,12 +320,15 @@ void Renderer::createSwapchain() {
 	builder.addQueueFamily(family);
 
 	this->swapchain = builder.build(device, surface);
+	this->immediate.setResolution(width(), height());
 
 	// allocate all attachments (except for color)
 	attachment_depth.allocate(device, extent.width, extent.height, allocator);
+	attachment_albedo.allocate(device, extent.width, extent.height, allocator);
 
 	// create framebuffers
-	pass_basic_3d.prepareFramebuffers(swapchain);
+	pass_immediate.prepareFramebuffers(swapchain);
+	pass_compose.prepareFramebuffers(swapchain);
 
 	printf("INFO: Swapchain ready\n");
 
@@ -228,8 +336,16 @@ void Renderer::createSwapchain() {
 
 void Renderer::createShaders() {
 
-	shader_basic_vertex = compiler.compileFile(device, "assets/shader/basic.vert", Kind::VERTEX);
-	shader_basic_fragment = compiler.compileFile(device, "assets/shader/basic.frag", Kind::FRAGMENT);
+	shader_screen_vertex = Shader::loadFromFile(device, "screen.vert", VK_SHADER_STAGE_VERTEX_BIT);
+	shader_world_vertex = Shader::loadFromFile(device, "world.vert", VK_SHADER_STAGE_VERTEX_BIT);
+	shader_atlas_fragment = Shader::loadFromFile(device, "atlas.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+	shader_text_fragment = Shader::loadFromFile(device, "text.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+	shader_trace_gen = Shader::loadFromFile(device, "trace.rgen", VK_SHADER_STAGE_RAYGEN_BIT_KHR);
+	shader_trace_miss = Shader::loadFromFile(device, "trace.rmiss", VK_SHADER_STAGE_MISS_BIT_KHR);
+	shader_trace_shadow_miss = Shader::loadFromFile(device, "shadow.rmiss", VK_SHADER_STAGE_MISS_BIT_KHR);
+	shader_trace_hit = Shader::loadFromFile(device, "trace.rchit", VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
+	shader_blit_vertex = Shader::loadFromFile(device, "blit.vert", VK_SHADER_STAGE_VERTEX_BIT);
+	shader_blit_fragment = Shader::loadFromFile(device, "blit.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 
 }
 
@@ -257,6 +373,13 @@ void Renderer::createAttachments() {
 		.setDebugName("Depth")
 		.createAttachment();
 
+	attachment_albedo = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
+		.setDebugName("Albedo")
+		.createAttachment();
+
 	// very important UwU
 	attachment_color.markSwapchainBacked();
 
@@ -269,13 +392,46 @@ void Renderer::createRenderPasses() {
 	 * prepareFramebuffers() on it at the end of createSwapchain()!
 	 */
 
-	{ // basic 3d pass
+	{ // immediate 2d/3d pass
+
+		RenderPassBuilder builder;
+
+		Attachment::Ref color = builder.addAttachment(attachment_color)
+			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+			.next();
+
+		Attachment::Ref depth = builder.addAttachment(attachment_depth)
+			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+			.next();
+
+		builder.addDependency()
+			.first(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0)
+			.then(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+			.next();
+
+		builder.addDependency(VK_DEPENDENCY_BY_REGION_BIT)
+			.first(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+			.then(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_MEMORY_READ_BIT)
+			.next();
+
+		builder.addSubpass()
+			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+			.next();
+
+		pass_immediate = builder.build(device, "Immediate");
+
+	}
+
+	{ // compose 2d pass
 
 		RenderPassBuilder builder;
 
 		Attachment::Ref color = builder.addAttachment(attachment_color)
 			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
-			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			.next();
 
 		Attachment::Ref depth = builder.addAttachment(attachment_depth)
@@ -298,7 +454,7 @@ void Renderer::createRenderPasses() {
 			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.next();
 
-		pass_basic_3d = builder.build(device, "Basic 3D");
+		pass_compose = builder.build(device, "Compose");
 
 	}
 
@@ -306,30 +462,94 @@ void Renderer::createRenderPasses() {
 }
 
 void Renderer::closeRenderPasses() {
-	pass_basic_3d.close();
+	pass_immediate.close();
+	pass_compose.close();
 }
 
 void Renderer::createPipelines() {
 
 	VkExtent2D extent = swapchain.getExtend();
 
-	pipeline_basic_3d = GraphicsPipelineBuilder::of(device)
+	pipeline_immediate_2d = GraphicsPipelineBuilder::of(device)
 		.withViewport(0, 0, extent.width, extent.height)
 		.withScissors(0, 0, extent.width, extent.height)
 		.withCulling(false)
-		.withRenderPass(pass_basic_3d, 0)
-		.withShaders(shader_basic_vertex, shader_basic_fragment)
+		.withRenderPass(pass_immediate, 0)
+		.withShaders(shader_screen_vertex, shader_atlas_fragment)
 		.withBindingLayout(binding_3d)
+		.withDescriptorSetLayout(layout_immediate)
+		.withBlendMode(BlendMode::ENABLED)
+		.withBlendAlphaFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withBlendColorFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
 		.withPushConstant(mesh_constant)
-		.withDescriptorSetLayout(layout_geometry)
+		.withDepthTest(VK_COMPARE_OP_ALWAYS, true, true)
+		.build();
+
+	pipeline_immediate_3d = GraphicsPipelineBuilder::of(device)
+		.withViewport(0, 0, extent.width, extent.height)
+		.withScissors(0, 0, extent.width, extent.height)
+		.withCulling(true, VK_FRONT_FACE_COUNTER_CLOCKWISE)
+		.withRenderPass(pass_immediate, 0)
+		.withShaders(shader_world_vertex, shader_atlas_fragment)
+		.withBindingLayout(binding_3d)
+		.withDescriptorSetLayout(layout_immediate)
+		.withBlendMode(BlendMode::ENABLED)
+		.withBlendAlphaFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withBlendColorFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withPushConstant(mesh_constant)
 		.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
 		.build();
 
+	pipeline_text_2d = GraphicsPipelineBuilder::of(device)
+		.withViewport(0, 0, extent.width, extent.height)
+		.withScissors(0, 0, extent.width, extent.height)
+		.withCulling(false)
+		.withRenderPass(pass_immediate, 0)
+		.withShaders(shader_screen_vertex, shader_text_fragment)
+		.withBindingLayout(binding_3d)
+		.withDescriptorSetLayout(layout_immediate)
+		.withBlendMode(BlendMode::ENABLED)
+		.withBlendAlphaFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withBlendColorFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withPushConstant(mesh_constant)
+		.withDepthTest(VK_COMPARE_OP_ALWAYS, true, true)
+		.build();
+
+	pipeline_compose_2d = GraphicsPipelineBuilder::of(device)
+		.withViewport(0, 0, extent.width, extent.height)
+		.withScissors(0, 0, extent.width, extent.height)
+		.withCulling(false)
+		.withRenderPass(pass_compose, 0)
+		.withShaders(shader_blit_vertex, shader_blit_fragment)
+		.withDescriptorSetLayout(layout_compose)
+		.withDepthTest(VK_COMPARE_OP_ALWAYS, true, true)
+		.build();
+
+	ShaderTableBuilder builder;
+	builder.addMissShader(shader_trace_miss);
+	builder.addMissShader(shader_trace_shadow_miss);
+	builder.addRayGenShader(shader_trace_gen);
+	builder.addHitGroup().withClosestHit(shader_trace_hit);
+
+	ShaderTableLayout shader_layout = builder.build();
+
+	pipeline_trace_3d = RaytracePipelineBuilder::of(device)
+		.withRecursionDepth(2)
+		.withDescriptorSetLayout(layout_raytrace)
+		.withShaderLayout(shader_layout)
+		.build();
+
+	shader_table.close();
+	shader_table = shader_layout.allocate(device, allocator, pipeline_trace_3d);
 
 }
 
 void Renderer::closePipelines() {
-	pipeline_basic_3d.close();
+	pipeline_immediate_2d.close();
+	pipeline_immediate_3d.close();
+	pipeline_text_2d.close();
+	pipeline_trace_3d.close();
+	pipeline_compose_2d.close();
 }
 
 void Renderer::closeFrames() {
@@ -357,6 +577,7 @@ void Renderer::lateClose() {
 
 	// close all attachments
 	attachment_depth.close(device);
+	attachment_albedo.close(device);
 
 	swapchain.close();
 	closeFrames();
@@ -367,6 +588,21 @@ void Renderer::lateInit() {
 	createSwapchain();
 	createPipelines();
 	createFrames();
+
+	Fence fence = createFence();
+	CommandBuffer buffer = transient_pool.allocate(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	CommandRecorder recorder = buffer.record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+	prepareForRendering(recorder);
+
+	recorder.done();
+	buffer.submit().signal(fence).done(queue);
+	fence.wait();
+	fence.close();
+}
+
+void Renderer::prepareForRendering(CommandRecorder& recorder) {
+	recorder.transitionLayout(attachment_albedo, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 }
 
 RenderFrame& Renderer::getFrame() {
@@ -384,7 +620,44 @@ void Renderer::presentFramebuffer() {
 
 	if (swapchain.present(queue, semaphore, this->current_image)) {
 		reload();
+		printf("WARN: Reloading during framebuffer presentation!\n");
 	}
+}
+
+void Renderer::rebuildTopLevel(CommandRecorder& recorder) {
+	AccelStructConfig config = AccelStructConfig::create(AccelStructConfig::BUILD, AccelStructConfig::TOP)
+		.addInstances(device, instances->count(), instances->getInstanceBuffer(), true)
+		.setFlags(VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_KHR)
+		.setDebugName("TLAS");
+
+	instances->flush(recorder);
+
+	// Recreate TLAS and update descriptors
+	tlas.close(device);
+	tlas = bakery.submit(device, allocator, config)->getStructure();
+	getFrame().set_raytrace.structure(0, tlas);
+
+	bakery.bake(device, allocator, recorder);
+
+	recorder.memoryBarrier()
+		.first(VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR, VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR)
+		.then(VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR)
+		.done();
+
+}
+
+void Renderer::rebuildBottomLevel(CommandRecorder& recorder) {
+	// wait for object transfer
+	recorder.memoryBarrier()
+		.first(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_MEMORY_WRITE_BIT)
+		.then(VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR, VK_ACCESS_MEMORY_READ_BIT)
+		.done();
+
+	bakery.bake(device, allocator, recorder);
+}
+
+ImmediateRenderer& Renderer::getImmediateRenderer() {
+	return immediate;
 }
 
 Fence Renderer::createFence(bool signaled) {
@@ -410,6 +683,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	concurrent = 1;
 	surface_format = VK_FORMAT_B8G8R8A8_SRGB;
 	frames.reserve(concurrent);
+	instances = std::make_unique<InstanceManager>();
 
 	// early init
 	createInstance(parameters);
@@ -428,18 +702,37 @@ Renderer::Renderer(ApplicationParameters& parameters)
 
 	// create vertex bindings
 	binding_3d = BindingLayoutBuilder::begin()
-		.attribute(0, VK_FORMAT_R32G32B32_SFLOAT) // xyz
-		.attribute(1, VK_FORMAT_R32G32B32_SFLOAT) // rgb
+		.attribute(0, Vertex3D::position)
+		.attribute(1, Vertex3D::color)
+		.attribute(2, Vertex3D::texture)
+		.attribute(3, Vertex3D::material)
+		.attribute(4, Vertex3D::padding)
 		.done();
 
 	// create descriptor layouts
-	layout_geometry = DescriptorSetLayoutBuilder::begin()
-		.descriptor(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+	layout_immediate = DescriptorSetLayoutBuilder::begin()
+		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+		.done(device);
+
+	layout_compose = DescriptorSetLayoutBuilder::begin()
+		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.done(device);
+
+	layout_raytrace = DescriptorSetLayoutBuilder::begin()
+		.descriptor(0, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
+		.descriptor(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, TextureManager::MAX_TEXTURES)
+		.descriptor(5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
 		.done(device);
 
 	// add layouts to the pool so that they can be allocated
 	descriptor_pool = DescriptorPoolBuilder::begin()
-		.addDynamic(layout_geometry, 1)
+		.addDynamic(layout_immediate, 1)
+		.addDynamic(layout_raytrace, 1)
+		.addDynamic(layout_compose, 1)
 		.done(device, concurrent);
 
 	// render pass used during mesh rendering
@@ -462,7 +755,9 @@ Renderer::~Renderer() {
 	lateClose();
 
 	// close all the descriptor layouts here
-	layout_geometry.close();
+	layout_immediate.close();
+	layout_raytrace.close();
+	layout_compose.close();
 
 	descriptor_pool.close();
 	transient_pool.close();
@@ -474,10 +769,26 @@ Renderer::~Renderer() {
 	}
 
 	vkDestroySurfaceKHR(instance.getHandle(), surface, nullptr);
+	instances.reset();
+	immediate.close(device);
+	materials.close(device);
 
 	// It's important to maintain the correct order
 	closeRenderPasses();
-	compiler.close();
+	bakery.close();
+	tlas.close(device);
+	shader_table.close();
+
+	shader_world_vertex.close();
+	shader_screen_vertex.close();
+	shader_atlas_fragment.close();
+	shader_text_fragment.close();
+	shader_trace_gen.close();
+	shader_trace_miss.close();
+	shader_trace_shadow_miss.close();
+	shader_trace_hit.close();
+	shader_blit_vertex.close();
+	shader_blit_fragment.close();
 
 	VulkanDebug::assertAllDead();
 	allocator.close();
@@ -498,7 +809,17 @@ Window& Renderer::getWindow() const {
 	return *window;
 }
 
-void Renderer::beginDraw() {
+void Renderer::draw() {
+
+	int w, h;
+	window->getFramebufferSize(&w, &h);
+
+	if (w == 0 || h == 0) {
+		immediate.clear();
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 30));
+		return;
+	}
+
 	RenderFrame& frame = getFrame();
 
 	frame.wait();
@@ -508,18 +829,57 @@ void Renderer::beginDraw() {
 
 	// begin rendering
 	recorder = frame.buffer.record();
+	frame.flushUniformBuffer(recorder);
 
-	recorder.beginRenderPass(pass_basic_3d, current_image, swapchain.getExtend());
-	recorder.bindPipeline(pipeline_basic_3d);
-	recorder.bindDescriptorSet(frame.set_0);
-}
+	rebuildTopLevel(recorder);
 
-void Renderer::endDraw() {
+	auto& buffer = instances->getAttachmentBuffer();
+	frame.set_raytrace.buffer(3, buffer.getBuffer(), buffer.getBuffer().size());
+
+	auto& material_buffer = materials.getMaterialBuffer();
+	frame.set_raytrace.buffer(5, material_buffer.getBuffer(), material_buffer.getBuffer().size());
+
+	materials.getTextureManager().updateDescriptorSet(device, frame.set_raytrace, 4);
+
+	// wait for uniform transfer before raytracing or rasterization starts
+	recorder.memoryBarrier()
+		.first(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT)
+		.then(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_ACCESS_UNIFORM_READ_BIT)
+		.done();
+
+	recorder.transitionLayout(attachment_depth, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+
+	// ray trace
+	recorder.bindPipeline(pipeline_trace_3d)
+		.bindDescriptorSet(frame.set_raytrace)
+		.traceRays(shader_table, width(), height());
+
+	// compose final image
+	recorder.beginRenderPass(pass_compose, current_image, swapchain.getExtend())
+		.bindPipeline(pipeline_compose_2d)
+		.bindDescriptorSet(frame.set_compose)
+		.draw(3)
+		.endRenderPass();
+
+	// upload buffers and textures
+	immediate.upload(recorder);
+	frame.set_immediate.sampler(0, immediate.getAtlasTexture(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+	// draw immediate vertex data
+	recorder.beginRenderPass(pass_immediate, current_image, swapchain.getExtend());
+	recorder.bindPipeline(pipeline_immediate_3d);
+	recorder.bindDescriptorSet(frame.set_immediate);
+	immediate.basic_3d.draw(mesh_constant, recorder);
+
+	recorder.bindPipeline(pipeline_immediate_2d);
+	immediate.basic.draw(mesh_constant, recorder);
+
+	recorder.bindPipeline(pipeline_text_2d);
+	immediate.text.draw(mesh_constant, recorder);
 
 	recorder.endRenderPass();
-	recorder.done();
 
-	RenderFrame& frame = getFrame();
+	recorder.done();
 
 	frame.buffer.submit()
 		.awaits(frame.available_semaphore, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
@@ -531,6 +891,7 @@ void Renderer::endDraw() {
 
 	// next frame
 	index = (index + 1) % concurrent;
+	immediate.clear();
 
 }
 
@@ -544,4 +905,8 @@ int Renderer::width() {
 
 int Renderer::height() {
 	return swapchain.getExtend().height;
+}
+
+MaterialManager& Renderer::getMaterialManager() {
+	return materials;
 }

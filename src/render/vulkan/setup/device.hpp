@@ -4,7 +4,9 @@
 #include "family.hpp"
 #include "queue.hpp"
 
+class Buffer;
 class SwapchainInfo;
+class AccelStruct;
 
 /**
  * Represents the vulkan driver,
@@ -14,9 +16,18 @@ class PhysicalDevice {
 
 	private:
 
-		VkPhysicalDeviceProperties properties;
+		// features
+		VkPhysicalDeviceRayTracingPipelineFeaturesKHR ray_feature {};
+		VkPhysicalDeviceVulkan12Features vk12_features {};
+		VkPhysicalDeviceAccelerationStructureFeaturesKHR accel_features {};
+
+		// properties
+		VkPhysicalDeviceRayTracingPipelinePropertiesKHR ray_properties;
+
+		VkPhysicalDeviceProperties2KHR properties;
 		VkPhysicalDeviceFeatures2KHR features;
 		VkPhysicalDevice vk_device;
+		std::vector<VkExtensionProperties> extensions;
 
 	public:
 
@@ -74,6 +85,22 @@ class PhysicalDevice {
 		 */
 		const VkPhysicalDeviceLimits& getLimits() const;
 
+		/**
+		 * @brief Get the cached device feature chain entry
+		 */
+		const void* getFeatures(VkStructureType type) const;
+
+		/**
+		 * @brief Get the cached device properties chain entry
+		 */
+		const void* getProperties(VkStructureType type) const;
+
+		/**
+		 * @brief Get the device's maximal ray invocation recursion
+		 *        depth, learn more in @see RaytracePipelineBuilder::withRecursionDepth()
+		 */
+		int getMaxRaytraceRecursionDepth() const;
+
 };
 
 /**
@@ -83,12 +110,13 @@ class LogicalDevice {
 
 	private:
 
-		VkDevice vk_device = nullptr;
+		VkDevice vk_device = VK_NULL_HANDLE;
+		std::shared_ptr<PhysicalDevice> physical;
 
 	public:
 
 		LogicalDevice() = default;
-		LogicalDevice(VkDevice device);
+		LogicalDevice(VkDevice device, const std::shared_ptr<PhysicalDevice>& physical);
 
 		template <typename F>
 		F getFunction(const char* name) {
@@ -123,5 +151,23 @@ class LogicalDevice {
 		 *        Family used during device creation
 		 */
 		Queue getQueue(const Family& family) const;
+
+		/**
+		 * @brief Get device address of this buffer
+		 * @note  Device addresses are a type of a universal pointer
+		 */
+		VkDeviceAddress getAddress(const Buffer& buffer) const;
+
+		/**
+		 * @brief Get device address of this acceleration structure
+		 * @note  Device addresses are a type of a universal pointer
+		 */
+		VkDeviceAddress getAddress(const AccelStruct& structure) const;
+
+		/**
+		 * @brief Get a reference to the physical device from which
+		 *        this logical device was created
+		 */
+		std::shared_ptr<PhysicalDevice> getPhysical() const;
 
 };

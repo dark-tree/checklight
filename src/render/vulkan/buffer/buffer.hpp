@@ -7,7 +7,7 @@ class Buffer {
 
 	private:
 
-		size_t bytes;
+		size_t bytes = 0;
 		VkBuffer vk_buffer;
 		Allocation allocation;
 

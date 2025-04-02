@@ -21,11 +21,13 @@ int main() {
 	// You can access root InputDispatcher from RenderSystem::system->getWindow().getInputDispatcher()
 	InputDispatcher& dispatcher = /* ... */;
 
-	// first register the DebugInputListener to log all input (except for mouse movement) PASSed by MyInputListener
-	dispatcher.registerListener(std::make_shared<DebugInputListener>());
+	// first register the DebugInputListener to log all input PASSed by MyInputListener
+	// give the debug listener a higher priority so that it sees ALL events
+	dispatcher.registerListener(std::make_shared<DebugInputListener>(true), 200);
 	
 	// then register your own listener (impl shown in the next example)
-	dispatcher.registerListener(std::make_shared<MyInputListener>());
+	// debug listener never blocks an event, so this will also receive all events
+	dispatcher.registerListener(std::make_shared<MyInputListener>(), 100);
 	
 	// you can also remove a listener from a dispatcher
 	// dispatcher.removeListener(/* shared_ptr */);
@@ -40,7 +42,7 @@ class MyInputListener : public InputListener {
 		
 	public:
 		
-		InputResult onEvent(const InputEvent &event) override {
+		InputResult onEvent(const InputEvent &any) override {
 			
 			// check & assert the event to a KeyboardEvent
 			if (const auto* event = any.as<KeyboardEvent>()) {
@@ -50,7 +52,7 @@ class MyInputListener : public InputListener {
 					printf("DEBUG: Hello World!\n");
 					
 					// cancel further event processing
-					return InputResult::CONSUMED;
+					return InputResult::BLOCK;
 				}
 			}
 			
