@@ -45,6 +45,23 @@ static void entry(Args& args) {
 		//sub->margin = Unit::px(10);
 	}
 
+	{
+		auto sub = std::make_shared<PanelWidget>();
+		panel->addWidget(sub);
+
+		sub->width = Unit::px(100);
+		sub->height = Unit::px(100);
+		sub->min_width = Unit::px(100);
+		sub->min_height = Unit::px(100);
+		sub->r = 250;
+		sub->g = 100;
+		sub->b = 100;
+		sub->padding = Unit::px(10);
+		sub->margin = {Unit::px(40), Unit::px(10), Unit::px(40), Unit::px(10)};
+
+		//sub->margin = Unit::px(10);
+	}
+
 	// {
 	// 	auto sub = std::make_shared<PanelWidget>();
 	// 	panel->addWidget(sub);

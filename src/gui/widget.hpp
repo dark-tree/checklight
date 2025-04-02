@@ -24,8 +24,15 @@ struct Spacing {
 		Spacing(Unit unit)
 		: top(unit), bottom(unit), left(unit), right(unit) {}
 
+		Spacing(Unit vertical, Unit horizontal)
+		: top(vertical), bottom(vertical), left(horizontal), right(horizontal) {}
+
 		Spacing(Unit top, Unit bottom, Unit left, Unit right)
 		: top(top), bottom(bottom), left(left), right(right) {}
+
+	public:
+
+		int getTotal(Channel channel);
 
 };
 

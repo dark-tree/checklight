@@ -6,6 +6,18 @@
 #include "navigator.hpp"
 
 /*
+ * Spacing
+ */
+
+int Spacing::getTotal(Channel channel) {
+	if (channel == Channel::WIDTH) {
+		return left.toPixels() + right.toPixels();
+	}
+
+	return top.toPixels() + bottom.toPixels();
+}
+
+/*
  * Widget
  */
 
@@ -29,7 +41,7 @@ Box2D Widget::getPaddingBox() const {
 }
 
 int Widget::getOuterSizing(Channel channel) {
-	return sizing.get(channel) + padding.left.toPixels() + padding.right.toPixels() + margin.left.toPixels() + margin.right.toPixels(); // TODO FIXME
+	return sizing.get(channel) + padding.getTotal(channel) + margin.getTotal(channel);
 }
 
 void Widget::applyWrapSizing() {
@@ -61,7 +73,7 @@ void Widget::applyFitSizing(Channel channel) {
 	if (sizing_unit.metric == Metric::FIT) {
 		int value = 0;
 
-		const bool along = getFlowChannel(flow) == channel;
+		const bool along = WidgetFlow::isAligned(flow, channel);
 		const int spacing = gap.toPixels(); /* TODO ensure that gap is absolute */
 
 		// get widths of all children
@@ -100,7 +112,7 @@ void Widget::applyFitSizing(Channel channel) {
 
 void Widget::applyGrowSizing(Channel channel) {
 
-	const bool along = getFlowChannel(flow) == channel;
+	const bool along = WidgetFlow::isAligned(flow, channel);
 	const int spacing = gap.toPixels(); /* TODO ensure that gap is absolute */
 
 	int remaining = sizing.get(channel);
@@ -278,15 +290,16 @@ void Widget::applyPositioning(int x, int y) {
 	padded = Box2D {x - pl, y - pt, sizing.width() + pw, sizing.height() + ph};
 
 	// this is used to effectively change the iteration direction
-	const bool invert = getFlowDirection(flow) == -1;
-	const Channel channel = getFlowChannel(flow);
+	const int facing = WidgetFlow::asDirection(flow);
+	const bool invert = facing == -1;
+	const Channel channel = WidgetFlow::asChannel(flow);
 
 	for (int i = 0; i < (int) children.size(); i++) {
 		const std::shared_ptr<Widget>& widget = children[invert ? (children.size() - i - 1) : i];
 
-		// FIXME
-		int ox = widget->padding.left.toPixels() + widget->margin.left.toPixels();
-		int oy = widget->padding.top.toPixels() + widget->margin.top.toPixels();
+		// when positioning we take into account only the upper-left offsets
+		const int ox = widget->padding.left.toPixels() + widget->margin.left.toPixels();
+		const int oy = widget->padding.top.toPixels() + widget->margin.top.toPixels();
 
 		widget->applyPositioning(ox + position.width() /* x */, oy + position.height() /* y */);
 		position.get(channel) += widget->getOuterSizing(channel) + gap.toPixels();

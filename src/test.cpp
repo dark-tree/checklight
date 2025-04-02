@@ -223,20 +223,49 @@ TEST(gui_simple_padded_fit) {
 
 		sub->width = Unit::px(100);
 		sub->height = Unit::px(100);
-		sub->padding = Unit::px(10);
+		sub->padding = {Unit::px(20), Unit::px(10)};
 
 		root->rebuild(10, 10);
 
 		CHECK(root->content.x, 10);
 		CHECK(root->content.y, 10);
 		CHECK(root->content.w, 120);
-		CHECK(root->content.h, 120);
+		CHECK(root->content.h, 140);
 
 		CHECK(sub->content.x, 20);
-		CHECK(sub->content.y, 20);
+		CHECK(sub->content.y, 30);
 		CHECK(sub->content.w, 100);
 		CHECK(sub->content.h, 100);
 
 	}
+
+};
+
+TEST(gui_simple_inverse) {
+
+	auto context = std::make_shared<WidgetContext>();
+	auto root = std::make_shared<PanelWidget>();
+	auto sub1 = std::make_shared<PanelWidget>();
+	auto sub2 = std::make_shared<PanelWidget>();
+
+	root->addWidget(sub1);
+	root->addWidget(sub2);
+	context->setRoot(root);
+
+	root->width = Unit::fit();
+	root->height = Unit::fit();
+	root->flow = Flow::RIGHT_TO_LEFT;
+
+	sub1->width = Unit::px(100);
+	sub1->height = Unit::px(100);
+
+	sub2->width = Unit::px(100);
+	sub2->height = Unit::px(100);
+	sub2->margin ={ Unit::px(100), Unit::px(200), Unit::px(10), Unit::zero()};
+
+	root->rebuild(0, 0);
+
+	CHECK(sub1->content.x, 110);
+	CHECK(sub2->content.x, 10);
 
 };
