@@ -8,17 +8,17 @@
 
 class PhysicsElement {
 protected:
-    glm::vec3 position; /// Position of the object in 3D space as a 3-dimensional vector
-    glm::vec3 velocity; /// Velocity of the object in 3D space as a 3-dimensional vector
-    glm::quat rotation; /// Rotation of the object in 3D space as a quaternion
-    glm::vec3 angular_velocity; /// angular_velocity of the object in 3D space as a 3-dimensional vector. Direction represents the axis of rotation, magnitude represents the speed of rotation (radians/s)
-    glm::vec3 center_of_mass; /// Center of mass of the object in 3D space as a 3-dimensional vector
-    std::vector<glm::vec3> vertices; /// Vertices forming the shape of the object's collider (point 0, 0, 0 must be contained withing the shape)
-    std::vector<glm::ivec3> triangles; /// Faces of the object's collider as triplets of vertices indexes (point 0, 0, 0 must be contained withing the shape)
-    bool is_static; /// Whether the object can be moved by external forces
-    bool is_sphere; /// Whether the collider of the object is to be a perfect sphere, if yes vertices and triangles will be disregarded in operations
-    float gravity_scale; /// Value by which gravity's acceleration is multiplied
-    float sphere_collider_radius; /// Radius of the simple sphere collider encompassing object's collider, used for initial collision checks
+    glm::vec3 position; ///< Position of the object in 3D space as a 3-dimensional vector
+    glm::vec3 velocity; ///< Velocity of the object in 3D space as a 3-dimensional vector
+    glm::quat rotation; ///< Rotation of the object in 3D space as a quaternion
+    glm::vec3 angular_velocity; ///< angular_velocity of the object in 3D space as a 3-dimensional vector. Direction represents the axis of rotation, magnitude represents the speed of rotation (radians/s)
+    glm::vec3 center_of_mass; ///< Center of mass of the object in 3D space as a 3-dimensional vector
+    std::vector<glm::vec3> vertices; ///< Vertices forming the shape of the object's collider (point 0, 0, 0 must be contained withing the shape)
+    std::vector<glm::ivec3> triangles; ///< Faces of the object's collider as triplets of vertices indexes (point 0, 0, 0 must be contained withing the shape)
+    bool is_static; ///< Whether the object can be moved by external forces
+    bool is_sphere; ///< Whether the collider of the object is to be a perfect sphere, if yes vertices and triangles will be disregarded in operations
+    float gravity_scale; ///< Value by which gravity's acceleration is multiplied
+    float sphere_collider_radius; ///< Radius of the simple sphere collider encompassing object's collider, used for initial collision checks
 public:
     /** Called for physics updates
      * @param time_step length of time between the last 2 frames (const for physics update)
