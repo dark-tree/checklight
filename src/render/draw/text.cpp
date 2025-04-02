@@ -157,7 +157,7 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 		}
 
 		lines.emplace_back(start, adjusted.size());
-		float length = 0;
+		float length = 0; // FIXME regression, this fixed width calculation breaks wrapping, again
 
 		for (int i = start; i < adjusted.size(); i++) {
 			length += adjusted[i].advance;

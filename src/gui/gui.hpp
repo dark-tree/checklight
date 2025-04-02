@@ -1,69 +1,14 @@
 #pragma once
 
+// core system
+#include "navigator.hpp"
+#include "context.hpp"
+#include "widget.hpp"
+
+// widgets
 #include "widget/button.hpp"
-#include "widget/slider.hpp"
-#include "widget/select.hpp"
 #include "widget/field.hpp"
-
-inline void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
-
-
-	immediate.setSprite("assets/image/corners.png");
-
-	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(1 + glfwGetTime() * 8) + 1) / 16, 0)));
-	immediate.setSprite("assets/image/skay.png");
-	immediate.setColor(255, 255, 255);
-	immediate.drawCircle2D(50, 50, 40);
-
-	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(2 + glfwGetTime() * 8) + 1) / 16, 0)));
-	immediate.setSprite("assets/image/lucek.png");
-	immediate.drawCircle2D(150, 50, 40);
-
-	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(3 + glfwGetTime() * 8) + 1) / 16, 0)));
-	immediate.setSprite("assets/image/wiesiu.png");
-	immediate.drawCircle2D(250, 50, 40);
-
-	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(5 + glfwGetTime() * 8) + 1) / 16, 0)));
-	immediate.setSprite("assets/image/mug12.png");
-	immediate.drawCircle2D(350, 50, 40);
-	immediate.setMatrix2D(glm::identity<glm::mat4>());
-
-	immediate.setSprite("assets/image/vulkan-1.png");
-	immediate.drawRect2D(0, height - 126, 310, 126);
-
-	int w = 100 + (sin(glfwGetTime()) + 1) * 100;
-	int h = 100;
-
-	immediate.setSprite(OFF);
-	immediate.setColor(100, 100, 200);
-	immediate.setRectRadius(5);
-	immediate.drawRect2D(500, 500, w, h);
-
-	TextBakery bakery;
-	bakery.setFont("assets/font/OpenSans-Variable.ttf");
-	bakery.setSize(20);
-	bakery.setWrapping(true);
-	bakery.setAlignment(VerticalAlignment::CENTER);
-	bakery.setAlignment(HorizontalAlignment::CENTER);
-	bakery.setBounds(w, h);
-
-	BakedText text = bakery.bakeString(500, 500, "Hello Lorem Ipsum Muggum\n World Ambassador Delight Silksong");
-
-	immediate.setColor(200, 50, 150);
-	immediate.drawRect2D(800, 500, text.getMetrics().width, text.getMetrics().height);
-
-	immediate.setColor(0, 0, 0);
-	immediate.drawText2D(0, 0, text);
-
-
-	immediate.setSprite("assets/image/corners.png");
-	immediate.setLineWidth(0.1);
-	immediate.drawLine3D(0, 0, 0, sin(glfwGetTime() / 3) * 50, 10, cos(glfwGetTime() / 3) * 50);
-	immediate.drawRect3D(sin(glfwGetTime() / 3) * 50, 10, cos(glfwGetTime() / 3) * 50, 2, 2);
-	immediate.setSprite(OFF);
-
-	immediate.setColor(0, 0, 0);
-	glm::vec2 pos = RenderSystem::system->getWindow().getInputContext().getCursorPosition();
-	immediate.drawCircle2D(pos.x, pos.y, 5);
-
-}
+#include "widget/panel.hpp"
+#include "widget/select.hpp"
+#include "widget/slider.hpp"
+#include "widget/text.hpp"

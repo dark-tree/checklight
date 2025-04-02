@@ -33,11 +33,11 @@ TextWidget::TextWidget(const std::string& text) {
 
 void TextWidget::draw(ImmediateRenderer& immediate) {
 
-	// immediate.setRectRadius(0);
-	// immediate.setColor(0, 0, 0);
-	// immediate.drawRect2D(content.x, content.y, content.w, content.h);
-	// immediate.setColor(255, 255, 255);
-	// immediate.drawRect2D(content.x + 2, content.y + 2, content.w - 4, content.h - 4);
+	immediate.setRectRadius(0);
+	immediate.setColor(0, 0, 0);
+	immediate.drawRect2D(content.x, content.y, content.w, content.h);
+	immediate.setColor(255, 255, 255);
+	immediate.drawRect2D(content.x + 2, content.y + 2, content.w - 4, content.h - 4);
 
 	TextBakery bakery = getBakery(content.w, content.h);
 

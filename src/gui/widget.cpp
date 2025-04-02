@@ -284,7 +284,11 @@ void Widget::applyPositioning(int x, int y) {
 	for (int i = 0; i < (int) children.size(); i++) {
 		const std::shared_ptr<Widget>& widget = children[invert ? (children.size() - i - 1) : i];
 
-		widget->applyPositioning(widget->margin.left.toPixels() + position.width() /* x */, widget->margin.top.toPixels() + position.height() /* y */);
+		// FIXME
+		int ox = widget->padding.left.toPixels() + widget->margin.left.toPixels();
+		int oy = widget->padding.top.toPixels() + widget->margin.top.toPixels();
+
+		widget->applyPositioning(ox + position.width() /* x */, oy + position.height() /* y */);
 		position.get(channel) += widget->getOuterSizing(channel) + gap.toPixels();
 	}
 

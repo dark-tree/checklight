@@ -24,10 +24,10 @@ static void entry(Args& args) {
 	auto context = std::make_shared<WidgetContext>();
 	auto panel = std::make_shared<PanelWidget>();
 
-	{
-		auto sub = std::make_shared<TextWidget>("Lorem ipsum dolor sit amet");
-		panel->addWidget(sub);
-	}
+	// {
+	// 	auto sub = std::make_shared<TextWidget>("Lorem ipsum dolor sit amet");
+	// 	panel->addWidget(sub);
+	// }
 
 	{
 		auto sub = std::make_shared<PanelWidget>();
@@ -40,23 +40,24 @@ static void entry(Args& args) {
 		sub->r = 100;
 		sub->g = 100;
 		sub->b = 250;
+		sub->padding = Unit::px(10);
 
-		sub->margin = Unit::px(10);
+		//sub->margin = Unit::px(10);
 	}
 
-	{
-		auto sub = std::make_shared<PanelWidget>();
-		panel->addWidget(sub);
-
-		sub->width = Unit::fit();
-		sub->height = Unit::fit();
-		sub->r = 250;
-		sub->g = 100;
-		sub->b = 100;
-
-		auto text = std::make_shared<TextWidget>("Język lechicki z grupy zachodniosłowiańskiej");
-		sub->addWidget(text);
-	}
+	// {
+	// 	auto sub = std::make_shared<PanelWidget>();
+	// 	panel->addWidget(sub);
+	//
+	// 	sub->width = Unit::fit();
+	// 	sub->height = Unit::fit();
+	// 	sub->r = 250;
+	// 	sub->g = 100;
+	// 	sub->b = 100;
+	//
+	// 	auto text = std::make_shared<TextWidget>("Język lechicki z grupy zachodniosłowiańskiej");
+	// 	sub->addWidget(text);
+	// }
 
 	panel->width = Unit::fit();
 	panel->height = Unit::fit();
