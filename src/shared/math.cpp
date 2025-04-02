@@ -63,3 +63,7 @@ size_t math::alignUp(size_t size, size_t alignment) {
 	return (size + alignment - 1) & ~(alignment - 1);
 }
 
+glm::vec3 tripleCrossProduct(glm::vec3& a, glm::vec3& b)
+{
+    return glm::cross(glm::cross(a, b), a);
+}

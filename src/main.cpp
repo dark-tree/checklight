@@ -2,6 +2,7 @@
 #include "render/render.hpp"
 #include "input/input.hpp"
 #include "engine/engine.hpp"
+#include "physics/physics.hpp"
 
 static void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
 	immediate.setSprite("assets/image/corners.png");

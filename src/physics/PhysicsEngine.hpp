@@ -8,6 +8,7 @@
 #define TIMESTEP 0.020
 
 #include "PhysicsElement.hpp"
+#include "shared/math.hpp"
 
 class PhysicsEngine {
 protected:
@@ -122,7 +123,7 @@ public:
         glm::vec3 ab = simplex[0] - simplex[1];
 
         //find a perpendicular vector from AB that points in the direction of origin using the triple product operation
-        direction = tripleCrossProduct(ab, ao);
+        direction = math::tripleCrossProduct(ab, ao);
         //we have a line here, and we need a tetrahedron - another loop
         return false;
     }
@@ -149,7 +150,7 @@ public:
         if (glm::dot(voronoi_ab, ao) > 0)
         {
             //set the search direction as a perpendicular from edge ab to the origin
-            direction = tripleCrossProduct(ab, ao);
+            direction = math::tripleCrossProduct(ab, ao);
 
             //update the triangle points, we're not yet ready to form a tetrahedron
             simplex.erase(simplex.begin());
@@ -158,7 +159,7 @@ public:
         else if (glm::dot(voronoi_ac, ao) > 0)
         {
             //same case as above
-            direction = tripleCrossProduct(ac, ao);
+            direction = math::tripleCrossProduct(ac, ao);
 
             simplex.erase(simplex.begin() + 1);
         } //if we got here that means the origin is within the triangle, we just need to check whether above or below
@@ -309,7 +310,7 @@ public:
         {
             //this case means we must remove 2 points and go back to a triangle case
             //set the direction the same as in a triangle case
-            direction = tripleCrossProduct(ac, ao);
+            direction = math::tripleCrossProduct(ac, ao);
 
             //remove b & d
             simplex.erase(simplex.begin() + 2);
@@ -325,7 +326,7 @@ public:
         {
             //this case means we must remove 2 points and go back to a triangle case
             //set the direction the same as in a triangle case
-            direction = tripleCrossProduct(ab, ao);
+            direction = math::tripleCrossProduct(ab, ao);
 
             //remove c & d
             simplex.erase(simplex.begin() + 1);
@@ -554,11 +555,6 @@ public:
         else {
             edges.emplace_back(faces[face_num][a], faces[face_num][b]);
         }
-    }
-
-    glm::vec3 tripleCrossProduct(glm::vec3& a, glm::vec3& b)
-    {
-        return glm::cross(glm::cross(a, b), a);
     }
 
     void applyForces(PhysicsElement& a, PhysicsElement& b, float collision_depth, glm::vec3 collision_normal)

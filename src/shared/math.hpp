@@ -50,4 +50,10 @@ namespace math {
 	 */
 	size_t alignUp(size_t size, size_t alignment);
 
+    /**
+     * Calculate the value vector of a x b x a
+     * @return vector value of a x b x a
+     */
+    glm::vec3 tripleCrossProduct(glm::vec3& a, glm::vec3& b);
+
 }
