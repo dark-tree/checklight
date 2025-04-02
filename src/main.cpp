@@ -24,10 +24,10 @@ static void entry(Args& args) {
 	auto context = std::make_shared<WidgetContext>();
 	auto panel = std::make_shared<PanelWidget>();
 
-	// {
-	// 	auto sub = std::make_shared<TextWidget>("Lorem ipsum dolor sit amet");
-	// 	panel->addWidget(sub);
-	// }
+	{
+		auto sub = std::make_shared<TextWidget>("Lorem ipsum dolor sit amet");
+		panel->addWidget(sub);
+	}
 
 	{
 		auto sub = std::make_shared<PanelWidget>();
@@ -49,41 +49,23 @@ static void entry(Args& args) {
 		auto sub = std::make_shared<PanelWidget>();
 		panel->addWidget(sub);
 
-		sub->width = Unit::px(100);
-		sub->height = Unit::px(100);
-		sub->min_width = Unit::px(100);
-		sub->min_height = Unit::px(100);
+		sub->width = Unit::fit();
+		sub->height = Unit::fit();
 		sub->r = 250;
 		sub->g = 100;
 		sub->b = 100;
-		sub->padding = Unit::px(10);
-		sub->margin = {Unit::px(40), Unit::px(10), Unit::px(40), Unit::px(10)};
 
-		//sub->margin = Unit::px(10);
+		auto text = std::make_shared<TextWidget>("Język lechicki z grupy zachodniosłowiańskiej");
+		sub->addWidget(text);
 	}
 
-	// {
-	// 	auto sub = std::make_shared<PanelWidget>();
-	// 	panel->addWidget(sub);
-	//
-	// 	sub->width = Unit::fit();
-	// 	sub->height = Unit::fit();
-	// 	sub->r = 250;
-	// 	sub->g = 100;
-	// 	sub->b = 100;
-	//
-	// 	auto text = std::make_shared<TextWidget>("Język lechicki z grupy zachodniosłowiańskiej");
-	// 	sub->addWidget(text);
-	// }
-
-	panel->width = Unit::fit();
+	panel->width = Unit::px(400);
 	panel->height = Unit::fit();
 	panel->flow = Flow::LEFT_TO_RIGHT;
 	panel->padding = Unit::px(10);
 	panel->gap = Unit::px(0);
 
 	panel->rebuild(10, 10);
-
 
 	// auto slider = std::make_shared<SliderWidget>([] () noexcept {
 	//

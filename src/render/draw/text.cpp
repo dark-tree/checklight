@@ -68,14 +68,8 @@ glm::vec2 TextBakery::getTextOffset(std::vector<GlyphQuad>& quads, int start, in
 	return glm::vec2 {bx - horizontal * mx, by - vertical * my};
 }
 
-int TextBakery::getWrappingBound(int start) const {
-	int wrap = std::numeric_limits<int>::max();
-
-	if (wrapping) {
-		wrap = start + width;
-	}
-
-	return wrap;
+int TextBakery::getWrappingBound() const {
+	return wrapping ? width : std::numeric_limits<int>::max();
 }
 
 
@@ -129,6 +123,7 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 	}
 
 	float horizontal = 0;
+	float line_width = 0;
 
 	// holds previous Unicode (or 0)
 	// used for querying kerning pairs
@@ -136,7 +131,7 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 
 	// used for wrapping and manual line breaks
 	const float sx = x;
-	const int wrap = getWrappingBound(x);
+	const int wrap = getWrappingBound();
 
 	std::vector<TextLine> lines;
 	std::vector<GlyphQuad> adjusted;
@@ -157,14 +152,9 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 		}
 
 		lines.emplace_back(start, adjusted.size());
-		float length = 0; // FIXME regression, this fixed width calculation breaks wrapping, again
 
-		for (int i = start; i < adjusted.size(); i++) {
-			length += adjusted[i].advance;
-		}
-
-		if (length > horizontal) {
-			horizontal = length;
+		if (line_width > horizontal) {
+			horizontal = line_width;
 		}
 	};
 
@@ -189,19 +179,22 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 
 		if (unicode == '\n') {
 			advance();
+			line_width = 0;
 			continue;
 		}
 
-		if (q.x1 > wrap && breaker.has()) {
+		if (line_width > wrap && breaker.has()) {
 
 			// remove characters that will now be moved to the next line
 			// we will need to re-emit them, a bit wasteful but simple to implement
 			i = breaker.apply(adjusted);
 
 			advance();
+			line_width = 0;
 			continue;
 		}
 
+		line_width += q.advance;
 		adjusted.push_back(q);
 	}
 

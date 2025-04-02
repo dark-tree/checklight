@@ -78,7 +78,7 @@ class TextBakery {
 		bool wrapping;
 
 		glm::vec2 getTextOffset(std::vector<GlyphQuad>& quads, int start, int end, float vertical) const;
-		int getWrappingBound(int start) const;
+		int getWrappingBound() const;
 
 	public:
 
