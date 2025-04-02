@@ -20,7 +20,7 @@ protected:
     float gravity_scale; ///< Value by which gravity's acceleration is multiplied
     float sphere_collider_radius; ///< Radius of the simple sphere collider encompassing object's collider, used for initial collision checks
     float mass; ///< Mass of the object
-    float moment_of_inertia; ///< Moment of inertia of the object
+    glm::mat3x3 inertia_tensor; ///< Moment of inertia of the object
     float coefficient_of_friction; ///< The coefficient of friction used for collision calculations (0 - no friction, 1 - instant stop)
     float coefficient_of_restitution; ///< The coefficient of restitution (bounciness) for collision calculations (0 - perfectly inelastic, 1 - perfectly elastic)
 public:
@@ -244,15 +244,25 @@ public:
     }
 
     /// Sets the moment of inertia of an object
-    void setMomentOfInertia(float moi)
+    void setMomentOfInertia(float moi[3][3])
     {
-        moment_of_inertia = moi;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                inertia_tensor[i][j] = moi[i][j];
+            }
+        }
+    }
+
+    /// Sets the moment of inertia of an object
+    void setMomentOfInertia(glm::mat3x3 moi)
+    {
+        inertia_tensor = moi;
     }
 
     /// Returns the mass of an object
-    float getMomentOfInertia()
+    glm::mat3x3 getMomentOfInertia()
     {
-        return moment_of_inertia;
+        return inertia_tensor;
     }
 
     /// Sets the coefficient of friction of an object
@@ -368,6 +378,12 @@ protected:
         }
 
         return total_mass;
+    }
+
+    float findMomentOfInertia()
+    {
+        //TODO THIS MATHEMATICAL HELL
+        return 0;
     }
 
 };
