@@ -44,7 +44,7 @@ public:
                     if (isColliding)
                     {
                         auto [collision_depth, collision_normal] = expandingPolytope(simplex, elements[i], elements[j]);
-                        applyForces(elements[i], elements[j]);
+                        applyForces(elements[i], elements[j], collision_depth, collision_normal);
                         //TODO on collision function in pawn
                     }
                 }
@@ -372,8 +372,13 @@ public:
         return false;
     }
 
-    /// Functional expansion to the GJK algorithm, used for finding the depth and normal of the collision
-    std::pair<int, glm::vec3> expandingPolytope(std::vector<glm::vec3>& simplex, PhysicsElement& a, PhysicsElement& b)
+    /** Functional expansion to the GJK algorithm, used for finding the depth and normal of the collision
+     * @param simplex end simplex of GJK Algorithm
+     * @param a 1st colliding physics element
+     * @param b 2nd colliding physics element
+     * @return std::pair containing the depth of the collision and a glm::vec3 containing the normal of the collision
+     */
+    std::pair<float, glm::vec3> expandingPolytope(std::vector<glm::vec3>& simplex, PhysicsElement& a, PhysicsElement& b)
     {
         //create a copy of end simplex to be turned into a polytope
         std::vector<glm::vec3> polytope(simplex.begin(), simplex.end());
@@ -489,6 +494,7 @@ public:
         return {min_distance * 1.01, min_normal};
     }
 
+    /// Function for returning the normalized normals of given faces of a polytope
     std::pair<std::vector<glm::vec4>, int> getFaceNormals(std::vector<glm::vec3>& polytope, std::vector<glm::ivec3>& faces)
     {
         //prepare variables needed for finding face normals and the closes face
@@ -555,9 +561,10 @@ public:
         return glm::cross(glm::cross(a, b), a);
     }
 
-    void applyForces(PhysicsElement& a, PhysicsElement& b)
+    void applyForces(PhysicsElement& a, PhysicsElement& b, float collision_depth, glm::vec3 collision_normal)
     {
-        //TODO this whole thing
+        glm::vec3 correction_vector = collision_normal * collision_depth;
+        //TODO part of this thing
     }
 
     std::vector<PhysicsElement> getElements()

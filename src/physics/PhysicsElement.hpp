@@ -19,6 +19,10 @@ protected:
     bool is_sphere; ///< Whether the collider of the object is to be a perfect sphere, if yes vertices and triangles will be disregarded in operations
     float gravity_scale; ///< Value by which gravity's acceleration is multiplied
     float sphere_collider_radius; ///< Radius of the simple sphere collider encompassing object's collider, used for initial collision checks
+    float mass; ///< Mass of the object
+    float moment_of_inertia; ///< Moment of inertia of the object
+    float coefficient_of_friction; ///< The coefficient of friction used for collision calculations (0 - no friction, 1 - instant stop)
+    float coefficient_of_restitution; ///< The coefficient of restitution (bounciness) for collision calculations (0 - perfectly inelastic, 1 - perfectly elastic)
 public:
     /** Called for physics updates
      * @param time_step length of time between the last 2 frames (const for physics update)
@@ -227,6 +231,54 @@ public:
         return center_of_mass;
     }
 
+    /// Sets the mass of an object
+    void setMass(float mass)
+    {
+        this->mass = mass;
+    }
+
+    /// Returns the mass of an object
+    float getMass()
+    {
+        return mass;
+    }
+
+    /// Sets the moment of inertia of an object
+    void setMomentOfInertia(float moi)
+    {
+        moment_of_inertia = moi;
+    }
+
+    /// Returns the mass of an object
+    float getMomentOfInertia()
+    {
+        return moment_of_inertia;
+    }
+
+    /// Sets the coefficient of friction of an object
+    void setCoefficientOfFriction(float cof)
+    {
+        coefficient_of_friction = cof;
+    }
+
+    /// Returns the mass of an object
+    float getCoefficientOfFriction()
+    {
+        return coefficient_of_friction;
+    }
+
+    /// Sets the coefficient of restitution of an object
+    void setCoefficientOfRestitution(float cor)
+    {
+        coefficient_of_restitution = cor;
+    }
+
+    /// Returns the coefficient of restitution of an object
+    float getCoefficientOfRestitution()
+    {
+        return coefficient_of_restitution;
+    }
+
     /// Returns the furthest point from object origin in a given direction
     glm::vec3 furthestPoint(glm::vec3 direction)
     {
@@ -283,6 +335,39 @@ protected:
         center /= total_volume;
 
         return center;
+    }
+
+    float findMass()
+    {
+        //we will assume that the mass is evenly distributed and proportional to the volume
+        double total_mass = 0;
+        glm::vec3 offset = vertices[0];
+
+        for (glm::ivec3 triangle : triangles)
+        {
+            //get vertices of a given face offset in a way to make origin fall on 1 of the points of the polygon
+            //While calculating the volume of the tetrahedrons it didn't matter whether the origin fell outside the polygon
+            //due to the "force of pull" of each polygon being additive with the distance from origin, but now the added
+            //offset could cause us to greatly misinterpret the result. By assuming the shape is convex and knowing
+            //the origin falls within the polygon, we can be certain the volume calculations are correct and as such can
+            //repurpose this piece of code.
+            glm::vec3 v1 = vertices[triangle[0]] - offset;
+            glm::vec3 v2 = vertices[triangle[1]] - offset;
+            glm::vec3 v3 = vertices[triangle[2]] - offset;
+
+            //Compute volume of a tetrahedron made of given face and origin point(0, 0, 0)
+            //                          1 | v1x v1y v1z |
+            // given by the formula V = — | v2x v2y v2z |
+            //                          6 | v3x v3y v3z |
+            float volume = (v1[0]*(v2[1]*v3[2] - v2[2]*v3[1])
+                            - v1[1]*(v2[0]*v3[2] - v2[2]*v3[0])
+                            + v1[2]*(v2[0]*v3[1] - v2[1]*v3[0])) / 6.0;
+
+            //update volume and mass
+            total_mass += volume;
+        }
+
+        return total_mass;
     }
 
 };
