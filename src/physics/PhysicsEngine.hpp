@@ -40,8 +40,10 @@ public:
                 if (initialCollisionCheck(elements[i], elements[j]))
                 {
                     //second, more time-consuming, but exact detection
-                    if (gilbertJohnsonKeerthi(elements[i], elements[j]))
+                    auto [isColliding, simplex] = gilbertJohnsonKeerthi(elements[i], elements[j]);
+                    if (isColliding)
                     {
+                        auto [collision_depth, collision_normal] = expandingPolytope(simplex, elements[i], elements[j]);
                         applyForces(elements[i], elements[j]);
                         //TODO on collision function in pawn
                     }
@@ -59,7 +61,7 @@ public:
         return (glm::length(a.getPosition() - b.getPosition()) <= a.getSphereColliderRadius() + b.getSphereColliderRadius());
     }
 
-    bool gilbertJohnsonKeerthi(PhysicsElement& a, PhysicsElement& b)
+    std::pair<bool, std::vector<glm::vec3>> gilbertJohnsonKeerthi(PhysicsElement& a, PhysicsElement& b)
     {
         //get direction by comparing relative position of objects
         glm::vec3 direction = glm::normalize(b.getPosition() - a.getPosition());
@@ -74,7 +76,7 @@ public:
             //if the new point does not pass the origin, the point is not valid, and so the collision didn't happen - return false
             if (glm::dot(point, direction) < 0)
             {
-                return false;
+                return {false, simplex};
             }
             //point valid - append it to simplex
             simplex.push_back(point);
@@ -82,10 +84,10 @@ public:
             //if it's not - update the simplex and continue
             if (manageSimplex(simplex, direction))
             {
-                return true;
+                return {true, simplex};
             }
         }
-        return false;
+        return {false, simplex};
     }
 
     /// Used to calculate a support point of the minkowski difference in a given direction
