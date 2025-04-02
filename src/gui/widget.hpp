@@ -44,13 +44,11 @@ class Widget : public std::enable_shared_from_this<Widget> {
 		// VerticalAlignment vertical = VerticalAlignment::TOP;
 		// HorizontalAlignment horizontal = HorizontalAlignment::LEFT;
 
-		Box2D margined { {},{},{},{} }; // padded box with margin added
 		Box2D padded { {},{},{},{} };   // content box with padding added
 		Box2D content { {},{},{},{} };  // content box
 
 		Box2D getContentBox() const;
 		Box2D getPaddingBox() const;
-		Box2D getMarginBox() const;
 
 		/// Can be called after the given channel was already computed with applyFitSizing()
 		int getOuterSizing(Channel channel);

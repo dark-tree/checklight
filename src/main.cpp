@@ -40,6 +40,8 @@ static void entry(Args& args) {
 		sub->r = 100;
 		sub->g = 100;
 		sub->b = 250;
+
+		sub->margin = Unit::px(10);
 	}
 
 	{
@@ -56,7 +58,7 @@ static void entry(Args& args) {
 		sub->addWidget(text);
 	}
 
-	panel->width = Unit::px(200);
+	panel->width = Unit::fit();
 	panel->height = Unit::fit();
 	panel->flow = Flow::LEFT_TO_RIGHT;
 	panel->padding = Unit::px(10);

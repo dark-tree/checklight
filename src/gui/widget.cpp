@@ -28,12 +28,8 @@ Box2D Widget::getPaddingBox() const {
 	return padded;
 }
 
-Box2D Widget::getMarginBox() const {
-	return padded;
-}
-
 int Widget::getOuterSizing(Channel channel) {
-	return sizing.get(channel) + padding.left.toPixels() + padding.right.toPixels();
+	return sizing.get(channel) + padding.left.toPixels() + padding.right.toPixels() + margin.left.toPixels() + margin.right.toPixels(); // TODO FIXME
 }
 
 void Widget::applyWrapSizing() {
@@ -143,9 +139,9 @@ void Widget::applyGrowSizing(Channel channel) {
 		remaining += spacing;
 	}
 
-	if (fractions < growable.size()) {
+	if (fractions < (int) growable.size()) {
 		out::error("Invalid fractional size found during grow apply, %d is less then the element count %d!", fractions, growable.size());
-		fractions = growable.size();
+		fractions = (int) growable.size();
 	}
 
 	if (!growable.empty() && remaining > 0) {
@@ -182,7 +178,7 @@ void Widget::applyGrowSizing(Channel channel) {
 		}
 
 		// this loop will only in rare cases run more than once
-		for (int i = 0; i < children.size(); i ++) {
+		for (int i = 0; i < (int) children.size(); i ++) {
 
 			// TODO yeah this is a royal mess
 			total = 0;
@@ -285,9 +281,10 @@ void Widget::applyPositioning(int x, int y) {
 	const bool invert = getFlowDirection(flow) == -1;
 	const Channel channel = getFlowChannel(flow);
 
-	for (int i = 0; i < children.size(); i++) {
+	for (int i = 0; i < (int) children.size(); i++) {
 		const std::shared_ptr<Widget>& widget = children[invert ? (children.size() - i - 1) : i];
-		widget->applyPositioning(position.width() /* x */, position.height() /* y */);
+
+		widget->applyPositioning(widget->margin.left.toPixels() + position.width() /* x */, widget->margin.top.toPixels() + position.height() /* y */);
 		position.get(channel) += widget->getOuterSizing(channel) + gap.toPixels();
 	}
 
