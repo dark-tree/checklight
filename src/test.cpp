@@ -269,3 +269,79 @@ TEST(gui_simple_inverse) {
 	CHECK(sub2->content.x, 10);
 
 };
+
+TEST(gui_layout_simple_grow) {
+
+	auto context = std::make_shared<WidgetContext>();
+	auto root = std::make_shared<PanelWidget>();
+	auto sub1 = std::make_shared<PanelWidget>();
+	auto sub2 = std::make_shared<PanelWidget>();
+
+	root->addWidget(sub1);
+	root->addWidget(sub2);
+	context->setRoot(root);
+
+	root->width = Unit::px(400);
+	root->height = Unit::fit();
+	root->flow = Flow::LEFT_TO_RIGHT;
+
+	sub1->width = Unit::grow(1);
+	sub1->height = Unit::px(100);
+
+	sub2->width = Unit::grow(3);
+	sub2->height = Unit::grow(1);
+
+	root->rebuild(0, 0);
+
+	CHECK(root->content.x, 0);
+	CHECK(root->content.y, 0);
+	CHECK(root->content.w, 400);
+	CHECK(root->content.h, 100);
+
+	CHECK(sub1->content.x, 0);
+	CHECK(sub1->content.y, 0);
+	CHECK(sub1->content.w, 100);
+	CHECK(sub1->content.h, 100);
+
+	CHECK(sub2->content.x, 100);
+	CHECK(sub2->content.y, 0);
+	CHECK(sub2->content.w, 300);
+	CHECK(sub2->content.h, 100);
+
+};
+
+TEST(gui_layout_complex_grow) {
+
+	auto context = std::make_shared<WidgetContext>();
+	auto root = std::make_shared<PanelWidget>();
+	auto sub1 = std::make_shared<PanelWidget>();
+	auto sub2 = std::make_shared<PanelWidget>();
+	auto sub3 = std::make_shared<PanelWidget>();
+
+	root->addWidget(sub1);
+	root->addWidget(sub2);
+	sub1->addWidget(sub3);
+	context->setRoot(root);
+
+	root->width = Unit::px(100);
+	root->height = Unit::fit();
+	root->flow = Flow::LEFT_TO_RIGHT;
+
+	sub1->width = Unit::fit();
+	sub1->height = Unit::fit();
+	sub1->padding = Unit::px(10);
+
+	sub2->width = Unit::grow();
+	sub2->height = Unit::grow();
+
+	sub3->width = Unit::px(50);
+	sub3->height = Unit::px(100);
+
+	root->rebuild(0, 0);
+
+	CHECK(sub2->content.x, 70);
+	CHECK(sub2->content.y, 0);
+	CHECK(sub2->content.w, 30);
+	CHECK(sub2->content.h, 120);
+
+};
