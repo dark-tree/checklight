@@ -10,7 +10,12 @@ class TextWidget : public Widget {
 
 	public: // FIXME
 
+		bool wrap = true;
 		std::string text;
+
+		void applyWrapSizing() override;
+
+		TextBakery getBakery(int width, int height) const;
 
 	public:
 
@@ -19,7 +24,6 @@ class TextWidget : public Widget {
 		void draw(ImmediateRenderer& immediate) override;
 		bool event(WidgetContext& context, const InputEvent &event) override;
 
-		virtual Box2D getInherentBox() const;
-		virtual void setBounds(Box2D bounds);
+		void setText(const std::string& text);
 
 };

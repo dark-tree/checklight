@@ -3,102 +3,34 @@
 #include "input/input.hpp"
 #include "render/immediate.hpp"
 #include "context.hpp"
+#include "navigator.hpp"
+#include "layout/channel.hpp"
 
 /*
  * Spacing
  */
 
-Box2D Spacing::apply(int width, int height, const Box2D& initial) {
-	return initial.expand(
-		top.resolve(height),
-		bottom.resolve(height),
-		left.resolve(width),
-		right.resolve(width)
-	);
-}
+int Spacing::getTotal(Channel channel) {
+	if (channel == Channel::WIDTH) {
+		return left.toPixels() + right.toPixels();
+	}
 
-Box2D Spacing::remove(int width, int height, const Box2D& initial) {
-	return initial.expand(
-		-top.resolve(height),
-		-bottom.resolve(height),
-		-left.resolve(width),
-		-right.resolve(width)
-	);
+	return top.toPixels() + bottom.toPixels();
 }
 
 /*
  * Widget
  */
 
-void Widget::setBounds(Box2D bounds) {
+void Widget::rebuild(int x, int y) {
 
-	Box2D inherent = getInherentBox();
-	Box2D intermediate = padding.apply(inherent.w, inherent.h, inherent);
+	applyFitSizing(Channel::WIDTH);
+	applyGrowSizing(Channel::WIDTH);
+	applyWrapSizing();
+	applyFitSizing(Channel::HEIGHT);
+	applyGrowSizing(Channel::HEIGHT);
+	applyPositioning(x, y);
 
-	// calculate width in pixels based on parent
-	int explicit_width = width.resolve(bounds.w);
-	int explicit_height = height.resolve(bounds.h);
-
-	// width, height control the padded-box (css border box)
-	padded = intermediate.reserve(explicit_width, explicit_height);
-
-	// undo the padding to get the final content box
-	content = padding.remove(padded.w, padded.h, padded);
-
-	// finally calculate the outer element bounds
-	margined = margin.apply(bounds.w, bounds.w /* intentionally */, padded);
-
-	// needed to later offset content and padded
-	const float rx = margined.x;
-	const float ry = margined.y;
-
-	// align margined
-	const int cx = std::max(bounds.x, bounds.x + static_cast<int>((bounds.w - margined.w) * toAlignmentFactor(this->horizontal)));
-	const int cy = std::max(bounds.y, bounds.y + static_cast<int>((bounds.h - margined.h) * toAlignmentFactor(this->vertical)));
-
-	margined.x = cx;
-	margined.y = cy;
-
-	padded.x = padded.x - rx + cx;
-	padded.y = padded.y - ry + cy;
-
-	content.x = content.x - rx + cx;
-	content.y = content.y - ry + cy;
-
-}
-
-Box2D Widget::getRemainingBox(const Box2D& bounds, const Widget* child) const {
-	Display effective = child->getEffectiveDisplay();
-
-	const int ew = child->margined.x - bounds.x + child->margined.w;
-	const int eh = child->margined.y - bounds.y + child->margined.h;
-
-	if (effective == Display::GREEDY) return {bounds.x, bounds.y + eh, 0, 0};
-	if (effective == Display::VERTICAL) return {bounds.x + ew, bounds.y, std::max(0, bounds.w - ew), bounds.h};
-	if (effective == Display::HORIZONTAL) return {bounds.x, bounds.y + eh, bounds.w, std::max(0, bounds.h - eh)};
-
-	// AUTO display is resolved by getEffectiveDisplay()
-	UNREACHABLE;
-}
-
-Display Widget::getEffectiveDisplay() const {
-	if (display != Display::AUTO) {
-		return display;
-	}
-
-	bool vertical = (this->vertical != VerticalAlignment::TOP);
-	bool horizontal = (this->horizontal != HorizontalAlignment::LEFT);
-
-	if (vertical && horizontal) return Display::GREEDY;
-	if (horizontal) return Display::HORIZONTAL;
-
-	// We treat vertical a bit like INLINE,
-	// so just return that both when the element is vertical and when there is no alignment
-	return Display::VERTICAL;
-}
-
-Box2D Widget::getInherentBox() const {
-	return {0, 0, 100, 100};
 }
 
 Box2D Widget::getContentBox() const {
@@ -109,8 +41,311 @@ Box2D Widget::getPaddingBox() const {
 	return padded;
 }
 
-Box2D Widget::getMarginBox() const {
-	return padded;
+float Widget::getAlignmentFactor(Channel channel) {
+	return channel == Channel::WIDTH ? toAlignmentFactor(horizontal) : toAlignmentFactor(vertical);
+}
+
+int Widget::getOuterSizing(Channel channel) {
+	return sizing.get(channel) + padding.getTotal(channel) + margin.getTotal(channel);
+}
+
+void Widget::applyWrapSizing() {
+	for (const std::shared_ptr<Widget>& widget : children) {
+		widget->applyWrapSizing();
+	}
+}
+
+void Widget::applyFitSizing(Channel channel) {
+
+	// fit sizing must be computed bottom-up
+	// but even for absolute sizing we still need to call applyFitSizing on the children
+	for (const std::shared_ptr<Widget>& widget : children) {
+		widget->applyFitSizing(channel);
+	}
+
+	Unit sizing_unit = (channel == Channel::WIDTH) ? width : height;
+	Unit minimal_unit = (channel == Channel::WIDTH) ? min_width : min_height;
+
+	int preferred = 0;
+	int low_bound = minimal_unit.toPixels();
+
+	// handle the simple case - size is specified explicitly
+	if (sizing_unit.isAbsolute()) {
+		preferred = std::max(sizing_unit.toPixels(), low_bound);
+	}
+
+	// try to fit children along channel
+	if (sizing_unit.metric == Metric::FIT) {
+		int value = 0;
+
+		const bool along = WidgetFlow::isAligned(flow, channel);
+		const int spacing = gap.toPixels(); /* TODO ensure that gap is absolute */
+
+		// get widths of all children
+		for (const std::shared_ptr<Widget>& widget : children) {
+			int inherent = widget->getOuterSizing(channel);
+
+			value = along
+				? value + inherent + spacing     // along flow direction
+				: std::max(value, inherent); // acros flow direction
+		}
+
+		// remove trailing element gap
+		if (along) {
+			value -= gap.toPixels();
+		}
+
+		preferred = std::max(value, low_bound);
+	}
+
+	// ignore GROW sizing, that is handled in applyGrowSizing()
+
+	// get the highest minimal size
+	for (const std::shared_ptr<Widget>& widget : children) {
+		int min = widget->minimal.get(channel);
+
+		if (min > low_bound) {
+			low_bound = min;
+		}
+	}
+
+	// apply calculated size
+	sizing.get(channel) = preferred;
+	minimal.get(channel) = low_bound;
+
+}
+
+void Widget::applyGrowSizing(Channel channel) {
+
+	const bool along = WidgetFlow::isAligned(flow, channel);
+	const int spacing = gap.toPixels(); /* TODO ensure that gap is absolute */
+
+	int remaining = sizing.get(channel);
+
+	int total = 0;
+	int fractions = 0;
+	std::vector<std::pair<int, std::shared_ptr<Widget>>> growable;
+
+	for (const std::shared_ptr<Widget>& widget : children) {
+		Unit unit = (channel == Channel::WIDTH) ? widget->width : widget->height;
+		const int outer = widget->getOuterSizing(channel);
+
+		// subtract elements from out total size
+		// to get at the still unused space
+		remaining -= outer + spacing;
+
+		// GROW elements will be saved for later use
+		if (unit.metric == Metric::GROW) {
+
+			if (along) {
+				growable.emplace_back(unit.value, widget);
+				fractions += unit.value;
+				total += outer;
+				continue;
+			}
+
+			// in case our element wants to grow across just set it
+			// to 100% of the parent sizing component
+			widget->sizing.get(channel) = sizing.get(channel);
+
+		}
+	}
+
+	// remove trailing element gap
+	if (!children.empty()) {
+		remaining += spacing;
+	}
+
+	if (fractions < (int) growable.size()) {
+		out::error("Invalid fractional size found during grow apply, %d is less then the element count %d!", fractions, growable.size());
+		fractions = (int) growable.size();
+	}
+
+	if (!growable.empty() && remaining > 0) {
+
+		// total space that can be taken by grow elements
+		total += remaining;
+		int part = total / fractions;
+		int reminder = total % fractions;
+
+		for (auto [fraction, widget] : growable) {
+			int extension = fraction * part;
+
+			if (reminder) {
+				extension ++;
+				reminder --;
+			}
+
+			// subtract old size and do it as an addition so we don't have to worry about padding
+			widget->sizing.get(channel) += extension - widget->getOuterSizing(channel);
+		}
+	}
+
+	// not enough space!
+	if (remaining < 0) {
+
+		bool notify = true;
+		bool done = false;
+		int overflow = -remaining;
+
+		std::list<std::shared_ptr<Widget>> candidates;
+
+		for (const std::shared_ptr<Widget>& widget : children) {
+			candidates.push_back(widget);
+		}
+
+		// this loop will only in rare cases run more than once
+		for (int i = 0; i < (int) children.size(); i ++) {
+
+			// TODO yeah this is a royal mess
+			total = 0;
+
+			int shrinkable = 0;
+
+			for (auto it = candidates.begin(); it != candidates.end();) {
+				auto& widget = *it;
+
+				const int value = widget->sizing.get(channel);
+				const int maximum = value - widget->minimal.get(channel);
+
+				if (maximum <= 0) {
+					it = candidates.erase(it);
+					continue;
+				}
+
+				shrinkable += maximum;
+				total += value;
+				std::advance(it, 1);
+			}
+
+			// not really an error but good to know
+			if (notify && (shrinkable < overflow)) {
+				out::debug("Can't shrink elements enough, shrinkable space is %dpx, while the overflow is %dpx!", shrinkable, overflow);
+				notify = false;
+			}
+
+			if (candidates.empty()) {
+				out::debug("No elements are left to shrink, bailing out with overflow of %dpx!", overflow);
+				done = true;
+				break;
+			}
+
+			out::debug("Will try to shrink %d elements of total size %dpx by %dpx, the shrinkable space is %dpx", candidates.size(), total, overflow, shrinkable);
+
+			double sacrifice = std::min(overflow, shrinkable);
+			double shrinkage = sacrifice / total;
+			int shrunk = 0;
+
+			for (const std::shared_ptr<Widget>& widget : candidates) {
+				const int value = widget->sizing.get(channel);
+
+				int pixels = std::max(1, static_cast<int>(value * shrinkage));
+				int maximum = widget->sizing.get(channel) - widget->minimal.get(channel);
+
+				// never shrink below minimum
+				if (pixels > maximum) {
+					pixels = maximum;
+				}
+
+				shrunk += pixels;
+				widget->sizing.get(channel) -= pixels;
+
+				// try not to over-shrink, can happen dues to our
+				// little hack to for at least try shaving a single pixel each time
+				if (shrunk >= sacrifice) {
+					break;
+				}
+			}
+
+			// we did the job, if this fails that means some min sizing shenanigans got in the way
+			// and we need to reevaluate the sizing by re-running this loop
+			if (shrunk >= sacrifice) {
+				done = true;
+				break;
+			}
+
+			overflow -= shrunk;
+		}
+
+		if (!done) {
+			out::warn("Element shrink algorithm bailed out after iteration limit was reached!");
+		}
+
+	}
+
+	for (const std::shared_ptr<Widget>& widget : children) {
+		widget->applyGrowSizing(channel);
+	}
+
+}
+
+void Widget::applyPositioning(int x, int y) {
+
+	// TODO maybe rename it to vector?
+	Sizing position {x, y};
+
+	content = Box2D {x, y, sizing.width(), sizing.height()};
+
+	// TODO
+	int pl = padding.left.toPixels();
+	int pt = padding.top.toPixels();
+	int pw = pl + padding.right.toPixels();
+	int ph = pt + padding.bottom.toPixels();
+
+	padded = Box2D {x - pl, y - pt, sizing.width() + pw, sizing.height() + ph};
+
+	// this is used to effectively change the iteration direction
+	const int facing = WidgetFlow::asDirection(flow);
+	const bool invert = facing == -1;
+	const Channel channel = WidgetFlow::asChannel(flow);
+
+	// Please ignore CLion being stupid here, it does, in fact, compile
+	const Channel opposite = WidgetChannel::getOpposite(channel);
+
+	int remaining_along = sizing.get(channel);
+	int spacing = gap.toPixels();
+
+	int total = 0;
+	int fractions = 0;
+	std::vector<std::pair<int, std::shared_ptr<Widget>>> growable;
+
+	// calculate along-axis space left
+	for (const std::shared_ptr<Widget>& widget : children) {
+
+		// subtract elements from out total size
+		// to get at the still unused space
+		remaining_along -= widget->getOuterSizing(channel) + spacing;
+	}
+
+	// remove trailing element gap
+	if (!children.empty()) {
+		remaining_along += spacing;
+	}
+
+	for (int i = 0; i < (int) children.size(); i++) {
+		const std::shared_ptr<Widget>& widget = children[invert ? (children.size() - i - 1) : i];
+
+		// number of pixels left across the flow
+		const int remaining_across = sizing.get(opposite) - widget->getOuterSizing(opposite);
+
+		// alignment factors
+		int align_x = remaining_along * getAlignmentFactor(channel) ;
+		int align_y = remaining_across * getAlignmentFactor(opposite);
+
+		// align_x is actually align_along, this effectively converts from local coordinates
+		if (channel != Channel::WIDTH) {
+			std::swap(align_x, align_y);
+		}
+
+		// when positioning we take into account only the upper-left offsets
+		const int ox = align_x + widget->padding.left.toPixels() + widget->margin.left.toPixels();
+		const int oy = align_y + widget->padding.top.toPixels() + widget->margin.top.toPixels();
+
+		widget->applyPositioning(ox + position.width() /* x */, oy + position.height() /* y */);
+		position.get(channel) += widget->getOuterSizing(channel) + spacing;
+
+	}
+
 }
 
 Widget::~Widget() {
@@ -121,8 +356,10 @@ bool Widget::event(WidgetContext& context, const InputEvent& any) {
 	return false;
 }
 
-void Widget::appendSelectable(std::vector<std::shared_ptr<InputWidget>>& selectable) {
-	// no-op base virtual method
+void Widget::scan(Navigator& navigator) {
+	for (auto& widget : children) {
+		widget->scan(navigator);
+	}
 }
 
 /*
@@ -136,7 +373,6 @@ bool InputWidget::isFocused() const {
 void InputWidget::setFocus(WidgetContext& context) {
 	context.setSelected(std::dynamic_pointer_cast<InputWidget>(shared_from_this()));
 }
-
 
 void InputWidget::setSelected(bool selected) {
 	this->selected = selected;
@@ -174,6 +410,7 @@ bool InputWidget::event(WidgetContext& context, const InputEvent& any) {
 	return false;
 }
 
-void InputWidget::appendSelectable(std::vector<std::shared_ptr<InputWidget>>& selectable) {
-	selectable.push_back(std::dynamic_pointer_cast<InputWidget>(shared_from_this()));
+void InputWidget::scan(Navigator& navigator) {
+	navigator.addWidget(std::dynamic_pointer_cast<InputWidget>(shared_from_this()));
+	Widget::scan(navigator);
 }

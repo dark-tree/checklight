@@ -3,27 +3,67 @@
 
 #include "render/immediate.hpp"
 
-TextWidget::TextWidget(const std::string& text)
-: text(text) {
+void TextWidget::applyWrapSizing() {
+	Widget::applyWrapSizing();
+
+	TextBakery bakery = getBakery(sizing.width(), 0);
+	BakedText wrapped = bakery.bakeString(0, 0, text);
+
+	min_height = Unit::px(wrapped.getMetrics().height);
+}
+
+TextBakery TextWidget::getBakery(int width, int height) const {
+
+	TextBakery bakery;
+
+	bakery.setFont("assets/font/OpenSans-Variable.ttf");
+	bakery.setAlignment(VerticalAlignment::TOP);
+	bakery.setAlignment(HorizontalAlignment::LEFT);
+	bakery.setSize(20);
+	bakery.setBounds(width, height);
+	bakery.setWrapping(true);
+
+	return bakery;
 
 }
 
+TextWidget::TextWidget(const std::string& text) {
+	setText(text);
+}
+
 void TextWidget::draw(ImmediateRenderer& immediate) {
+
+	// immediate.setRectRadius(0);
+	// immediate.setColor(0, 0, 0);
+	// immediate.drawRect2D(content.x, content.y, content.w, content.h);
+	// immediate.setColor(255, 255, 255);
+	// immediate.drawRect2D(content.x + 2, content.y + 2, content.w - 4, content.h - 4);
+
+	TextBakery bakery = getBakery(content.w, content.h);
+
 	immediate.setColor(0, 0, 0);
-	immediate.setTextBox(content.w, content.h);
-	immediate.drawString2D(content.x, content.y, text.c_str());
+	immediate.drawText2D(content.x, content.y, bakery.bakeString(0, 0, text.c_str()));
+
 }
 
 bool TextWidget::event(WidgetContext& context, const InputEvent& event) {
 	return false;
 }
 
-Box2D TextWidget::getInherentBox() const {
-	return {0, 0, 0, 0};
-}
+void TextWidget::setText(const std::string& text) {
+	this->text = text;
+	TextBakery bakery = getBakery(0, 0);
 
-void TextWidget::setBounds(Box2D bounds) {
-	Widget::setBounds(bounds);
+	bakery.setWrapping(true);
+	BakedText::Metrics wrapped = bakery.bakeString(0, 0, text).getMetrics();
+
+	bakery.setWrapping(false);
+	BakedText::Metrics unwrapped = bakery.bakeString(0, 0, text).getMetrics();
+
+	min_width = Unit::px(wrapped.width);
+
+	width = Unit::px(unwrapped.width);
+	height = Unit::px(unwrapped.height);
 }
 
 

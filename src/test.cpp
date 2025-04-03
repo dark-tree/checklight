@@ -3,8 +3,10 @@
 #include <vstl.hpp>
 
 // checklight include
-#include <shared/args.hpp>
+#include <gui/gui.hpp>
+#include <render/render.hpp>
 
+#include "shared/args.hpp"
 #include "shared/pyramid.hpp"
 #include "shared/weighed.hpp"
 
@@ -157,5 +159,267 @@ TEST(util_program_args) {
 	CHECK(args.get("--another"), "");
 	CHECK(args.get("-r"), "");
 	CHECK(args.get("-w"), "");
+
+};
+
+TEST(gui_simple_padded_absolute) {
+
+	for (Flow flow : {Flow::LEFT_TO_RIGHT, Flow::RIGHT_TO_LEFT, Flow::TOP_TO_BOTTOM, Flow::BOTTOM_TO_TOP}) {
+
+		auto context = std::make_shared<WidgetContext>();
+		auto root = std::make_shared<PanelWidget>();
+		auto sub = std::make_shared<PanelWidget>();
+
+		root->addWidget(sub);
+		context->setRoot(root);
+
+		root->width = Unit::px(400);
+		root->height = Unit::px(400);
+		root->padding = Unit::px(10);
+		root->flow = flow;
+
+		sub->width = Unit::px(100);
+		sub->height = Unit::px(100);
+
+		root->rebuild(10, 10);
+
+		CHECK(root->content.x, 10);
+		CHECK(root->content.y, 10);
+		CHECK(root->content.w, 400);
+		CHECK(root->content.h, 400);
+
+		CHECK(root->padded.x, 0);
+		CHECK(root->padded.y, 0);
+		CHECK(root->padded.w, 420);
+		CHECK(root->padded.h, 420);
+
+		CHECK(sub->content.x, 10);
+		CHECK(sub->content.y, 10);
+		CHECK(sub->content.w, 100);
+		CHECK(sub->content.h, 100);
+
+		CHECK(sub->padded.x, 10);
+		CHECK(sub->padded.y, 10);
+		CHECK(sub->padded.w, 100);
+		CHECK(sub->padded.h, 100);
+
+	}
+
+};
+
+TEST(gui_simple_padded_fit) {
+
+	for (Flow flow : {Flow::LEFT_TO_RIGHT, Flow::RIGHT_TO_LEFT, Flow::TOP_TO_BOTTOM, Flow::BOTTOM_TO_TOP}) {
+
+		auto context = std::make_shared<WidgetContext>();
+		auto root = std::make_shared<PanelWidget>();
+		auto sub = std::make_shared<PanelWidget>();
+
+		root->addWidget(sub);
+		context->setRoot(root);
+
+		root->width = Unit::fit();
+		root->height = Unit::fit();
+		root->flow = flow;
+
+		sub->width = Unit::px(100);
+		sub->height = Unit::px(100);
+		sub->padding = {Unit::px(20), Unit::px(10)};
+
+		root->rebuild(10, 10);
+
+		CHECK(root->content.x, 10);
+		CHECK(root->content.y, 10);
+		CHECK(root->content.w, 120);
+		CHECK(root->content.h, 140);
+
+		CHECK(sub->content.x, 20);
+		CHECK(sub->content.y, 30);
+		CHECK(sub->content.w, 100);
+		CHECK(sub->content.h, 100);
+
+	}
+
+};
+
+TEST(gui_simple_inverse) {
+
+	auto context = std::make_shared<WidgetContext>();
+	auto root = std::make_shared<PanelWidget>();
+	auto sub1 = std::make_shared<PanelWidget>();
+	auto sub2 = std::make_shared<PanelWidget>();
+
+	root->addWidget(sub1);
+	root->addWidget(sub2);
+	context->setRoot(root);
+
+	root->width = Unit::fit();
+	root->height = Unit::fit();
+	root->flow = Flow::RIGHT_TO_LEFT;
+
+	sub1->width = Unit::px(100);
+	sub1->height = Unit::px(100);
+
+	sub2->width = Unit::px(100);
+	sub2->height = Unit::px(100);
+	sub2->margin ={ Unit::px(100), Unit::px(200), Unit::px(10), Unit::zero()};
+
+	root->rebuild(0, 0);
+
+	CHECK(sub1->content.x, 110);
+	CHECK(sub2->content.x, 10);
+
+};
+
+TEST(gui_layout_simple_grow) {
+
+	auto context = std::make_shared<WidgetContext>();
+	auto root = std::make_shared<PanelWidget>();
+	auto sub1 = std::make_shared<PanelWidget>();
+	auto sub2 = std::make_shared<PanelWidget>();
+
+	root->addWidget(sub1);
+	root->addWidget(sub2);
+	context->setRoot(root);
+
+	root->width = Unit::px(400);
+	root->height = Unit::fit();
+	root->flow = Flow::LEFT_TO_RIGHT;
+
+	sub1->width = Unit::grow(1);
+	sub1->height = Unit::px(100);
+
+	sub2->width = Unit::grow(3);
+	sub2->height = Unit::grow(1);
+
+	root->rebuild(0, 0);
+
+	CHECK(root->content.x, 0);
+	CHECK(root->content.y, 0);
+	CHECK(root->content.w, 400);
+	CHECK(root->content.h, 100);
+
+	CHECK(sub1->content.x, 0);
+	CHECK(sub1->content.y, 0);
+	CHECK(sub1->content.w, 100);
+	CHECK(sub1->content.h, 100);
+
+	CHECK(sub2->content.x, 100);
+	CHECK(sub2->content.y, 0);
+	CHECK(sub2->content.w, 300);
+	CHECK(sub2->content.h, 100);
+
+};
+
+TEST(gui_layout_complex_grow) {
+
+	auto context = std::make_shared<WidgetContext>();
+	auto root = std::make_shared<PanelWidget>();
+	auto sub1 = std::make_shared<PanelWidget>();
+	auto sub2 = std::make_shared<PanelWidget>();
+	auto sub3 = std::make_shared<PanelWidget>();
+
+	root->addWidget(sub1);
+	root->addWidget(sub2);
+	sub1->addWidget(sub3);
+	context->setRoot(root);
+
+	root->width = Unit::px(100);
+	root->height = Unit::fit();
+	root->flow = Flow::LEFT_TO_RIGHT;
+
+	sub1->width = Unit::fit();
+	sub1->height = Unit::fit();
+	sub1->padding = Unit::px(10);
+
+	sub2->width = Unit::grow();
+	sub2->height = Unit::grow();
+
+	sub3->width = Unit::px(50);
+	sub3->height = Unit::px(100);
+
+	root->rebuild(0, 0);
+
+	CHECK(sub2->content.x, 70);
+	CHECK(sub2->content.y, 0);
+	CHECK(sub2->content.w, 30);
+	CHECK(sub2->content.h, 120);
+
+};
+
+TEST(gui_fit_text) {
+
+	// print errors only
+	out::logger.setLogLevelMask(Logger::Level::ERROR);
+
+	ApplicationParameters parameters;
+	parameters.setName("Test 'gui_fit_text'");
+	parameters.setDimensions(1200, 800);
+
+	RenderSystem::init(parameters);
+
+	const char* text =  "Many words that fit in thee";
+
+	auto context = std::make_shared<WidgetContext>();
+	auto root = std::make_shared<PanelWidget>();
+	auto sub1 = std::make_shared<TextWidget>(text);
+
+	root->addWidget(sub1);
+	context->setRoot(root);
+
+	root->width = Unit::fit();
+	root->height = Unit::fit();
+
+	root->rebuild(0, 0);
+
+	auto bakery = sub1->getBakery(0, 0);
+	bakery.setWrapping(false);
+	auto metric = bakery.bakeString(0, 0, text).getMetrics();
+
+	// check if the text did not wrap in fit container
+	CHECK(sub1->content.h, metric.height);
+
+	RenderSystem::system.reset();
+
+};
+
+TEST(gui_alignment_along_horizontal) {
+
+	auto context = std::make_shared<WidgetContext>();
+	auto root = std::make_shared<PanelWidget>();
+	auto sub1 = std::make_shared<PanelWidget>();
+	auto sub2 = std::make_shared<PanelWidget>();
+
+	root->addWidget(sub1);
+	root->addWidget(sub2);
+	context->setRoot(root);
+
+	root->width = Unit::px(400);
+	root->height = Unit::px(400);
+	root->flow = Flow::LEFT_TO_RIGHT;
+
+	sub1->width = Unit::px(100);
+	sub1->height = Unit::px(100);
+
+	sub2->width = Unit::px(100);
+	sub2->height = Unit::px(100);
+
+	root->horizontal = HorizontalAlignment::CENTER;
+	root->rebuild(0, 0);
+
+	CHECK(sub1->content.x, 100);
+	CHECK(sub1->content.y, 0);
+
+	CHECK(sub2->content.x, 200);
+	CHECK(sub2->content.y, 0);
+
+	root->horizontal = HorizontalAlignment::RIGHT;
+	root->rebuild(0, 0);
+
+	CHECK(sub1->content.x, 200);
+	CHECK(sub1->content.y, 0);
+
+	CHECK(sub2->content.x, 300);
+	CHECK(sub2->content.y, 0);
 
 };

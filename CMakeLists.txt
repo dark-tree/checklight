@@ -191,7 +191,9 @@ target_link_libraries(checklight PRIVATE
 
 target_link_libraries(checklight_test PRIVATE
 		checklight_common
+		checklight_gui_system
 		checklight_shared_system
+		checklight_render_system
 )
 
 target_include_directories(checklight_test PRIVATE

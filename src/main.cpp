@@ -1,6 +1,7 @@
 
 #include <gui/context.hpp>
 #include <gui/widget/panel.hpp>
+#include <gui/widget/text.hpp>
 #include <shared/args.hpp>
 #include <shared/logger.hpp>
 
@@ -11,6 +12,7 @@
 #include "engine/entity/component/matrixAnimation.hpp"
 
 static void entry(Args& args) {
+
 	ApplicationParameters parameters;
 	parameters.setName("My Checklight Game!");
 	parameters.setDimensions(1200, 800);
@@ -21,6 +23,82 @@ static void entry(Args& args) {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
+	auto context = std::make_shared<WidgetContext>();
+	auto panel = std::make_shared<PanelWidget>();
+
+	{
+		auto sub = std::make_shared<TextWidget>("Lorem ipsum dolor sit amet");
+		panel->addWidget(sub);
+	}
+
+	{
+		auto sub = std::make_shared<PanelWidget>();
+		panel->addWidget(sub);
+
+		sub->width = Unit::px(100);
+		sub->height = Unit::px(100);
+		sub->min_width = Unit::px(100);
+		sub->min_height = Unit::px(100);
+		sub->r = 100;
+		sub->g = 100;
+		sub->b = 250;
+		sub->padding = Unit::px(10);
+
+		//sub->margin = Unit::px(10);
+	}
+
+	{
+		auto sub = std::make_shared<PanelWidget>();
+		panel->addWidget(sub);
+
+		sub->width = Unit::fit();
+		sub->height = Unit::fit();
+		sub->r = 250;
+		sub->g = 100;
+		sub->b = 100;
+
+		auto text = std::make_shared<TextWidget>("Język lechicki z grupy zachodniosłowiańskiej");
+		sub->addWidget(text);
+	}
+
+	panel->width = Unit::px(800);
+	panel->height = Unit::px(400);
+	panel->flow = Flow::LEFT_TO_RIGHT;
+	panel->padding = Unit::px(10);
+	panel->gap = Unit::px(20);
+	panel->vertical = VerticalAlignment::CENTER;
+	panel->horizontal = HorizontalAlignment::CENTER;
+
+	panel->rebuild(10, 10);
+
+	// auto slider = std::make_shared<SliderWidget>([] () noexcept {
+	//
+	// });
+	// slider->setBounds({600, 300, 100, 50});
+	//
+	// auto button = std::make_shared<ButtonWidget>("Hello", [] () noexcept {
+	// 	out::debug("Pressed button!");
+	// });
+	// button->setBounds({600, 400, 100, 50});
+	//
+	// auto input = std::make_shared<FieldWidget>([] () noexcept {
+	//
+	// });
+	// input->setBounds({600, 500, 100, 50});
+	//
+	// auto select = std::make_shared<SelectWidget>([] () noexcept {
+	//
+	// });
+	// select->setBounds({600, 600, 100, 50});
+
+	context->setRoot(panel);
+	// panel->addWidget(slider);
+	// panel->addWidget(button);
+	// panel->addWidget(input);
+	// panel->addWidget(select);
+
+	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
+	window.getInputDispatcher().registerListener(std::dynamic_pointer_cast<InputListener>(context));
 	auto models = system.importObj("assets/models/checklight.obj");
 
 	BoardManager manager(window);
@@ -59,8 +137,6 @@ static void entry(Args& args) {
 
 	std::vector<std::shared_ptr<RenderObject>> objects;
 
-
-
 	for (auto& model : models) {
 		auto object = system.createRenderObject();
 		object->setMatrix(glm::identity<glm::mat4x3>());
@@ -68,15 +144,14 @@ static void entry(Args& args) {
 		objects.push_back(object);
 	}
 
-	uint64_t a = 0;
 	while (!window.shouldClose()) {
 		window.poll();
-		a++;
 
 		//physics update before rendering
 		manager.updateCycle();
 		std::shared_ptr<Board> current_board = manager.getCurrentBoard().lock();
 
+		context->draw(system.getImmediateRenderer());
 
 		//drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());
 
@@ -122,5 +197,7 @@ int main(int argc, const char* argv[]) {
 
 	// Try to close all engine systems before the logger shuts itself of
 	RenderSystem::system.reset();
+
 	return 0;
+
 }

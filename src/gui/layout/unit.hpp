@@ -4,9 +4,9 @@
 #include "shared/box.hpp"
 
 enum struct Metric : uint64_t {
-	NONE,
-	PX, // Pixels
-	PR, // Precentage
+	FIT,
+	GROW,
+	PX
 };
 
 class Unit {
@@ -17,21 +17,30 @@ class Unit {
 		Metric metric;
 
 		constexpr Unit()
-		: value(0), metric(Metric::NONE) {}
+		: value(0), metric(Metric::PX) {}
 
 		constexpr Unit(double value, Metric metric)
 		: value(value), metric(metric) {}
 
-		int resolve(int parent) const;
+		bool isAbsolute() const;
+		int toPixels() const;
 
 	public:
 
-		static constexpr Unit px(double value) {
-			return {value, Metric::PX};
+		static constexpr Unit zero() {
+			return {0, Metric::PX};
 		}
 
-		static constexpr Unit pr(double value) {
-			return {value, Metric::PR};
+		static constexpr Unit fit() {
+			return {0, Metric::FIT};
+		}
+
+		static constexpr Unit grow(int fraction = 1) {
+			return {static_cast<double>(fraction), Metric::GROW};
+		}
+
+		static constexpr Unit px(double value) {
+			return {value, Metric::PX};
 		}
 
 };
@@ -56,19 +65,9 @@ constexpr Unit operator ""_px(unsigned long long int value) {
 	return Unit::px(static_cast<double>(value));
 }
 
-constexpr Unit operator ""_pr(long double value) {
-	return Unit::pr(static_cast<double>(value));
-}
-
-constexpr Unit operator ""_pr(unsigned long long int value) {
-	return Unit::pr(static_cast<double>(value));
-}
-
 /*
  * Assertions
  */
 
 static_assert(std::is_same<decltype(1_px), Unit>::value);
 static_assert(std::is_same<decltype(1.0_px), Unit>::value);
-static_assert(std::is_same<decltype(1_pr), Unit>::value);
-static_assert(std::is_same<decltype(1.0_pr), Unit>::value);
