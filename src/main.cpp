@@ -9,6 +9,7 @@
 #include "input/input.hpp"
 #include "engine/engine.hpp"
 #include "gui/gui.hpp"
+#include "engine/entity/component/matrixAnimation.hpp"
 
 static void entry(Args& args) {
 
@@ -17,6 +18,7 @@ static void entry(Args& args) {
 	parameters.setDimensions(1200, 800);
 
 	RenderSystem::init(parameters);
+	Models::init();
 
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
@@ -42,7 +44,7 @@ static void entry(Args& args) {
 		sub->b = 250;
 		sub->padding = Unit::px(10);
 
-		//sub->margin = Unit::px(10);
+		sub->margin = Unit::px(10);
 	}
 
 	{
@@ -59,8 +61,8 @@ static void entry(Args& args) {
 		sub->addWidget(text);
 	}
 
-	panel->width = Unit::px(800);
-	panel->height = Unit::px(400);
+	panel->width = Unit::fit();
+	panel->height = Unit::fit();
 	panel->flow = Flow::LEFT_TO_RIGHT;
 	panel->padding = Unit::px(10);
 	panel->gap = Unit::px(20);
@@ -99,12 +101,39 @@ static void entry(Args& args) {
 	window.getInputDispatcher().registerListener(std::dynamic_pointer_cast<InputListener>(context));
 	auto models = system.importObj("assets/models/checklight.obj");
 
-	BoardManager m(window);
+	BoardManager manager(window);
 
-	std::shared_ptr<Pawn> p = std::make_shared<Pawn>();
-	p->setName("Test");
+	std::shared_ptr<Pawn> pawn = std::make_shared<Pawn>();
 
-	m.getCurrentBoard().lock()->addPawnToRoot(p);
+	auto pawnThatRendersTheCube = std::make_shared<SpatialPawn>();
+	auto pawnThatRendersTheSphere = std::make_shared<SpatialPawn>();
+
+	pawnThatRendersTheCube->setPosition({-2,1,-2});
+
+	pawnThatRendersTheSphere->setPosition({2,1,2});
+
+	std::shared_ptr<Component> renderSphere = std::make_shared<RenderComponent>(Models::SPHERE);
+	std::shared_ptr<Component> renderCube = std::make_shared<RenderComponent>(Models::CUBE);
+
+	std::shared_ptr<Component> rotateCube = std::make_shared<MatrixAnimation>(MatrixAnimation::ROTATE);
+	std::shared_ptr<Component> moveSphere = std::make_shared<MatrixAnimation>(MatrixAnimation::TRANSLATE);
+
+
+	pawnThatRendersTheSphere->addComponent(renderSphere);
+	pawnThatRendersTheSphere->addComponent(moveSphere);
+
+	pawnThatRendersTheCube->addComponent(renderCube);
+	pawnThatRendersTheCube->addComponent(rotateCube);
+
+
+	pawn->setName("Test");
+
+	std::shared_ptr<Board> sp = manager.getCurrentBoard().lock();
+
+	sp->addPawnToRoot(pawn);
+	sp->addPawnToRoot(pawnThatRendersTheCube);
+	sp->addPawnToRoot(pawnThatRendersTheSphere);
+
 
 	std::vector<std::shared_ptr<RenderObject>> objects;
 
@@ -119,8 +148,8 @@ static void entry(Args& args) {
 		window.poll();
 
 		//physics update before rendering
-		m.updateCycle();
-		std::shared_ptr<Board> current_board = m.getCurrentBoard().lock();
+		manager.updateCycle();
+		std::shared_ptr<Board> current_board = manager.getCurrentBoard().lock();
 
 		context->draw(system.getImmediateRenderer());
 
@@ -136,6 +165,7 @@ static void entry(Args& args) {
 	}
 
 	system.wait();
+	Models::terminate();//temporary
 
 	for (auto& object : objects) {
 		object.reset();
@@ -162,6 +192,8 @@ int main(int argc, const char* argv[]) {
 	}
 
 	entry(args);
+
+	Models::terminate();//temporary
 
 	// Try to close all engine systems before the logger shuts itself of
 	RenderSystem::system.reset();
