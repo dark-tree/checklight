@@ -59,11 +59,13 @@ static void entry(Args& args) {
 		sub->addWidget(text);
 	}
 
-	panel->width = Unit::px(400);
-	panel->height = Unit::fit();
+	panel->width = Unit::px(800);
+	panel->height = Unit::px(400);
 	panel->flow = Flow::LEFT_TO_RIGHT;
 	panel->padding = Unit::px(10);
-	panel->gap = Unit::px(0);
+	panel->gap = Unit::px(20);
+	panel->vertical = VerticalAlignment::CENTER;
+	panel->horizontal = HorizontalAlignment::CENTER;
 
 	panel->rebuild(10, 10);
 

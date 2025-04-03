@@ -382,3 +382,44 @@ TEST(gui_fit_text) {
 	RenderSystem::system.reset();
 
 };
+
+TEST(gui_alignment_along_horizontal) {
+
+	auto context = std::make_shared<WidgetContext>();
+	auto root = std::make_shared<PanelWidget>();
+	auto sub1 = std::make_shared<PanelWidget>();
+	auto sub2 = std::make_shared<PanelWidget>();
+
+	root->addWidget(sub1);
+	root->addWidget(sub2);
+	context->setRoot(root);
+
+	root->width = Unit::px(400);
+	root->height = Unit::px(400);
+	root->flow = Flow::LEFT_TO_RIGHT;
+
+	sub1->width = Unit::px(100);
+	sub1->height = Unit::px(100);
+
+	sub2->width = Unit::px(100);
+	sub2->height = Unit::px(100);
+
+	root->horizontal = HorizontalAlignment::CENTER;
+	root->rebuild(0, 0);
+
+	CHECK(sub1->content.x, 100);
+	CHECK(sub1->content.y, 0);
+
+	CHECK(sub2->content.x, 200);
+	CHECK(sub2->content.y, 0);
+
+	root->horizontal = HorizontalAlignment::RIGHT;
+	root->rebuild(0, 0);
+
+	CHECK(sub1->content.x, 200);
+	CHECK(sub1->content.y, 0);
+
+	CHECK(sub2->content.x, 300);
+	CHECK(sub2->content.y, 0);
+
+};

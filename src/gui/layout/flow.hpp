@@ -12,7 +12,7 @@ enum struct Flow : int {
 struct WidgetFlow {
 
 	/// Convert flow to it's primary axis
-	static constexpr Channel  asChannel(Flow flow) {
+	static constexpr Channel asChannel(Flow flow) {
 		return (int(flow) & 0b10) ? Channel::WIDTH : Channel::HEIGHT;
 	}
 
