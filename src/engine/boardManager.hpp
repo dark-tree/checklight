@@ -16,7 +16,7 @@ protected:
 	TaskPool taskPool;
 
 	std::unique_ptr<MailboxTaskDelegator> physicsDelegator;
-	std::atomic<bool> continueLoop;
+	std::atomic<bool> continue_loop;
 
 	Window* w;
 	/*
@@ -29,6 +29,7 @@ protected:
 public:
 
 	explicit BoardManager(Window &window);
+	~BoardManager();
 
 	/**
 	 * facilitates standard update

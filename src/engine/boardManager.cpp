@@ -11,7 +11,7 @@
 
 BoardManager::BoardManager(Window &window) {
 	std::shared_ptr<Board> new_board = std::make_shared<Board>();
-	continueLoop = true;
+	continue_loop = true;
 
 	taskDelegator = std::make_unique<PhasedTaskDelegator>(taskPool);
 
@@ -23,9 +23,10 @@ BoardManager::BoardManager(Window &window) {
 	w = &window;
 	standardSetup();
 
+	/*
 	physicsDelegator->enqueue( [this]() {
 		fixedUpdateCycle();
-	});
+	});*/
 }
 
 
@@ -91,7 +92,7 @@ void BoardManager::fixedUpdateCycle() {
 
 	auto nextTick = std::chrono::steady_clock::now();
 	// auto start = std::chrono::steady_clock::now();
-	while(continueLoop){
+	while(continue_loop){
 		nextTick = nextTick + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
 				std::chrono::duration<double>(TICK_DURATION));
 
@@ -114,3 +115,6 @@ std::weak_ptr<Board> BoardManager::getCurrentBoard() {
 	return current_board;
 }
 
+BoardManager::~BoardManager() {
+	continue_loop = false;
+}
