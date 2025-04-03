@@ -1,5 +1,6 @@
 
 #include "pool.hpp"
+#include "shared/logger.hpp"
 
 /*
  * TaskPool
@@ -31,7 +32,7 @@ size_t TaskPool::optimal() {
 
 TaskPool::TaskPool(size_t count)
 : stop(false) {
-	std::cout << "Created thread pool with " << count << " workers\n";
+	out::info("Created thread pool with %d workers", count);
 
 	while (count --> 0) {
 		workers.emplace_back(&TaskPool::run, this);
@@ -57,7 +58,7 @@ void TaskPool::enqueue(const Task& task) {
 
 		// don't allow enqueueing after stopping the pool
 		if (stop) {
-			throw std::runtime_error("Unable to add task to a stopped pool!");
+			FAULT("Unable to add task to a stopped pool!");
 		}
 
 		tasks.emplace(task);

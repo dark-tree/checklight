@@ -79,8 +79,8 @@ void BoardManager::updateCycle() {
 
 
 	if(globalTickNumber % 2000 == 1){
-		out::info("tick: %d", globalTickNumber);
-		usingBoard->printBoardTreeVerbose();
+		//out::info("tick: %d", globalTickNumber);
+		//usingBoard->printBoardTreeVerbose();
 	}
 	globalTickNumber++;
 }
