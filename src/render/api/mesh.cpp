@@ -11,9 +11,11 @@ RenderMesh::~RenderMesh() {
 }
 
 void RenderMesh::setDebugName(const std::string& name) {
+	#if ENGINE_DEBUG
 	this->name = name;
 	vertex.setDebugName("Vertex " + name);
 	index.setDebugName("Index " + name);
+	#endif
 }
 
 void RenderMesh::uploadVertices(RenderCommander& commander, const std::vector<Vertex3D>& vertices) {

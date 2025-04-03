@@ -5,6 +5,7 @@
 #include "application.hpp"
 #include "window.hpp"
 #include "immediate.hpp"
+#include "parameters.hpp"
 
 #include "render/vulkan/setup/proxy.hpp"
 #include "render/vulkan/setup/instance.hpp"
@@ -21,6 +22,7 @@
 #include "render/vulkan/raytrace/instance.hpp"
 #include "render/vulkan/raytrace/factory.hpp"
 #include "render/asset/material.hpp"
+#include "render/asset/light.hpp"
 
 class Renderer {
 
@@ -59,6 +61,8 @@ class Renderer {
 		std::unique_ptr<Window> window;
 		ImmediateRenderer immediate;
 		MaterialManager materials;
+		LightManager lights;
+		RenderParameters parameters;
 
 		// early vulkan objects
 		VkFormat surface_format;
@@ -90,16 +94,28 @@ class Renderer {
 		Shader shader_trace_hit;
 		Shader shader_blit_vertex;
 		Shader shader_blit_fragment;
+		Shader shader_denoise_fragment;
+		Shader shader_denoise2_fragment;
 
 		// attachments
 		Attachment attachment_color;
 		Attachment attachment_depth;
 		Attachment attachment_albedo;
+		Attachment attachment_illumination;
+		Attachment attachment_prev_illumination;
+		Attachment attachment_normal;
+		Attachment attachment_prev_normal;
+		Attachment attachment_illum_transport;
+		Attachment attachment_soild_illumination;
+		Attachment attachment_world_position;
+		Attachment attachment_prev_world_position;
 
 		// descriptors
 		DescriptorSetLayout layout_immediate;
 		DescriptorSetLayout layout_compose;
 		DescriptorSetLayout layout_raytrace;
+		DescriptorSetLayout layout_denoise;
+		DescriptorSetLayout layout_denoise2;
 
 		// layouts
 		BindingLayout binding_3d;
@@ -107,6 +123,8 @@ class Renderer {
 		// renderpasses
 		RenderPass pass_immediate;
 		RenderPass pass_compose;
+		RenderPass pass_denoise;
+		RenderPass pass_denoise2;
 
 		// Pipelines
 		GraphicsPipeline pipeline_immediate_2d;
@@ -114,6 +132,8 @@ class Renderer {
 		GraphicsPipeline pipeline_text_2d;
 		GraphicsPipeline pipeline_trace_3d;
 		GraphicsPipeline pipeline_compose_2d;
+		GraphicsPipeline pipeline_denoise_2d;
+		GraphicsPipeline pipeline_denoise2_2d;
 
 		// late vulkan objects
 		Swapchain swapchain;
@@ -185,7 +205,7 @@ class Renderer {
 		Window& getWindow() const;
 
 		/// Render the next frame, all rendering should happen inside this call
-		void draw();
+		virtual void draw();
 
 		/// Synchronize all operations and wait for the GPU to idle
 		void wait();
@@ -204,5 +224,8 @@ class Renderer {
 
 		/// Get the material manager
 		MaterialManager& getMaterialManager();
+
+		/// Get the light manager
+		LightManager& getLightManager();
 
 };

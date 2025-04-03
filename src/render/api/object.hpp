@@ -8,6 +8,7 @@ class RenderModel;
 struct RenderObjectData {
 	uint64_t vertex_address;
 	uint64_t index_address;
+	glm::mat4 portal;
 };
 
 /**
@@ -68,5 +69,12 @@ class RenderObject {
 		 * @param active true for active, false otherwise
 		 */
 		void setActive(bool active);
+
+		/**
+		 * Set the transformation of rays that pass through this object
+		 * 
+		 * @param portal transformation matrix
+		 */
+		void setPortal(const glm::mat4& portal);
 
 };

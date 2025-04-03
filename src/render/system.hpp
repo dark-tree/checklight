@@ -53,6 +53,7 @@ class RenderSystem : public Renderer {
 		 * but needs to be called AT LEAST one window size changes to account for the aspect ratio
 		 *
 		 * @note This call modifies an uniform, remember to call updateUniforms() after it!
+		 * @note This call also updates the previous projection matrix to the current projection matrix
 		 *
 		 * @param fov  Camera field of view
 		 * @param near The closest anything can be to the camera and render
@@ -65,6 +66,7 @@ class RenderSystem : public Renderer {
 		 * to account for the camera movement.
 		 *
 		 * @note This call modifies an uniform, remember to call updateUniforms() after it!
+		 * @note This call also updates the previous view matrix to the current view matrix
 		 *
 		 * @param eye     The position of the "eye" in 3D world space
 		 * @param facing  Directional vector that specific in which way the camera looks.
@@ -88,4 +90,14 @@ class RenderSystem : public Renderer {
 		 * Close RenderModel, the resources used by the model will be released.
 		 */
 		void closeModel(std::shared_ptr<RenderModel> model);
+
+		/**
+		 * Get the current render parameters
+		 */
+		RenderParameters& getParameters();
+
+		/**
+		 * Render the next frame, all rendering should happen inside this call
+		 */
+		void draw() override;
 };
