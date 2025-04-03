@@ -86,25 +86,25 @@ void BoardManager::updateCycle() {
 
 
 void BoardManager::fixedUpdateCycle() {
-	//double sum = 0.0;
-	//int amount = 0;
+	// double sum = 0.0;
+	// int amount = 0;
 
-	auto nextTick = std::chrono::high_resolution_clock::now();
-	//auto start = std::chrono::high_resolution_clock::now();
+	auto nextTick = std::chrono::steady_clock::now();
+	// auto start = std::chrono::steady_clock::now();
 	while(continueLoop){
-		nextTick = nextTick + std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(
+		nextTick = nextTick + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
 				std::chrono::duration<double>(TICK_DURATION));
 
 		if (!current_board.expired()) {
 			current_board.lock()->fixedUpdateBoard();
 		}
-		//auto end = std::chrono::high_resolution_clock::now();
-		//double tick_calculation_time = std::chrono::duration<double>(end - start).count();
-		//sum += tick_calculation_time;
-		//amount++;
-		//start = end;
-
-		//printf("%f\n", sum/(double)amount);
+		// auto end = std::chrono::steady_clock::now();
+		// double tick_calculation_time = std::chrono::duration<double>(end - start).count();
+		// sum += tick_calculation_time;
+		// amount++;
+		// start = end;
+		//
+		// printf("%f %f\n", sum/(double)amount, tick_calculation_time);
 		std::this_thread::sleep_until(nextTick);
 	}
 }

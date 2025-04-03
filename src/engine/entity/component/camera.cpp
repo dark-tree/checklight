@@ -52,11 +52,20 @@ void Camera::onUpdate(Context c) {
 		glm::vec2 mouse_difference = mouse_position - mouse_position_old;
 		mouse_position_old = mouse_position;
 
-		float moveX = mouse_difference.x/400.0f;
-		float moveY = mouse_difference.y/400.0f;
+		virtual_mouse_position += mouse_difference/400.0f;
 
-		rot = glm::rotate(rot,moveX,{0,-1.0,0});
-		rot = glm::rotate(rot,moveY,{0.0,0,-1.0});
+		virtual_mouse_position.y = std::clamp(virtual_mouse_position.y, glm::radians(-89.0f), glm::radians(89.0f));
+
+		float moveX = virtual_mouse_position.x;
+		float moveY = virtual_mouse_position.y;
+
+		glm::quat rotX;
+		glm::quat rotY;
+
+		rotX = glm::rotate(glm::identity<glm::quat>(),moveX,{0,-1.0,0});
+		rotY = glm::rotate(glm::identity<glm::quat>(),moveY,{0.0,0,-1.0});
+
+		rot = rotX * rotY;
 
 		mouse_move = false;
 	}

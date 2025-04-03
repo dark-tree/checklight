@@ -9,6 +9,9 @@ protected:
 
 	glm::vec2 mouse_position{};
 	glm::vec2 mouse_position_old{};
+
+	glm::vec2 virtual_mouse_position{};
+
 	bool mouse_init;
 	bool mouse_captured;
 
