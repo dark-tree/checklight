@@ -4,6 +4,8 @@
 
 #ifndef CHECKLIGHT_PHYSICSELEMENT_HPP
 #define CHECKLIGHT_PHYSICSELEMENT_HPP
+#include <utility>
+
 #include "external.hpp"
 
 class PhysicsElement {
@@ -83,7 +85,7 @@ public:
     }
 
     /// Sets the vec3 of the object
-    void setPosition(glm::vec3& vec3)
+    void setPosition(glm::vec3 vec3)
     {
         this->position = vec3;
     }
@@ -101,7 +103,7 @@ public:
     }
 
     /// Sets the vec3 of the object
-    void setVelocity(glm::vec3& vec3)
+    void setVelocity(glm::vec3 vec3)
     {
         this->velocity = vec3;
     }
@@ -119,7 +121,7 @@ public:
     }
 
     /// Sets the rotation of the object
-    void setRotation(glm::quat& quat)
+    void setRotation(glm::quat quat)
     {
         this->rotation = quat;
     }
@@ -137,7 +139,7 @@ public:
     }
 
     /// Sets the angular velocity of the object
-    void setAngularVelocity(glm::vec3& vec3) {
+    void setAngularVelocity(glm::vec3 vec3) {
         angular_velocity = vec3;
     }
 
@@ -178,10 +180,10 @@ public:
     }
 
     /// Sets the shape of the collider of the object and recalculates its sphere collider radius
-    void setCollider(std::vector<glm::vec3>& vertexes, std::vector<glm::ivec3>& faces)
+    void setCollider(std::vector<glm::vec3> vertexes, std::vector<glm::ivec3> faces)
     {
-        vertices = vertexes;
-        triangles = faces;
+        vertices = std::move(vertexes);
+        triangles = std::move(faces);
         sphere_collider_radius = 0;
         for (glm::vec3 vec3 : vertices)
         {

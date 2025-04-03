@@ -559,8 +559,33 @@ public:
 
     void applyForces(PhysicsElement& a, PhysicsElement& b, float collision_depth, glm::vec3 collision_normal)
     {
+        //TODO test wether the + and - are correctly placed
+        //positional correction
         glm::vec3 correction_vector = collision_normal * collision_depth;
-        //TODO part of this thing
+        a.setPosition(a.getPosition() - correction_vector * (b.getMass()/(a.getMass() + b.getMass())));
+        b.setPosition(b.getPosition() + correction_vector * (a.getMass()/(a.getMass() + b.getMass())));
+
+        //impulse based collision response
+        float relative_velocity = glm::dot(b.getVelocity() - a.getVelocity(), collision_normal);
+        float inverse_mass_a = 1.0/a.getMass();
+        float inverse_mass_b = 1.0/b.getMass();
+
+        //calculate impulse scalar and vector
+        float impulse_scalar = -(1 + a.getCoefficientOfRestitution()/2.0 + b.getCoefficientOfRestitution()/2.0) * relative_velocity / (inverse_mass_a + inverse_mass_b);
+        glm::vec3 impulse_vector = impulse_scalar * collision_normal;
+
+        //apply impulse to objects
+        a.setVelocity(a.getVelocity() - impulse_vector * inverse_mass_a);
+        b.setVelocity(b.getVelocity() + impulse_vector * inverse_mass_b);
+
+        //applying friction
+        glm::vec3 tangent_velocity = (b.getVelocity() - a.getVelocity()) - collision_normal * relative_velocity;
+        glm::vec3 friction_impulse_vector = -tangent_velocity * (impulse_scalar * a.getCoefficientOfFriction() * b.getCoefficientOfFriction());
+        a.setVelocity(a.getVelocity() - friction_impulse_vector * inverse_mass_a);
+        b.setVelocity(b.getVelocity() + friction_impulse_vector * inverse_mass_b);
+
+        //todo modify epa to return collision point so that we can apply rotation
+
     }
 
     std::vector<PhysicsElement> getElements()
