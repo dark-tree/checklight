@@ -3,9 +3,10 @@
 #include <vstl.hpp>
 
 // checklight include
-#include <shared/args.hpp>
 #include <gui/gui.hpp>
+#include <render/render.hpp>
 
+#include "shared/args.hpp"
 #include "shared/pyramid.hpp"
 #include "shared/weighed.hpp"
 
@@ -343,5 +344,41 @@ TEST(gui_layout_complex_grow) {
 	CHECK(sub2->content.y, 0);
 	CHECK(sub2->content.w, 30);
 	CHECK(sub2->content.h, 120);
+
+};
+
+TEST(gui_fit_text) {
+
+	// print errors only
+	out::logger.setLogLevelMask(Logger::Level::ERROR);
+
+	ApplicationParameters parameters;
+	parameters.setName("Test 'gui_fit_text'");
+	parameters.setDimensions(1200, 800);
+
+	RenderSystem::init(parameters);
+
+	const char* text =  "Many words that fit in thee";
+
+	auto context = std::make_shared<WidgetContext>();
+	auto root = std::make_shared<PanelWidget>();
+	auto sub1 = std::make_shared<TextWidget>(text);
+
+	root->addWidget(sub1);
+	context->setRoot(root);
+
+	root->width = Unit::fit();
+	root->height = Unit::fit();
+
+	root->rebuild(0, 0);
+
+	auto bakery = sub1->getBakery(0, 0);
+	bakery.setWrapping(false);
+	auto metric = bakery.bakeString(0, 0, text).getMetrics();
+
+	// check if the text did not wrap in fit container
+	CHECK(sub1->content.h, metric.height);
+
+	RenderSystem::system.reset();
 
 };
