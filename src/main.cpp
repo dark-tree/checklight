@@ -33,15 +33,34 @@ public:
 				sg->setMute(false);
 			}
 			//NIE WYCZUWALNA ROZNICA DO NAPRAWY 
-			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_UP)) {
-				listener.setPosition(1000, 10, 0);
+			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_RIGHT)) {
+				listener.setPosition(-90.0f, 0.0f, 0.0f);
+				listener.print();
+				//sso1->print();
+
+				//sso1->setPosition(900000.0f,0.0f,5.0f);
+			}
+			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_LEFT)) {
+				listener.setPosition(90.0f, 0.0f, 0.0f);
 				listener.print();
 				//sso1->print();
 
 				//sso1->setPosition(900000.0f,0.0f,5.0f);
 			}
 			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_DOWN)) {
-				listener.setPosition(0, 00, 0);
+				listener.setPosition(0.0f, 0.0f, -90.0f);
+				//sso1->setPosition(0.0f,0.0f,0.0f);
+				//listener.print();
+				//sso1->print();
+			}
+			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_UP)) {
+				listener.setPosition(0.0f, 0.0f, 90.0f);
+				//sso1->setPosition(0.0f,0.0f,0.0f);
+				//listener.print();
+				//sso1->print();
+			}
+			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_0)) {
+				listener.setPosition(0.0f, 0.0f, 0.0f);
 				//sso1->setPosition(0.0f,0.0f,0.0f);
 				//listener.print();
 				//sso1->print();
@@ -74,30 +93,30 @@ int main() {
 	//@TODO oddzielny watek dla sound managera tak wektor sourcow
 	try {
 		
-		auto sc1 = std::make_shared<SoundClip>();
-		auto sc2 = std::make_shared<SoundClip>();
+		//auto sc1 = std::make_shared<SoundClip>();
+		//auto sc2 = std::make_shared<SoundClip>();
 		
 
 		sm.addSource(sso1);
-		sm.addClip(sc1);
-		sm.addAudioToClip(sc1, "assets/sounds/testOGG.ogg");
-		sm.connectClipWithSource(sc1, sso1);
+		//sm.addClip(sc1);
+		//sm.addAudioToClip(sc1, "assets/sounds/testOGG.ogg");
+		sm.createSoundClipAndAddToSourceObject("assets/sounds/testOGG.ogg",sso1);
+		//sm.connectClipWithSource(sc1, sso1);
 
 		sm.addSource(sso2);
-		sm.addClip(sc2);
+		/*sm.addClip(sc2);
 		sm.addAudioToClip(sc2, "assets/sounds/test/2.ogg");
-		sm.connectClipWithSource(sc2, sso2);
+		sm.connectClipWithSource(sc2, sso2);*/
+		sm.createSoundClipAndAddToSourceObject("assets/sounds/test/2.ogg", sso2);
 
 		//sm.playSound(sso1);
 		listener.setDistanceModel(AL_INVERSE_DISTANCE);
-		listener.setPosition(1000.0f, 10.0f, 1000.0f);
+		listener.setPosition(0.0f, 0.0f, 0.0f);
 
 		
 		//sso1->addGroupParameters(sg);
 		//sg->addObserversSoundSourceObject(sso1);
 		//sg->setPitch(0.5f);
-		sso1->setGain(0.5f);
-		sso1->setPitch(0.5f);
 		sso1->setMaxDistance(100.0f);
 		sso1->setReferenceDistance(1.0f);
 		sso1->setRolloffFactor(1.0f);

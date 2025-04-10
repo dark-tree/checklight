@@ -8,12 +8,6 @@ class SoundSourceObject;
 
 // shared struct with parameters for SoundSourceObjects
 
-//@TODO poprawic kopiowanie obiektow
-//@TODO dodac odczepianie od sg w sso
-
-//@TODO SG JAKO srodek ciezkosci a nie parametry stricte dla sso
-//@TODO sg to offset parametrow sso
-//@TODO sso ma wlasne parametry
 
 // ===============================SoundGroup===============================
 
@@ -21,8 +15,6 @@ class SoundSourceObject;
 struct SoundGroup {
 private:
 
-	//@TODO poprawic jakos parametry, bo spoko ze offset ale jak chcemy wylaczyc dzwiek to w sg mamy 0 gain ale tutaj mamy 1.0 i tyle bedzie wciaz gralo
-	//		trzeba przemyslec jak to naprawic
 	//parameters
 	float sg_pitch = 0.0f;
 	float sg_gain = 0.0f;
@@ -44,15 +36,25 @@ private:
 	glm::vec3 sg_velocity = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 sg_direction = glm::vec3(0.0f, 0.0f, 0.0f);
 
+	/// Vector of weak pointers to SoundSourceObjects
+	/// Stored every weak pointer to SoundSourceObject that is in this SoundGroup
+	/// and would be notify by this SoundGroup when parameters are changed
 	std::vector<std::weak_ptr<SoundSourceObject>> observers_vector_sso;
+
+	/// Calls the specified method for each SoundSourceObject in observers_vector_sso
+	/// 
+	/// @param method Pointer to the method to be called
 	void notifyObserversSSO(void (SoundSourceObject::* method)());
 public:
+	SoundGroup() {};
+	~SoundGroup() { observers_vector_sso.clear(); }
+
 	void addObserversSoundSourceObject(std::shared_ptr<SoundSourceObject> sso);
 
 	SoundGroup& operator= (const SoundGroup& right);
 
 	//===============================Parameters===============================
-	//getter
+	///getter
 	float getPitch() const { return sg_pitch; }
 	float getGain() const { return sg_gain; }
 	bool getLooping() const { return sg_looping; }
@@ -68,7 +70,7 @@ public:
 	float getConeOuterAngle() const { return sg_cone_outer_angle; }
 
 
-	//setter
+	///setter
 	void setPitch(float pitch);
 	void setGain(float gain);
 	void setLooping(bool looping);
@@ -86,22 +88,27 @@ public:
 
 
 	//===============================Movements===============================
-	//getter
-	glm::vec3 getPositionv3() const { return sg_position; }
-	glm::vec3 getVelocityv3() const { return sg_velocity; }
-	glm::vec3 getDirectionv3() const { return sg_direction; }
+	///getter
 
-	const float* getPositionfv() const { return &sg_position[0]; }
-	const float* getVelocityfv() const { return &sg_velocity[0]; }
-	const float* getDirectionfv() const { return &sg_direction[0]; }
+	/// Get Vec3 position of SoundGroup
+	/// 
+	/// @return Vec3 position of SoundGroup
+	glm::vec3 getPosition() const { return sg_position; }
+
+	/// Get Vec3 velocity of SoundGroup
+	/// 
+	/// @return Vec3 velocity of SoundGroup
+	glm::vec3 getVelocity() const { return sg_velocity; }
+
+	/// Get Vec3 direction of SoundGroup
+	/// 
+	/// @return Vec3 direction of SoundGroup
+	glm::vec3 getDirection() const { return sg_direction; }
 
 
-	//setter
+	///setter
 	void setPosition(glm::vec3 position);
 	void setPosition(float x,float y, float z);
 	void setVelocity(glm::vec3 velocity);
 	void setDirection(glm::vec3 direction);
-
-	SoundGroup(){};
-	~SoundGroup() { observers_vector_sso.clear(); }
 };

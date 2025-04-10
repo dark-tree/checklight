@@ -3,34 +3,34 @@
 
 //@TODO poprawic wczytywanie plikow audio stereo, kilka bufferow dla jednego pliku, rozdzielic kanaly na mono 
 
-// Object to management of buffers
-//In this version provide management only on one buffer
+/// Object to management of buffers
+/// In this version provide management only on one buffer
 class SoundClip {
 private:
 
-	// Pointer to id of buffers
+	/// Pointer to id of buffers
 	ALuint* sc_buffers;
-	// Number of buffers (enable only default value = 1)
+	/// Number of buffers (enable only default value = 1)
 	ALsizei number_of_buffers;
-	// Uri of first buffer in sc_buffers
-	std::string uri;
+	/// Uri of first buffer in sc_buffers
+	std::string url;
 
 public:
 
 	SoundClip();
-	//SoundClip(int number_of_buffers);
 	~SoundClip();
 
-	// Create buffer for audio file
-	// Only for .ogg file
-	// @param uri URI to the audio file
-	void addAudio(const char* uri);
+	/// Method to create audio buffer for audio file
+	/// Enable only .ogg files
+	/// 
+	/// @param uri URL to the audio file
+	void addAudio(const char* url);
 
 	//ALuint getBuffer(int number);
 
-	// Get first buffer
+	/// Gets the buffer id of the first buffer in sc_buffers
 	ALuint getBuffer();
 
-	// Get URI from first buffer
-	std::string getURI();
+	/// Get URL from the first buffer in sc_buffers
+	std::string getURL();
 };

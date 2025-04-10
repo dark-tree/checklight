@@ -43,7 +43,7 @@ void SoundClip::addAudio(const char* filename){
 		std::cerr << ("SoundClip -> OGG file load error\f");
 		return;
 	}
-	this->uri = filename;
+	this->url = filename;
 
 	
 	
@@ -82,7 +82,7 @@ ALuint SoundClip::getBuffer() {
 	return this->sc_buffers[0];
 }
 
-std::string SoundClip::getURI()
+std::string SoundClip::getURL()
 {
-	return this->uri;
+	return this->url;
 }

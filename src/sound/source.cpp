@@ -34,7 +34,6 @@ ALuint SoundSourceObject::getSource(){
 	if (alIsSource(sso_sources[0]) == AL_TRUE){
 		return sso_sources[0];
 	}
-
 	return 0;
 }
 
@@ -43,7 +42,6 @@ ALuint SoundSourceObject::getSource(int number){
 	if (alIsSource(sso_sources[number]) == AL_TRUE){
 		return sso_sources[number];
 	}
-
 	return 0;
 }
 
@@ -68,6 +66,26 @@ void SoundSourceObject::setDirection(float x, float y, float z)
 	updateMovement();
 }
 
+glm::vec3 SoundSourceObject::getRealPosition() {
+	if (sso_sg != nullptr) {
+		return sso_position + sso_sg->getPosition();
+	}
+	return sso_position;
+}
+
+glm::vec3 SoundSourceObject::getRealVelocity() {
+	if (sso_sg != nullptr) {
+		return sso_velocity + sso_sg->getVelocity();
+	}
+	return sso_velocity;
+}
+
+glm::vec3 SoundSourceObject::getRealDirection() {
+	if (sso_sg != nullptr) {
+		return sso_direction + sso_sg->getDirection();
+	}
+	return sso_direction;
+}
 
 //========================PARAMETERS========================
 
@@ -239,22 +257,22 @@ void SoundSourceObject::updateMovement() {
 	if (this->sso_sg != nullptr) {
 		for (int i = 0;i < this->number_of_sources;i++) {
 			glm::vec3 actual_position = { 0.0f,0.0f,0.0f };
-			actual_position.x= sso_position.x + sso_sg->getPositionv3().x;
-			actual_position.y = sso_position.y + sso_sg->getPositionv3().y;
-			actual_position.z = sso_position.z + sso_sg->getPositionv3().z;
+			actual_position.x= sso_position.x + sso_sg->getPosition().x;
+			actual_position.y = sso_position.y + sso_sg->getPosition().y;
+			actual_position.z = sso_position.z + sso_sg->getPosition().z;
 			alSource3f(this->sso_sources[i], AL_POSITION, actual_position.x, actual_position.y, actual_position.z);
 
 			glm::vec3 actual_velocity = { 0.0f,0.0f,0.0f };
-			actual_velocity.x = sso_velocity.x + sso_sg->getVelocityv3().x;
-			actual_velocity.y = sso_velocity.y + sso_sg->getVelocityv3().y;
-			actual_velocity.z = sso_velocity.z + sso_sg->getVelocityv3().z;
+			actual_velocity.x = sso_velocity.x + sso_sg->getVelocity().x;
+			actual_velocity.y = sso_velocity.y + sso_sg->getVelocity().y;
+			actual_velocity.z = sso_velocity.z + sso_sg->getVelocity().z;
 
 			alSource3f(this->sso_sources[i], AL_VELOCITY, actual_velocity.x, actual_velocity.y, actual_velocity.z);
 			
 			glm::vec3 actual_direction = { 0.0f,0.0f,0.0f };
-			actual_direction.x = sso_direction.x + sso_sg->getDirectionv3().x;
-			actual_direction.y = sso_direction.y + sso_sg->getDirectionv3().y;
-			actual_direction.z = sso_direction.z + sso_sg->getDirectionv3().z;
+			actual_direction.x = sso_direction.x + sso_sg->getDirection().x;
+			actual_direction.y = sso_direction.y + sso_sg->getDirection().y;
+			actual_direction.z = sso_direction.z + sso_sg->getDirection().z;
 			alSource3f(this->sso_sources[i], AL_DIRECTION, actual_direction.x, actual_direction.y, actual_direction.z);
 		}
 	}
