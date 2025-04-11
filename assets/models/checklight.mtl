@@ -1,0 +1,47 @@
+# Blender 4.3.2 MTL File: 'CheckLight.blend'
+# www.blender.org
+
+newmtl Glass
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 10.000000 2.000000 0.000000
+Ni 1.450000
+d 0.1
+illum 2
+map_Kd textures/Glass_BaseColor.jpg
+map_Ns textures/Glass_Roughness.jpg
+map_refl textures/Glass_Metallic.jpg
+map_Bump -bm 1.000000 textures/Glass_Normal.jpg
+
+newmtl Gravel
+Ns 980.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd textures/checker.jpg
+
+newmtl Material
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd textures/Material_BaseColor.jpg
+map_Ns textures/Material_Roughness.jpg
+map_refl textures/Material_Metallic.jpg
+map_Bump -bm 1.000000 textures/Material_Normal.jpg
+
+newmtl Material.003
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2

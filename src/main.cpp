@@ -1,82 +1,62 @@
-#include "render/system.hpp"
-#include "render/model/importer.hpp"
+#include "render/render.hpp"
 #include "input/input.hpp"
-#include "sound/sound.hpp"
+#include "engine/engine.hpp"
 
-SoundManager& sm = SoundManager::getInstance();
-auto sso1 = std::make_shared<SoundSourceObject>();
-auto sso2 = std::make_shared<SoundSourceObject>();
-auto sg = std::make_shared<SoundGroup>();
-SoundListener listener;
+static void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
+	immediate.setSprite("assets/image/corners.png");
 
-class tmpInput : public InputListener{
-public:
-	InputResult onEvent(const InputEvent& event) {
-		if (const auto* nazwijtosobiejakosnpevent = event.as<KeyboardEvent>()) {
-			if(nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_S)){
-				sm.stopSound(sso1);
-			}else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_P)) {
-				sm.playSound(sso1);
-			}else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_A)) {
-				sm.pauseSound(sso1);
-			}else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_N)) {
-				sm.playSound(sso2);
-			}else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_M)) {
-				sm.stopSound(sso2);
-			}else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_B)) {
-				sm.pauseSound(sso2);
-			}
-			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_H)) {
-				sg->setMute(true);
-			}
-			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_J)) {
-				sg->setMute(false);
-			}
-			//NIE WYCZUWALNA ROZNICA DO NAPRAWY 
-			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_RIGHT)) {
-				listener.setPosition(-90.0f, 0.0f, 0.0f);
-				listener.print();
-				//sso1->print();
+	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(1 + glfwGetTime() * 8) + 1) / 16, 0)));
+	immediate.setSprite("assets/image/skay.png");
+	immediate.setColor(255, 255, 255);
+	immediate.drawCircle2D(50, 50, 40);
 
-				//sso1->setPosition(900000.0f,0.0f,5.0f);
-			}
-			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_LEFT)) {
-				listener.setPosition(90.0f, 0.0f, 0.0f);
-				listener.print();
-				//sso1->print();
+	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(2 + glfwGetTime() * 8) + 1) / 16, 0)));
+	immediate.setSprite("assets/image/lucek.png");
+	immediate.drawCircle2D(150, 50, 40);
 
-				//sso1->setPosition(900000.0f,0.0f,5.0f);
-			}
-			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_DOWN)) {
-				listener.setPosition(0.0f, 0.0f, -90.0f);
-				//sso1->setPosition(0.0f,0.0f,0.0f);
-				//listener.print();
-				//sso1->print();
-			}
-			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_UP)) {
-				listener.setPosition(0.0f, 0.0f, 90.0f);
-				//sso1->setPosition(0.0f,0.0f,0.0f);
-				//listener.print();
-				//sso1->print();
-			}
-			else if (nazwijtosobiejakosnpevent->wasPressed(GLFW_KEY_0)) {
-				listener.setPosition(0.0f, 0.0f, 0.0f);
-				//sso1->setPosition(0.0f,0.0f,0.0f);
-				//listener.print();
-				//sso1->print();
-			}
-		}
+	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(3 + glfwGetTime() * 8) + 1) / 16, 0)));
+	immediate.setSprite("assets/image/wiesiu.png");
+	immediate.drawCircle2D(250, 50, 40);
 
-		return InputResult::PASS;
-	}
-	
-};
+	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(4 + glfwGetTime() * 8) + 1) / 16, 0)));
+	immediate.setSprite("assets/image/magistermaks.png");
+	immediate.drawCircle2D(350, 50, 40);
 
+	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(5 + glfwGetTime() * 8) + 1) / 16, 0)));
+	immediate.setSprite("assets/image/mug12.png");
+	immediate.drawCircle2D(450, 50, 40);
+	immediate.setMatrix2D(glm::identity<glm::mat4>());
+
+	immediate.setSprite("assets/image/vulkan-1.png");
+	immediate.drawRect2D(0, height - 126, 310, 126);
+
+	immediate.setFont("assets/font/OpenSans-Variable.ttf");
+	immediate.setFontSize(100);
+	immediate.drawText2D(300, 200, "Cześć Świecie!");
+
+	immediate.setColor(200, 0, 0);
+	immediate.setSprite(OFF);
+	immediate.setLineWidth(1);
+	immediate.drawLine2D(300, 200, 800, 200);
+
+	immediate.setColor(255, 255, 255);
+	immediate.setFontSize(25);
+	immediate.drawText2D(300, 220, "Checklight - Game engine based on the Vulkan API");
+
+	immediate.setSprite("assets/image/corners.png");
+	immediate.setLineWidth(0.1);
+	immediate.drawLine3D(0, 0, 0, sin(glfwGetTime() / 3) * 50, 10, cos(glfwGetTime() / 3) * 50);
+	immediate.drawRect3D(sin(glfwGetTime() / 3) * 50, 10, cos(glfwGetTime() / 3) * 50, 2, 2);
+
+}
 
 int main() {
 
+	std::string path = std::filesystem::current_path().generic_string();
+	printf("INFO: Current working directory: %s\n", path.c_str());
+
 	ApplicationParameters parameters;
-	parameters.setName("My Checklight Game");
+	parameters.setName("My Checklight Game!");
 	parameters.setDimensions(1200, 800);
 
 	RenderSystem::init(parameters);
@@ -84,100 +64,96 @@ int main() {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
+	//window.getInputDispatcher().registerListener( std::make_shared<DebugInputListener>());
+	auto models = system.importObj("assets/models/checklight.obj");
+	auto cube = system.importObj("assets/models/cube.obj");
 
-	window.getInputDispatcher().registerListener(std::make_shared<tmpInput>());
+	BoardManager m(window);
 
-	auto meshes = Importer::importObj(system, "assets/models/checklight.obj");
+	std::shared_ptr<Pawn> p = std::make_shared<Pawn>();
+	p->setName("Test");
 
-	//test sound
-	//@TODO oddzielny watek dla sound managera tak wektor sourcow
-	try {
-		
-		//auto sc1 = std::make_shared<SoundClip>();
-		//auto sc2 = std::make_shared<SoundClip>();
-		
+	m.getCurrentBoard().lock()->addPawnToRoot(p);
 
-		sm.addSource(sso1);
-		//sm.addClip(sc1);
-		//sm.addAudioToClip(sc1, "assets/sounds/testOGG.ogg");
-		sm.createSoundClipAndAddToSourceObject("assets/sounds/testOGG.ogg",sso1);
-		//sm.connectClipWithSource(sc1, sso1);
+	std::vector<std::shared_ptr<RenderObject>> objects;
 
-		sm.addSource(sso2);
-		/*sm.addClip(sc2);
-		sm.addAudioToClip(sc2, "assets/sounds/test/2.ogg");
-		sm.connectClipWithSource(sc2, sso2);*/
-		sm.createSoundClipAndAddToSourceObject("assets/sounds/testWAV.wav", sso2);
-
-		//sm.playSound(sso1);
-		listener.setDistanceModel(AL_INVERSE_DISTANCE);
-		listener.setPosition(0.0f, 0.0f, 0.0f);
-
-		
-		//sso1->addGroupParameters(sg);
-		//sg->addObserversSoundSourceObject(sso1);
-		//sg->setPitch(0.5f);
-		sso1->setMaxDistance(100.0f);
-		sso1->setReferenceDistance(1.0f);
-		sso1->setRolloffFactor(1.0f);
-		sso1->setMinGain(0.0f);
-
-		//sg->setMaxDistance(0.0f);
-		//sg->setReferenceDistance(0.0f);
-		//sg->setRolloffFactor(0.0f);
-		//sg->setMinGain(0.0f);
-		//sso1->setMute(true);
-
-		/*SoundClip sc;
-		sc.addClip("assets/sounds/testOGG.ogg");
-		SoundSourceObject sso;
-		sso.setPosition(0, 1, 0);
-		SoundListener::setPosition(0, 1, 0);
-		sso.addBuffer(sc);
-		sso.playSound();*/
+	for (auto& model : models) {
+		auto object = system.createRenderObject();
+		object->setMatrix(glm::identity<glm::mat4x3>());
+		object->setModel(model);
+		objects.push_back(object);
 	}
-	catch (const std::runtime_error& e)
-	{
-		printf(e.what());
+
+	for (auto& model : cube) {
+		auto object = system.createRenderObject();
+		object->setMatrix(glm::translate(glm::identity<glm::mat4>(), glm::vec3(4, 0, 4)));
+		object->setModel(model);
+
+		glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(-4, 8, 4));
+		portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 0, 1));
+		object->setPortal(portal);
+		objects.push_back(object);
 	}
+
+	system.getParameters().setAmbientLight(glm::vec3(0.0, 0.0, 0.0));
+	system.getParameters().setDenoise(true);
+	system.getParameters().setShadows(true);
+	system.getParameters().setGISamples(1);
+
+	system.getLightManager().addLight({
+		.type = Light::DIRECTIONAL,
+		.color = glm::vec3(1.0, 1.0, 1.0),
+		.direction = glm::vec3(0.0, 3.5, -1.0),
+		.intensity = 1.5,
+		.shadow = true
+	});
+
+	auto point_light = system.getLightManager().addLight({
+		.type = Light::POINT,
+		.position = glm::vec3(3.0, 2.0, 18.0),
+		.color = glm::vec3(0.0, 0.0, 1.0),
+		.intensity = 50.0,
+		.shadow = true
+	});
 
 
 	while (!window.shouldClose()) {
 		window.poll();
 
+		//physics update before rendering
+		m.updateCycle();
+		std::shared_ptr<Board> current_board = m.getCurrentBoard().lock();
+
+		drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());
+
 		// update uniforms
 		// do this once at the beginning of frame rendering
-		system.setProjectionMatrix(40.0f, 0.1f, 1000.0f);
-		system.setViewMatrix({18.0f, 1.0f, 4.0f}, {-21.0f, 0.0f, 4.0f});
-		system.updateUniforms();
+		system.setProjectionMatrix(65.0f, 0.01f, 1000.0f);
+		system.setViewMatrix(current_board->getCamPos(), current_board->getCamForward());
 
-		// all rendering must be done between beginDraw() and endDraw()
-		system.beginDraw();
+		// update lights
+		point_light->position = glm::vec3(3.0, 2.0, 18.0 * sin(glfwGetTime() / 8));
+		point_light->color = glm::vec3(sin(glfwGetTime() / 2) * 0.5 + 0.5, sin(glfwGetTime() / 3 + 2) * 0.5 + 0.5, sin(glfwGetTime() / 5 + 4) * 0.5 + 0.5);
+		system.getLightManager().flush();
 
-		// this does nothing for now, this operation will most likely be expensive later
-		system.bindMaterial();
-
-		for (auto& mesh : meshes) {
-			glm::mat4 model = glm::identity<glm::mat4>();
-
-			// first bind the mesh
-			system.bindMesh(mesh);
-
-			// then you can draw it multiple times
-			system.draw(model);
-
-			// later using a precomputed position vector may be reqired by the renderer
-			// take that into account
-		}
-
-		// each frame must end with this call or the engine will deadlock
-		system.endDraw();
-    }
+		// render the scene
+		system.draw();
+	}
 
 	system.wait();
 
-	for (auto& mesh : meshes) {
-		mesh.reset();
+	for (auto& object : objects) {
+		object.reset();
+	}
+
+	for (auto& model : models) {
+		system.closeModel(model);
+		model.reset();
+	}
+
+	for (auto& model : cube) {
+		system.closeModel(model);
+		model.reset();
 	}
 
 	RenderSystem::system.reset();

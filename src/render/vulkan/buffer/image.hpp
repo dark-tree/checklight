@@ -3,6 +3,7 @@
 #include "external.hpp"
 #include "render/vulkan/command/recorder.hpp"
 #include "render/vulkan/setup/allocator.hpp"
+#include "render/vulkan/buffer/buffer.hpp"
 #include "shared/queue.hpp"
 
 enum struct ImageScaling {
@@ -10,6 +11,7 @@ enum struct ImageScaling {
 	NEAREST
 };
 
+class MutableImage;
 class Image;
 
 /**
@@ -100,7 +102,7 @@ class ImageData {
 		 * Records a copy-to-GPU-memory operation into the
 		 * given command buffer, a staging buffer IS used and resulting image returned
 		 */
-		Image upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue queue, VkFormat format, bool mipmaps) const;
+		Image upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue& queue, VkFormat format, bool mipmaps) const;
 
 	public:
 
@@ -186,9 +188,9 @@ class ManagedImageDataSet {
 
 		/**
 		 * Records a copy-to-GPU-memory operation into the
-		 * given command buffer, a staging buffer IS used and resulting image returned
+		 * given command buffer, a staging buffer IS used and resulting image returned as a mutable view
 		 */
-		Image upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue queue, VkFormat format) const;
+		MutableImage upload(Allocator& allocator, CommandRecorder& recorder, VkFormat format) const;
 
 		/**
 		 * Free the data held by all the individual
@@ -226,6 +228,60 @@ class Image {
 		VkFormat getFormat() const;
 		int getLevelCount() const;
 		int getLayerCount() const;
+
+};
+
+class MutableImage {
+
+	private:
+
+		struct WriteOperation {
+			size_t offset;
+			int width, height;
+			int level;
+		};
+
+		std::vector<WriteOperation> writes;
+		Buffer staging;
+		Image image;
+		void* map = nullptr;
+
+	public:
+
+		MutableImage() = default;
+		MutableImage(Buffer& buffer, Image& image);
+
+		/**
+		 * Close underlying vulkan image and buffer
+		 */
+		void close();
+
+		/**
+		 * Stage a buffer mip-level write, the given image can be destroyed after use.
+		 *
+		 * @param offset Offset (in bytes) of the targeted staging memory location
+		 * @param image  The image stata to splice into the mutable view
+		 * @param width  Write width
+		 * @param height Write height
+		 * @param level  Mipmap level to modify
+		 */
+		void write(size_t offset, const ImageData& image, size_t width, size_t height, int level);
+
+		/**
+		 * Perform the staged buffer writes, copying data from staging to buffer, staging
+		 * can be dropped after this operation.
+		 */
+		void upload(CommandRecorder& recorder);
+
+		/**
+		 * Delete the underlying staging buffer and return the immutable vulkan image
+		 */
+		Image discardStaging(TaskQueue& queue);
+
+		/**
+		 * Get the underlying vulkan image object
+		 */
+		Image& getImage();
 
 };
 

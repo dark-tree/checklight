@@ -9,20 +9,7 @@ CommandBuffer::CommandBuffer(VkCommandPool vk_pool, VkCommandBuffer vk_buffer, V
 : vk_pool(vk_pool), vk_buffer(vk_buffer), vk_device(vk_device) {}
 
 CommandRecorder CommandBuffer::record(VkCommandBufferUsageFlags flags) {
-
-	vkResetCommandBuffer(vk_buffer, 0);
-
-	VkCommandBufferBeginInfo info {};
-	info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	info.flags = flags;
-	info.pInheritanceInfo = nullptr;
-
-	if (vkBeginCommandBuffer(vk_buffer, &info) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to begin recording a command buffer!"};
-	}
-
-	return {vk_buffer};
-
+	return {vk_buffer, flags};
 }
 
 CommandSubmitter CommandBuffer::submit() {

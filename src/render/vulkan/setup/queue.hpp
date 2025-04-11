@@ -14,10 +14,14 @@ class Queue {
 		Queue(VkQueue queue);
 
 		/**
-		 * @brief Submit command buffer for execution
+		 * Submit command buffer for execution
 		 * @see CommandSubmitter
 		 */
 		void submit(VkSubmitInfo& info, VkFence fence);
 
+		/**
+		 * Present framebuffer image using the queue
+		 * @see Swapchain
+		 */
 		bool present(VkPresentInfoKHR& info);
 };

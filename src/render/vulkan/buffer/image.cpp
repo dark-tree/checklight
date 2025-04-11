@@ -112,10 +112,11 @@ ImageData ImageData::view(void* pixels, int w, int h, int channels) {
 	return {Type::VIEW, pixels, w, h, channels};
 }
 
-Image ImageData::upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue queue, VkFormat format, bool mipmaps) const {
+Image ImageData::upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue& queue, VkFormat format, bool mipmaps) const {
 	ManagedImageDataSet set {*this, mipmaps};
-	Image image = set.upload(allocator, recorder, queue, format);
+	Image image = set.upload(allocator, recorder, format).discardStaging(queue);
 
+	// delete mipmaps
 	for (int i = 1; i < set.levels(); i ++) {
 		set.level(i).close();
 	}
@@ -280,7 +281,7 @@ void ManagedImageDataSet::close() {
 	images.clear();
 }
 
-Image ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& recorder, TaskQueue queue, VkFormat format) const {
+MutableImage ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& recorder, VkFormat format) const {
 
 	// dimensions of the base layer in the base level
 	int layer_width = level(0).width();
@@ -297,38 +298,20 @@ Image ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& recorde
 	}
 
 	Buffer staging = allocator.allocateBuffer(Memory::STAGED, total, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, "Image Staging");
-	std::vector<size_t> offsets;
-	offsets.reserve(levels());
+	Image image = allocator.allocateImage(Memory::DEVICE, layer_width, layer_height, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, layer_count, levels(), "Untitled");
 
-	Allocation& allocation = staging.getAllocation();
-	auto* buffer = (uint8_t*) allocation.map();
+	MutableImage uploader {staging, image};
+	int level = 0;
 
 	// copy images level by level into staging buffer
 	for (ImageData image : images) {
-		memcpy(buffer + offset, image.data(), image.size());
-		offsets.push_back(offset);
+		uploader.write(offset, image, image.width(), std::max(1, (height >> level)), level);
 		offset += image.size();
+		level ++;
 	}
 
-	// all done now
-	allocation.flushNonCoherent();
-	allocation.unmap();
-
-	Image image = allocator.allocateImage(Memory::DEVICE, layer_width, layer_height, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, layer_count, levels(), "Untitled");
-	recorder.transitionLayout(image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_UNDEFINED, layer_count, levels());
-
-	// transfer the image level by level
-	for (int i = 0; i < levels(); i ++) {
-		recorder.copyBufferToImage(image, staging, offsets[i], level(i).width(), std::max(1, (height >> i)), layer_count, i);
-	}
-
-	recorder.transitionLayout(image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, layer_count, levels());
-
-	queue.enqueue([&] () {
-		staging.close();
-	});
-
-	return image;
+	uploader.upload(recorder);
+	return uploader;
 }
 
 /*
@@ -356,6 +339,54 @@ int Image::getLayerCount() const {
 
 int Image::getLevelCount() const {
 	return levels;
+}
+
+/*
+ * MutableImage
+ */
+
+MutableImage::MutableImage(Buffer& buffer, Image& image)
+: staging(buffer), image(image) {
+	map = buffer.getAllocation().map();
+	writes.reserve(image.getLevelCount());
+}
+
+void MutableImage::close() {
+	if (map) {
+		image.close();
+		staging.getAllocation().unmap();
+		staging.close();
+	}
+}
+
+void MutableImage::write(size_t offset, const ImageData& image, size_t width, size_t height, int level) {
+	memcpy(static_cast<uint8_t*>(map) + offset, image.data(), image.size());
+	writes.emplace_back(offset, width, height, level);
+}
+
+void MutableImage::upload(CommandRecorder& recorder) {
+	staging.getAllocation().flushNonCoherent();
+	recorder.transitionLayout(image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_UNDEFINED);
+
+	for (const auto & write : writes) {
+		recorder.copyBufferToImage(image, staging, write.offset, write.width, write.height, image.getLayerCount(), write.level);
+	}
+
+	recorder.transitionLayout(image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	writes.clear();
+}
+
+Image MutableImage::discardStaging(TaskQueue& queue) {
+	queue.enqueue([copy = staging] () mutable {
+		copy.getAllocation().unmap();
+		copy.close();
+	});
+
+	return image;
+}
+
+Image& MutableImage::getImage() {
+	return image;
 }
 
 /*

@@ -2,6 +2,9 @@
 
 #include "coded.hpp"
 
+/**
+ * Mouse button input event
+ */
 class ButtonEvent : public CodedEvent {
 
 	public:

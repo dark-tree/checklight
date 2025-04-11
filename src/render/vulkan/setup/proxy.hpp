@@ -5,15 +5,36 @@
 class Instance;
 class LogicalDevice;
 
+#define DEF_FUNCTION(name) static PFN_##name name
+
 struct Proxy {
 
-	static PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT;
-	static PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT;
-	static PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR;
-	static PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT;
-	static PFN_vkCmdBeginDebugUtilsLabelEXT vkCmdBeginDebugUtilsLabelEXT;
-	static PFN_vkCmdEndDebugUtilsLabelEXT vkCmdEndDebugUtilsLabelEXT;
-	static PFN_vkCmdInsertDebugUtilsLabelEXT vkCmdInsertDebugUtilsLabelEXT;
+		// Vulkan >1.0
+		DEF_FUNCTION(vkGetBufferDeviceAddress);
+		DEF_FUNCTION(vkGetPhysicalDeviceFeatures2);
+		DEF_FUNCTION(vkGetPhysicalDeviceProperties2);
+
+		// VK_EXT_debug_utils
+		DEF_FUNCTION(vkCreateDebugUtilsMessengerEXT);
+		DEF_FUNCTION(vkDestroyDebugUtilsMessengerEXT);
+		DEF_FUNCTION(vkSetDebugUtilsObjectNameEXT);
+		DEF_FUNCTION(vkCmdBeginDebugUtilsLabelEXT);
+		DEF_FUNCTION(vkCmdEndDebugUtilsLabelEXT);
+		DEF_FUNCTION(vkCmdInsertDebugUtilsLabelEXT);
+
+		// VK_KHR_ray_tracing_pipeline
+		DEF_FUNCTION(vkCmdTraceRaysKHR);
+		DEF_FUNCTION(vkCreateRayTracingPipelinesKHR);
+		DEF_FUNCTION(vkGetRayTracingShaderGroupHandlesKHR);
+
+		// VK_KHR_acceleration_structure
+		DEF_FUNCTION(vkCreateAccelerationStructureKHR);
+		DEF_FUNCTION(vkGetAccelerationStructureBuildSizesKHR);
+		DEF_FUNCTION(vkCmdBuildAccelerationStructuresKHR);
+		DEF_FUNCTION(vkCmdCopyAccelerationStructureKHR);
+		DEF_FUNCTION(vkDestroyAccelerationStructureKHR);
+		DEF_FUNCTION(vkGetAccelerationStructureDeviceAddressKHR);
+		DEF_FUNCTION(vkCmdWriteAccelerationStructuresPropertiesKHR);
 
 	public:
 
@@ -30,3 +51,5 @@ struct Proxy {
 		static void loadDeviceFunctions(LogicalDevice& device);
 
 };
+
+#undef DEF_FUNCTION

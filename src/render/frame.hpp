@@ -8,14 +8,24 @@
 
 class Renderer;
 
+using bool32 = uint32_t;
+
 struct SceneUniform {
 	glm::mat4 view;
+	glm::mat4 view_inv;
 	glm::mat4 projection;
-};
-
-struct MeshConstant {
-	glm::mat4 model;
-	int material;
+	glm::mat4 projection_inv;
+	glm::mat4 prev_view;
+	glm::mat4 prev_view_inv;
+	glm::mat4 prev_projection;
+	glm::mat4 prev_projection_inv;
+	float time;
+	float near;
+	float far;
+	glm::vec3 ambient_color;
+	int gi_samples;
+	bool32 denoise;
+	bool32 shadows;
 };
 
 class RenderFrame {
@@ -28,7 +38,7 @@ class RenderFrame {
 		/// before the BasicBuffer constructor runs as it uses `system.defer()`
 		TaskQueue queue;
 
-		/// this semaphore will be unlocked once the frambuffer returned from
+		/// this semaphore will be unlocked once the framebuffer returned from
 		/// `RenderSystem::acquireFramebuffer()` is actually ready to be written to, see `CommandSubmitter::awaits()`
 		Semaphore available_semaphore;
 
@@ -44,10 +54,18 @@ class RenderFrame {
 		/// after writing data to `uniforms` call uploadUniformBuffer()
 		Buffer uniform_buffer;
 
+		/// Contains all per-frame static data
+		/// Like camera matrices and the like
+		SceneUniform uniforms;
+
 	public:
 
 		SceneUniform* uniform_map;
-		DescriptorSet set_0;
+		DescriptorSet set_immediate;
+		DescriptorSet set_compose;
+		DescriptorSet set_raytrace;
+		DescriptorSet set_denoise;
+		DescriptorSet set_denoise2;
 
 	public:
 
@@ -60,11 +78,11 @@ class RenderFrame {
 		~RenderFrame();
 
 		/**
-		 * Sends the updated uniform buffer content to the GPU mapped
-		 * memory block, call this method when you want to change the uniforms
-		 * and don't modify the mapped block yourself!
+		 * Sends the updated uniform buffer content to the GPU memory,
+		 * always call this method when you want to flush the uniforms
+		 * after modifying the uniforms object
 		 */
-		void flushUniformBuffer(const SceneUniform& uniforms);
+		void flushUniformBuffer(CommandRecorder& recorder);
 
 		/**
 		 * Wait before starting to render this frame

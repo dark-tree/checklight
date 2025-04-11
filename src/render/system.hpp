@@ -4,19 +4,19 @@
 #include "renderer.hpp"
 #include "application.hpp"
 #include "window.hpp"
+#include "asset/obj.hpp"
 
 class RenderCommander;
 class RenderMesh;
+class RenderObject;
+class RenderModel;
 
 class RenderSystem : public Renderer {
 
 	private:
 
-		std::shared_ptr<RenderMesh> mesh;
-		SceneUniform uniforms;
-
-		void setProjectionMatrix(glm::mat4 projection);
-		void setViewMatrix(glm::mat4 view);
+		/// Import materials for an OBJ file specified by the path
+		static std::map<std::string, std::shared_ptr<ObjMaterial>> importMaterials(const std::string& path);
 
 	public:
 
@@ -26,6 +26,12 @@ class RenderSystem : public Renderer {
 	public:
 
 		RenderSystem(ApplicationParameters& parameters);
+
+		/**
+		 * Convert a Render Meshes into a Render Model, you probably don't need to use this,
+		 * loading a OBJ automatically creates a Render Model.
+		 */
+		std::vector<std::shared_ptr<RenderModel>> createRenderModels(std::vector<std::shared_ptr<RenderMesh>> meshes);
 
 		/**
 		 * Commanders are used to command the GPU to perform actions, like
@@ -47,6 +53,7 @@ class RenderSystem : public Renderer {
 		 * but needs to be called AT LEAST one window size changes to account for the aspect ratio
 		 *
 		 * @note This call modifies an uniform, remember to call updateUniforms() after it!
+		 * @note This call also updates the previous projection matrix to the current projection matrix
 		 *
 		 * @param fov  Camera field of view
 		 * @param near The closest anything can be to the camera and render
@@ -59,6 +66,7 @@ class RenderSystem : public Renderer {
 		 * to account for the camera movement.
 		 *
 		 * @note This call modifies an uniform, remember to call updateUniforms() after it!
+		 * @note This call also updates the previous view matrix to the current view matrix
 		 *
 		 * @param eye     The position of the "eye" in 3D world space
 		 * @param facing  Directional vector that specific in which way the camera looks.
@@ -66,34 +74,30 @@ class RenderSystem : public Renderer {
 		void setViewMatrix(glm::vec3 eye, glm::vec3 facing);
 
 		/**
-		 * After calling setProjectionMatrix() and/or setViewMatrix() this method must be called
-		 * at least once to send the updated uniforms to the GPU.
+		 * Create new InstanceDelegate, each delegate represents one object int the world
+		 * each game object can be made from many render objects (delegates)
+		 * each delegate contains an affine transformation matrix you can access and modify to move the object
+		 * in the world space.
 		 */
-		void updateUniforms();
+		std::shared_ptr<RenderObject> createRenderObject();
 
 		/**
-		 * Changes the currently used material, this can be a VERY slow operation,
-		 * so try to avoid needlessly calling it (for example, try to group
-		 * all meshes that use the same material and draw them one after another)
-		 *
-		 * @note This currently does nothing.
+		 * Import an OBJ file and return a list of models loaded from it
 		 */
-		void bindMaterial();
+		std::vector<std::shared_ptr<RenderModel>> importObj(const std::string& path);
 
 		/**
-		 * Changes the currently used mesh, this can be a QUITE slow operation,
-		 * so try to avoid needlessly calling it (for example, try to group
-		 * all object that use the same mesh and draw them one after another)
-		 *
-		 * @param mesh The mesh to bind
+		 * Close RenderModel, the resources used by the model will be released.
 		 */
-		void bindMesh(std::shared_ptr<RenderMesh>& mesh);
+		void closeModel(std::shared_ptr<RenderModel> model);
 
 		/**
-		 * Draws the bound mesh using the bound material at the given position
-		 *
-		 * @param model Model materix to use
+		 * Get the current render parameters
 		 */
-		void draw(glm::mat4 model);
+		RenderParameters& getParameters();
 
+		/**
+		 * Render the next frame, all rendering should happen inside this call
+		 */
+		void draw() override;
 };

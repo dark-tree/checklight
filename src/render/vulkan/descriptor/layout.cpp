@@ -50,7 +50,7 @@ void DescriptorSetLayoutBuilder::addBindingTypeMapping(uint32_t index, VkDescrip
 DescriptorSetLayoutBuilder::DescriptorSetLayoutBuilder(VkDescriptorSetLayoutCreateFlags flags)
 : vk_flags(flags) {}
 
-DescriptorSetLayoutBuilder& DescriptorSetLayoutBuilder::descriptor(uint32_t index, VkDescriptorType type, VkShaderStageFlags shader) {
+DescriptorSetLayoutBuilder& DescriptorSetLayoutBuilder::descriptor(uint32_t index, VkDescriptorType type, VkShaderStageFlags shader, uint32_t count) {
 
 	if (indices.contains(index)) {
 		throw std::runtime_error {"Attempted to redefine descriptor set binding index!"};
@@ -60,7 +60,7 @@ DescriptorSetLayoutBuilder& DescriptorSetLayoutBuilder::descriptor(uint32_t inde
 	binding.binding = index;
 	binding.descriptorType = type;
 	binding.stageFlags = shader;
-	binding.descriptorCount = 1;
+	binding.descriptorCount = count;
 
 	bindings.push_back(binding);
 	addBindingTypeMapping(index, type);

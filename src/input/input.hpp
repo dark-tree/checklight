@@ -10,3 +10,6 @@
 #include "event/mouse.hpp"
 #include "event/scroll.hpp"
 #include "event/unicode.hpp"
+#include "event/close.hpp"
+#include "event/resize.hpp"
+#include "event/frame.hpp"

@@ -17,6 +17,7 @@ class Swapchain {
 		VkExtent2D vk_extent;
 		VkDevice vk_device;
 
+		std::vector<Image> images;
 		std::vector<ImageView> views;
 
 	public:
@@ -28,6 +29,9 @@ class Swapchain {
 
 		/// Get a list of views into the screen color buffer images
 		const std::vector<ImageView>& getViews() const;
+
+		/// Get a list of window images returned by the driver
+		const std::vector<Image>& getImages() const;
 
 		/// Get swapchain (screen) dimensions
 		VkExtent2D getExtend() const;
