@@ -10,12 +10,12 @@
  * Spacing
  */
 
-int Spacing::getTotal(Channel channel) {
+int Spacing::getTotal(const StyleContext& styling, Channel channel) {
 	if (channel == Channel::WIDTH) {
-		return left.toPixels() + right.toPixels();
+		return left.pixels(styling) + right.pixels(styling);
 	}
 
-	return top.toPixels() + bottom.toPixels();
+	return top.pixels(styling) + bottom.pixels(styling);
 }
 
 /*
@@ -24,6 +24,10 @@ int Spacing::getTotal(Channel channel) {
 
 void Widget::rebuild(int x, int y) {
 
+	// TODO
+	StyleContext styling;
+
+	applyStyleContex(styling);
 	applyFitSizing(Channel::WIDTH);
 	applyGrowSizing(Channel::WIDTH);
 	applyWrapSizing();
@@ -47,17 +51,28 @@ void Widget::remove(const std::shared_ptr<Widget>& child) {
 }
 
 float Widget::getAlignmentFactor(Channel channel) {
-	return channel == Channel::WIDTH ? toAlignmentFactor(horizontal) : toAlignmentFactor(vertical);
+	return channel == Channel::WIDTH ? toAlignmentFactor(horizontal.get(styling)) : toAlignmentFactor(vertical.get(styling));
 }
 
 int Widget::getOuterSizing(Channel channel) {
-	return sizing.get(channel) + padding.getTotal(channel) + margin.getTotal(channel);
+	return sizing.get(channel) + padding.get(styling).getTotal(styling, channel) + margin.get(styling).getTotal(styling, channel);
 }
 
 void Widget::applyWrapSizing() {
 	for (const std::shared_ptr<Widget>& widget : children) {
 		widget->applyWrapSizing();
 	}
+}
+
+void Widget::applyStyleContex(const StyleContext& styling) {
+
+	this->styling = styling;
+
+	// here the order is irrelevant, as long as this is the first stage of a rebuild()
+	for (const std::shared_ptr<Widget>& widget : children) {
+		widget->applyStyleContex(styling);
+	}
+
 }
 
 void Widget::applyFitSizing(Channel channel) {
@@ -68,23 +83,23 @@ void Widget::applyFitSizing(Channel channel) {
 		widget->applyFitSizing(channel);
 	}
 
-	Unit sizing_unit = (channel == Channel::WIDTH) ? width : height;
-	Unit minimal_unit = (channel == Channel::WIDTH) ? min_width : min_height;
+	Unit sizing_unit = (channel == Channel::WIDTH) ? width.get(styling) : height.get(styling);
+	Unit minimal_unit = (channel == Channel::WIDTH) ? min_width.get(styling) : min_height.get(styling);
 
 	int preferred = 0;
-	int low_bound = minimal_unit.toPixels();
+	int low_bound = minimal_unit.pixels(styling);
 
 	// handle the simple case - size is specified explicitly
 	if (sizing_unit.isAbsolute()) {
-		preferred = std::max(sizing_unit.toPixels(), low_bound);
+		preferred = std::max(sizing_unit.pixels(styling), low_bound);
 	}
 
 	// try to fit children along channel
 	if (sizing_unit.metric == Metric::FIT) {
 		int value = 0;
 
-		const bool along = WidgetFlow::isAligned(flow, channel);
-		const int spacing = gap.toPixels(); /* TODO ensure that gap is absolute */
+		const bool along = WidgetFlow::isAligned(flow.get(styling), channel);
+		const int spacing = gap.unwrap(styling); /* TODO ensure that gap is absolute */
 
 		// get widths of all children
 		for (const std::shared_ptr<Widget>& widget : children) {
@@ -97,7 +112,7 @@ void Widget::applyFitSizing(Channel channel) {
 
 		// remove trailing element gap
 		if (along) {
-			value -= gap.toPixels();
+			value -= spacing;
 		}
 
 		preferred = std::max(value, low_bound);
@@ -122,8 +137,8 @@ void Widget::applyFitSizing(Channel channel) {
 
 void Widget::applyGrowSizing(Channel channel) {
 
-	const bool along = WidgetFlow::isAligned(flow, channel);
-	const int spacing = gap.toPixels(); /* TODO ensure that gap is absolute */
+	const bool along = WidgetFlow::isAligned(flow.get(styling), channel);
+	const int spacing = gap.unwrap(styling); /* TODO ensure that gap is absolute */
 
 	int remaining = sizing.get(channel);
 
@@ -132,7 +147,7 @@ void Widget::applyGrowSizing(Channel channel) {
 	std::vector<std::pair<int, std::shared_ptr<Widget>>> growable;
 
 	for (const std::shared_ptr<Widget>& widget : children) {
-		Unit unit = (channel == Channel::WIDTH) ? widget->width : widget->height;
+		Unit unit = (channel == Channel::WIDTH) ? widget->width.get(styling) : widget->height.get(styling);
 		const int outer = widget->getOuterSizing(channel);
 
 		// subtract elements from out total size
@@ -291,27 +306,28 @@ void Widget::applyPositioning(int x, int y) {
 
 	content = Box2D {x, y, sizing.width(), sizing.height()};
 
+	const Spacing pad = padding.get(styling);
+
 	// TODO
-	int pl = padding.left.toPixels();
-	int pt = padding.top.toPixels();
-	int pw = pl + padding.right.toPixels();
-	int ph = pt + padding.bottom.toPixels();
+	int pl = pad.left.pixels(styling);
+	int pt = pad.top.pixels(styling);
+	int pw = pl + pad.right.pixels(styling);
+	int ph = pt + pad.bottom.pixels(styling);
 
 	padded = Box2D {x - pl, y - pt, sizing.width() + pw, sizing.height() + ph};
 
-	// this is used to effectively change the iteration direction
-	const int facing = WidgetFlow::asDirection(flow);
-	const bool invert = facing == -1;
-	const Channel channel = WidgetFlow::asChannel(flow);
+	Flow flow_value = flow.get(styling);
 
-	// Please ignore CLion being stupid here, it does, in fact, compile
+	// this is used to effectively change the iteration direction
+	const int facing = WidgetFlow::asDirection(flow_value);
+	const bool invert = facing == -1;
+
+	const Channel channel = WidgetFlow::asChannel(flow_value);
 	const Channel opposite = WidgetChannel::getOpposite(channel);
 
 	int remaining_along = sizing.get(channel);
-	int spacing = gap.toPixels();
+	int spacing = gap.unwrap(styling);
 
-	int total = 0;
-	int fractions = 0;
 	std::vector<std::pair<int, std::shared_ptr<Widget>>> growable;
 
 	// calculate along-axis space left
@@ -342,9 +358,12 @@ void Widget::applyPositioning(int x, int y) {
 			std::swap(align_x, align_y);
 		}
 
+		const Spacing wp = widget->padding.get(widget->styling);
+		const Spacing wm = widget->margin.get(widget->styling);
+
 		// when positioning we take into account only the upper-left offsets
-		const int ox = align_x + widget->padding.left.toPixels() + widget->margin.left.toPixels();
-		const int oy = align_y + widget->padding.top.toPixels() + widget->margin.top.toPixels();
+		const int ox = align_x + wp.left.pixels(styling) + wm.left.pixels(styling);
+		const int oy = align_y + wp.top.pixels(styling) + wm.top.pixels(styling);
 
 		widget->applyPositioning(ox + position.width() /* x */, oy + position.height() /* y */);
 		position.get(channel) += widget->getOuterSizing(channel) + spacing;

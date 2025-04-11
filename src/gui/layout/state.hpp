@@ -3,8 +3,12 @@
 #include "external.hpp"
 
 enum struct ElementState : int {
-	DISABLED = 0,
-	DEFAULT = 1,
-	HOVER = 2,
-	PRESSED = 3,
+	// only shows up during initial layout calculation
+	LAYOUT = 0,
+
+	// used during rendering based on user actions
+	DISABLED = 1,
+	DEFAULT = 2,
+	HOVER = 3,
+	PRESSED = 4,
 };

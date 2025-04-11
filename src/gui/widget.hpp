@@ -8,6 +8,7 @@
 #include "layout/unit.hpp"
 #include "render/immediate.hpp"
 #include "layout/state.hpp"
+#include "layout/property.hpp"
 
 class WidgetContext;
 class ImmediateRenderer;
@@ -33,7 +34,7 @@ struct Spacing {
 
 	public:
 
-		int getTotal(Channel channel);
+		int getTotal(const StyleContext& styling, Channel channel);
 
 };
 
@@ -47,15 +48,19 @@ class Widget : public std::enable_shared_from_this<Widget> {
 		Sizing sizing;
 		Sizing minimal;
 
-		Flow flow = Flow::LEFT_TO_RIGHT;
-		Unit width = Unit::fit(), height = Unit::fit();
-		Unit gap, min_width, min_height;
-		Spacing margin, padding;
+		StyleContext styling;
+		StyleProperty<Flow> flow = Flow::LEFT_TO_RIGHT;
+		StyleProperty<VerticalAlignment> vertical = VerticalAlignment::TOP;
+		StyleProperty<HorizontalAlignment> horizontal = HorizontalAlignment::LEFT;
+		StyleProperty<Unit> width = Unit::fit();
+		StyleProperty<Unit> height = Unit::fit();
+		StyleProperty<Unit> gap = Unit::zero();
+		StyleProperty<Unit> min_width = Unit::zero();
+		StyleProperty<Unit> min_height = Unit::zero();
+		StyleProperty<Spacing> margin {Spacing {}};
+		StyleProperty<Spacing> padding {Spacing {}};
 
-		VerticalAlignment vertical = VerticalAlignment::TOP;
-		HorizontalAlignment horizontal = HorizontalAlignment::LEFT;
-
-		Box2D padded { {},{},{},{} };   // content box with padding added
+		Box2D padded { {},{},{},{} };   // content box with added padding
 		Box2D content { {},{},{},{} };  // content box
 
 		float getAlignmentFactor(Channel channel);
@@ -65,6 +70,9 @@ class Widget : public std::enable_shared_from_this<Widget> {
 
 		/// Called after the on-flow dimension has ben computed, can be used to adjust content the acros-flow dimension
 		virtual void applyWrapSizing();
+
+		/// Propagate the styling meta-parameters to all children
+		void applyStyleContex(const StyleContext& context);
 
 		/// Compute element size based on its children (absolute & fit content)
 		void applyFitSizing(Channel channel);

@@ -1,13 +1,16 @@
 #include "unit.hpp"
 
+#include <gui/widget.hpp>
 #include <shared/logger.hpp>
 
 bool Unit::isAbsolute() const {
-	return metric == Metric::PX;
+	return (metric == Metric::PIXELS) || (metric == Metric::VIEWPORT_WIDTH) || (metric == Metric::VIEWPORT_HEIGHT);
 }
 
-int Unit::toPixels() const {
-	if (metric == Metric::PX) return value;
+int Unit::pixels(const StyleContext& context) const {
+	if (metric == Metric::PIXELS) return value;
+	if (metric == Metric::VIEWPORT_WIDTH) return value * context.width;
+	if (metric == Metric::VIEWPORT_HEIGHT) return value * context.height;
 
 	FAULT("Can't convert non-absolute unit to pixels!");
 }
