@@ -21,7 +21,7 @@ class TextWidget : public Widget {
 
 		TextWidget(const std::string& text);
 
-		void draw(ImmediateRenderer& immediate) override;
+		void draw(ImmediateRenderer& immediate, ElementState state) override;
 		bool event(WidgetContext& context, const InputEvent &event) override;
 
 		void setText(const std::string& text);

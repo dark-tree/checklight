@@ -16,13 +16,23 @@ void SliderWidget::updateValue() {
 		const int count = round(value / step);
 		value = count * step;
 	}
+
+	if (value == previous) {
+		return;
+	}
+
+	if (callback) {
+		callback(value);
+	}
+
+	previous = value;
 }
 
 glm::vec2 SliderWidget::getKnobPosition(float value) {
 	return {content.x + value * content.w, content.y + content.h / 2};
 }
 
-void SliderWidget::draw(ImmediateRenderer& immediate) {
+void SliderWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 	if (isFocused()) {
 		immediate.setRectRadius(5);
@@ -30,9 +40,7 @@ void SliderWidget::draw(ImmediateRenderer& immediate) {
 		immediate.drawRect2D(padded.expand(8, 8, 8, 8));
 	}
 
-	render = render * 0.95f + value * 0.05f;
-
-	glm::vec2 knob = getKnobPosition(render);
+	glm::vec2 knob = getKnobPosition(value);
 
 	// background
 	immediate.setColor(255, 0, 0);
@@ -123,4 +131,8 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 	}
 
 	return false;
+}
+
+void SliderWidget::onChange(const std::function <void(float)>& callback) {
+	this->callback = callback;
 }

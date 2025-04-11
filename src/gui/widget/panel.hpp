@@ -18,7 +18,7 @@ class PanelWidget : public Widget {
 
 		PanelWidget();
 
-		void draw(ImmediateRenderer& immediate) override;
+		void draw(ImmediateRenderer& immediate, ElementState state) override;
 		bool event(WidgetContext& context, const InputEvent &event) override;
 
 		void addWidget(const std::shared_ptr<Widget>& widget);

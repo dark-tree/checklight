@@ -6,10 +6,10 @@
 #include "gui/context.hpp"
 
 
-ButtonWidget::ButtonWidget(const std::string &label)
-: InputWidget(), callback([] () noexcept -> void {}), label(label) {}
+ButtonWidget::ButtonWidget()
+: InputWidget(), callback([] () noexcept -> void {}) {}
 
-void ButtonWidget::draw(ImmediateRenderer& immediate) {
+void ButtonWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 	if (isFocused()) {
 		immediate.setRectRadius(5);
@@ -23,23 +23,28 @@ void ButtonWidget::draw(ImmediateRenderer& immediate) {
 		if (hovered || pressed) {
 			if (pressed) {
 				immediate.setColor(255, 100, 100);
+				state = ElementState::PRESSED;
 			} else {
 				immediate.setColor(255, 80, 80);
+				state = ElementState::HOVER;
 			}
 		} else {
 			immediate.setColor(255, 0, 0);
+			state = ElementState::DEFAULT;
 		}
 	} else {
 		immediate.setColor(70, 70, 70);
+		state = ElementState::DISABLED;
 	}
 
 	immediate.setRectRadius(10);
+	immediate.setColor(255, 0, 0);
 	immediate.drawRect2D(padded);
 
-	immediate.setFont("assets/font/OpenSans-Variable.ttf");
-	immediate.setColor(0, 0, 0);
-	immediate.setTextBox(content.w, content.h);
-	immediate.drawString2D(content.x, content.y, label);
+	for (auto& widget : children) {
+		widget->draw(immediate, state);
+	}
+
 }
 
 bool ButtonWidget::event(WidgetContext& context, const InputEvent& any) {
@@ -84,4 +89,12 @@ bool ButtonWidget::event(WidgetContext& context, const InputEvent& any) {
 	}
 
 	return used;
+}
+
+void ButtonWidget::addWidget(const std::shared_ptr<Widget>& widget) {
+	children.emplace_back(widget);
+}
+
+void ButtonWidget::onClick(const std::function<void()>& callback) {
+	this->callback = callback;
 }

@@ -27,8 +27,36 @@ static void entry(Args& args) {
 	auto panel = std::make_shared<PanelWidget>();
 
 	{
-		auto sub = std::make_shared<TextWidget>("Lorem ipsum dolor sit amet");
-		panel->addWidget(sub);
+
+		auto left = std::make_shared<PanelWidget>();
+		left->flow = Flow::TOP_TO_BOTTOM;
+		left->width = Unit::fit();
+		left->height = Unit::fit();
+		left->gap = Unit::px(10);
+
+		auto sub2 = std::make_shared<ButtonWidget>();
+		sub2->width = Unit::fit();
+		sub2->height = Unit::fit();
+
+		sub2->onClick([] () {
+			out::info("Clicked left button!");
+		});
+
+		auto sub1 = std::make_shared<TextWidget>("Lorem ipsum dolor sit amet");
+		sub2->addWidget(sub1);
+
+		left->addWidget(sub2);
+
+		auto slider = std::make_shared<SliderWidget>();
+		slider->width = Unit::grow();
+		slider->min_height = Unit::px(20); // TODO ????
+		left->addWidget(slider);
+
+		slider->onChange([] (float value) {
+			out::info("Slider value changed to: %f", value);
+		});
+
+		panel->addWidget(left);
 	}
 
 	{

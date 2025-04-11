@@ -21,7 +21,7 @@ void SelectWidget::setUnrolled(bool unrolled) {
 	this->cooldown = glfwGetTime();
 }
 
-void SelectWidget::draw(ImmediateRenderer& immediate) {
+void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 	if (isFocused()) {
 		immediate.setRectRadius(5);

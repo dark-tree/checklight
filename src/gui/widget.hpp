@@ -7,6 +7,7 @@
 #include "layout/sizing.hpp"
 #include "layout/unit.hpp"
 #include "render/immediate.hpp"
+#include "layout/state.hpp"
 
 class WidgetContext;
 class ImmediateRenderer;
@@ -77,7 +78,7 @@ class Widget : public std::enable_shared_from_this<Widget> {
 	public:
 
 		virtual ~Widget();
-		virtual void draw(ImmediateRenderer& immediate) = 0;
+		virtual void draw(ImmediateRenderer& immediate, ElementState state) = 0;
 		virtual bool event(WidgetContext& context, const InputEvent& event);
 		virtual void scan(Navigator& navigator);
 

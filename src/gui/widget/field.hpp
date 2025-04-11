@@ -86,7 +86,7 @@ class FieldWidget : public InputWidget {
 
 		FieldWidget();
 
-		void draw(ImmediateRenderer& immediate) override;
+		void draw(ImmediateRenderer& immediate, ElementState state) override;
 		bool event(WidgetContext& context, const InputEvent &event) override;
 
 };

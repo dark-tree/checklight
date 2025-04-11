@@ -184,7 +184,7 @@ bool FieldWidget::applyCursorSelection(const PositionedEvent* event, bool drag) 
 }
 
 
-void FieldWidget::draw(ImmediateRenderer& immediate) {
+void FieldWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 	const Box2D padded = getPaddingBox();
 

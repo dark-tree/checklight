@@ -31,7 +31,7 @@ TextWidget::TextWidget(const std::string& text) {
 	setText(text);
 }
 
-void TextWidget::draw(ImmediateRenderer& immediate) {
+void TextWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 	// immediate.setRectRadius(0);
 	// immediate.setColor(0, 0, 0);

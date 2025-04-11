@@ -6,10 +6,10 @@ class SliderWidget : public InputWidget {
 
 	private:
 
-		float render = 0;
+		float previous = 0;
 		float value = 0;
 
-		std::function<void()> callback;
+		std::function<void(float)> callback;
 
 		float step = 0.2;
 		float knob_size = 8;
@@ -25,7 +25,9 @@ class SliderWidget : public InputWidget {
 
 		SliderWidget();
 
-		void draw(ImmediateRenderer& immediate) override;
+		void draw(ImmediateRenderer& immediate, ElementState state) override;
 		bool event(WidgetContext& context, const InputEvent &event) override;
+
+		void onChange(const std::function<void(float)>& callback);
 
 };
