@@ -15,6 +15,7 @@ find_package(Python REQUIRED COMPONENTS Interpreter)
 find_package(Threads REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(Vulkan REQUIRED)
+find_package(OpenAL)
 
 # Try: cmake . -B build && cmake --build build/
 if (CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
@@ -32,6 +33,19 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	else()
 		message(STATUS "The MOLD linker was NOT found, consider installing it!")
 	endif()
+endif()
+
+if (NOT OpenAL_FOUND)
+    message(STATUS "OpenAL was NOT found, falling back to OpenAL-Soft!")
+
+    FetchContent_Declare(
+            openal-soft
+            GIT_REPOSITORY https://github.com/kcat/openal-soft
+            GIT_TAG 1.23.1
+            GIT_PROGRESS TRUE
+    )
+
+    FetchContent_MakeAvailable(openal-soft)
 endif()
 
 # Don't fail on systems without X11 libraries
@@ -104,12 +118,18 @@ compile_glsl_directory(
 		VULKAN_TARGET "vulkan1.2"
 )
 
+if(NOT DEFINED OpenAL_INCLUDE_DIRS)
+	set(OpenAL_INCLUDE_DIRS "${OpenAL_SOURCE_DIR}/include")
+	message("Apply OpenAL")
+endif()
+
 set(CHECKLIGHT_LIBRARIES
 		${glm_SOURCE_DIR}                        # Headers in ./glm
 		${glfw_SOURCE_DIR}/include               # Headers in ./GLFW
 		${stb_SOURCE_DIR}                        # Headers in ./
 		${Vulkan_INCLUDE_DIRS}                   # Headers in ./vulcan
 		${vma_SOURCE_DIR}/include                # Headers in ./
+		${OpenAL_INCLUDE_DIRS}					 # Headers in ./AL
 )
 
 add_library(checklight_common INTERFACE)
@@ -123,20 +143,23 @@ file(GLOB_RECURSE CHECKLIGHT_ENGINE_SOURCES "src/engine/*.cpp")
 add_library(checklight_engine_system ${CHECKLIGHT_ENGINE_SOURCES})
 
 file(GLOB_RECURSE CHECKLIGHT_RENDER_SOURCES "src/render/*.cpp")
-add_library(checklight_render_system ${CHECKLIGHT_RENDER_SOURCES})
+add_library(checklight_render_system ${CHECKLIGHT_RENDER_SOURCES} )
 
 file(GLOB_RECURSE CHECKLIGHT_SHARED_SOURCES "src/shared/*.cpp")
-add_library(checklight_shared_system ${CHECKLIGHT_SHARED_SOURCES})
+add_library(checklight_shared_system ${CHECKLIGHT_SHARED_SOURCES} )
 
 file(GLOB_RECURSE CHECKLIGHT_INPUT_SOURCES "src/input/*.cpp")
-add_library(checklight_input_system ${CHECKLIGHT_INPUT_SOURCES})
+add_library(checklight_input_system ${CHECKLIGHT_INPUT_SOURCES} )
+
+file(GLOB_RECURSE CHECKLIGHT_SOUND_SOURCES "src/sound/*.cpp")
+add_library(checklight_sound_system ${CHECKLIGHT_SOUND_SOURCES} )
 
 add_library(checklight_external
 		lib/stb_image.cpp
 		lib/stb_image_write.cpp
 		lib/stb_vorbis.cpp
 		lib/vk_mem_alloc.cpp
-)
+ )
 
 target_include_directories(checklight_external PRIVATE
 		${CHECKLIGHT_LIBRARIES}
@@ -170,11 +193,18 @@ target_link_libraries(checklight_input_system PRIVATE
 		checklight_common
 )
 
+target_link_libraries(checklight_sound_system PRIVATE
+		checklight_common
+		OpenAL::OpenAL
+		checklight_external
+)
+
 target_link_libraries(checklight PRIVATE
 		checklight_common
 		checklight_render_system
 		checklight_shared_system
 		checklight_input_system
+		checklight_sound_system
 		checklight_engine_system
 )
 
@@ -186,6 +216,8 @@ target_link_libraries(checklight_test PRIVATE
 target_include_directories(checklight_test PRIVATE
 		${vstl_SOURCE_DIR}/
 )
+
+
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 

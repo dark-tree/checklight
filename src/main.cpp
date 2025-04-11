@@ -1,4 +1,3 @@
-
 #include "render/render.hpp"
 #include "input/input.hpp"
 #include "engine/engine.hpp"
@@ -116,6 +115,7 @@ int main() {
 		.intensity = 50.0,
 		.shadow = true
 	});
+
 
 	while (!window.shouldClose()) {
 		window.poll();
