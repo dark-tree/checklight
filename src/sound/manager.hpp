@@ -53,15 +53,30 @@ public:
 	/// @param sso Pointer to SoundSourceObject
 	void addSource(std::shared_ptr<SoundSourceObject> sso);
 
+	/// Remove a SoundSourceObject
+	/// 
+	/// @param sso Shared pointer to SoundSourceObject
+	void removeSource(std::weak_ptr<SoundSourceObject> sso);
+
 	/// Add a SoundClip to the vector v_clips
 	/// 
 	/// @param sc Pointer to SoundClip
 	void addClip(std::shared_ptr <SoundClip> sc);
 
+	/// Remove a SoundClib object
+	/// 
+	/// @param sc Shared pointer to SoundClip
+	void removeClip(std::shared_ptr <SoundClip> sc);
+
 	/// Add a SoundGroup to the vector v_groups
 	/// 
 	/// @param sg Pointer to SoundGroup
 	void addGroup(std::shared_ptr <SoundGroup> sg);
+
+	/// Remove a SoundGroup object
+	///
+	/// @param sg Shared pointer to SoundGroup
+	void removeGroup(std::weak_ptr <SoundGroup> sg);
 
 	/// Load an OGG file from the given URI and add it to buffer[0] in SoundClip
 	/// 

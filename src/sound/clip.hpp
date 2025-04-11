@@ -15,6 +15,9 @@ private:
 	/// Uri of first buffer in sc_buffers
 	std::string url;
 
+	void loadOGGFile(const char* filename);
+	void loadWAVFile(const char* filename);
+
 public:
 
 	SoundClip();

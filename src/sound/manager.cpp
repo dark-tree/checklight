@@ -53,6 +53,10 @@ void SoundManager::addSource(std::shared_ptr <SoundSourceObject> sso){
 	v_sources.push_back(sso);
 }
 
+void SoundManager::removeSource(std::weak_ptr<SoundSourceObject> sso) {
+	sso.lock()->~SoundSourceObject();
+	removeExpired(v_sources);
+}
 
 void SoundManager::addClip(std::shared_ptr <SoundClip> sc) {
 	if (!sc) {
@@ -69,6 +73,17 @@ void SoundManager::addClip(std::shared_ptr <SoundClip> sc) {
 	v_clips.push_back(sc);
 }
 
+void SoundManager::removeClip(std::shared_ptr<SoundClip> sc) {
+	removeFromVector(v_clips, sc);
+	if (sc) {
+		sc->~SoundClip();
+	}
+	else {
+		std::cerr << ("SoundManager -> removeClip: SoundClip not exist\f");
+		return;
+	}
+}
+
 void SoundManager::addGroup(std::shared_ptr <SoundGroup> sg) {
 	if (!sg) {
 		std::cerr << ("SoundManager -> addGroup: SoundGroup not exist\f");
@@ -82,6 +97,11 @@ void SoundManager::addGroup(std::shared_ptr <SoundGroup> sg) {
 		return;
 	}
 	v_groups.push_back(sg);
+}
+
+void SoundManager::removeGroup(std::weak_ptr<SoundGroup> sc) {
+	sc.lock()->~SoundGroup();
+	removeExpired(v_groups);
 }
 
 void SoundManager::addAudioToClip(std::shared_ptr <SoundClip> sc, const char* uri) {

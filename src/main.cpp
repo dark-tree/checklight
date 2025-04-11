@@ -107,7 +107,7 @@ int main() {
 		/*sm.addClip(sc2);
 		sm.addAudioToClip(sc2, "assets/sounds/test/2.ogg");
 		sm.connectClipWithSource(sc2, sso2);*/
-		sm.createSoundClipAndAddToSourceObject("assets/sounds/test/2.ogg", sso2);
+		sm.createSoundClipAndAddToSourceObject("assets/sounds/testWAV.wav", sso2);
 
 		//sm.playSound(sso1);
 		listener.setDistanceModel(AL_INVERSE_DISTANCE);

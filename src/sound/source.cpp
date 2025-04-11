@@ -27,6 +27,8 @@ SoundSourceObject::~SoundSourceObject(){
 	alDeleteSources(this->number_of_sources,this->sso_sources);
 	delete[] sso_sources;
 	sso_sources = nullptr;
+	sc_buffer.reset();
+	sso_sg.reset();
 }
 
 

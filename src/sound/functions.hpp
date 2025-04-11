@@ -7,9 +7,9 @@
 /// @param vec Vector where we want to find
 /// @param spt Shared pointer object to finded
 template <typename T>
-auto findInVector(std::vector< std::weak_ptr<T>>& vec, std::shared_ptr<T> spt) {
+auto findInVector(std::vector< std::weak_ptr<T>>& vec,const std::shared_ptr<T>& spt) {
 	return std::find_if(vec.begin(), vec.end(),
-		[spt](const std::weak_ptr<T>& wp) {
+		[&spt](const std::weak_ptr<T>& wp) {
 			return !wp.expired() && wp.lock() == spt;
 		});
 }
@@ -20,9 +20,9 @@ auto findInVector(std::vector< std::weak_ptr<T>>& vec, std::shared_ptr<T> spt) {
 /// @param vec Vector where we want to find
 /// @param wptr Weak pointer object to finded
 template <typename T>
-auto findInVector(std::vector< std::weak_ptr<T>>& vec, std::weak_ptr<T> wptr) {
+auto findInVector(std::vector< std::weak_ptr<T>>& vec,const std::weak_ptr<T>& wptr) {
 	return std::find_if(vec.begin(), vec.end(),
-		[wptr](const std::weak_ptr<T>& wp) {
+		[&wptr](const std::weak_ptr<T>& wp) {
 			return !wp.expired() && wp.lock() == wptr.lock();
 		});
 }
@@ -32,9 +32,9 @@ auto findInVector(std::vector< std::weak_ptr<T>>& vec, std::weak_ptr<T> wptr) {
 /// @param vec Vector where we want to find
 /// @param spt Shared pointer object to finded
 template <typename T>
-auto findInVector(std::vector< std::shared_ptr<T>>& vec, std::shared_ptr<T> spt) {
+auto findInVector(std::vector< std::shared_ptr<T>>& vec,const std::shared_ptr<T>& spt) {
 	return std::find_if(vec.begin(), vec.end(),
-		[spt](const std::shared_ptr<T>& sp) {
+		[&spt](const std::shared_ptr<T>& sp) {
 			return sp == spt;
 		});
 }
@@ -48,5 +48,13 @@ void removeExpired(std::vector<std::weak_ptr<T>>& vec) {
 	vec.erase(std::remove_if(vec.begin(), vec.end(),
 		[](const std::weak_ptr<T>& wp) {
 			return wp.expired();
+		}), vec.end());
+}
+
+template <typename T>
+void removeFromVector(std::vector<std::shared_ptr<T>>& vec,const std::shared_ptr<T>& spt) {
+	vec.erase(std::remove_if(vec.begin(), vec.end(),
+		[&spt](const std::shared_ptr<T>& sp) {
+			return sp == spt;
 		}), vec.end());
 }
