@@ -33,12 +33,17 @@ void Widget::rebuild(int x, int y) {
 
 }
 
-Box2D Widget::getContentBox() const {
-	return content;
+void Widget::add(const std::shared_ptr<Widget>& child) {
+	child->parent = weak_from_this();
+	children.push_back(child);
 }
 
-Box2D Widget::getPaddingBox() const {
-	return padded;
+void Widget::remove(const std::shared_ptr<Widget>& child) {
+	auto it = std::find(children.begin(), children.end(), child);
+
+	if (it != children.end()) {
+		children.erase(it);
+	}
 }
 
 float Widget::getAlignmentFactor(Channel channel) {
@@ -360,6 +365,15 @@ void Widget::scan(Navigator& navigator) {
 	for (auto& widget : children) {
 		widget->scan(navigator);
 	}
+}
+
+void Widget::update() {
+	if (auto locked = parent.lock()) {
+		locked->update();
+		return;
+	}
+
+	out::error("UI update request died during propagation!");
 }
 
 /*

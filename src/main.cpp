@@ -1,6 +1,7 @@
 
 #include <gui/context.hpp>
 #include <gui/widget/panel.hpp>
+#include <gui/widget/root.hpp>
 #include <gui/widget/text.hpp>
 #include <shared/args.hpp>
 #include <shared/logger.hpp>
@@ -24,32 +25,28 @@ static void entry(Args& args) {
 	Window& window = system.getWindow();
 
 	auto context = std::make_shared<WidgetContext>();
-	auto panel = std::make_shared<PanelWidget>();
+	auto panel = std::make_shared<RootWidget>();
+
+	auto text = std::make_shared<TextWidget>("Język lechicki z grupy zachodniosłowiańskiej");
 
 	{
 
 		auto left = std::make_shared<PanelWidget>();
 		left->flow = Flow::TOP_TO_BOTTOM;
-		left->width = Unit::fit();
-		left->height = Unit::fit();
 		left->gap = Unit::px(10);
 
-		auto sub2 = std::make_shared<ButtonWidget>();
-		sub2->width = Unit::fit();
-		sub2->height = Unit::fit();
-
-		sub2->onClick([] () {
-			out::info("Clicked left button!");
-		});
-
-		auto sub1 = std::make_shared<TextWidget>("Lorem ipsum dolor sit amet");
-		sub2->addWidget(sub1);
-
-		left->addWidget(sub2);
+		auto sub2 = std::make_shared<ButtonWidget>("Lorem ipsum dolor sit amet");
 
 		auto slider = std::make_shared<SliderWidget>();
 		slider->width = Unit::grow();
 		slider->min_height = Unit::px(20); // TODO ????
+
+		sub2->onClick([=] () {
+			out::info("Clicked left button!");
+			text->setText("Slider value: " + std::to_string(int(100 * slider->getValue())));
+		});
+
+		left->addWidget(sub2);
 		left->addWidget(slider);
 
 		slider->onChange([] (float value) {
@@ -79,25 +76,18 @@ static void entry(Args& args) {
 		auto sub = std::make_shared<PanelWidget>();
 		panel->addWidget(sub);
 
-		sub->width = Unit::fit();
-		sub->height = Unit::fit();
 		sub->r = 250;
 		sub->g = 100;
 		sub->b = 100;
 
-		auto text = std::make_shared<TextWidget>("Język lechicki z grupy zachodniosłowiańskiej");
 		sub->addWidget(text);
 	}
 
-	panel->width = Unit::fit();
-	panel->height = Unit::fit();
 	panel->flow = Flow::LEFT_TO_RIGHT;
 	panel->padding = Unit::px(10);
 	panel->gap = Unit::px(20);
 	panel->vertical = VerticalAlignment::CENTER;
 	panel->horizontal = HorizontalAlignment::CENTER;
-
-	panel->rebuild(10, 10);
 
 	// auto slider = std::make_shared<SliderWidget>([] () noexcept {
 	//

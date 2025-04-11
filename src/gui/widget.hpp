@@ -41,12 +41,15 @@ class Widget : public std::enable_shared_from_this<Widget> {
 
 	public: // FIXME
 
+		std::weak_ptr<Widget> parent;
 		std::vector<std::shared_ptr<Widget>> children;
+
 		Sizing sizing;
 		Sizing minimal;
 
 		Flow flow = Flow::LEFT_TO_RIGHT;
-		Unit width, height, gap, min_width, min_height;
+		Unit width = Unit::fit(), height = Unit::fit();
+		Unit gap, min_width, min_height;
 		Spacing margin, padding;
 
 		VerticalAlignment vertical = VerticalAlignment::TOP;
@@ -54,9 +57,6 @@ class Widget : public std::enable_shared_from_this<Widget> {
 
 		Box2D padded { {},{},{},{} };   // content box with padding added
 		Box2D content { {},{},{},{} };  // content box
-
-		Box2D getContentBox() const;
-		Box2D getPaddingBox() const;
 
 		float getAlignmentFactor(Channel channel);
 
@@ -75,16 +75,19 @@ class Widget : public std::enable_shared_from_this<Widget> {
 		/// Create final binding boxes based on sizing information
 		void applyPositioning(int x, int y);
 
+	protected:
+
+		void rebuild(int x, int y);
+		void add(const std::shared_ptr<Widget>& child);
+		void remove(const std::shared_ptr<Widget>& child);
+
 	public:
 
 		virtual ~Widget();
 		virtual void draw(ImmediateRenderer& immediate, ElementState state) = 0;
 		virtual bool event(WidgetContext& context, const InputEvent& event);
 		virtual void scan(Navigator& navigator);
-
-	public:
-
-		void rebuild(int x, int y);
+		virtual void update();
 
 };
 

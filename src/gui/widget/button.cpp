@@ -1,13 +1,30 @@
 
 #include "button.hpp"
 
+#include "text.hpp"
 #include "input/input.hpp"
 #include "render/immediate.hpp"
 #include "gui/context.hpp"
 
 
 ButtonWidget::ButtonWidget()
-: InputWidget(), callback([] () noexcept -> void {}) {}
+: InputWidget() {}
+
+ButtonWidget::ButtonWidget(const std::string& label)
+: InputWidget() {
+	addWidget(std::make_shared<TextWidget>(label));
+}
+
+ButtonWidget::ButtonWidget(const Callback& callback)
+: InputWidget() {
+	onClick(callback);
+}
+
+ButtonWidget::ButtonWidget(const std::string& label, const Callback& callback)
+: InputWidget() {
+	addWidget(std::make_shared<TextWidget>(label));
+	onClick(callback);
+}
 
 void ButtonWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
@@ -92,7 +109,7 @@ bool ButtonWidget::event(WidgetContext& context, const InputEvent& any) {
 }
 
 void ButtonWidget::addWidget(const std::shared_ptr<Widget>& widget) {
-	children.emplace_back(widget);
+	add(widget);
 }
 
 void ButtonWidget::onClick(const std::function<void()>& callback) {

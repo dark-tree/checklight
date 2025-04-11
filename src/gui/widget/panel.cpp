@@ -28,7 +28,7 @@ bool PanelWidget::event(WidgetContext& context, const InputEvent& event) {
 }
 
 void PanelWidget::addWidget(const std::shared_ptr<Widget>& widget) {
-	children.emplace_back(widget);
+	add(widget);
 }
 
 

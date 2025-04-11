@@ -4,18 +4,25 @@
 
 class ButtonWidget : public InputWidget {
 
+	public:
+
+		using Callback = std::function<void()>;
+
 	private:
 
-		std::function<void()> callback;
+		Callback callback;
 
 	public:
 
 		ButtonWidget();
+		ButtonWidget(const std::string& label);
+		ButtonWidget(const Callback& callback);
+		ButtonWidget(const std::string& label, const Callback& callback);
 
 		void draw(ImmediateRenderer& immediate, ElementState state) override;
 		bool event(WidgetContext& context, const InputEvent &event) override;
 
 		void addWidget(const std::shared_ptr<Widget>& widget);
-		void onClick(const std::function<void()>& callback);
+		void onClick(const Callback& callback);
 
 };

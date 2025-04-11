@@ -29,5 +29,6 @@ class SliderWidget : public InputWidget {
 		bool event(WidgetContext& context, const InputEvent &event) override;
 
 		void onChange(const std::function<void(float)>& callback);
+		float getValue() const;
 
 };

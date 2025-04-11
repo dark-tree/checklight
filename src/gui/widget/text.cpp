@@ -27,6 +27,10 @@ TextBakery TextWidget::getBakery(int width, int height) const {
 
 }
 
+TextWidget::TextWidget() {
+	setText("");
+}
+
 TextWidget::TextWidget(const std::string& text) {
 	setText(text);
 }
@@ -64,6 +68,9 @@ void TextWidget::setText(const std::string& text) {
 
 	width = Unit::px(unwrapped.width);
 	height = Unit::px(unwrapped.height);
+
+	// layout may have changed!
+	update();
 }
 
 

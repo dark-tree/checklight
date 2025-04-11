@@ -136,3 +136,7 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 void SliderWidget::onChange(const std::function <void(float)>& callback) {
 	this->callback = callback;
 }
+
+float SliderWidget::getValue() const {
+	return value;
+}
