@@ -422,6 +422,27 @@ void InputWidget::setFocus(WidgetContext& context) {
 	context.setSelected(std::dynamic_pointer_cast<InputWidget>(shared_from_this()));
 }
 
+ElementState InputWidget::computeWidgetState() const {
+	ElementState::Interaction interaction;
+
+	if (enabled) {
+		if (hovered || pressed) {
+			if (pressed) {
+				interaction = ElementState::PRESSED;
+			} else {
+				interaction = ElementState::HOVER;
+			}
+		} else {
+			interaction = ElementState::DEFAULT;
+		}
+	} else {
+		interaction = ElementState::DISABLED;
+	}
+
+	return ElementState::ofDraw(interaction, isFocused());
+}
+
+
 void InputWidget::setSelected(bool selected) {
 	this->selected = selected;
 }

@@ -155,7 +155,7 @@ ImmediateRenderer::ImmediateRenderer(AssetLoader& loader)
 : loader(loader), blank(loader.getBlankSprite()) {
 	setSprite(OFF);
 	setFill(255, 255, 255);
-	setStroke(255, 0, 0);
+	setStroke(OFF);
 	setResolution(1, 1);
 	setLineWidth(4);
 	setRectRadius(0);
@@ -166,7 +166,7 @@ ImmediateRenderer::ImmediateRenderer(AssetLoader& loader)
 	setTextAlignment(VerticalAlignment::BOTTOM);
 	setTextAlignment(HorizontalAlignment::LEFT);
 	setWrapping(true);
-	setStrokeWidth(10);
+	setStrokeWidth(2);
 }
 
 Sprite ImmediateRenderer::getSprite(const std::string& path) {

@@ -142,6 +142,8 @@ class InputWidget : public Widget {
 		bool isFocused() const;
 		void setFocus(WidgetContext& context);
 
+		ElementState computeWidgetState() const;
+
 	private:
 
 		friend class Navigator;

@@ -169,6 +169,14 @@ GlyphQuad Font::getOrLoad(float* x, float* y, float scale, uint32_t unicode, int
 
 }
 
+void Font::preloadAscii(const std::string& ascii) {
+	for (char chr : ascii) {
+		float x = 0, y = 0, scale = 100;
+		(void) getOrLoad(&x, &y, scale, chr, 0);
+	}
+}
+
+
 /*
  * DynamicFontAtlas
  */
@@ -185,5 +193,7 @@ std::shared_ptr<Font> DynamicFontAtlas::getOrLoad(const std::string& path) {
 
 	auto font = std::make_shared<Font>(atlas, path, 500);
 	fonts[path] = font;
+
+	font->preloadAscii("0123456789");
 	return font;
 }

@@ -6,7 +6,7 @@
 void TextWidget::applyWrapSizing() {
 	Widget::applyWrapSizing();
 
-	TextBakery bakery = getBakery(sizing.width(), 0);
+	TextBakery bakery = getBakery(sizing.width(), 0, ElementState::ofLayout());
 	BakedText wrapped = bakery.bakeString(0, 0, text);
 
 	min_height = Unit::px(wrapped.getMetrics().height);
@@ -14,7 +14,7 @@ void TextWidget::applyWrapSizing() {
 
 void TextWidget::updateWidgetText(const std::string& text) {
 	this->text = text;
-	TextBakery bakery = getBakery(0, 0);
+	TextBakery bakery = getBakery(0, 0, ElementState::ofLayout());
 
 	bakery.setWrapping(true);
 	BakedText::Metrics wrapped = bakery.bakeString(0, 0, text).getMetrics();
@@ -22,46 +22,40 @@ void TextWidget::updateWidgetText(const std::string& text) {
 	bakery.setWrapping(false);
 	BakedText::Metrics unwrapped = bakery.bakeString(0, 0, text).getMetrics();
 
+	// this is a sub-optimal solution
 	min_width = Unit::px(wrapped.width);
-
 	width = Unit::px(unwrapped.width);
 	height = Unit::px(unwrapped.height);
 }
 
-TextBakery TextWidget::getBakery(int width, int height) const {
+TextBakery TextWidget::getBakery(int width, int height, const ElementState& state) const {
 
 	TextBakery bakery;
 
-	bakery.setFont("assets/font/OpenSans-Variable.ttf");
-	bakery.setAlignment(VerticalAlignment::TOP);
-	bakery.setAlignment(HorizontalAlignment::LEFT);
-	bakery.setSize(20);
+	bakery.setFont(font.get(styling, state));
+	bakery.setAlignment(vertical.get(styling, state));
+	bakery.setAlignment(horizontal.get(styling, state));
+	bakery.setSize(size.get(styling, state));
 	bakery.setBounds(width, height);
-	bakery.setWrapping(true);
+	bakery.setWrapping(wrap.get(styling, state));
 
 	return bakery;
 
 }
 
-TextWidget::TextWidget() {
-	updateWidgetText("");
-}
+TextWidget::TextWidget()
+: TextWidget("") {}
 
 TextWidget::TextWidget(const std::string& text) {
 	updateWidgetText(text);
+	this->color = Color {0, 0, 0};
 }
 
 void TextWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
-	// immediate.setRectRadius(0);
-	// immediate.setColor(0, 0, 0);
-	// immediate.drawRect2D(content.x, content.y, content.w, content.h);
-	// immediate.setColor(255, 255, 255);
-	// immediate.drawRect2D(content.x + 2, content.y + 2, content.w - 4, content.h - 4);
+	TextBakery bakery = getBakery(content.w, content.h, state);
 
-	TextBakery bakery = getBakery(content.w, content.h);
-
-	immediate.setFill(0, 0, 0);
+	immediate.setFill(color.get(styling, state));
 	immediate.drawText2D(content.x, content.y, bakery.bakeString(0, 0, text.c_str()));
 
 }

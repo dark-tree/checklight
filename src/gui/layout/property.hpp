@@ -46,7 +46,7 @@ struct StyleProperty {
 		}
 
 		/// Invoke the property factory given the styling context
-		T get(const StyleContext& context, ElementState state = ElementState::LAYOUT) const {
+		T get(const StyleContext& context, ElementState state = ElementState::ofLayout()) const {
 			return this->factory(context, state);
 		}
 

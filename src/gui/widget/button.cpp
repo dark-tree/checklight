@@ -8,55 +8,51 @@
 
 
 ButtonWidget::ButtonWidget()
-: InputWidget() {}
+: InputWidget() {
+
+	this->border_color = Color {40, 40, 80};
+
+	this->border = [] (const StyleContext& context, const ElementState& state) {
+		return state.focused ? Unit::px(1) : Unit::px(0);
+	};
+
+	this->radius = Unit::px(4);
+
+	this->color = [] (const StyleContext& context, const ElementState& state) -> Color {
+		if (state.interaction == ElementState::PRESSED) return {220, 220, 240};
+		if (state.interaction == ElementState::HOVER) return {200, 200, 220};
+
+		return {180, 180, 200};
+	};
+
+	this->padding = BoxUnit {Unit::px(2)};
+
+}
 
 ButtonWidget::ButtonWidget(const std::string& label)
-: InputWidget() {
+: ButtonWidget() {
 	addWidget(std::make_shared<TextWidget>(label));
 }
 
 ButtonWidget::ButtonWidget(const Callback& callback)
-: InputWidget() {
+: ButtonWidget() {
 	onClick(callback);
 }
 
 ButtonWidget::ButtonWidget(const std::string& label, const Callback& callback)
-: InputWidget() {
+: ButtonWidget() {
 	addWidget(std::make_shared<TextWidget>(label));
 	onClick(callback);
 }
 
 void ButtonWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
-	if (isFocused()) {
-		immediate.setRectRadius(5);
-		immediate.setFill(255, 255, 0);
-		immediate.drawRect2D(padded.expand(8, 8, 8, 8));
-	} else {
+	if (!isFocused()) {
 		pressed = false;
 	}
 
-	if (enabled) {
-		if (hovered || pressed) {
-			if (pressed) {
-				immediate.setFill(255, 100, 100);
-				state = ElementState::PRESSED;
-			} else {
-				immediate.setFill(255, 80, 80);
-				state = ElementState::HOVER;
-			}
-		} else {
-			immediate.setFill(255, 0, 0);
-			state = ElementState::DEFAULT;
-		}
-	} else {
-		immediate.setFill(70, 70, 70);
-		state = ElementState::DISABLED;
-	}
-
-	immediate.setRectRadius(10);
-	immediate.setFill(255, 0, 0);
-	immediate.drawRect2D(padded);
+	state = computeWidgetState();
+	drawBasicPanel(immediate, state);
 
 	for (auto& widget : children) {
 		widget->draw(immediate, state);

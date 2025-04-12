@@ -20,8 +20,29 @@ class SliderWidget : public InputWidget {
 
 	public:
 
-		StyleProperty<float> knob_size = 8;
-		StyleProperty<float> rail_size = 3;
+		/// Radius of the slider knob
+		StyleProperty<Unit> knob_size = Unit::px(8);
+
+		/// Color of the slider knob
+		StyleProperty<Color> knob_color = Color {200, 200, 200};
+
+		/// Border width of the slider knob
+		StyleProperty<Unit> knob_border = Unit::zero();
+
+		/// Border color of the slider knob
+		StyleProperty<Color> knob_border_color = Color {0, 0, 0};
+
+		/// Width of the slider knob rail
+		StyleProperty<Unit> rail_size = Unit::px(3);
+
+		/// Color of the slider knob rail
+		StyleProperty<Color> rail_color = Color {50, 50, 50};
+
+		/// Color of the rail divot
+		StyleProperty<Color> divot_color = Color {10, 10, 10};
+
+		/// Divot extend from the rail
+		StyleProperty<Unit> divot_extend = Unit::px(1);
 
 	public:
 

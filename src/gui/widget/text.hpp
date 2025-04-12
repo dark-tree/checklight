@@ -11,7 +11,7 @@ class TextWidget : public Widget {
 		// so leave it here for now
 
 		/// Get internal configured text geometry bakery
-		TextBakery getBakery(int width, int height) const;
+		TextBakery getBakery(int width, int height, const ElementState& state) const;
 
 	private:
 
@@ -22,7 +22,14 @@ class TextWidget : public Widget {
 
 	public:
 
+		/// Should the text wrap if there is not enought space?
 		StyleProperty<bool> wrap = true;
+
+		/// Font size
+		StyleProperty<int> size = 20;
+
+		/// Font filepath
+		StyleProperty<std::string> font = std::string {"assets/font/OpenSans-Variable.ttf"};
 
 	public:
 

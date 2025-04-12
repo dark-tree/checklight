@@ -21,7 +21,7 @@ void WidgetContext::setRoot(const std::shared_ptr<Widget>& widget) {
 }
 
 void WidgetContext::draw(ImmediateRenderer& immediate) {
-	root->draw(immediate, ElementState::DEFAULT);
+	root->draw(immediate, ElementState::ofDraw());
 }
 
 InputResult WidgetContext::onEvent(const InputEvent& any) {

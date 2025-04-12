@@ -1,10 +1,6 @@
 #pragma once
 
-#include <optional>
-
 #include "gui/widget.hpp"
-#include "render/draw/text.hpp"
-#include "shared/unicode.hpp"
 
 class PanelWidget : public Widget {
 
