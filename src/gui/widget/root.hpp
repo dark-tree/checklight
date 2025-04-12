@@ -11,6 +11,11 @@ class RootWidget : public PanelWidget {
 	public:
 
 		void draw(ImmediateRenderer& immediate, ElementState state) override;
+
+		/// Mark the GUI for rebuilding
 		void update() override;
+
+		/// Rebuild GUI layout IF the gui is newly created or it has been modified
+		void rebuildLayout();
 
 };

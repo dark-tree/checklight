@@ -167,7 +167,7 @@ TEST(gui_simple_padded_absolute) {
 	for (Flow flow : {Flow::LEFT_TO_RIGHT, Flow::RIGHT_TO_LEFT, Flow::TOP_TO_BOTTOM, Flow::BOTTOM_TO_TOP}) {
 
 		auto context = std::make_shared<WidgetContext>();
-		auto root = std::make_shared<PanelWidget>();
+		auto root = std::make_shared<RootWidget>();
 		auto sub = std::make_shared<PanelWidget>();
 
 		root->addWidget(sub);
@@ -181,7 +181,9 @@ TEST(gui_simple_padded_absolute) {
 		sub->width = Unit::px(100);
 		sub->height = Unit::px(100);
 
-		root->rebuild(10, 10);
+		// FIXME root->rebuild(10, 10);
+		// manually build layout as normally that would happen on first draw()
+		root->rebuildLayout();
 
 		CHECK(root->content.x, 10);
 		CHECK(root->content.y, 10);
@@ -212,7 +214,7 @@ TEST(gui_simple_padded_fit) {
 	for (Flow flow : {Flow::LEFT_TO_RIGHT, Flow::RIGHT_TO_LEFT, Flow::TOP_TO_BOTTOM, Flow::BOTTOM_TO_TOP}) {
 
 		auto context = std::make_shared<WidgetContext>();
-		auto root = std::make_shared<PanelWidget>();
+		auto root = std::make_shared<RootWidget>();
 		auto sub = std::make_shared<PanelWidget>();
 
 		root->addWidget(sub);
@@ -226,7 +228,9 @@ TEST(gui_simple_padded_fit) {
 		sub->height = Unit::px(100);
 		sub->padding = {Unit::px(20), Unit::px(10)};
 
-		root->rebuild(10, 10);
+		// FIXME root->rebuild(10, 10);
+		// manually build layout as normally that would happen on first draw()
+		root->rebuildLayout();
 
 		CHECK(root->content.x, 10);
 		CHECK(root->content.y, 10);
@@ -245,7 +249,7 @@ TEST(gui_simple_padded_fit) {
 TEST(gui_simple_inverse) {
 
 	auto context = std::make_shared<WidgetContext>();
-	auto root = std::make_shared<PanelWidget>();
+	auto root = std::make_shared<RootWidget>();
 	auto sub1 = std::make_shared<PanelWidget>();
 	auto sub2 = std::make_shared<PanelWidget>();
 
@@ -264,7 +268,8 @@ TEST(gui_simple_inverse) {
 	sub2->height = Unit::px(100);
 	sub2->margin ={ Unit::px(100), Unit::px(200), Unit::px(10), Unit::zero()};
 
-	root->rebuild(0, 0);
+	// manually build layout as normally that would happen on first draw()
+	root->rebuildLayout();
 
 	CHECK(sub1->content.x, 110);
 	CHECK(sub2->content.x, 10);
@@ -274,7 +279,7 @@ TEST(gui_simple_inverse) {
 TEST(gui_layout_simple_grow) {
 
 	auto context = std::make_shared<WidgetContext>();
-	auto root = std::make_shared<PanelWidget>();
+	auto root = std::make_shared<RootWidget>();
 	auto sub1 = std::make_shared<PanelWidget>();
 	auto sub2 = std::make_shared<PanelWidget>();
 
@@ -292,7 +297,8 @@ TEST(gui_layout_simple_grow) {
 	sub2->width = Unit::grow(3);
 	sub2->height = Unit::grow(1);
 
-	root->rebuild(0, 0);
+	// manually build layout as normally that would happen on first draw()
+	root->rebuildLayout();
 
 	CHECK(root->content.x, 0);
 	CHECK(root->content.y, 0);
@@ -314,7 +320,7 @@ TEST(gui_layout_simple_grow) {
 TEST(gui_layout_complex_grow) {
 
 	auto context = std::make_shared<WidgetContext>();
-	auto root = std::make_shared<PanelWidget>();
+	auto root = std::make_shared<RootWidget>();
 	auto sub1 = std::make_shared<PanelWidget>();
 	auto sub2 = std::make_shared<PanelWidget>();
 	auto sub3 = std::make_shared<PanelWidget>();
@@ -338,7 +344,8 @@ TEST(gui_layout_complex_grow) {
 	sub3->width = Unit::px(50);
 	sub3->height = Unit::px(100);
 
-	root->rebuild(0, 0);
+	// manually build layout as normally that would happen on first draw()
+	root->rebuildLayout();
 
 	CHECK(sub2->content.x, 70);
 	CHECK(sub2->content.y, 0);
@@ -361,7 +368,7 @@ TEST(gui_fit_text) {
 	const char* text =  "Many words that fit in thee";
 
 	auto context = std::make_shared<WidgetContext>();
-	auto root = std::make_shared<PanelWidget>();
+	auto root = std::make_shared<RootWidget>();
 	auto sub1 = std::make_shared<TextWidget>(text);
 
 	root->addWidget(sub1);
@@ -370,11 +377,12 @@ TEST(gui_fit_text) {
 	root->width = Unit::fit();
 	root->height = Unit::fit();
 
-	root->rebuild(0, 0);
-
 	auto bakery = sub1->getBakery(0, 0);
 	bakery.setWrapping(false);
 	auto metric = bakery.bakeString(0, 0, text).getMetrics();
+
+	// manually build layout as normally that would happen on first draw()
+	root->rebuildLayout();
 
 	// check if the text did not wrap in fit container
 	CHECK(sub1->content.h, metric.height);
@@ -386,7 +394,7 @@ TEST(gui_fit_text) {
 TEST(gui_alignment_along_horizontal) {
 
 	auto context = std::make_shared<WidgetContext>();
-	auto root = std::make_shared<PanelWidget>();
+	auto root = std::make_shared<RootWidget>();
 	auto sub1 = std::make_shared<PanelWidget>();
 	auto sub2 = std::make_shared<PanelWidget>();
 
@@ -405,7 +413,9 @@ TEST(gui_alignment_along_horizontal) {
 	sub2->height = Unit::px(100);
 
 	root->horizontal = HorizontalAlignment::CENTER;
-	root->rebuild(0, 0);
+
+	// manually build layout as normally that would happen on first draw()
+	root->rebuildLayout();
 
 	CHECK(sub1->content.x, 100);
 	CHECK(sub1->content.y, 0);
@@ -414,7 +424,10 @@ TEST(gui_alignment_along_horizontal) {
 	CHECK(sub2->content.y, 0);
 
 	root->horizontal = HorizontalAlignment::RIGHT;
-	root->rebuild(0, 0);
+
+	// force layout update
+	root->update();
+	root->rebuildLayout();
 
 	CHECK(sub1->content.x, 200);
 	CHECK(sub1->content.y, 0);
