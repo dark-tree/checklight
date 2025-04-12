@@ -11,6 +11,7 @@ class TextWidget : public Widget {
 		std::string text;
 
 		void applyWrapSizing() override;
+		void updateWidgetText(const std::string& text);
 
 		TextBakery getBakery(int width, int height) const;
 

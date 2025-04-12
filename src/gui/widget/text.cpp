@@ -12,6 +12,22 @@ void TextWidget::applyWrapSizing() {
 	min_height = Unit::px(wrapped.getMetrics().height);
 }
 
+void TextWidget::updateWidgetText(const std::string& text) {
+	this->text = text;
+	TextBakery bakery = getBakery(0, 0);
+
+	bakery.setWrapping(true);
+	BakedText::Metrics wrapped = bakery.bakeString(0, 0, text).getMetrics();
+
+	bakery.setWrapping(false);
+	BakedText::Metrics unwrapped = bakery.bakeString(0, 0, text).getMetrics();
+
+	min_width = Unit::px(wrapped.width);
+
+	width = Unit::px(unwrapped.width);
+	height = Unit::px(unwrapped.height);
+}
+
 TextBakery TextWidget::getBakery(int width, int height) const {
 
 	TextBakery bakery;
@@ -28,11 +44,11 @@ TextBakery TextWidget::getBakery(int width, int height) const {
 }
 
 TextWidget::TextWidget() {
-	setText("");
+	updateWidgetText("");
 }
 
 TextWidget::TextWidget(const std::string& text) {
-	setText(text);
+	updateWidgetText(text);
 }
 
 void TextWidget::draw(ImmediateRenderer& immediate, ElementState state) {
@@ -55,21 +71,7 @@ bool TextWidget::event(WidgetContext& context, const InputEvent& event) {
 }
 
 void TextWidget::setText(const std::string& text) {
-	this->text = text;
-	TextBakery bakery = getBakery(0, 0);
-
-	bakery.setWrapping(true);
-	BakedText::Metrics wrapped = bakery.bakeString(0, 0, text).getMetrics();
-
-	bakery.setWrapping(false);
-	BakedText::Metrics unwrapped = bakery.bakeString(0, 0, text).getMetrics();
-
-	min_width = Unit::px(wrapped.width);
-
-	width = Unit::px(unwrapped.width);
-	height = Unit::px(unwrapped.height);
-
-	// layout may have changed!
+	updateWidgetText(text);
 	update();
 }
 
