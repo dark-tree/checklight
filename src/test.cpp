@@ -436,3 +436,63 @@ TEST(gui_alignment_along_horizontal) {
 	CHECK(sub2->content.y, 0);
 
 };
+
+TEST(gui_rebuild_propagation) {
+
+	auto context = std::make_shared<WidgetContext>();
+	auto root = std::make_shared<RootWidget>();
+	auto sub1 = std::make_shared<PanelWidget>();
+	auto sub2 = std::make_shared<PanelWidget>();
+
+	auto nested = std::make_shared<PanelWidget>();
+	nested->width = Unit::grow();
+	nested->height = Unit::grow();
+
+	root->addWidget(sub1);
+	root->addWidget(sub2);
+	context->setRoot(root);
+
+	root->width = Unit::px(400);
+	root->height = Unit::fit();
+	root->flow = Flow::LEFT_TO_RIGHT;
+
+	sub1->width = Unit::grow(1);
+	sub1->height = Unit::px(100);
+
+	sub2->width = Unit::grow(3);
+	sub2->height = Unit::grow(1);
+
+	sub2->addWidget(nested);
+
+	// manually build layout as normally that would happen on first draw()
+	root->rebuildLayout();
+
+	CHECK(sub1->content.x, 0);
+	CHECK(sub1->content.y, 0);
+	CHECK(sub1->content.w, 100);
+	CHECK(sub1->content.h, 100);
+
+	CHECK(sub2->content.x, 100);
+	CHECK(sub2->content.y, 0);
+	CHECK(sub2->content.w, 300);
+	CHECK(sub2->content.h, 100);
+
+	sub1->width = Unit::grow(3);
+	sub2->width = Unit::grow(1);
+
+	// call on any child in tree, the request should propagate to root
+	nested->update();
+
+	root->rebuildLayout();
+
+	CHECK(sub1->content.x, 0);
+	CHECK(sub1->content.y, 0);
+	CHECK(sub1->content.w, 300);
+	CHECK(sub1->content.h, 100);
+
+	CHECK(sub2->content.x, 300);
+	CHECK(sub2->content.y, 0);
+	CHECK(sub2->content.w, 100);
+	CHECK(sub2->content.h, 100);
+
+};

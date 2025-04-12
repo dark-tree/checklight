@@ -74,6 +74,11 @@ int TextBakery::getWrappingBound() const {
 
 
 TextBakery& TextBakery::setFont(const std::string& path) {
+
+	if (!RenderSystem::system) {
+		FAULT("Can't request font '", path, "', the renderer has net been initialized yet!");
+	}
+
 	return setFont(RenderSystem::system->getAssetLoader().getFont(path));
 }
 
