@@ -26,7 +26,10 @@ struct Unit {
 		constexpr Unit(double value, Metric metric)
 		: value(value), metric(metric) {}
 
-		bool isAbsolute() const;
+		/// Check if pixels() can be called on this unit
+		bool isResolvable() const;
+
+		/// Convert the unit to raw pixels
 		int pixels(const StyleContext& styling) const;
 
 	public:

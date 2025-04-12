@@ -7,18 +7,6 @@
 #include "layout/channel.hpp"
 
 /*
- * Spacing
- */
-
-int Spacing::getTotal(const StyleContext& styling, Channel channel) {
-	if (channel == Channel::WIDTH) {
-		return left.pixels(styling) + right.pixels(styling);
-	}
-
-	return top.pixels(styling) + bottom.pixels(styling);
-}
-
-/*
  * Widget
  */
 
@@ -55,7 +43,34 @@ float Widget::getAlignmentFactor(Channel channel) {
 }
 
 int Widget::getOuterSizing(Channel channel) {
-	return sizing.get(channel) + padding.get(styling).getTotal(styling, channel) + margin.get(styling).getTotal(styling, channel);
+	return sizing.get(channel) + padding.get(styling).along(styling, channel) + margin.get(styling).along(styling, channel);
+}
+
+void Widget::drawBasicPanel(ImmediateRenderer& immediate, ElementState state) {
+
+	const RadiusUnit corners = radius.get(styling, state);
+	const Color background = color.get(styling, state);
+	const Color border = border_color.get(styling, state);
+
+	// configure border and background radius
+	immediate.setRectRadius(
+		corners.top_left.pixels(styling),
+		corners.top_right.pixels(styling),
+		corners.bottom_left.pixels(styling),
+		corners.bottom_right.pixels(styling)
+	);
+
+	// border width
+	const int width = this->border.get(styling, state).pixels(styling);
+	immediate.setStrokeWidth(width);
+
+	// set colors
+	immediate.setStroke(border);
+	immediate.setFill(background);
+
+	// draw panel with border
+	immediate.drawRect2D(padded);
+
 }
 
 void Widget::applyWrapSizing() {
@@ -90,7 +105,7 @@ void Widget::applyFitSizing(Channel channel) {
 	int low_bound = minimal_unit.pixels(styling);
 
 	// handle the simple case - size is specified explicitly
-	if (sizing_unit.isAbsolute()) {
+	if (sizing_unit.isResolvable()) {
 		preferred = std::max(sizing_unit.pixels(styling), low_bound);
 	}
 
@@ -306,7 +321,7 @@ void Widget::applyPositioning(int x, int y) {
 
 	content = Box2D {x, y, sizing.width(), sizing.height()};
 
-	const Spacing pad = padding.get(styling);
+	const BoxUnit pad = padding.get(styling);
 
 	// TODO
 	int pl = pad.left.pixels(styling);
@@ -358,8 +373,8 @@ void Widget::applyPositioning(int x, int y) {
 			std::swap(align_x, align_y);
 		}
 
-		const Spacing wp = widget->padding.get(widget->styling);
-		const Spacing wm = widget->margin.get(widget->styling);
+		const BoxUnit wp = widget->padding.get(widget->styling);
+		const BoxUnit wm = widget->margin.get(widget->styling);
 
 		// when positioning we take into account only the upper-left offsets
 		const int ox = align_x + wp.left.pixels(styling) + wm.left.pixels(styling);

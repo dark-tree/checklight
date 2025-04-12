@@ -9,34 +9,13 @@
 #include "render/immediate.hpp"
 #include "layout/state.hpp"
 #include "layout/property.hpp"
+#include "layout/sided.hpp"
+#include "layout/radius.hpp"
 
 class WidgetContext;
 class ImmediateRenderer;
 class Navigator;
 class InputWidget;
-
-struct Spacing {
-	Unit top, bottom, left, right;
-
-	public:
-
-		Spacing()
-		: top(Unit::zero()), bottom(Unit::zero()), left(Unit::zero()), right(Unit::zero()) {}
-
-		Spacing(Unit unit)
-		: top(unit), bottom(unit), left(unit), right(unit) {}
-
-		Spacing(Unit vertical, Unit horizontal)
-		: top(vertical), bottom(vertical), left(horizontal), right(horizontal) {}
-
-		Spacing(Unit top, Unit bottom, Unit left, Unit right)
-		: top(top), bottom(bottom), left(left), right(right) {}
-
-	public:
-
-		int getTotal(const StyleContext& styling, Channel channel);
-
-};
 
 class Widget : public std::enable_shared_from_this<Widget> {
 
@@ -71,6 +50,9 @@ class Widget : public std::enable_shared_from_this<Widget> {
 
 		/// Called after the on-flow dimension has ben computed, can be used to adjust content the acros-flow dimension
 		virtual void applyWrapSizing();
+
+		/// Draws the a basic panel with correct styling and sizing
+		void drawBasicPanel(ImmediateRenderer& immediate, ElementState state);
 
 	private:
 
@@ -119,10 +101,22 @@ class Widget : public std::enable_shared_from_this<Widget> {
 		StyleProperty<Unit> min_height = Unit::zero();
 
 		/// Margin around the element
-		StyleProperty<Spacing> margin {Spacing {}};
+		StyleProperty<BoxUnit> margin = BoxUnit {};
 
 		/// Padding inside the element
-		StyleProperty<Spacing> padding {Spacing {}};
+		StyleProperty<BoxUnit> padding = BoxUnit {};
+
+		/// Border width around the element
+		StyleProperty<Unit> border = Unit::zero();
+
+		/// Radius of the widget border
+		StyleProperty<RadiusUnit> radius = RadiusUnit {};
+
+		/// Widget color
+		StyleProperty<Color> color = Color {};
+
+		/// Widget color
+		StyleProperty<Color> border_color = Color {};
 
 	public:
 

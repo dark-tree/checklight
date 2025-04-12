@@ -25,7 +25,7 @@ void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 	if (isFocused()) {
 		immediate.setRectRadius(5);
-		immediate.setColor(255, 255, 0);
+		immediate.setFill(255, 255, 0);
 		immediate.drawRect2D(padded.expand(8, 8, 8, 8));
 	} else {
 		if (unrolled) {
@@ -36,15 +36,15 @@ void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 	if (enabled) {
 		if (hovered) {
 			if (pressed) {
-				immediate.setColor(255, 100, 100);
+				immediate.setFill(255, 100, 100);
 			} else {
-				immediate.setColor(255, 80, 80);
+				immediate.setFill(255, 80, 80);
 			}
 		} else {
-			immediate.setColor(255, 0, 0);
+			immediate.setFill(255, 0, 0);
 		}
 	} else {
-		immediate.setColor(70, 70, 70);
+		immediate.setFill(70, 70, 70);
 	}
 
 	double speed = 8;
@@ -58,7 +58,7 @@ void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 	immediate.drawRect2D(padded);
 
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
-	immediate.setColor(0, 0, 0);
+	immediate.setFill(0, 0, 0);
 	immediate.setTextBox(content.w, content.h);
 	immediate.drawString2D(content.x, content.y, "Selected: " + std::to_string(value));
 
@@ -67,7 +67,7 @@ void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 	immediate.setRectRadius(0);
 
-	immediate.setColor(50, 50, 50, alpha);
+	immediate.setFill(50, 50, 50, alpha);
 	immediate.setLineWidth(1);
 	immediate.drawLine2D(padded.x, padded.y + padded.h, padded.x + padded.w, padded.y + padded.h);
 
@@ -78,19 +78,19 @@ void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 		// background
 		if (option == i) {
 			if (pressed) {
-				immediate.setColor(255, 100, 100, alpha);
+				immediate.setFill(255, 100, 100, alpha);
 			} else {
-				immediate.setColor(255, 80, 80, alpha);
+				immediate.setFill(255, 80, 80, alpha);
 			}
 		} else {
-			immediate.setColor(255, 0, 0, alpha);
+			immediate.setFill(255, 0, 0, alpha);
 		}
 
 		immediate.drawRect2D(padded.x, oy, padded.w, content.h);
 
 		// content
 		immediate.setFont("assets/font/OpenSans-Variable.ttf");
-		immediate.setColor(0, 0, 0, alpha);
+		immediate.setFill(0, 0, 0, alpha);
 		immediate.setTextBox(content.w, content.h);
 		immediate.drawString2D(content.x, oy, options.at(i).label);
 	}

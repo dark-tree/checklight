@@ -8,9 +8,7 @@ PanelWidget::PanelWidget() {
 }
 
 void PanelWidget::draw(ImmediateRenderer& immediate, ElementState state) {
-	immediate.setRectRadius(10);
-	immediate.setColor(r, g, b);
-	immediate.drawRect2D(padded);
+	drawBasicPanel(immediate, state);
 
 	for (auto& widget : children) {
 		widget->draw(immediate, state);

@@ -3,7 +3,7 @@
 #include <gui/widget.hpp>
 #include <shared/logger.hpp>
 
-bool Unit::isAbsolute() const {
+bool Unit::isResolvable() const {
 	return (metric == Metric::PIXELS) || (metric == Metric::VIEWPORT_WIDTH) || (metric == Metric::VIEWPORT_HEIGHT);
 }
 

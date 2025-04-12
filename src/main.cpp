@@ -64,9 +64,10 @@ static void entry(Args& args) {
 		sub->height = Unit::px(100);
 		sub->min_width = Unit::px(100);
 		sub->min_height = Unit::px(100);
-		sub->r = 100;
-		sub->g = 100;
-		sub->b = 250;
+		sub->color = {100, 100, 100};
+		sub->radius = Unit::px(10);
+		sub->border = Unit::px(2);
+		sub->border_color = {0, 0, 0};
 		sub->padding = Unit::px(10);
 
 		sub->margin = Unit::px(10);
@@ -76,10 +77,7 @@ static void entry(Args& args) {
 		auto sub = std::make_shared<PanelWidget>();
 		panel->addWidget(sub);
 
-		sub->r = 250;
-		sub->g = 100;
-		sub->b = 100;
-
+		sub->color = {250, 100, 100};
 		sub->addWidget(text);
 	}
 
@@ -89,31 +87,7 @@ static void entry(Args& args) {
 	panel->vertical = VerticalAlignment::CENTER;
 	panel->horizontal = HorizontalAlignment::CENTER;
 
-	// auto slider = std::make_shared<SliderWidget>([] () noexcept {
-	//
-	// });
-	// slider->setBounds({600, 300, 100, 50});
-	//
-	// auto button = std::make_shared<ButtonWidget>("Hello", [] () noexcept {
-	// 	out::debug("Pressed button!");
-	// });
-	// button->setBounds({600, 400, 100, 50});
-	//
-	// auto input = std::make_shared<FieldWidget>([] () noexcept {
-	//
-	// });
-	// input->setBounds({600, 500, 100, 50});
-	//
-	// auto select = std::make_shared<SelectWidget>([] () noexcept {
-	//
-	// });
-	// select->setBounds({600, 600, 100, 50});
-
 	context->setRoot(panel);
-	// panel->addWidget(slider);
-	// panel->addWidget(button);
-	// panel->addWidget(input);
-	// panel->addWidget(select);
 
 	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 	window.getInputDispatcher().registerListener(std::dynamic_pointer_cast<InputListener>(context));

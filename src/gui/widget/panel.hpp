@@ -8,12 +8,6 @@
 
 class PanelWidget : public Widget {
 
-	public: // FIXME
-
-		uint8_t r = 200;
-		uint8_t g = 195;
-		uint8_t b = 180;
-
 	public:
 
 		PanelWidget();

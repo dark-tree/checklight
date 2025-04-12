@@ -125,14 +125,14 @@ void FieldWidget::drawCursorSelection(ImmediateRenderer& immediate) {
 	bool show = shouldDrawCursor();
 
 	if (show) {
-		immediate.setColor(0, 0, 100);
+		immediate.setFill(0, 0, 100);
 		immediate.drawLine2D(start, baseline, start, baseline + height);
 	}
 
 	if (cursor.hasSelection()) {
 		immediate.drawLine2D(end, baseline, end, baseline + height);
 
-		immediate.setColor(100, 100, 200, 150);
+		immediate.setFill(100, 100, 200, 150);
 		immediate.setRectRadius(0);
 		immediate.drawRect2D(start, baseline, end - start, height);
 	}
@@ -188,22 +188,22 @@ void FieldWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 	if (isFocused()) {
 		immediate.setRectRadius(5);
-		immediate.setColor(255, 255, 0);
+		immediate.setFill(255, 255, 0);
 		immediate.drawRect2D(padded.expand(8, 8, 8, 8));
 	}
 
 	if (enabled) {
 		if (hovered) {
 			if (pressed) {
-				immediate.setColor(255, 100, 100);
+				immediate.setFill(255, 100, 100);
 			} else {
-				immediate.setColor(255, 80, 80);
+				immediate.setFill(255, 80, 80);
 			}
 		} else {
-			immediate.setColor(255, 0, 0);
+			immediate.setFill(255, 0, 0);
 		}
 	} else {
-		immediate.setColor(70, 70, 70);
+		immediate.setFill(70, 70, 70);
 	}
 
 	immediate.setRectRadius(10);
@@ -215,10 +215,10 @@ void FieldWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 	baked = immediate.bakeUnicode(content.x, content.y, getDisplayUnicodes());
 
 	if (text.empty()) {
-		immediate.setColor(50, 50, 50, 200);
+		immediate.setFill(50, 50, 50, 200);
 		immediate.drawString2D(content.x, content.y, placeholder);
 	} else {
-		immediate.setColor(0, 0, 0);
+		immediate.setFill(0, 0, 0);
 		immediate.drawText2D(0, 0, *baked);
 	}
 

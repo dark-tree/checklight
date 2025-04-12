@@ -61,7 +61,7 @@ void TextWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 	TextBakery bakery = getBakery(content.w, content.h);
 
-	immediate.setColor(0, 0, 0);
+	immediate.setFill(0, 0, 0);
 	immediate.drawText2D(content.x, content.y, bakery.bakeString(0, 0, text.c_str()));
 
 }

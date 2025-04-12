@@ -45,25 +45,25 @@ void SliderWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 	if (isFocused()) {
 		immediate.setRectRadius(5);
-		immediate.setColor(255, 255, 0);
+		immediate.setFill(255, 255, 0);
 		immediate.drawRect2D(padded.expand(8, 8, 8, 8));
 	}
 
 	glm::vec2 knob = getKnobPosition(value);
 
 	// background
-	immediate.setColor(255, 0, 0);
+	immediate.setFill(255, 0, 0);
 	immediate.setRectRadius(10);
 	immediate.drawRect2D(padded);
 
 	const float rail = rail_size.get(styling);
 
 	// slider rail
-	immediate.setColor(0, 255, 0);
+	immediate.setFill(0, 255, 0);
 	immediate.drawRect2D(content.x, knob.y - rail / 2, content.w, rail);
 
 	// slider knob
-	immediate.setColor(0, 0, 255);
+	immediate.setFill(0, 0, 255);
 	immediate.drawCircle2D(knob.x, knob.y, knob_size.get(styling));
 }
 
