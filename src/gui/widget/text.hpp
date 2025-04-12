@@ -5,15 +5,24 @@
 
 class TextWidget : public Widget {
 
-	public: // FIXME
+	public:
 
-		bool wrap = true;
+		// this should be private but we need it in tests
+		// so leave it here for now
+
+		/// Get internal configured text geometry bakery
+		TextBakery getBakery(int width, int height) const;
+
+	private:
+
 		std::string text;
 
 		void applyWrapSizing() override;
 		void updateWidgetText(const std::string& text);
 
-		TextBakery getBakery(int width, int height) const;
+	public:
+
+		StyleProperty<bool> wrap = true;
 
 	public:
 

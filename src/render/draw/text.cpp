@@ -150,9 +150,9 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 	y += size / 2;
 
 	const auto submit = [&] {
-		int start = lines.empty() ? 0 : lines.back().end;
+		const int start = lines.empty() ? 0 : lines.back().end;
 
-		if (start == adjusted.size() - 1) {
+		if (start == static_cast<int>(adjusted.size()) - 1) {
 			return;
 		}
 

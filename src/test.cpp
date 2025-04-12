@@ -167,7 +167,7 @@ TEST(gui_simple_padded_absolute) {
 	for (Flow flow : {Flow::LEFT_TO_RIGHT, Flow::RIGHT_TO_LEFT, Flow::TOP_TO_BOTTOM, Flow::BOTTOM_TO_TOP}) {
 
 		auto context = std::make_shared<WidgetContext>();
-		auto root = std::make_shared<RootWidget>();
+		auto root = std::make_shared<RootWidget>(10, 10);
 		auto sub = std::make_shared<PanelWidget>();
 
 		root->addWidget(sub);
@@ -181,7 +181,6 @@ TEST(gui_simple_padded_absolute) {
 		sub->width = Unit::px(100);
 		sub->height = Unit::px(100);
 
-		// FIXME root->rebuild(10, 10);
 		// manually build layout as normally that would happen on first draw()
 		root->rebuildLayout();
 
@@ -214,7 +213,7 @@ TEST(gui_simple_padded_fit) {
 	for (Flow flow : {Flow::LEFT_TO_RIGHT, Flow::RIGHT_TO_LEFT, Flow::TOP_TO_BOTTOM, Flow::BOTTOM_TO_TOP}) {
 
 		auto context = std::make_shared<WidgetContext>();
-		auto root = std::make_shared<RootWidget>();
+		auto root = std::make_shared<RootWidget>(10, 10);
 		auto sub = std::make_shared<PanelWidget>();
 
 		root->addWidget(sub);
@@ -228,7 +227,6 @@ TEST(gui_simple_padded_fit) {
 		sub->height = Unit::px(100);
 		sub->padding = {Unit::px(20), Unit::px(10)};
 
-		// FIXME root->rebuild(10, 10);
 		// manually build layout as normally that would happen on first draw()
 		root->rebuildLayout();
 

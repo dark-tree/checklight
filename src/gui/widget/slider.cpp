@@ -6,7 +6,16 @@
 #include "render/immediate.hpp"
 
 SliderWidget::SliderWidget()
-: InputWidget(), callback({}) {}
+: SliderWidget(0) {}
+
+SliderWidget::SliderWidget(float value)
+: SliderWidget(value, 0) {}
+
+SliderWidget::SliderWidget(float value, float step)
+: InputWidget() {
+	setValue(value);
+	setStep(step);
+}
 
 void SliderWidget::updateValue() {
 	if (value > 1.0) value = 1.0;
@@ -47,13 +56,15 @@ void SliderWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 	immediate.setRectRadius(10);
 	immediate.drawRect2D(padded);
 
+	const float rail = rail_size.get(styling);
+
 	// slider rail
 	immediate.setColor(0, 255, 0);
-	immediate.drawRect2D(content.x, knob.y - rail_size / 2, content.w, rail_size);
+	immediate.drawRect2D(content.x, knob.y - rail / 2, content.w, rail);
 
 	// slider knob
 	immediate.setColor(0, 0, 255);
-	immediate.drawCircle2D(knob.x, knob.y, knob_size);
+	immediate.drawCircle2D(knob.x, knob.y, knob_size.get(styling));
 }
 
 bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
@@ -81,7 +92,7 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 
 	if (auto* positioned = any.as<PositionedEvent>()) {
 
-		const float range = knob_size + 6; // interaction margin
+		const float range = knob_size.get(styling) + 6; // interaction margin
 		const float half = range / 2;
 		hovered = positioned->isWithinBox(knob.x - half, knob.y - half, range, range);
 		bool used = false;
@@ -139,4 +150,12 @@ void SliderWidget::onChange(const std::function <void(float)>& callback) {
 
 float SliderWidget::getValue() const {
 	return value;
+}
+
+void SliderWidget::setStep(float step) {
+	this->step = step;
+}
+
+void SliderWidget::setValue(float value) {
+	this->value = value;
 }

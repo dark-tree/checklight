@@ -27,7 +27,7 @@ void Widget::rebuild(int x, int y) {
 	// TODO
 	StyleContext styling;
 
-	applyStyleContex(styling);
+	applyStyleContext(styling);
 	applyFitSizing(Channel::WIDTH);
 	applyGrowSizing(Channel::WIDTH);
 	applyWrapSizing();
@@ -64,13 +64,13 @@ void Widget::applyWrapSizing() {
 	}
 }
 
-void Widget::applyStyleContex(const StyleContext& styling) {
+void Widget::applyStyleContext(const StyleContext& styling) {
 
 	this->styling = styling;
 
 	// here the order is irrelevant, as long as this is the first stage of a rebuild()
 	for (const std::shared_ptr<Widget>& widget : children) {
-		widget->applyStyleContex(styling);
+		widget->applyStyleContext(styling);
 	}
 
 }
@@ -392,7 +392,7 @@ void Widget::update() {
 		return;
 	}
 
-	out::error("UI update request died during propagation!");
+	out::error("UI update died during propagation! Is the RootWidget missing?");
 }
 
 /*

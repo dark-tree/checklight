@@ -25,7 +25,7 @@ static void entry(Args& args) {
 	Window& window = system.getWindow();
 
 	auto context = std::make_shared<WidgetContext>();
-	auto panel = std::make_shared<RootWidget>();
+	auto panel = std::make_shared<RootWidget>(10, 10);
 
 	auto text = std::make_shared<TextWidget>("Język lechicki z grupy zachodniosłowiańskiej");
 

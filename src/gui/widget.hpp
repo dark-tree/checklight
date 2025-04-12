@@ -40,29 +40,30 @@ struct Spacing {
 
 class Widget : public std::enable_shared_from_this<Widget> {
 
-	public: // FIXME
+	public:
+
+		// this probably should be made protected but we need those
+		// in tests so for now let it be, just pleeease don't modify those
+		// fields, especially outside the tests
+
+		/// Widget dimensions in pixels
+		Sizing sizing;
+
+		/// Widget content box with added padding
+		Box2D padded { {},{},{},{} };
+
+		/// Widget content box
+		Box2D content { {},{},{},{} };
+
+	protected:
 
 		std::weak_ptr<Widget> parent;
 		std::vector<std::shared_ptr<Widget>> children;
 
-		Sizing sizing;
 		Sizing minimal;
-
 		StyleContext styling;
-		StyleProperty<Flow> flow = Flow::LEFT_TO_RIGHT;
-		StyleProperty<VerticalAlignment> vertical = VerticalAlignment::TOP;
-		StyleProperty<HorizontalAlignment> horizontal = HorizontalAlignment::LEFT;
-		StyleProperty<Unit> width = Unit::fit();
-		StyleProperty<Unit> height = Unit::fit();
-		StyleProperty<Unit> gap = Unit::zero();
-		StyleProperty<Unit> min_width = Unit::zero();
-		StyleProperty<Unit> min_height = Unit::zero();
-		StyleProperty<Spacing> margin {Spacing {}};
-		StyleProperty<Spacing> padding {Spacing {}};
 
-		Box2D padded { {},{},{},{} };   // content box with added padding
-		Box2D content { {},{},{},{} };  // content box
-
+		/// Returns the 0.0/0.5/1.0 multiplier of the channel alignment
 		float getAlignmentFactor(Channel channel);
 
 		/// Can be called after the given channel was already computed with applyFitSizing()
@@ -71,8 +72,10 @@ class Widget : public std::enable_shared_from_this<Widget> {
 		/// Called after the on-flow dimension has ben computed, can be used to adjust content the acros-flow dimension
 		virtual void applyWrapSizing();
 
+	private:
+
 		/// Propagate the styling meta-parameters to all children
-		void applyStyleContex(const StyleContext& context);
+		void applyStyleContext(const StyleContext& context);
 
 		/// Compute element size based on its children (absolute & fit content)
 		void applyFitSizing(Channel channel);
@@ -91,10 +94,44 @@ class Widget : public std::enable_shared_from_this<Widget> {
 
 	public:
 
+		/// Child elements flow direction
+		StyleProperty<Flow> flow = Flow::LEFT_TO_RIGHT;
+
+		/// Vertical alignment of children elements
+		StyleProperty<VerticalAlignment> vertical = VerticalAlignment::TOP;
+
+		/// Horizontal alignment of children elements
+		StyleProperty<HorizontalAlignment> horizontal = HorizontalAlignment::LEFT;
+
+		/// Element width, can be overwritten by the layout algorithm to make the UI fit
+		StyleProperty<Unit> width = Unit::fit();
+
+		/// Element height, can be overwritten by the layout algorithm to make the UI fit
+		StyleProperty<Unit> height = Unit::fit();
+
+		/// Gap between children of this element
+		StyleProperty<Unit> gap = Unit::zero();
+
+		/// Minimal element width, layout algorithm is forced to follow this value
+		StyleProperty<Unit> min_width = Unit::zero();
+
+		/// Minimal element height, layout algorithm is forced to follow this value
+		StyleProperty<Unit> min_height = Unit::zero();
+
+		/// Margin around the element
+		StyleProperty<Spacing> margin {Spacing {}};
+
+		/// Padding inside the element
+		StyleProperty<Spacing> padding {Spacing {}};
+
+	public:
+
 		virtual ~Widget();
 		virtual void draw(ImmediateRenderer& immediate, ElementState state) = 0;
 		virtual bool event(WidgetContext& context, const InputEvent& event);
 		virtual void scan(Navigator& navigator);
+
+		/// Mark the layout for update before next frame
 		virtual void update();
 
 };
