@@ -18,4 +18,7 @@ std::string Component::toString() {
 	return "{ id: " + std::to_string(id) + " type: \"" + getComponentName() + "\" }";
 }
 
+void Component::remove() {
+	to_remove = true;
+}
 

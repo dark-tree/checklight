@@ -3,6 +3,7 @@
 #include <vstl.hpp>
 
 // checklight include
+#include <engine/boardManager.hpp>
 #include <gui/gui.hpp>
 #include <render/render.hpp>
 
@@ -421,5 +422,5 @@ TEST(gui_alignment_along_horizontal) {
 
 	CHECK(sub2->content.x, 300);
 	CHECK(sub2->content.y, 0);
-
 };
+

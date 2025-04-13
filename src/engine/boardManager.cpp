@@ -4,12 +4,14 @@
 #include "engine/entity/component/camera.hpp"
 #include "shared/logger.hpp"
 #include <chrono>
+#include <render/render.hpp>
+#include <render/renderer.hpp>
 
 /*
  * BoardManager
  */
 
-BoardManager::BoardManager(Window &window) {
+BoardManager::BoardManager() {
 	std::shared_ptr<Board> new_board = std::make_shared<Board>();
 	addBoard(new_board);
 
@@ -17,7 +19,6 @@ BoardManager::BoardManager(Window &window) {
 	task_delegator = std::make_unique<PhasedTaskDelegator>(task_pool);
 	globalTickNumber = 0;
 
-	w = &window;
 	standardSetup();
 
 	physics_thread = std::thread(fixedUpdateCycle, this);
@@ -36,7 +37,7 @@ BoardManager::~BoardManager() {
 void BoardManager::standardSetup(){
 	std::shared_ptr<Pawn> cameraPawn = std::make_shared<SpatialPawn>();
 	std::shared_ptr<Component> cam = std::make_shared<Camera>();
-	w->getInputDispatcher().registerListener(cam); //TODO temporary
+	RenderSystem::system->getWindow().getInputDispatcher().registerListener(cam); //TODO temporary
 
 	cameraPawn->addComponent(cam);
 	cameraPawn->setName("Main Camera");
@@ -79,10 +80,10 @@ void BoardManager::updateCycle() {
 
 	//------hardcoded updates-------
 
-	/*
+
 	if(globalTickNumber == 3000){
 		usingBoard->pawns.findByID(4)->remove();
-	}*/
+	}
 
 	/*
 	auto p = std::make_shared<Pawn>();
@@ -97,11 +98,11 @@ void BoardManager::updateCycle() {
 
 	//-----------debug---------------
 
-
-	if(globalTickNumber % 2000 == 1){
-		out::info("tick: %d", globalTickNumber);
-		usingBoard->printBoardTreeVerbose();
-	}
+	//
+	// if(globalTickNumber % 2000 == 1){
+	// 	out::info("tick: %d", globalTickNumber);
+	// 	usingBoard->printBoardTreeVerbose();
+	// }
 	globalTickNumber++;
 }
 

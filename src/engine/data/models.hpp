@@ -3,7 +3,6 @@
 #include "external.hpp"
 
 class Models{
-private:
 	inline static bool initialized = false;
 	inline static std::vector<std::shared_ptr<RenderModel>> models;
 

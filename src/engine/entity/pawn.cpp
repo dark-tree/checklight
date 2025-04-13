@@ -380,10 +380,10 @@ bool Pawn::remove() {
 		FAULT("Cant remove root pawn!");
 	}
 	if(!to_remove){
-		#ifdef ENGINE_DEBUG
-				if(pawn_state == PawnState::REMOVED)
-					FAULT("Pawn state is REMOVED before using remove() function on it");
-		#endif
+#ifdef ENGINE_DEBUG
+		if(pawn_state == PawnState::REMOVED)
+			FAULT("Pawn state is REMOVED before using remove() function on it");
+#endif
 		to_remove = true;
 
 		//this needs to be before destroying children and setting pawn state, otherwise it will break
@@ -395,11 +395,9 @@ bool Pawn::remove() {
 
 		//removing components
 		for(auto c : components){
-			c->to_remove = true;
+			c->remove();
 			board->queueRemove(c);
 		}
-
-
 		return true;
 	}
 	else{

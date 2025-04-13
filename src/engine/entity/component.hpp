@@ -32,6 +32,7 @@ public:
 	 */
 	std::string getComponentName() const;
 
+	virtual void remove();
 
 	std::string toString();
 };

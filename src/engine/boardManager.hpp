@@ -28,7 +28,6 @@ protected:
 
 	std::atomic<bool> continue_loop;
 
-	Window* w;
 	/*
 	 * Creates standard setup of objects and components
 	 */
@@ -38,7 +37,7 @@ protected:
 
 public:
 
-	explicit BoardManager(Window &window);
+	explicit BoardManager();
 
 	~BoardManager();
 

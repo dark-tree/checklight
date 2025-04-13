@@ -122,7 +122,7 @@ public:
 	Board* getScene();
 
 	/**
-	 * Returns all of the pawns children
+	 * Returns all the pawns children
 	 */
 	std::vector<std::shared_ptr<Pawn>>& getChildren();
 
@@ -143,7 +143,7 @@ public:
 
 
 	/**
-	 * Returns true if its a root of an pawn tree (therefore of RootPawn type)
+	 * Returns true if it's a root of a pawn tree (therefore of RootPawn type)
 	 */
 	virtual bool isRoot();
 
@@ -168,17 +168,17 @@ public:
 	std::string toString() const;
 
 	/**
-	 * returns information about the pawn in a string string
+	 * returns information about the pawn in a string
 	 */
 	std::string toStringVerbose() const;
 
 	/**
-	 * returns root pawn or nullptr if root pawn doesn't exists
+	 * returns root pawn or nullptr if root pawn doesn't exist
 	 */
 	std::shared_ptr<RootPawn> getRoot();
 
 	/**
-	 * returns information about the state of pawn in regards to the way its stored and its visibility
+	 * returns information about the state of pawn in regard to the way its stored and its visibility
 	 */
 	PawnState::State getState() const;
 

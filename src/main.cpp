@@ -101,7 +101,7 @@ static void entry(Args& args) {
 	window.getInputDispatcher().registerListener(std::dynamic_pointer_cast<InputListener>(context));
 	auto models = system.importObj("assets/models/checklight.obj");
 
-	BoardManager manager(window);
+	BoardManager manager;
 
 	std::shared_ptr<Pawn> pawn = std::make_shared<Pawn>();
 

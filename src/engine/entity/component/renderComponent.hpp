@@ -21,4 +21,6 @@ protected:
 	InputResult onEvent(const InputEvent &event) override;
 
 	void setRendering(bool is_rendering);
+
+	void remove() override;
 };

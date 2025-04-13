@@ -35,6 +35,12 @@ void RenderComponent::setRendering(bool is_rendering) {
 	rendering = is_rendering;
 }
 
+void RenderComponent::remove() {
+	GameComponent::remove();
+	//TODO remove form GPU
+	renderObject->setActive(false);
+}
+
 
 
 
