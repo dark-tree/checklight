@@ -12,13 +12,13 @@ ButtonWidget::ButtonWidget()
 
 	this->border_color = Color {40, 40, 80};
 
-	this->border = [] (const StyleContext& context, const ElementState& state) {
-		return state.focused ? Unit::px(1) : Unit::px(0);
+	this->border.transition(100ms, ease::ofInOut) = [] (const StyleContext& context, const ElementState& state) noexcept -> Unit {
+		return state.focused ? Unit::px(4) : Unit::px(0);
 	};
 
 	this->radius = Unit::px(4);
 
-	this->color = [] (const StyleContext& context, const ElementState& state) -> Color {
+	this->color = [] (const StyleContext& context, const ElementState& state) noexcept -> Color {
 		if (state.interaction == ElementState::PRESSED) return {220, 220, 240};
 		if (state.interaction == ElementState::HOVER) return {200, 200, 220};
 

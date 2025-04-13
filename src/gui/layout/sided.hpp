@@ -35,3 +35,11 @@ struct BoxUnit {
 	}
 
 };
+
+constexpr bool operator == (const BoxUnit& lhs, const BoxUnit& rhs) {
+	return lhs.top == rhs.top && lhs.bottom == rhs.bottom && lhs.left == rhs.left && lhs.right == rhs.right;
+}
+
+constexpr bool operator != (const BoxUnit& lhs, const BoxUnit& rhs) {
+	return lhs.top != rhs.top || lhs.bottom != rhs.bottom || lhs.left != rhs.left || lhs.right != rhs.right;
+}

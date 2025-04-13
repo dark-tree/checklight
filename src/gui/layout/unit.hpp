@@ -63,7 +63,6 @@ struct Unit {
 
 };
 
-
 /*
  * Unit Operators
  */
@@ -72,3 +71,10 @@ constexpr Unit operator - (const Unit& unit) {
 	return {- unit.value, unit.metric};
 }
 
+constexpr bool operator == (const Unit& lhs, const Unit& rhs) {
+	return lhs.value == rhs.value && lhs.metric == rhs.metric;
+}
+
+constexpr bool operator != (const Unit& lhs, const Unit& rhs) {
+	return lhs.value != rhs.value || lhs.metric != rhs.metric;
+}

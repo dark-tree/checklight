@@ -26,3 +26,11 @@ struct RadiusUnit {
 	}
 
 };
+
+constexpr bool operator == (const RadiusUnit& lhs, const RadiusUnit& rhs) {
+	return lhs.top_left == rhs.top_left && lhs.top_right == rhs.top_right && lhs.bottom_left == rhs.bottom_left && lhs.bottom_right == rhs.bottom_right;
+}
+
+constexpr bool operator != (const RadiusUnit& lhs, const RadiusUnit& rhs) {
+	return lhs.top_left != rhs.top_left || lhs.top_right != rhs.top_right || lhs.bottom_left != rhs.bottom_left || lhs.bottom_right != rhs.bottom_right;
+}

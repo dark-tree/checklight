@@ -22,7 +22,7 @@ class TextWidget : public Widget {
 
 	public:
 
-		/// Should the text wrap if there is not enought space?
+		/// Should the text wrap if there is not enough space?
 		StyleProperty<bool> wrap = true;
 
 		/// Font size

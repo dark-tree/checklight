@@ -18,7 +18,7 @@ SliderWidget::SliderWidget(float value, float step)
 
 	this->knob_border_color = Color {40, 40, 80};
 
-	this->knob_border = [] (const StyleContext& context, const ElementState& state) {
+	this->knob_border = [] (const StyleContext& context, const ElementState& state) noexcept -> Unit {
 		return state.focused ? Unit::px(1) : Unit::px(0);
 	};
 }

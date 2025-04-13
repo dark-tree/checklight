@@ -51,7 +51,7 @@ void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 	double time = std::clamp((glfwGetTime() - cooldown) * speed, 0.0, 1.0);
 	bool show = unrolled || (time <= 1.0);
 	if (!unrolled) time = 1 - time;
-	double delta = math::easeInOut(time);
+	double delta = ease::ofInOut(time);
 
 	// background
 	immediate.setRectRadius(10, (1 - delta) * 10);
