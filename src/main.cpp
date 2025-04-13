@@ -100,6 +100,7 @@ int main() {
 	system.getParameters().setDenoise(true);
 	system.getParameters().setShadows(true);
 	system.getParameters().setGISamples(1);
+	system.getParameters().setPortalGIEnable(false);
 
 	system.getLightManager().addLight({
 		.type = Light::DIRECTIONAL,
