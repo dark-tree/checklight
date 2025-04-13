@@ -119,7 +119,7 @@ struct StyleProperty : std::conditional_t<HasInterpolator<T>, StyleInterpolator<
 					this->begin = current;
 					this->end = next;
 					this->stamp = now + this->duration;
-					return this->end;
+					return this->begin;
 				}
 
 				return current;
