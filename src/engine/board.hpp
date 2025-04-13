@@ -35,7 +35,7 @@ public:
 	/**
 	 * performs standard update on a pawn tree
 	 */
-	void updateBoard();
+	void updateBoard(double delta);
 
 	/**
 	 * performs fixed update on a pawn tree

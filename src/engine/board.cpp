@@ -33,8 +33,8 @@ void Board::queueRemove(const std::shared_ptr<Component>& pToRemove) {
 	components_to_remove->push(pToRemove);
 }
 
-void Board::updateBoard() {
-	pawns.updateTree();
+void Board::updateBoard(double delta) {
+	pawns.updateTree(delta);
 }
 
 

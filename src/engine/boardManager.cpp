@@ -11,21 +11,25 @@
 
 BoardManager::BoardManager(Window &window) {
 	std::shared_ptr<Board> new_board = std::make_shared<Board>();
-	continueLoop = true;
+	addBoard(new_board);
 
-	taskDelegator = std::make_unique<PhasedTaskDelegator>(taskPool);
-
-	physicsDelegator = std::make_unique<MailboxTaskDelegator>(taskPool);
-
+	continue_loop = true;
+	task_delegator = std::make_unique<PhasedTaskDelegator>(task_pool);
 	globalTickNumber = 0;
-	boardList.push_back(new_board);
-	current_board = new_board;
+
 	w = &window;
 	standardSetup();
 
-	physicsDelegator->enqueue( [this]() {
-		fixedUpdateCycle();
-	});
+	physics_thread = std::thread(fixedUpdateCycle, this);
+	// physicsDelegator->enqueue( [this]() {
+	// 	fixedUpdateCycle();
+	// });
+}
+
+BoardManager::~BoardManager() {
+	continue_loop = false;
+	physics_thread.join();
+
 }
 
 
@@ -37,6 +41,7 @@ void BoardManager::standardSetup(){
 	cameraPawn->addComponent(cam);
 	cameraPawn->setName("Main Camera");
 
+
 	std::shared_ptr<Board> cb = current_board.lock();
 
 	std::shared_ptr<SpatialPawn> cameraPawn2 = std::static_pointer_cast<SpatialPawn>(cameraPawn);
@@ -44,21 +49,36 @@ void BoardManager::standardSetup(){
 	cb->addPawnToRoot(cameraPawn);
 }
 
-void BoardManager::updateCycle() {
+void BoardManager::addBoard(const std::shared_ptr<Board>& new_board) {
+	boardList.push_back(new_board);
+	current_board = new_board;
+}
 
-	//initate
+void BoardManager::updateCycle() {
+	//-----------static------------
+
+	static auto before = std::chrono::high_resolution_clock::now();
+
+	//-----------initate-----------
+
 	std::shared_ptr<Board> usingBoard;
 
 	if(!current_board.expired()) usingBoard = current_board.lock();
 	else{
-		FAULT("unhandled yet...");
-		//TODO
+		bool success;
+		current_board = findWorkingBoard(success);
+		if (success) usingBoard = current_board.lock();
+		else FAULT("There is no available board!");
 	}
 
-	//update
-	usingBoard->updateBoard();
+	//-----------update-------------
 
-	//hardcoded updates
+	const auto now = std::chrono::high_resolution_clock::now();
+	usingBoard->updateBoard(std::chrono::duration_cast<std::chrono::milliseconds>(now-before).count());
+	before = now;
+
+	//------hardcoded updates-------
+
 	/*
 	if(globalTickNumber == 3000){
 		usingBoard->pawns.findByID(4)->remove();
@@ -68,13 +88,14 @@ void BoardManager::updateCycle() {
 	auto p = std::make_shared<Pawn>();
 	usingBoard->addPawnToRoot(p);*/
 
-	//communicate with renderer
+	//---communicate with renderer---
 
 
-	//remove
+	//-----------remove--------------
+
 	usingBoard->dequeueRemove(100);
 
-	//debug
+	//-----------debug---------------
 
 
 	if(globalTickNumber % 2000 == 1){
@@ -91,7 +112,7 @@ void BoardManager::fixedUpdateCycle() {
 
 	auto nextTick = std::chrono::steady_clock::now();
 	// auto start = std::chrono::steady_clock::now();
-	while(continueLoop){
+	while(continue_loop){
 		nextTick = nextTick + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
 				std::chrono::duration<double>(TICK_DURATION));
 
@@ -107,6 +128,40 @@ void BoardManager::fixedUpdateCycle() {
 		// printf("%f %f\n", sum/(double)amount, tick_calculation_time);
 		std::this_thread::sleep_until(nextTick);
 	}
+	out::info("%s", "Closing the physics thread...");
+}
+
+std::shared_ptr<Board> BoardManager::findWorkingBoard(bool &success) {
+	std::shared_ptr<Board> new_board;
+	switch (board_revocery) {
+		case BoardRevocery::Default:
+			if (!default_board.expired()) {
+				new_board = default_board.lock();
+				success = true;
+			}else {
+				success = false;
+			}
+			break;
+		case BoardRevocery::None:
+			success = false;
+			break;
+		case BoardRevocery::Search:
+			if (default_board.expired()) {
+				new_board = default_board.lock();
+				success = true;
+			} else {
+				if (boardList.size() > 0) {
+					new_board = boardList[0];
+					success = true;
+				}else {
+					success = false;
+				}
+			}
+			break;
+		default:
+			success = false;
+	}
+	return new_board;
 }
 
 

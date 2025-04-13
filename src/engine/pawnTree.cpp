@@ -122,20 +122,20 @@ std::shared_ptr<RootPawn> PawnTree::getRoot() {
 	return root;
 }
 
-void PawnTree::updateTree() {
+void PawnTree::updateTree(double delta) {
 	std::vector<std::shared_ptr<Pawn>> pawn_children = root->getChildren();
 	for (std::shared_ptr<Pawn> pawn_child : pawn_children) {
-		updateTreeRecursion(pawn_child);
+		updateTreeRecursion(pawn_child, delta);
 	}
 }
 
-void PawnTree::updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update) {
-	pawn_to_update->onUpdate();
+void PawnTree::updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update, double delta) {
+	pawn_to_update->onUpdate(delta);
 
 	//TODO maybe create iterator of some kind with lambda
 	std::vector<std::shared_ptr<Pawn>> pawn_children = pawn_to_update->getChildren();
 	for (std::shared_ptr<Pawn> pawn_child : pawn_children) {
-		updateTreeRecursion(pawn_child);
+		updateTreeRecursion(pawn_child, delta);
 	}
 }
 

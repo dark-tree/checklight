@@ -12,7 +12,7 @@ protected:
 	/**
 	 * performs standard game update on all the tree elements, triggered by updateTree() function
 	 */
-	void updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update);
+	void updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update, double delta);
 
 	/**
 	 * performs standard game update on all the tree elements, triggered by fixedUpdateTree() function
@@ -93,7 +93,7 @@ public:
 	/**
 	 * performs standard game update on all the tree elements
 	 */
-	void updateTree();
+	void updateTree(double delta);
 
 	/**
 	 * performs fixed game update on all the tree elements

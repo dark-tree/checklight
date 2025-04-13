@@ -203,9 +203,9 @@ bool PawnState::convert(Pawn* new_child,Pawn* new_parent) {
  * Pawn
  */
 
-void Pawn::onUpdate() {
+void Pawn::onUpdate(double delta) {
 	std::shared_ptr<Pawn> p = shared_from_this();
-	Context cntx(0.01f, p);
+	Context cntx(delta, p);
 	for (const std::shared_ptr<Component>& c : components) {
 		c->onUpdate(cntx);
 	}

@@ -59,7 +59,7 @@ protected:
 	/**
 	 * All the things that happens on basic update of the engine (intervals between basic updates can vary)
 	 */
-	virtual void onUpdate();
+	virtual void onUpdate(double delta);
 
 	/**
 	 * All the things that happens on fixed update of the engine (fixed intervals between updates, updates with the same frequency as physics)
