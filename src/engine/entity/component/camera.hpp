@@ -12,6 +12,9 @@ protected:
 
 	glm::vec2 virtual_mouse_position{};
 
+	double speed;
+	double speed_modifier;
+
 	bool mouse_init;
 	bool mouse_captured;
 
@@ -35,6 +38,10 @@ public:
 	glm::vec3 getCamPosition();
 
 	glm::vec3 getCamFacing();
+
+	double getSpeed();
+
+	void setSpeed(double speed);
 
 	Camera();
 };

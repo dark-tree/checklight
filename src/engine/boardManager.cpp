@@ -74,7 +74,7 @@ void BoardManager::updateCycle() {
 	//-----------update-------------
 
 	const auto now = std::chrono::high_resolution_clock::now();
-	usingBoard->updateBoard(std::chrono::duration_cast<std::chrono::milliseconds>(now-before).count());
+	usingBoard->updateBoard(std::chrono::duration<double>(now-before).count());
 	before = now;
 
 	//------hardcoded updates-------
