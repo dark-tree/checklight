@@ -11,7 +11,9 @@
  * BoardManager
  */
 
-BoardManager::BoardManager() {
+BoardManager::BoardManager(std::shared_ptr<InputDispatcher> disp) {
+	dispatcher = disp;
+
 	std::shared_ptr<Board> new_board = std::make_shared<Board>();
 	addBoard(new_board);
 
@@ -37,7 +39,8 @@ BoardManager::~BoardManager() {
 void BoardManager::standardSetup(){
 	std::shared_ptr<Pawn> cameraPawn = std::make_shared<SpatialPawn>();
 	std::shared_ptr<Component> cam = std::make_shared<Camera>();
-	RenderSystem::system->getWindow().getInputDispatcher().registerListener(cam); //TODO temporary
+
+	if (dispatcher) dispatcher->registerListener(cam);
 
 	cameraPawn->addComponent(cam);
 	cameraPawn->setName("Main Camera");

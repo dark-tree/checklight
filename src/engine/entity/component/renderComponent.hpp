@@ -9,6 +9,7 @@ protected:
 public:
 	explicit RenderComponent(Models::Shape s);
 
+	~RenderComponent() override;
 protected:
 	bool rendering;
 
@@ -23,4 +24,6 @@ protected:
 	void setRendering(bool is_rendering);
 
 	void remove() override;
+
+
 };

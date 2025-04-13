@@ -22,6 +22,8 @@ protected:
 	///current board recovery mode
 	BoardRevocery board_revocery;
 
+	std::shared_ptr<InputDispatcher> dispatcher;
+
 	std::unique_ptr<PhasedTaskDelegator> task_delegator;
 	TaskPool task_pool;
 	std::thread physics_thread;
@@ -37,7 +39,7 @@ protected:
 
 public:
 
-	explicit BoardManager();
+	BoardManager(std::shared_ptr<InputDispatcher> disp = nullptr);
 
 	~BoardManager();
 

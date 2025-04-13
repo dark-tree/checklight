@@ -11,7 +11,6 @@ set(FETCHCONTENT_QUIET OFF)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 include(${CMAKE_SOURCE_DIR}/cmake/ShaderBuild.cmake)
 
-find_package(Python REQUIRED COMPONENTS Interpreter)
 find_package(Threads REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(Vulkan REQUIRED)
@@ -151,6 +150,7 @@ add_executable(checklight_test "src/test.cpp")
 target_link_libraries(checklight_engine_system PRIVATE
 		checklight_common
 		checklight_shared_system
+		checklight_render_system
 )
 
 target_link_libraries(checklight_render_system PRIVATE
@@ -161,6 +161,7 @@ target_link_libraries(checklight_render_system PRIVATE
 		msdfgen::msdfgen-core
 		msdfgen::msdfgen-ext
 		Freetype::Freetype
+		checklight_shared_system
 )
 
 target_link_libraries(checklight_shared_system PRIVATE
@@ -194,6 +195,7 @@ target_link_libraries(checklight_test PRIVATE
 		checklight_gui_system
 		checklight_shared_system
 		checklight_render_system
+		checklight_engine_system
 )
 
 target_include_directories(checklight_test PRIVATE

@@ -112,4 +112,10 @@ public:
 	glm::vec3 getCamPos();
 
 	glm::vec3 getCamForward();
+
+	//TODO temporary funciton for testing
+public:
+	PawnTree& getTree() {
+		return pawns;
+	}
 };

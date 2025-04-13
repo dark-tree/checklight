@@ -3,6 +3,7 @@
 #include <vstl.hpp>
 
 // checklight include
+#include <engine/board.hpp>
 #include <engine/boardManager.hpp>
 #include <gui/gui.hpp>
 #include <render/render.hpp>
@@ -351,7 +352,7 @@ TEST(gui_layout_complex_grow) {
 TEST(gui_fit_text) {
 
 	// print errors only
-	out::logger.setLogLevelMask(Logger::Level::ERROR);
+	out::logger.setLogLevelMask(0); //:3
 
 	ApplicationParameters parameters;
 	parameters.setName("Test 'gui_fit_text'");
@@ -424,3 +425,37 @@ TEST(gui_alignment_along_horizontal) {
 	CHECK(sub2->content.y, 0);
 };
 
+//-------------------------------------TESTING ENGINE----------------------------------------
+
+TEST(pawn_tree_pawn_addition) {
+	BoardManager manager;
+	std::shared_ptr<Board> board = manager.getCurrentBoard().lock();
+
+	std::shared_ptr<Pawn> r1 = std::make_shared<Pawn>();
+	std::shared_ptr<Pawn> r2 = std::make_shared<Pawn>();
+	std::shared_ptr<Pawn> r3 = std::make_shared<Pawn>();
+
+	board->addPawnToRoot(r1);
+	board->addPawnToRoot(r2);
+	board->addPawnToRoot(r3);
+
+	CHECK(board.get()->getTree().getRoot()->getChildren()[1],r1);
+	CHECK(board.get()->getTree().getRoot()->getChildren()[2],r2);
+	CHECK(board.get()->getTree().getRoot()->getChildren()[3],r3);
+
+	std::shared_ptr<Pawn> r4 = std::make_shared<Pawn>();
+	std::shared_ptr<Pawn> r5 = std::make_shared<Pawn>();
+	std::shared_ptr<Pawn> r6 = std::make_shared<Pawn>();
+
+	r4->addChild(r5); //upsi bubsi kolejnosc psuje XD
+	board->addPawnToRoot(r4);
+
+	r5->addChild(r6);
+
+	//CHECK(board.get()->getTree().getRoot()->getChildren()[1]->getChildren()[0]->getChildren()[0],r3);
+};
+
+
+TEST(update_cycle) {
+
+};
