@@ -375,7 +375,7 @@ TEST(gui_fit_text) {
 	root->width = Unit::fit();
 	root->height = Unit::fit();
 
-	auto bakery = sub1->getBakery(0, 0);
+	auto bakery = sub1->getBakery(0, 0, ElementState::ofLayout());
 	bakery.setWrapping(false);
 	auto metric = bakery.bakeString(0, 0, text).getMetrics();
 
@@ -492,5 +492,44 @@ TEST(gui_rebuild_propagation) {
 	CHECK(sub2->content.y, 0);
 	CHECK(sub2->content.w, 100);
 	CHECK(sub2->content.h, 100);
+
+};
+
+TEST(style_interpolate_numericals) {
+
+	int i0 = interpolate(2, 10, 0);
+	int i1 = interpolate(2, 10, 0.5);
+	int i2 = interpolate(2, 10, 1);
+
+	float f0 = interpolate(2.0f, 10.0f, 0);
+	float f1 = interpolate(2.0f, 10.0f, 0.5);
+	float f2 = interpolate(2.0f, 10.0f, 1);
+
+	CHECK(i0, 2);
+	CHECK(i1, 6);
+	CHECK(i2, 10);
+
+	CHECK(f0, 2.0f);
+	CHECK(f1, 6.0f);
+	CHECK(f2, 10.0f);
+
+};
+
+TEST(style_interpolate_units) {
+
+	Unit u0 = interpolate(Unit::px(2), Unit::px(10), 0.5f);
+	Unit u1 = interpolate(Unit::px(3), Unit::fit(), 0.6f);
+	Unit u2 = interpolate(Unit::px(4), Unit::fit(), 0.3f);
+	Unit u3 = interpolate(Unit::vh(0), Unit::vh(100), 0.3f);
+
+	CHECK(u0.metric, 2);
+	CHECK(u0.value, 6);
+
+	CHECK(u1.metric, Metric::FIT);
+	CHECK(u2.metric, Metric::PIXELS);
+	CHECK(u2.value, 4);
+
+	CHECK(u3.metric, Metric::VIEWPORT_HEIGHT);
+	CHECK(static_cast<int>(u3.value), 30);
 
 };

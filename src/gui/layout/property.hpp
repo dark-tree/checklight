@@ -35,12 +35,14 @@ struct StyleInterpolator {
 
 	protected:
 
+		using clock = std::chrono::steady_clock;
+		using timestamp = std::chrono::time_point<clock>;
 		using easing = float(*)(float);
 		using interpolated = std::true_type;
 
 		// interpolation timing
-		double duration = 0;
-		mutable double stamp = 0;
+		std::chrono::milliseconds duration = 0ms;
+		mutable timestamp stamp {};
 
 		// interpolation endpoints
 		mutable T begin {};
@@ -51,8 +53,17 @@ struct StyleInterpolator {
 		easing ease = nullptr;
 
 		/// Get the interpolation delta with the easing function applied
-		constexpr double getEasedDelta(double now) const {
-			return ease == nullptr ? 1 : ease((std::clamp(now - stamp, -duration, 0.0) + duration) / duration);
+		constexpr double getEasedDelta(timestamp now) const {
+			using float_cast = std::chrono::duration<float, std::chrono::seconds::period>;
+
+			const float delta = float_cast(now - stamp).count();
+			const float limit = float_cast(duration).count();
+
+			return ease == nullptr ? 1 : ease((std::clamp(delta, -limit, 0.0f) + limit) / limit);
+		}
+
+		constexpr timestamp getClockNow() const {
+			return clock::now();
 		}
 
 	public:
@@ -60,14 +71,14 @@ struct StyleInterpolator {
 		/// Enable interpolation
 		template <typename R, typename P>
 		C<T>& transition(const std::chrono::duration<R, P>& duration, easing ease = ease::ofLinear) {
-			this->duration = std::chrono::duration<float, std::chrono::seconds::period>(duration).count();
+			this->duration = duration;
 			this->ease = ease;
 			return *static_cast<C<T>*>(this);
 		}
 
 		/// Disable interpolation
 		C<T>& transition(Disabled disabled) {
-			this->duration = 0;
+			this->duration = 0ms;
 			this->ease = nullptr;
 			return *static_cast<C<T>*>(this);
 		}
@@ -91,7 +102,7 @@ struct StyleProperty : std::conditional_t<HasInterpolator<T>, StyleInterpolator<
 			// check if the interpolation mark is present
 			if constexpr (HasInterpolator<T>) {
 
-				const double now = glfwGetTime();
+				const auto now = this->getClockNow();
 
 				// init the interpolator
 				if (this->initial) {
