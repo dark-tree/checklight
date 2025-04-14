@@ -515,12 +515,27 @@ TEST(style_interpolate_numericals) {
 
 };
 
+TEST(style_resolve_units) {
+
+	Viewport::setCurrent(100, 2000);
+
+	int w = Unit::vw(0.1).pixels();
+	int h = Unit::vh(0.1).pixels();
+
+	CHECK(w, 10);
+	CHECK(h, 200);
+
+}
+
 TEST(style_interpolate_units) {
+
+	Viewport::setCurrent(100, 100);
 
 	Unit u0 = interpolate(Unit::px(2), Unit::px(10), 0.5f);
 	Unit u1 = interpolate(Unit::px(3), Unit::fit(), 0.6f);
 	Unit u2 = interpolate(Unit::px(4), Unit::fit(), 0.3f);
 	Unit u3 = interpolate(Unit::vh(0), Unit::vh(100), 0.3f);
+	Unit u4 = interpolate(Unit::vw(0.1), Unit::vh(0.5), 0.5f);
 
 	CHECK(u0.metric, 2);
 	CHECK(u0.value, 6);
@@ -531,5 +546,8 @@ TEST(style_interpolate_units) {
 
 	CHECK(u3.metric, Metric::VIEWPORT_HEIGHT);
 	CHECK(static_cast<int>(u3.value), 30);
+
+	CHECK(u4.metric, Metric::PIXELS);
+	CHECK(static_cast<int>(u4.value), 30);
 
 };

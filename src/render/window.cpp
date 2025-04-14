@@ -9,7 +9,12 @@
  * Viewport
  */
 
-Viewport Viewport::viewport {0, 0};
+Viewport viewport {0, 0};
+
+void Viewport::setCurrent(int width, int height) {
+	viewport.width = width;
+	viewport.height = height;
+}
 
 Viewport Viewport::getCurrent() {
 	return viewport;
@@ -132,7 +137,7 @@ void Window::glfwWindowCloseCallback(GLFWwindow* glfw_window) {
 void Window::glfwWindowResizeCallback(GLFWwindow* glfw_window, int width, int height) {
 	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
 
-	Viewport::viewport = {width, height};
+	Viewport::setCurrent(width, height);
 
 	if (window) {
 		window->getInputDispatcher().onEvent(ResizeEvent {width, height});
@@ -147,6 +152,7 @@ Window::Window(uint32_t w, uint32_t h, std::string title_string) {
 
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE);
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	Viewport::setCurrent(w, h);
 
 	#if !defined(NDEBUG)
 	title_string += " (Debug Build)";

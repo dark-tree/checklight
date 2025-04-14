@@ -9,17 +9,11 @@ class Window;
 
 struct Viewport {
 
-	private:
+	int width = 0;
+	int height = 0;
 
-		friend class Window;
-		static Viewport viewport;
-
-	public:
-
-		int width = 0;
-		int height = 0;
-
-		static Viewport getCurrent();
+	static void setCurrent(int width, int height);
+	static Viewport getCurrent();
 
 };
 

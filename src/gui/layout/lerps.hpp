@@ -17,7 +17,7 @@ inline Unit interpolate(const Unit& start, const Unit& end, float delta) {
 	}
 
 	if (start.isResolvable() && end.isResolvable()) {
-		// TODO resolve and interpolate on pixels
+		return Unit::px(interpolate(start.pixels(), end.pixels(), delta));
 	}
 
 	// nothing we can do
