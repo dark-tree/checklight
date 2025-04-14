@@ -7,6 +7,22 @@
 
 class Window;
 
+struct Viewport {
+
+	private:
+
+		friend class Window;
+		static Viewport viewport;
+
+	public:
+
+		int width = 0;
+		int height = 0;
+
+		static Viewport getCurrent();
+
+};
+
 class WindowSystem {
 
 	public:

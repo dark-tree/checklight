@@ -40,24 +40,20 @@ class Widget : public std::enable_shared_from_this<Widget> {
 		std::vector<std::shared_ptr<Widget>> children;
 
 		Sizing minimal;
-		StyleContext styling;
 
 		/// Returns the 0.0/0.5/1.0 multiplier of the channel alignment
-		float getAlignmentFactor(Channel channel);
+		float getAlignmentFactor(const ElementState& state, Channel channel);
 
 		/// Can be called after the given channel was already computed with applyFitSizing()
-		int getOuterSizing(Channel channel);
+		int getOuterSizing(const ElementState& state, Channel channel);
 
 		/// Called after the on-flow dimension has ben computed, can be used to adjust content the acros-flow dimension
 		virtual void applyWrapSizing();
 
 		/// Draws the a basic panel with correct styling and sizing
-		void drawBasicPanel(ImmediateRenderer& immediate, ElementState state);
+		void drawBasicPanel(ImmediateRenderer& immediate, const ElementState& state);
 
 	private:
-
-		/// Propagate the styling meta-parameters to all children
-		void applyStyleContext(const StyleContext& context);
 
 		/// Compute element size based on its children (absolute & fit content)
 		void applyFitSizing(Channel channel);

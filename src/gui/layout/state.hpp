@@ -32,8 +32,4 @@ struct ElementState {
 		return {DRAW, interaction, focused};
 	}
 
-	static ElementState ofDraw() {
-		return ofDraw(DEFAULT, false);
-	}
-
 };

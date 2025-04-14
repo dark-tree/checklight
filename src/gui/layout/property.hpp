@@ -16,13 +16,6 @@
  * Beware!
  */
 
-struct StyleContext {
-
-	int width = 0;
-	int height = 0;
-
-};
-
 // Check if the given property value type can be interpolated
 template <typename T>
 concept HasInterpolator = requires (T a, T b, float delta) {
@@ -90,7 +83,7 @@ struct StyleProperty : std::conditional_t<HasInterpolator<T>, StyleInterpolator<
 
 	public:
 
-		using Factory = std::move_only_function<T(const StyleContext&, ElementState state) const noexcept>;
+		using Factory = std::move_only_function<T(const ElementState& state) const noexcept>;
 
 	private:
 
@@ -139,7 +132,7 @@ struct StyleProperty : std::conditional_t<HasInterpolator<T>, StyleInterpolator<
 		}
 
 		StyleProperty& operator =(T constant) {
-			this->factory = [constant] (const StyleContext&, ElementState state) noexcept -> T {
+			this->factory = [constant] (const ElementState& state) noexcept -> T {
 				return constant;
 			};
 
@@ -153,22 +146,16 @@ struct StyleProperty : std::conditional_t<HasInterpolator<T>, StyleInterpolator<
 		}
 
 		/// Invoke the property factory given the styling context
-		T get(const StyleContext& context, ElementState state = ElementState::ofLayout()) const {
-			return filter(this->factory(context, state));
-		}
+		T fetch(const ElementState& state) const {
+			const T produced = this->factory(state);
+			const T filtered = this->filter(produced);
 
-		/// Unwrap property using user specified unwrapper
-		template <auto Unwrapper> requires requires (T t, StyleContext context) { (&t->*Unwrapper)(context); }
-		constexpr auto unwrap(const StyleContext& context) const -> std::invoke_result_t<decltype(Unwrapper), T, StyleContext> {
-			return (get(context).*Unwrapper)(context);
-		}
+			if (state.lifecycle == ElementState::LAYOUT) {
+				return produced;
+			}
 
-		/// Unwrap property using the type-defined unwrapper
-		constexpr auto unwrap(const StyleContext& context) const
-		requires requires { T::unwrapper; } {
-			return unwrap<T::unwrapper>(context);
+			return filtered;
 		}
-
 };
 
 // non-interpolated StyleProperties should be no larger than the internal factory itself

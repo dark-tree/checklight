@@ -32,12 +32,12 @@ TextBakery TextWidget::getBakery(int width, int height, const ElementState& stat
 
 	TextBakery bakery;
 
-	bakery.setFont(font.get(styling, state));
-	bakery.setAlignment(vertical.get(styling, state));
-	bakery.setAlignment(horizontal.get(styling, state));
-	bakery.setSize(size.get(styling, state));
+	bakery.setFont(font.fetch(state));
+	bakery.setAlignment(vertical.fetch(state));
+	bakery.setAlignment(horizontal.fetch(state));
+	bakery.setSize(size.fetch(state));
 	bakery.setBounds(width, height);
-	bakery.setWrapping(wrap.get(styling, state));
+	bakery.setWrapping(wrap.fetch(state));
 
 	return bakery;
 
@@ -55,7 +55,7 @@ void TextWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 	TextBakery bakery = getBakery(content.w, content.h, state);
 
-	immediate.setFill(color.get(styling, state));
+	immediate.setFill(color.fetch(state));
 	immediate.drawText2D(content.x, content.y, bakery.bakeString(0, 0, text.c_str()));
 
 }

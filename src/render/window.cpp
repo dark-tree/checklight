@@ -6,6 +6,16 @@
 #include "input/input.hpp"
 
 /*
+ * Viewport
+ */
+
+Viewport Viewport::viewport {0, 0};
+
+Viewport Viewport::getCurrent() {
+	return viewport;
+}
+
+/*
  * WindowSystem
  */
 
@@ -121,6 +131,8 @@ void Window::glfwWindowCloseCallback(GLFWwindow* glfw_window) {
 
 void Window::glfwWindowResizeCallback(GLFWwindow* glfw_window, int width, int height) {
 	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
+
+	Viewport::viewport = {width, height};
 
 	if (window) {
 		window->getInputDispatcher().onEvent(ResizeEvent {width, height});

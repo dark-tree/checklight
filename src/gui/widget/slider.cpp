@@ -18,7 +18,7 @@ SliderWidget::SliderWidget(float value, float step)
 
 	this->knob_border_color = Color {40, 40, 80};
 
-	this->knob_border = [] (const StyleContext& context, const ElementState& state) noexcept -> Unit {
+	this->knob_border = [] (const ElementState& state) noexcept -> Unit {
 		return state.focused ? Unit::px(1) : Unit::px(0);
 	};
 }
@@ -54,7 +54,7 @@ void SliderWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 	drawBasicPanel(immediate, state);
 
-	const int rail = rail_size.get(styling, state).pixels(styling);
+	const int rail = rail_size.fetch(state).pixels();
 
 	// slider rail
 	if (rail) {
@@ -64,7 +64,7 @@ void SliderWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 		float interval = length / divots;
 		float sy = knob.y - rail / 2;
 
-		immediate.setFill(rail_color.get(styling, state));
+		immediate.setFill(rail_color.fetch(state));
 		immediate.setStroke(OFF);
 		immediate.drawRect2D(content.x, sy, length, rail);
 
@@ -72,10 +72,10 @@ void SliderWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 		if (interval >= 8) {
 			float offset = content.x;
 
-			immediate.setFill(divot_color.get(styling, state));
+			immediate.setFill(divot_color.fetch(state));
 			immediate.setLineWidth(1);
 
-			int extend = divot_extend.get(styling, state).pixels(styling);
+			int extend = divot_extend.fetch(state).pixels();
 
 			for (int i = 0; i < divots; i++) {
 				immediate.drawLine2D(offset, sy - extend, offset, sy + rail + extend);
@@ -88,10 +88,10 @@ void SliderWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 	}
 
 	// slider knob
-	immediate.setStrokeWidth(knob_border.get(styling, state).pixels(styling));
-	immediate.setStroke(knob_border_color.get(styling, state));
-	immediate.setFill(knob_color.get(styling, state));
-	immediate.drawCircle2D(knob.x, knob.y, knob_size.get(styling, state).pixels(styling));
+	immediate.setStrokeWidth(knob_border.fetch(state).pixels());
+	immediate.setStroke(knob_border_color.fetch(state));
+	immediate.setFill(knob_color.fetch(state));
+	immediate.drawCircle2D(knob.x, knob.y, knob_size.fetch(state).pixels());
 }
 
 bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
@@ -119,7 +119,7 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 
 	if (auto* positioned = any.as<PositionedEvent>()) {
 
-		const float range = knob_size.unwrap(styling) + 6; // interaction margin
+		const float range = knob_size.fetch(computeWidgetState()).pixels() + 6; // interaction margin
 		const float half = range / 2;
 		hovered = positioned->isWithinBox(knob.x - half, knob.y - half, range, range);
 		bool used = false;

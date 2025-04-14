@@ -30,7 +30,7 @@ struct Unit {
 		bool isResolvable() const;
 
 		/// Convert the unit to raw pixels
-		int pixels(const StyleContext& styling) const;
+		int pixels() const;
 
 	public:
 

@@ -26,12 +26,12 @@ struct BoxUnit {
 		if (!right.isResolvable()) FAULT("Right unit value must be resolvable!");
 	}
 
-	int along(const StyleContext& styling, Channel channel) {
+	int along(Channel channel) const {
 		if (channel == Channel::WIDTH) {
-			return left.pixels(styling) + right.pixels(styling);
+			return left.pixels() + right.pixels();
 		}
 
-		return top.pixels(styling) + bottom.pixels(styling);
+		return top.pixels() + bottom.pixels();
 	}
 
 };

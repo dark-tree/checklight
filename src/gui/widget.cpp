@@ -12,10 +12,6 @@
 
 void Widget::rebuild(int x, int y) {
 
-	// TODO
-	StyleContext styling;
-
-	applyStyleContext(styling);
 	applyFitSizing(Channel::WIDTH);
 	applyGrowSizing(Channel::WIDTH);
 	applyWrapSizing();
@@ -38,30 +34,30 @@ void Widget::remove(const std::shared_ptr<Widget>& child) {
 	}
 }
 
-float Widget::getAlignmentFactor(Channel channel) {
-	return channel == Channel::WIDTH ? toAlignmentFactor(horizontal.get(styling)) : toAlignmentFactor(vertical.get(styling));
+float Widget::getAlignmentFactor(const ElementState& state, Channel channel) {
+	return channel == Channel::WIDTH ? toAlignmentFactor(horizontal.fetch(state)) : toAlignmentFactor(vertical.fetch(state));
 }
 
-int Widget::getOuterSizing(Channel channel) {
-	return sizing.get(channel) + padding.get(styling).along(styling, channel) + margin.get(styling).along(styling, channel);
+int Widget::getOuterSizing(const ElementState& state, Channel channel) {
+	return sizing.get(channel) + padding.fetch(state).along(channel) + margin.fetch(state).along(channel);
 }
 
-void Widget::drawBasicPanel(ImmediateRenderer& immediate, ElementState state) {
+void Widget::drawBasicPanel(ImmediateRenderer& immediate, const ElementState& state) {
 
-	const RadiusUnit corners = radius.get(styling, state);
-	const Color background = color.get(styling, state);
-	const Color border = border_color.get(styling, state);
+	const RadiusUnit corners = radius.fetch(state);
+	const Color background = color.fetch(state);
+	const Color border = border_color.fetch(state);
 
 	// configure border and background radius
 	immediate.setRectRadius(
-		corners.top_left.pixels(styling),
-		corners.top_right.pixels(styling),
-		corners.bottom_left.pixels(styling),
-		corners.bottom_right.pixels(styling)
+		corners.top_left.pixels(),
+		corners.top_right.pixels(),
+		corners.bottom_left.pixels(),
+		corners.bottom_right.pixels()
 	);
 
 	// border width
-	const int width = this->border.get(styling, state).pixels(styling);
+	const int width = this->border.fetch(state).pixels();
 	immediate.setStrokeWidth(width);
 
 	// set colors
@@ -79,17 +75,6 @@ void Widget::applyWrapSizing() {
 	}
 }
 
-void Widget::applyStyleContext(const StyleContext& styling) {
-
-	this->styling = styling;
-
-	// here the order is irrelevant, as long as this is the first stage of a rebuild()
-	for (const std::shared_ptr<Widget>& widget : children) {
-		widget->applyStyleContext(styling);
-	}
-
-}
-
 void Widget::applyFitSizing(Channel channel) {
 
 	// fit sizing must be computed bottom-up
@@ -98,27 +83,28 @@ void Widget::applyFitSizing(Channel channel) {
 		widget->applyFitSizing(channel);
 	}
 
-	Unit sizing_unit = (channel == Channel::WIDTH) ? width.get(styling) : height.get(styling);
-	Unit minimal_unit = (channel == Channel::WIDTH) ? min_width.get(styling) : min_height.get(styling);
+	const ElementState state = ElementState::ofLayout();
+	const Unit sizing_unit = (channel == Channel::WIDTH) ? width.fetch(state) : height.fetch(state);
+	const Unit minimal_unit = (channel == Channel::WIDTH) ? min_width.fetch(state) : min_height.fetch(state);
 
 	int preferred = 0;
-	int low_bound = minimal_unit.pixels(styling);
+	int low_bound = minimal_unit.pixels();
 
 	// handle the simple case - size is specified explicitly
 	if (sizing_unit.isResolvable()) {
-		preferred = std::max(sizing_unit.pixels(styling), low_bound);
+		preferred = std::max(sizing_unit.pixels(), low_bound);
 	}
 
 	// try to fit children along channel
 	if (sizing_unit.metric == Metric::FIT) {
 		int value = 0;
 
-		const bool along = WidgetFlow::isAligned(flow.get(styling), channel);
-		const int spacing = gap.unwrap(styling); /* TODO ensure that gap is absolute */
+		const bool along = WidgetFlow::isAligned(flow.fetch(state), channel);
+		const int spacing = gap.fetch(state).pixels();
 
 		// get widths of all children
 		for (const std::shared_ptr<Widget>& widget : children) {
-			int inherent = widget->getOuterSizing(channel);
+			int inherent = widget->getOuterSizing(state, channel);
 
 			value = along
 				? value + inherent + spacing     // along flow direction
@@ -152,8 +138,9 @@ void Widget::applyFitSizing(Channel channel) {
 
 void Widget::applyGrowSizing(Channel channel) {
 
-	const bool along = WidgetFlow::isAligned(flow.get(styling), channel);
-	const int spacing = gap.unwrap(styling); /* TODO ensure that gap is absolute */
+	const ElementState state = ElementState::ofLayout();
+	const bool along = WidgetFlow::isAligned(flow.fetch(state), channel);
+	const int spacing = gap.fetch(state).pixels();
 
 	int remaining = sizing.get(channel);
 
@@ -162,8 +149,8 @@ void Widget::applyGrowSizing(Channel channel) {
 	std::vector<std::pair<int, std::shared_ptr<Widget>>> growable;
 
 	for (const std::shared_ptr<Widget>& widget : children) {
-		Unit unit = (channel == Channel::WIDTH) ? widget->width.get(styling) : widget->height.get(styling);
-		const int outer = widget->getOuterSizing(channel);
+		Unit unit = (channel == Channel::WIDTH) ? widget->width.fetch(state) : widget->height.fetch(state);
+		const int outer = widget->getOuterSizing(state, channel);
 
 		// subtract elements from out total size
 		// to get at the still unused space
@@ -212,7 +199,7 @@ void Widget::applyGrowSizing(Channel channel) {
 			}
 
 			// subtract old size and do it as an addition so we don't have to worry about padding
-			widget->sizing.get(channel) += extension - widget->getOuterSizing(channel);
+			widget->sizing.get(channel) += extension - widget->getOuterSizing(state, channel);
 		}
 	}
 
@@ -321,17 +308,18 @@ void Widget::applyPositioning(int x, int y) {
 
 	content = Box2D {x, y, sizing.width(), sizing.height()};
 
-	const BoxUnit pad = padding.get(styling);
+	const ElementState state = ElementState::ofLayout();
+	const BoxUnit pad = padding.fetch(state);
 
 	// TODO
-	int pl = pad.left.pixels(styling);
-	int pt = pad.top.pixels(styling);
-	int pw = pl + pad.right.pixels(styling);
-	int ph = pt + pad.bottom.pixels(styling);
+	int pl = pad.left.pixels();
+	int pt = pad.top.pixels();
+	int pw = pl + pad.right.pixels();
+	int ph = pt + pad.bottom.pixels();
 
 	padded = Box2D {x - pl, y - pt, sizing.width() + pw, sizing.height() + ph};
 
-	Flow flow_value = flow.get(styling);
+	Flow flow_value = flow.fetch(state);
 
 	// this is used to effectively change the iteration direction
 	const int facing = WidgetFlow::asDirection(flow_value);
@@ -341,7 +329,7 @@ void Widget::applyPositioning(int x, int y) {
 	const Channel opposite = WidgetChannel::getOpposite(channel);
 
 	int remaining_along = sizing.get(channel);
-	int spacing = gap.unwrap(styling);
+	int spacing = gap.fetch(state).pixels();
 
 	std::vector<std::pair<int, std::shared_ptr<Widget>>> growable;
 
@@ -350,7 +338,7 @@ void Widget::applyPositioning(int x, int y) {
 
 		// subtract elements from out total size
 		// to get at the still unused space
-		remaining_along -= widget->getOuterSizing(channel) + spacing;
+		remaining_along -= widget->getOuterSizing(state, channel) + spacing;
 	}
 
 	// remove trailing element gap
@@ -362,26 +350,26 @@ void Widget::applyPositioning(int x, int y) {
 		const std::shared_ptr<Widget>& widget = children[invert ? (children.size() - i - 1) : i];
 
 		// number of pixels left across the flow
-		const int remaining_across = sizing.get(opposite) - widget->getOuterSizing(opposite);
+		const int remaining_across = sizing.get(opposite) - widget->getOuterSizing(state, opposite);
 
 		// alignment factors
-		int align_x = remaining_along * getAlignmentFactor(channel) ;
-		int align_y = remaining_across * getAlignmentFactor(opposite);
+		int align_x = remaining_along * getAlignmentFactor(state, channel) ;
+		int align_y = remaining_across * getAlignmentFactor(state, opposite);
 
 		// align_x is actually align_along, this effectively converts from local coordinates
 		if (channel != Channel::WIDTH) {
 			std::swap(align_x, align_y);
 		}
 
-		const BoxUnit wp = widget->padding.get(widget->styling);
-		const BoxUnit wm = widget->margin.get(widget->styling);
+		const BoxUnit wp = widget->padding.fetch(state);
+		const BoxUnit wm = widget->margin.fetch(state);
 
 		// when positioning we take into account only the upper-left offsets
-		const int ox = align_x + wp.left.pixels(styling) + wm.left.pixels(styling);
-		const int oy = align_y + wp.top.pixels(styling) + wm.top.pixels(styling);
+		const int ox = align_x + wp.left.pixels() + wm.left.pixels();
+		const int oy = align_y + wp.top.pixels() + wm.top.pixels();
 
 		widget->applyPositioning(ox + position.width() /* x */, oy + position.height() /* y */);
-		position.get(channel) += widget->getOuterSizing(channel) + spacing;
+		position.get(channel) += widget->getOuterSizing(state, channel) + spacing;
 
 	}
 
