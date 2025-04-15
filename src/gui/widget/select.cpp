@@ -10,12 +10,30 @@
 SelectWidget::SelectWidget(const std::vector<std::string>& labels) {
 	setOptions(labels);
 	min_height = Unit::px(30);
-	min_width = Unit::px(100);
+	min_width = Unit::px(100 - 8);
 
-	color = Color {100, 100, 100};
+	background = [] (const ElementState& state) noexcept -> Color {
+		if (state.interaction == ElementState::PRESSED) return {220, 220, 240};
+		if (state.interaction == ElementState::HOVER) return {200, 200, 220};
+
+		return {180, 180, 200};
+	};
+
+	option_color = [] (const ElementState& state) noexcept -> Color {
+		if (state.interaction == ElementState::PRESSED) return {230, 230, 240};
+		if (state.interaction == ElementState::HOVER) return {200, 200, 220};
+
+		return {140, 140, 180};
+	};
+
 	radius = Unit::px(10);
 	vertical = VerticalAlignment::CENTER;
-	horizontal = HorizontalAlignment::CENTER;
+	horizontal = HorizontalAlignment::LEFT;
+	padding = BoxUnit {Unit::zero(), Unit::zero(), Unit::px(8), Unit::zero()};
+
+	arrow.transition(100ms) = [] (const ElementState& state) noexcept -> Color {
+		return state.isActive() ? Color {10, 10, 10} : Color {40, 40, 40};
+	};
 }
 
 void SelectWidget::setOptions(const std::vector<std::string>& labels) {
@@ -63,6 +81,7 @@ void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 	}
 
 	state = computeWidgetState();
+	state.active = unrolled;
 
 	double speed = 8;
 	double time = std::clamp((glfwGetTime() - cooldown) * speed, 0.0, 1.0);
@@ -71,7 +90,7 @@ void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 	double delta = ease::ofInOut(time);
 
 	const RadiusUnit corners = radius.fetch(state);
-	const Color background = color.fetch(state);
+	const Color color = background.fetch(state);
 	const Color border = border_color.fetch(state);
 
 	// configure border and background radius
@@ -88,19 +107,27 @@ void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 	// background
 	immediate.setStroke(border);
-	immediate.setFill(background);
+	immediate.setFill(color);
 
 	immediate.drawRect2D(padded);
-	immediate.setFont("assets/font/OpenSans-Variable.ttf");
+	immediate.setFont(font.fetch(state));
+
+	float mx = content.x + content.w - content.h / 2;
+	float my = content.y + content.h / 2;
+	float extend = 4;
+
+	immediate.setFill(arrow.fetch(state));
+	immediate.drawTrig2D(mx - extend, my - extend, mx + extend, my - extend, mx, my + (extend + extend * 0.25f));
 
 	if (value == -1) {
-		immediate.setFill(20, 20, 20);
+		immediate.setFill(placeholder_color.fetch(state));
 	} else {
-		immediate.setFill(0, 0, 0);
+		immediate.setFill(this->color.fetch(state));
 	}
 
 	immediate.setTextAlignment(horizontal.fetch(state));
 	immediate.setTextAlignment(vertical.fetch(state));
+	immediate.setFontSize(size.fetch(state));
 	immediate.setTextBox(content.w, content.h);
 
 	std::string header = value == -1 ? placeholder : options[value].label;
@@ -109,31 +136,31 @@ void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 	if (!show) return;
 	const auto alpha = static_cast<uint8_t>(delta * 255);
 
+	Color multiplied_separator_color = separator_color.fetch(state).multiplyAlpha(alpha);
+
+	// separator
 	immediate.setRectRadius(0);
-	immediate.setFill(50, 50, 50, alpha);
-	immediate.setLineWidth(1);
+	immediate.setFill(multiplied_separator_color);
+	immediate.setLineWidth(separator.fetch(state).pixels());
 	immediate.drawLine2D(padded.x, padded.y + padded.h, padded.x + padded.w, padded.y + padded.h);
 
 	// options
 	for (int i = 0; i < (int) options.size(); i ++) {
 		int oy = padded.y + padded.h + content.h * i;
 
+		ElementState option_state = ElementState::ofDraw(ElementState::DEFAULT, false);
+
 		// background
 		if (option == i) {
-			if (pressed) {
-				immediate.setFill(255, 100, 100, alpha);
-			} else {
-				immediate.setFill(255, 80, 80, alpha);
-			}
-		} else {
-			immediate.setFill(255, 0, 0, alpha);
+			option_state = ElementState::ofDraw(pressed ? ElementState::PRESSED : ElementState::HOVER, false);
 		}
 
+		immediate.setFill(option_color.fetch(option_state).multiplyAlpha(alpha));
 		immediate.drawRect2D(padded.x, oy, padded.w, content.h);
 
 		// content
-		immediate.setFont("assets/font/OpenSans-Variable.ttf");
-		immediate.setFill(0, 0, 0, alpha);
+		immediate.setFont(font.fetch(option_state));
+		immediate.setFill(this->color.fetch(option_state).multiplyAlpha(alpha));
 		immediate.setTextBox(content.w, content.h);
 		immediate.drawString2D(content.x, oy, options.at(i).label);
 	}

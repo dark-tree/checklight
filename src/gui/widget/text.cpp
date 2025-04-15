@@ -48,7 +48,6 @@ TextWidget::TextWidget()
 
 TextWidget::TextWidget(const std::string& text) {
 	updateWidgetText(text);
-	this->color = Color {0, 0, 0};
 }
 
 void TextWidget::draw(ImmediateRenderer& immediate, ElementState state) {

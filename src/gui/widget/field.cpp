@@ -105,8 +105,10 @@ FieldWidget::FieldWidget()
 : InputWidget() {
 	min_height = Unit::px(30);
 	min_width = Unit::px(100);
-	color = Color {100, 100, 100};
+	background = Color {100, 100, 100};
 	radius = Unit::px(10);
+	vertical = VerticalAlignment::CENTER;
+	horizontal = HorizontalAlignment::LEFT;
 }
 
 float FieldWidget::getCursorOffset(int glyph) const {
@@ -199,15 +201,16 @@ void FieldWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 	drawBasicPanel(immediate, state);
 
 	immediate.setWrapping(false);
-	immediate.setTextAlignment(VerticalAlignment::CENTER);
-	immediate.setTextAlignment(HorizontalAlignment::LEFT);
-	immediate.setFont("assets/font/OpenSans-Variable.ttf");
+	immediate.setTextAlignment(vertical.fetch(state));
+	immediate.setTextAlignment(horizontal.fetch(state));
+	immediate.setFont(font.fetch(state));
+	immediate.setFontSize(size.fetch(state));
 	immediate.setTextBox(content.w, content.h);
 
 	if (text.empty()) {
-		immediate.setFill(50, 50, 50, 200);
+		immediate.setFill(placeholder_color.fetch(state));
 	} else {
-		immediate.setFill(0, 0, 0);
+		immediate.setFill(color.fetch(state));
 	}
 
 	baked = immediate.bakeUnicode(content.x, content.y, getDisplayUnicodes());

@@ -36,6 +36,32 @@ class SelectWidget : public InputWidget {
 
 	public:
 
+		/// Font size
+		StyleProperty<int> size = 20;
+
+		/// Separator width
+		StyleProperty<Unit> separator = Unit::px(1);
+
+		/// Separator color
+		StyleProperty<Color> separator_color = Color {50, 50, 50};
+
+		/// Text color
+		StyleProperty<Color> color = Color {0, 0, 0};
+
+		/// Placeholder color
+		StyleProperty<Color> placeholder_color = Color {40, 40, 40};
+
+		/// Option background color
+		StyleProperty<Color> option_color = Color {40, 40, 40};
+
+		/// Dropdown arrow color
+		StyleProperty<Color> arrow = Color {0, 0, 0};
+
+		/// Font filepath
+		StyleProperty<std::string> font = std::string {"assets/font/OpenSans-Variable.ttf"};
+
+	public:
+
 		SelectWidget() = default;
 		SelectWidget(const std::vector<std::string>& labels);
 

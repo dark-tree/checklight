@@ -95,6 +95,10 @@ struct StyleProperty : std::conditional_t<HasInterpolator<T>, StyleInterpolator<
 			// check if the interpolation mark is present
 			if constexpr (HasInterpolator<T>) {
 
+				if (!this->ease) {
+					return next;
+				}
+
 				const auto now = this->getClockNow();
 
 				// init the interpolator

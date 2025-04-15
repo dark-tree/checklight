@@ -135,6 +135,7 @@ class ImmediateRenderer {
 		// 2D Primitives
 		void drawRect2D(float x, float y, float w, float h);
 		void drawRect2D(const Box2D& box);
+		void drawTrig2D(float x1, float y1, float x2, float y2, float x3, float y3);
 		void drawArc2D(float x, float y, float hrad, float vrad, float start, float angle, ArcMode mode = ArcMode::OPEN_PIE);
 		void drawLine2D(float x1, float y1, float x2, float y2);
 		void drawSlantedLine2D(glm::vec2 p1, glm::vec2 d1, glm::vec2 p2, glm::vec2 d2);

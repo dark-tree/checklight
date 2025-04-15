@@ -45,7 +45,7 @@ int Widget::getOuterSizing(const ElementState& state, Channel channel) {
 void Widget::drawBasicPanel(ImmediateRenderer& immediate, const ElementState& state) {
 
 	const RadiusUnit corners = radius.fetch(state);
-	const Color background = color.fetch(state);
+	const Color color = background.fetch(state);
 	const Color border = border_color.fetch(state);
 
 	// configure border and background radius
@@ -62,7 +62,7 @@ void Widget::drawBasicPanel(ImmediateRenderer& immediate, const ElementState& st
 
 	// set colors
 	immediate.setStroke(border);
-	immediate.setFill(background);
+	immediate.setFill(color);
 
 	// draw panel with border
 	immediate.drawRect2D(padded);

@@ -109,7 +109,7 @@ class Widget : public std::enable_shared_from_this<Widget> {
 		StyleProperty<RadiusUnit> radius = RadiusUnit {};
 
 		/// Widget color
-		StyleProperty<Color> color = Color {};
+		StyleProperty<Color> background = Color {};
 
 		/// Widget color
 		StyleProperty<Color> border_color = Color {};

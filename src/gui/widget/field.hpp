@@ -84,6 +84,20 @@ class FieldWidget : public InputWidget {
 
 	public:
 
+		/// Font size
+		StyleProperty<int> size = 20;
+
+		/// Text color
+		StyleProperty<Color> color = Color {0, 0, 0};
+
+		/// Placeholder color
+		StyleProperty<Color> placeholder_color = Color {40, 40, 40};
+
+		/// Font filepath
+		StyleProperty<std::string> font = std::string {"assets/font/OpenSans-Variable.ttf"};
+
+	public:
+
 		FieldWidget();
 
 		void draw(ImmediateRenderer& immediate, ElementState state) override;

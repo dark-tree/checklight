@@ -71,12 +71,11 @@ static void entry(Args& args) {
 		sub->height = Unit::px(100);
 		sub->min_width = Unit::px(100);
 		sub->min_height = Unit::px(100);
-		sub->color = {100, 100, 100};
+		sub->background = {100, 100, 100};
 		sub->radius = Unit::px(10);
 		sub->border = Unit::px(2);
 		sub->border_color = {0, 0, 0};
 		sub->padding = Unit::px(10);
-
 		sub->margin = Unit::px(10);
 	}
 
@@ -84,7 +83,7 @@ static void entry(Args& args) {
 		auto sub = std::make_shared<PanelWidget>();
 		panel->addWidget(sub);
 
-		sub->color = {250, 100, 100};
+		sub->background = {250, 100, 100};
 		sub->addWidget(text);
 	}
 

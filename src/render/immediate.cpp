@@ -365,6 +365,22 @@ void ImmediateRenderer::drawRect2D(const Box2D& box) {
 	drawRect2D(box.x, box.y, box.w, box.h);
 }
 
+void ImmediateRenderer::drawTrig2D(float x1, float y1, float x2, float y2, float x3, float y3) {
+
+	float min_x = std::min(std::min(x1, x2), x3);
+	float min_y = std::min(std::min(y1, y2), y3);
+
+	float max_x = std::max(std::max(x1, x2), x3);
+	float max_y = std::max(std::max(y1, y2), y3);
+
+	pushTextureMap(min_x, min_y, max_x - min_x, max_y - min_y);
+	drawVertex2D(fill, x1, y1);
+	drawVertex2D(fill, x2, y2);
+	drawVertex2D(fill, x3, y3);
+	popTextureMap();
+
+}
+
 void ImmediateRenderer::drawLine2D(float x1, float y1, float x2, float y2) {
 
 	glm::vec2 pa {x1, y1};

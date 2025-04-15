@@ -18,7 +18,7 @@ ButtonWidget::ButtonWidget()
 
 	this->radius = Unit::px(4);
 
-	this->color = [] (const ElementState& state) noexcept -> Color {
+	this->background = [] (const ElementState& state) noexcept -> Color {
 		if (state.interaction == ElementState::PRESSED) return {220, 220, 240};
 		if (state.interaction == ElementState::HOVER) return {200, 200, 220};
 

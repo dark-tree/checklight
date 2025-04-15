@@ -28,6 +28,9 @@ class TextWidget : public Widget {
 		/// Font size
 		StyleProperty<int> size = 20;
 
+		/// Text color
+		StyleProperty<Color> color = Color {0, 0, 0};
+
 		/// Font filepath
 		StyleProperty<std::string> font = std::string {"assets/font/OpenSans-Variable.ttf"};
 
