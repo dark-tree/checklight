@@ -129,7 +129,7 @@ set(CHECKLIGHT_LIBRARIES
 		${stb_SOURCE_DIR}                        # Headers in ./
 		${Vulkan_INCLUDE_DIRS}                   # Headers in ./vulcan
 		${vma_SOURCE_DIR}/include                # Headers in ./
-		${OpenAL_INCLUDE_DIRS}					 # Headers in ./AL
+		${OpenAL_INCLUDE_DIRS}                   # Headers in ./AL
 )
 
 add_library(checklight_common INTERFACE)
@@ -216,8 +216,6 @@ target_link_libraries(checklight_test PRIVATE
 target_include_directories(checklight_test PRIVATE
 		${vstl_SOURCE_DIR}/
 )
-
-
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
