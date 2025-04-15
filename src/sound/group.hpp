@@ -8,9 +8,7 @@ class SoundSourceObject;
 
 // shared struct with parameters for SoundSourceObjects
 
-
 // ===============================SoundGroup===============================
-
 
 struct SoundGroup {
 private:
@@ -29,7 +27,6 @@ private:
 	float sg_cone_outer_gain = 0.0f;
 	float sg_cone_inner_angle = 360.0f;
 	float sg_cone_outer_angle = 360.0f;
-
 
 	//movement
 	glm::vec3 sg_position = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -69,7 +66,6 @@ public:
 	float getConeInnerAngle() const { return sg_cone_inner_angle; }
 	float getConeOuterAngle() const { return sg_cone_outer_angle; }
 
-
 	///setter
 	void setPitch(float pitch);
 	void setGain(float gain);
@@ -84,8 +80,6 @@ public:
 	void setConeOuterGain(float cone_outer_gain);
 	void setConeInnerAngle(float cone_inner_angle);
 	void setConeOuterAngle(float cone_outer_angle);
-
-
 
 	//===============================Movements===============================
 	///getter
@@ -104,7 +98,6 @@ public:
 	/// 
 	/// @return Vec3 direction of SoundGroup
 	glm::vec3 getDirection() const { return sg_direction; }
-
 
 	///setter
 	void setPosition(glm::vec3 position);

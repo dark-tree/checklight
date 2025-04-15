@@ -1,6 +1,7 @@
 #include "render/render.hpp"
 #include "input/input.hpp"
 #include "engine/engine.hpp"
+#include "sound/sound.hpp"
 
 static void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
 	immediate.setSprite("assets/image/corners.png");
@@ -116,6 +117,13 @@ int main() {
 		.shadow = true
 	});
 
+	SoundListener listener;
+	listener.setPosition(0, 0, 0);
+	SoundManager& sm = SoundManager::getInstance();
+	auto sso = std::make_shared<SoundSourceObject>();
+	sm.addSource(sso);
+	sm.createSoundClipAndAddToSourceObject("assets/sounds/testOGG.ogg", sso);
+	
 
 	while (!window.shouldClose()) {
 		window.poll();
@@ -138,6 +146,7 @@ int main() {
 
 		// render the scene
 		system.draw();
+		sm.playSound(sso);
 	}
 
 	system.wait();

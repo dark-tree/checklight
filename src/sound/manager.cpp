@@ -1,8 +1,6 @@
 #include "manager.hpp"
 
-
 // ================================== PRIVATE ==================================
-
 
 SoundManager::SoundManager(){
 	p_ALCDevice = alcOpenDevice(nullptr);
@@ -33,9 +31,7 @@ SoundManager::~SoundManager(){
 	alcCloseDevice(p_ALCDevice);
 }
 
-
 // ================================== PUBLIC ==================================
-
 
 void SoundManager::addSource(std::shared_ptr <SoundSourceObject> sso){
 	if (!sso) {
@@ -51,11 +47,6 @@ void SoundManager::addSource(std::shared_ptr <SoundSourceObject> sso){
 	}
 
 	v_sources.push_back(sso);
-}
-
-void SoundManager::removeSource(std::weak_ptr<SoundSourceObject> sso) {
-	sso.lock()->~SoundSourceObject();
-	removeExpired(v_sources);
 }
 
 void SoundManager::addClip(std::shared_ptr <SoundClip> sc) {
@@ -75,13 +66,6 @@ void SoundManager::addClip(std::shared_ptr <SoundClip> sc) {
 
 void SoundManager::removeClip(std::shared_ptr<SoundClip> sc) {
 	removeFromVector(v_clips, sc);
-	if (sc) {
-		sc->~SoundClip();
-	}
-	else {
-		std::cerr << ("SoundManager -> removeClip: SoundClip not exist\f");
-		return;
-	}
 }
 
 void SoundManager::addGroup(std::shared_ptr <SoundGroup> sg) {
@@ -99,12 +83,7 @@ void SoundManager::addGroup(std::shared_ptr <SoundGroup> sg) {
 	v_groups.push_back(sg);
 }
 
-void SoundManager::removeGroup(std::weak_ptr<SoundGroup> sc) {
-	sc.lock()->~SoundGroup();
-	removeExpired(v_groups);
-}
-
-void SoundManager::addAudioToClip(std::shared_ptr <SoundClip> sc, const char* uri) {
+void SoundManager::loadAudioToClip(std::shared_ptr <SoundClip> sc, const char* path) {
 	if (!sc) {
 		std::cerr << ("SoundManager -> addAudioToClip: Shared pointer SoundClip sc is nullptr\f");
 		return;
@@ -117,9 +96,8 @@ void SoundManager::addAudioToClip(std::shared_ptr <SoundClip> sc, const char* ur
 		return;
 	}
 	
-	sc->addAudio(uri);
+	sc->loadAudio(path);
 }
-
 
 void SoundManager::connectClipWithSource(std::shared_ptr<SoundClip> sc, std::shared_ptr <SoundSourceObject> sso) {
 	if (!sso) {
@@ -153,17 +131,17 @@ void SoundManager::connectClipWithSource(std::shared_ptr<SoundClip> sc, std::sha
 	sso->addBuffer(sc);
 }
 
-std::shared_ptr<SoundClip> SoundManager::createSoundClipAndAddAudio(const char* url) {
+std::shared_ptr<SoundClip> SoundManager::createSoundClipAndLoadAudio(const char* path) {
 	auto sc = std::make_shared<SoundClip>();
 	addClip(sc);
-	addAudioToClip(sc, url);
+	loadAudioToClip(sc, path);
 	return sc;
 }
 
-std::shared_ptr<SoundClip> SoundManager::createSoundClipAndAddToSourceObject(const char* url, std::shared_ptr<SoundSourceObject> sso) {
+std::shared_ptr<SoundClip> SoundManager::createSoundClipAndAddToSourceObject(const char* path, std::shared_ptr<SoundSourceObject> sso) {
 	auto sc = std::make_shared<SoundClip>();
 	addClip(sc);
-	addAudioToClip(sc, url);
+	loadAudioToClip(sc, path);
 	connectClipWithSource(sc, sso);
 	return sc;
 }
@@ -188,7 +166,6 @@ void SoundManager::playSound(std::weak_ptr <SoundSourceObject> sso){
 	sso.lock()->playSound();
 }
 
-
 void SoundManager::stopSound(std::shared_ptr <SoundSourceObject> sso) {
 	std::lock_guard<std::mutex> lock(sound_manager_mutex);
 	if (!sso) {
@@ -205,7 +182,6 @@ void SoundManager::stopSound(std::shared_ptr <SoundSourceObject> sso) {
 	}
 	sso->stopSound();
 }
-
 
 void SoundManager::pauseSound(std::shared_ptr <SoundSourceObject> sso) {
 	std::lock_guard<std::mutex> lock(sound_manager_mutex);

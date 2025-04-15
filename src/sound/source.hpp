@@ -9,10 +9,8 @@ class SoundGroup;
 class SoundSourceObject {
 private:
 
-	/// Pointer to id of sources
-	ALuint* sso_sources;
-	/// Number of sources (enable only default value = 1)
-	ALsizei number_of_sources;
+	/// Source
+	ALuint source;
 	
 	/// Shared pointer to SoundGroup where we get offset for parameters and movement
 	std::shared_ptr<SoundGroup> sso_sg;
@@ -41,22 +39,12 @@ private:
 	glm::vec3 sso_velocity = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 sso_direction = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	/// Initialize sound source
-	void initSource(int number_of_sources);
-	/// Play sound from buffer
-	void play(int source_number);
-	/// Stop sound from buffer
-	void stop(int source_number);
-	/// Pause sound from buffer
-	void pause(int source_number);
-
 public:
 
 	// SoundSourceObject constructor to create object with only one sound source
 	SoundSourceObject();
 
 	~SoundSourceObject();
-
 
 	//========================MOVEMENT========================
 
@@ -74,7 +62,6 @@ public:
 	/// Get direction of sound source object without offset from sound group
 	glm::vec3 getDirection() const { return sso_direction; };
 
-
 	/// Get position of sound source object with offset from sound group
 	glm::vec3 getRealPosition();
 	/// Get velocity of sound source object with offset from sound group
@@ -89,8 +76,6 @@ public:
 
 	/// Get sound source (first one)
 	ALuint getSource();
-	/// Get sound source (number)
-	ALuint getSource(int number);
 
 	//========================PARAMETERS========================
 
@@ -120,7 +105,6 @@ public:
 	float getConeOuterGain() const { return sso_cone_outer_gain; };
 	float getConeInnerAngle() const { return sso_cone_inner_angle; };
 	float getConeOuterAngle() const { return sso_cone_outer_angle; };
-
 
 	/// Connect sound clip to sound source
 	/// 

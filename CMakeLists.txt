@@ -120,7 +120,7 @@ compile_glsl_directory(
 
 if(NOT DEFINED OpenAL_INCLUDE_DIRS)
 	set(OpenAL_INCLUDE_DIRS "${OpenAL_SOURCE_DIR}/include")
-	message("Apply OpenAL")
+	message(STATUS "Applying OpenAL include directory fix")
 endif()
 
 set(CHECKLIGHT_LIBRARIES

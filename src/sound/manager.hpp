@@ -53,11 +53,6 @@ public:
 	/// @param sso Pointer to SoundSourceObject
 	void addSource(std::shared_ptr<SoundSourceObject> sso);
 
-	/// Remove a SoundSourceObject
-	/// 
-	/// @param sso Shared pointer to SoundSourceObject
-	void removeSource(std::weak_ptr<SoundSourceObject> sso);
-
 	/// Add a SoundClip to the vector v_clips
 	/// 
 	/// @param sc Pointer to SoundClip
@@ -73,16 +68,11 @@ public:
 	/// @param sg Pointer to SoundGroup
 	void addGroup(std::shared_ptr <SoundGroup> sg);
 
-	/// Remove a SoundGroup object
-	///
-	/// @param sg Shared pointer to SoundGroup
-	void removeGroup(std::weak_ptr <SoundGroup> sg);
-
 	/// Load an OGG file from the given URI and add it to buffer[0] in SoundClip
 	/// 
 	/// @param sc std::shared_ptr SoundClip object
 	/// @param uri Path to the OGG file
-	void addAudioToClip(std::shared_ptr<SoundClip> sc, const char* uri);
+	void loadAudioToClip(std::shared_ptr<SoundClip> sc, const char* path);
 
 	/// Get a SoundClip with clip_name and add the first buffer from SoundClip to the SoundSourceObject
 	/// 
@@ -95,7 +85,7 @@ public:
 	/// @param url Path to the audio file
 	/// @return std::shared_ptr to the SoundClip object.
 	/// Do not get std::weak_ptr from this function, because it will be deleted after the function call
-	std::shared_ptr<SoundClip> createSoundClipAndAddAudio(const char* url);
+	std::shared_ptr<SoundClip> createSoundClipAndLoadAudio(const char* path);
 
 	/// Create a new SoundClip, add it to the vector v_clips, load the audio file from the given URL and add it to the SoundSourceObject
 	/// 
@@ -103,7 +93,7 @@ public:
 	/// @param sso std::shared_ptr SoundSourceObject object
 	/// 
 	/// @return std::shared_ptr to the SoundClip object.
-	std::shared_ptr<SoundClip> createSoundClipAndAddToSourceObject(const char* url, std::shared_ptr<SoundSourceObject> sso);
+	std::shared_ptr<SoundClip> createSoundClipAndAddToSourceObject(const char* path, std::shared_ptr<SoundSourceObject> sso);
 
 	/// Sound play control funtion
 	/// 

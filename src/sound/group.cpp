@@ -1,9 +1,7 @@
 #include "group.hpp"
 #include "sound.hpp"
 
-
 // ===============================SoundGroup===============================
-
 
 void SoundGroup::addObserversSoundSourceObject(std::shared_ptr<SoundSourceObject> sso) {
 	if (!sso) {
@@ -57,9 +55,7 @@ SoundGroup& SoundGroup::operator= (const SoundGroup& right) {
 	return *this;
 };
 
-
 // ===============================SoundGroupParameters===============================
-
 
 void SoundGroup::setPitch(float pitch) { sg_pitch = pitch; this->notifyObserversSSO(&SoundSourceObject::updateParameters); }
 void SoundGroup::setGain(float gain) { sg_gain = gain; this->notifyObserversSSO(&SoundSourceObject::updateParameters);}
@@ -75,7 +71,6 @@ void SoundGroup::setConeInnerAngle(float cone_inner_angle) { sg_cone_inner_angle
 void SoundGroup::setConeOuterAngle(float cone_outer_angle) { sg_cone_outer_angle = cone_outer_angle; this->notifyObserversSSO(&SoundSourceObject::updateParameters); }
 
 // ===============================SoundGroupMovement===============================
-
 
 void SoundGroup::setPosition(glm::vec3 position) { sg_position = position; this->notifyObserversSSO(&SoundSourceObject::updateMovement); }
 void SoundGroup::setPosition(float x, float z, float y) { sg_position.x = x; sg_position.y = y; sg_position.z = z; this->notifyObserversSSO(&SoundSourceObject::updateMovement); }

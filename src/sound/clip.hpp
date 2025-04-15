@@ -9,11 +9,9 @@ class SoundClip {
 private:
 
 	/// Pointer to id of buffers
-	ALuint* sc_buffers;
-	/// Number of buffers (enable only default value = 1)
-	ALsizei number_of_buffers;
-	/// Uri of first buffer in sc_buffers
-	std::string url;
+	ALuint buffer;
+	/// Path of buffer in buffer
+	std::string path;
 
 	void loadOGGFile(const char* filename);
 	void loadWAVFile(const char* filename);
@@ -26,14 +24,12 @@ public:
 	/// Method to create audio buffer for audio file
 	/// Enable only .ogg files
 	/// 
-	/// @param uri URL to the audio file
-	void addAudio(const char* url);
+	/// @param path Path to the audio file
+	void loadAudio(const char* path);
 
-	//ALuint getBuffer(int number);
-
-	/// Gets the buffer id of the first buffer in sc_buffers
+	/// Get the buffer
 	ALuint getBuffer();
 
-	/// Get URL from the first buffer in sc_buffers
-	std::string getURL();
+	/// Get Path from the buffer
+	std::string getPath();
 };

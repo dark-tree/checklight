@@ -4,5 +4,4 @@ cmake-build-release/
 .idea/
 out/
 .vs/
-assets/sounds/test/
 CMakeSettings.json

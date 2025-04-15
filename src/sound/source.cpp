@@ -1,14 +1,11 @@
 #include "source.hpp"
 
-
-void SoundSourceObject::initSource(int number_of_sources){
+SoundSourceObject::SoundSourceObject(){
 	alGetError();
-	this->number_of_sources = number_of_sources;
-	this->sso_sources = new ALuint[this->number_of_sources];
-	alGenSources(this->number_of_sources, sso_sources);
+	alGenSources(1, &source);
 	ALenum error;
-	if ((error = alGetError()) != AL_NO_ERROR){
-		std::cerr<<("Sound -> SSOinit: Failed to generate sources\f");  //throw exception
+	if ((error = alGetError()) != AL_NO_ERROR) {
+		std::cerr << ("Sound -> SSOinit: Failed to generate sources\f");  //throw exception
 		return;
 	}
 
@@ -16,37 +13,18 @@ void SoundSourceObject::initSource(int number_of_sources){
 	updateMovement();
 }
 
-// SoundSourceObject constructor to create object with only one sound source
-
-SoundSourceObject::SoundSourceObject(){
-	SoundSourceObject::initSource(1);
-}
-
-
 SoundSourceObject::~SoundSourceObject(){
-	alDeleteSources(this->number_of_sources,this->sso_sources);
-	delete[] sso_sources;
-	sso_sources = nullptr;
+	alDeleteSources(1,&source);
 	sc_buffer.reset();
 	sso_sg.reset();
 }
 
-
 ALuint SoundSourceObject::getSource(){
-	if (alIsSource(sso_sources[0]) == AL_TRUE){
-		return sso_sources[0];
+	if (alIsSource(source) == AL_TRUE){
+		return source;
 	}
 	return 0;
 }
-
-
-ALuint SoundSourceObject::getSource(int number){
-	if (alIsSource(sso_sources[number]) == AL_TRUE){
-		return sso_sources[number];
-	}
-	return 0;
-}
-
 
 //========================MOVEMENT========================
 
@@ -90,7 +68,6 @@ glm::vec3 SoundSourceObject::getRealDirection() {
 }
 
 //========================PARAMETERS========================
-
 
 void SoundSourceObject::setMute(bool mute) {
 	sso_is_mute = mute;
@@ -152,9 +129,7 @@ void SoundSourceObject::setConeOuterAngle(float cone_outer_angle) {
 	updateParameters();
 }
 
-
 //========================BUFFER========================
-
 
 void SoundSourceObject::addBuffer(SoundClip clip){
 	ALuint buffer = clip.getBuffer();
@@ -163,7 +138,7 @@ void SoundSourceObject::addBuffer(SoundClip clip){
 		return;
 	}
 
-	alSourcei(this->sso_sources[0], AL_BUFFER, buffer);
+	alSourcei(source, AL_BUFFER, buffer);
 
 	ALenum error = alGetError();
 	if (error != AL_NO_ERROR) {
@@ -181,7 +156,7 @@ void SoundSourceObject::addBuffer(std::shared_ptr<SoundClip> clip) {
 	sc_buffer = clip;
 	auto lockedClip = sc_buffer.lock();
 	if (lockedClip){
-		alSourcei(this->sso_sources[0], AL_BUFFER, lockedClip->getBuffer());
+		alSourcei(source, AL_BUFFER, lockedClip->getBuffer());
 	}
 	else {
 		std::cerr << ("Source -> addBuffer: sc_buffer doesnt exist");
@@ -196,9 +171,7 @@ void SoundSourceObject::addBuffer(std::shared_ptr<SoundClip> clip) {
 	}
 }
 
-
 //========================SOUND GROUP========================
-
 
 void SoundSourceObject::addGroupParameters(std::shared_ptr<SoundGroup> sg) {
 	this->sso_sg = sg;
@@ -206,116 +179,102 @@ void SoundSourceObject::addGroupParameters(std::shared_ptr<SoundGroup> sg) {
 	updateMovement();
 }
 
-
 void SoundSourceObject::updateParameters() {
 	//if sso_sg_parameter has nullptr set default parameters for this SSO
 	if (this->sso_sg != nullptr){
-		for (int i = 0;i < this->number_of_sources;i++) {
-			alSourcef(this->sso_sources[i], AL_PITCH, sso_sg->getPitch() + sso_pitch);
+		alSourcef(source, AL_PITCH, sso_sg->getPitch() + sso_pitch);
 
-			if (sso_sg->getMute() || sso_is_mute){
-				alSourcef(this->sso_sources[i], AL_GAIN,0);
-			}
-			else
-				alSourcef(this->sso_sources[i], AL_GAIN, sso_sg->getGain() + sso_gain);
-			alSourcei(this->sso_sources[i], AL_LOOPING, sso_sg->getLooping() || sso_looping);
-
-			float max_gain = (sso_sg->getMaxGain() > sso_max_distance) ? sso_sg->getMaxGain() : sso_max_gain;
-			float min_gain = (sso_sg->getMinGain() <= sso_max_distance) ? sso_sg->getMinGain() : sso_min_gain;
-
-			if (min_gain > max_gain)
-				std::cerr << ("Source -> updateParameters: min_gain is bigger than max_gain\f");
-				
-			alSourcef(this->sso_sources[i], AL_MAX_DISTANCE, max_gain);
-			alSourcef(this->sso_sources[i], AL_MAX_DISTANCE, min_gain);
-
-			//@TODO zastanowic sie nad tymi parametrami
-			alSourcef(this->sso_sources[i], AL_ROLLOFF_FACTOR, sso_sg->getRolloffFactor() + sso_rolloff_factor);
-			alSourcef(this->sso_sources[i], AL_REFERENCE_DISTANCE, sso_sg->getReferenceDistance() + sso_reference_distance);
-			alSourcef(this->sso_sources[i], AL_CONE_OUTER_GAIN, sso_sg->getConeOuterGain() + sso_cone_outer_gain);
-			alSourcef(this->sso_sources[i], AL_CONE_INNER_ANGLE, sso_sg->getConeInnerAngle() + sso_cone_inner_angle);
-			alSourcef(this->sso_sources[i], AL_CONE_OUTER_ANGLE, sso_sg->getConeOuterAngle() + sso_cone_outer_angle);
+		if (sso_sg->getMute() || sso_is_mute){
+			alSourcef(source, AL_GAIN,0);
 		}
+		else
+			alSourcef(source, AL_GAIN, sso_sg->getGain() + sso_gain);
+		alSourcei(source, AL_LOOPING, sso_sg->getLooping() || sso_looping);
+
+		float max_gain = (sso_sg->getMaxGain() > sso_max_distance) ? sso_sg->getMaxGain() : sso_max_gain;
+		float min_gain = (sso_sg->getMinGain() <= sso_max_distance) ? sso_sg->getMinGain() : sso_min_gain;
+
+		if (min_gain > max_gain)
+			std::cerr << ("Source -> updateParameters: min_gain is bigger than max_gain\f");
+				
+		alSourcef(source, AL_MAX_DISTANCE, max_gain);
+		alSourcef(source, AL_MAX_DISTANCE, min_gain);
+
+		//@TODO zastanowic sie nad tymi parametrami
+		alSourcef(source, AL_ROLLOFF_FACTOR, sso_sg->getRolloffFactor() + sso_rolloff_factor);
+		alSourcef(source, AL_REFERENCE_DISTANCE, sso_sg->getReferenceDistance() + sso_reference_distance);
+		alSourcef(source, AL_CONE_OUTER_GAIN, sso_sg->getConeOuterGain() + sso_cone_outer_gain);
+		alSourcef(source, AL_CONE_INNER_ANGLE, sso_sg->getConeInnerAngle() + sso_cone_inner_angle);
+		alSourcef(source, AL_CONE_OUTER_ANGLE, sso_sg->getConeOuterAngle() + sso_cone_outer_angle);
 	}
 	else {
-		for (int i = 0;i < this->number_of_sources;i++) {
-			alSourcef(this->sso_sources[i], AL_PITCH, sso_pitch);
-			alSourcef(this->sso_sources[i], AL_GAIN, sso_gain);
-			alSourcei(this->sso_sources[i], AL_LOOPING, sso_looping);
-			alSourcef(this->sso_sources[i], AL_MAX_DISTANCE, sso_max_distance);
-			alSourcef(this->sso_sources[i], AL_MIN_GAIN, sso_min_gain);
-			alSourcef(this->sso_sources[i], AL_MAX_GAIN, sso_max_gain);
-			alSourcef(this->sso_sources[i], AL_ROLLOFF_FACTOR, sso_rolloff_factor);
-			alSourcef(this->sso_sources[i], AL_REFERENCE_DISTANCE, sso_reference_distance);
-			alSourcef(this->sso_sources[i], AL_CONE_OUTER_GAIN, sso_cone_outer_gain);
-			alSourcef(this->sso_sources[i], AL_CONE_INNER_ANGLE, sso_cone_inner_angle);
-			alSourcef(this->sso_sources[i], AL_CONE_OUTER_ANGLE, sso_cone_outer_angle);
-		}
+		alSourcef(source, AL_PITCH, sso_pitch);
+		alSourcef(source, AL_GAIN, sso_gain);
+		alSourcei(source, AL_LOOPING, sso_looping);
+		alSourcef(source, AL_MAX_DISTANCE, sso_max_distance);
+		alSourcef(source, AL_MIN_GAIN, sso_min_gain);
+		alSourcef(source, AL_MAX_GAIN, sso_max_gain);
+		alSourcef(source, AL_ROLLOFF_FACTOR, sso_rolloff_factor);
+		alSourcef(source, AL_REFERENCE_DISTANCE, sso_reference_distance);
+		alSourcef(source, AL_CONE_OUTER_GAIN, sso_cone_outer_gain);
+		alSourcef(source, AL_CONE_INNER_ANGLE, sso_cone_inner_angle);
+		alSourcef(source, AL_CONE_OUTER_ANGLE, sso_cone_outer_angle);
 	}
 }
-
 
 void SoundSourceObject::updateMovement() {
 	if (this->sso_sg != nullptr) {
-		for (int i = 0;i < this->number_of_sources;i++) {
-			glm::vec3 actual_position = { 0.0f,0.0f,0.0f };
-			actual_position.x= sso_position.x + sso_sg->getPosition().x;
-			actual_position.y = sso_position.y + sso_sg->getPosition().y;
-			actual_position.z = sso_position.z + sso_sg->getPosition().z;
-			alSource3f(this->sso_sources[i], AL_POSITION, actual_position.x, actual_position.y, actual_position.z);
+		glm::vec3 actual_position = { 0.0f,0.0f,0.0f };
+		actual_position.x= sso_position.x + sso_sg->getPosition().x;
+		actual_position.y = sso_position.y + sso_sg->getPosition().y;
+		actual_position.z = sso_position.z + sso_sg->getPosition().z;
+		alSource3f(source, AL_POSITION, actual_position.x, actual_position.y, actual_position.z);
 
-			glm::vec3 actual_velocity = { 0.0f,0.0f,0.0f };
-			actual_velocity.x = sso_velocity.x + sso_sg->getVelocity().x;
-			actual_velocity.y = sso_velocity.y + sso_sg->getVelocity().y;
-			actual_velocity.z = sso_velocity.z + sso_sg->getVelocity().z;
+		glm::vec3 actual_velocity = { 0.0f,0.0f,0.0f };
+		actual_velocity.x = sso_velocity.x + sso_sg->getVelocity().x;
+		actual_velocity.y = sso_velocity.y + sso_sg->getVelocity().y;
+		actual_velocity.z = sso_velocity.z + sso_sg->getVelocity().z;
 
-			alSource3f(this->sso_sources[i], AL_VELOCITY, actual_velocity.x, actual_velocity.y, actual_velocity.z);
+		alSource3f(source, AL_VELOCITY, actual_velocity.x, actual_velocity.y, actual_velocity.z);
 			
-			glm::vec3 actual_direction = { 0.0f,0.0f,0.0f };
-			actual_direction.x = sso_direction.x + sso_sg->getDirection().x;
-			actual_direction.y = sso_direction.y + sso_sg->getDirection().y;
-			actual_direction.z = sso_direction.z + sso_sg->getDirection().z;
-			alSource3f(this->sso_sources[i], AL_DIRECTION, actual_direction.x, actual_direction.y, actual_direction.z);
-		}
+		glm::vec3 actual_direction = { 0.0f,0.0f,0.0f };
+		actual_direction.x = sso_direction.x + sso_sg->getDirection().x;
+		actual_direction.y = sso_direction.y + sso_sg->getDirection().y;
+		actual_direction.z = sso_direction.z + sso_sg->getDirection().z;
+		alSource3f(source, AL_DIRECTION, actual_direction.x, actual_direction.y, actual_direction.z);
 	}
 	else {
-		for (int i = 0;i < this->number_of_sources;i++) {
-			alSource3f(this->sso_sources[i], AL_POSITION, sso_position.x, sso_position.y, sso_position.z);
-			alSource3f(this->sso_sources[i], AL_VELOCITY, sso_velocity.x, sso_velocity.y, sso_velocity.z);
-			alSource3f(this->sso_sources[i], AL_DIRECTION, sso_direction.x, sso_direction.y, sso_direction.z);
-		}
+		alSource3f(source, AL_POSITION, sso_position.x, sso_position.y, sso_position.z);
+		alSource3f(source, AL_VELOCITY, sso_velocity.x, sso_velocity.y, sso_velocity.z);
+		alSource3f(source, AL_DIRECTION, sso_direction.x, sso_direction.y, sso_direction.z);
 	}
 }
 
-
 //========================CONTROLLS========================
 
-
-void SoundSourceObject::play(int source_number) {
-	if (source_number > this->number_of_sources || !alIsSource(this->sso_sources[source_number])) {
+void SoundSourceObject::playSound(){
+	if (!alIsSource(source)) {
 		std::cerr << ("Source -> playSound: No valid sound source found!\f");
 		return;
 	}
 
-	alSourcePlay(this->sso_sources[source_number]);
-	ALenum error = alGetError();
-	if ((error = alGetError()) != AL_NO_ERROR) {
-		std::cerr << ("Sound -> playSound: Failed to play clip\f");  //throw exception
-		return;
+	if (!isPlaying()) {
+		alSourcePlay(source);
+		ALenum error = alGetError();
+		if ((error = alGetError()) != AL_NO_ERROR) {
+			std::cerr << ("Sound -> playSound: Failed to play clip\f");  //throw exception
+			return;
+		}
 	}
 }
 
-void SoundSourceObject::playSound(){
-	play(0);
-}
-
-void SoundSourceObject::stop(int source_number) {
-	if (source_number > this->number_of_sources || !alIsSource(this->sso_sources[source_number])) {
+void SoundSourceObject::stopSound(){
+	if (!alIsSource(source)) {
 		std::cerr << ("Source -> stopSound: No valid sound source found!\f");
 		return;
 	}
 
-	alSourceStop(this->sso_sources[source_number]);
+	alSourceStop(source);
 	ALenum error = alGetError();
 	if ((error = alGetError()) != AL_NO_ERROR) {
 		std::cerr << ("Sound -> stopSound: Failed to stop clip\f");  //throw exception
@@ -323,17 +282,13 @@ void SoundSourceObject::stop(int source_number) {
 	}
 }
 
-void SoundSourceObject::stopSound(){
-	stop(0);
-}
-
-void SoundSourceObject::pause(int source_number) {
-	if (source_number > this->number_of_sources || !alIsSource(this->sso_sources[source_number])) {
+void SoundSourceObject::pauseSound() {
+	if (!alIsSource(source)) {
 		std::cerr << ("Source -> pauseSound: No valid sound source found!\f");
 		return;
 	}
 
-	alSourcePause(this->sso_sources[source_number]);
+	alSourcePause(source);
 	ALenum error = alGetError();
 	if ((error = alGetError()) != AL_NO_ERROR) {
 		std::cerr << ("Sound -> pauseSound: Failed to pause clip\f");  //throw exception
@@ -341,19 +296,13 @@ void SoundSourceObject::pause(int source_number) {
 	}
 }
 
-void SoundSourceObject::pauseSound() {
-	pause(0);
-}
-
 bool SoundSourceObject::isPlaying(){
 	ALint state;
-	for (int i = 0;i < this->number_of_sources;i++){
-		alGetSourcei(sso_sources[0], AL_SOURCE_STATE, &state);
-		if (state != AL_PLAYING) {
-			return true;
-		}
+	alGetSourcei(source, AL_SOURCE_STATE, &state);
+	if (state != AL_PLAYING) {
+		return false;
 	}
-	return false;
+	return true;
 }
 
 void SoundSourceObject::print() const {
@@ -361,20 +310,20 @@ void SoundSourceObject::print() const {
 	ALint looping;
 	ALfloat position[3], velocity[3], direction[3];
 
-	alGetSourcef(sso_sources[0], AL_PITCH, &pitch);
-	alGetSourcef(sso_sources[0], AL_GAIN, &gain);
-	alGetSourcei(sso_sources[0], AL_LOOPING, &looping);
-	alGetSourcef(sso_sources[0], AL_MAX_DISTANCE, &max_distance);
-	alGetSourcef(sso_sources[0], AL_MIN_GAIN, &min_gain);
-	alGetSourcef(sso_sources[0], AL_MAX_GAIN, &max_gain);
-	alGetSourcef(sso_sources[0], AL_ROLLOFF_FACTOR, &rolloff_factor);
-	alGetSourcef(sso_sources[0], AL_REFERENCE_DISTANCE, &reference_distance);
-	alGetSourcef(sso_sources[0], AL_CONE_OUTER_GAIN, &cone_outer_gain);
-	alGetSourcef(sso_sources[0], AL_CONE_INNER_ANGLE, &cone_inner_angle);
-	alGetSourcef(sso_sources[0], AL_CONE_OUTER_ANGLE, &cone_outer_angle);
-	alGetSourcefv(sso_sources[0], AL_POSITION, position);
-	alGetSourcefv(sso_sources[0], AL_VELOCITY, velocity);
-	alGetSourcefv(sso_sources[0], AL_DIRECTION, direction);
+	alGetSourcef(source, AL_PITCH, &pitch);
+	alGetSourcef(source, AL_GAIN, &gain);
+	alGetSourcei(source, AL_LOOPING, &looping);
+	alGetSourcef(source, AL_MAX_DISTANCE, &max_distance);
+	alGetSourcef(source, AL_MIN_GAIN, &min_gain);
+	alGetSourcef(source, AL_MAX_GAIN, &max_gain);
+	alGetSourcef(source, AL_ROLLOFF_FACTOR, &rolloff_factor);
+	alGetSourcef(source, AL_REFERENCE_DISTANCE, &reference_distance);
+	alGetSourcef(source, AL_CONE_OUTER_GAIN, &cone_outer_gain);
+	alGetSourcef(source, AL_CONE_INNER_ANGLE, &cone_inner_angle);
+	alGetSourcef(source, AL_CONE_OUTER_ANGLE, &cone_outer_angle);
+	alGetSourcefv(source, AL_POSITION, position);
+	alGetSourcefv(source, AL_VELOCITY, velocity);
+	alGetSourcefv(source, AL_DIRECTION, direction);
 
 	std::cout << "SoundSourceObject:" << std::endl;
 	std::cout << "  Pitch: " << pitch << std::endl;

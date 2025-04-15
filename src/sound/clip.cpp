@@ -2,9 +2,7 @@
 
 SoundClip::SoundClip(){
 	alGetError();
-	this->number_of_buffers = 1;
-	sc_buffers = new ALuint[number_of_buffers];
-	alGenBuffers(1, sc_buffers);
+	alGenBuffers(1, &buffer);
 	
 	ALenum error;
 	if ((error = alGetError()) != AL_NO_ERROR){
@@ -13,20 +11,8 @@ SoundClip::SoundClip(){
 	}
 }
 
-//SoundClip::SoundClip(int number_of_buf){
-//	alGetError();
-//	this->number_of_buffers = number_of_buf;
-//	sc_buffers = new ALuint[number_of_buffers];
-//	alGenBuffers(number_of_buf, sc_buffers);
-//	ALenum error;
-//	if ((error = alGetError()) != AL_NO_ERROR){
-//		throw std::runtime_error("Clip -> SCinit: Failed to generate buffers\f");  //throw exception
-//	}
-//}
-
 SoundClip::~SoundClip(){
-	alDeleteBuffers(this->number_of_buffers, this->sc_buffers);
-	free(sc_buffers);
+	alDeleteBuffers(1, &buffer);
 }
 
 void SoundClip::loadOGGFile(const char* filename) {
@@ -43,7 +29,7 @@ void SoundClip::loadOGGFile(const char* filename) {
 		std::cerr << ("SoundClip -> OGG file load error\f");
 		return;
 	}
-	this->url = filename;
+	this->path = filename;
 
 
 	if (channels == 2) {
@@ -58,7 +44,7 @@ void SoundClip::loadOGGFile(const char* filename) {
 	ALenum format = AL_FORMAT_MONO16;
 	ALsizei audio_size = size_block * sizeof(short);
 	// Create buffer
-	alBufferData(this->sc_buffers[0], format, output, audio_size, sample_rate);
+	alBufferData(buffer, format, output, audio_size, sample_rate);
 
 	ALenum error;
 	if ((error = alGetError()) != AL_NO_ERROR) {
@@ -115,14 +101,10 @@ void SoundClip::loadWAVFile(const char* filename) {
 			format = AL_FORMAT_STEREO16;
 		}
 	}
-
-
-	
-
-
+	//@TODO WiP
 }
 
-void SoundClip::addAudio(const char* filename){
+void SoundClip::loadAudio(const char* filename){
 	std::ifstream input_file(filename, std::ios::binary);
 	if (!input_file) {
 		std::cerr << ("SoundClip -> addAudio: File not found\f");
@@ -141,18 +123,11 @@ void SoundClip::addAudio(const char* filename){
 		std::cerr << ("SoundClip -> addAudio: File not supported\f");
 }
 
-//ALuint SoundClip::getBuffer(int number) {
-//
-//	if (number >= this->number_of_buffers)
-//		return 0;
-//	return this->sc_buffers[number];
-//}
-
 ALuint SoundClip::getBuffer() {
-	return this->sc_buffers[0];
+	return buffer;
 }
 
-std::string SoundClip::getURL()
+std::string SoundClip::getPath()
 {
-	return this->url;
+	return path;
 }
