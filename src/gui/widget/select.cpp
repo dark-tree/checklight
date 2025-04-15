@@ -7,7 +7,33 @@
 #include "render/immediate.hpp"
 #include "gui/context.hpp"
 
-SelectWidget::SelectWidget(const std::vector<std::string>& labels) {
+/*
+ * DropdownOverlay
+ */
+
+DropdownOverlay::DropdownOverlay(SelectWidget* parent) {
+	this->parent = parent;
+}
+
+void DropdownOverlay::draw(ImmediateRenderer& immediate) {
+	parent->drawDropdown(immediate);
+
+}
+
+bool DropdownOverlay::event(WidgetContext& context, const InputEvent& event) {
+	return parent->event(context, event);
+}
+
+/*
+ * SelectWidget
+ */
+
+SelectWidget::SelectWidget() {
+	this->dropdown = std::make_shared<DropdownOverlay>(this);
+}
+
+SelectWidget::SelectWidget(const std::vector<std::string>& labels)
+: SelectWidget() {
 	setOptions(labels);
 	min_height = Unit::px(30);
 	min_width = Unit::px(100 - 8);
@@ -60,6 +86,12 @@ void SelectWidget::onSelect(const Callback& callback) {
 void SelectWidget::setUnrolled(bool unrolled) {
 	this->unrolled = unrolled;
 	this->cooldown = glfwGetTime();
+
+	if (unrolled) {
+		overlay(dropdown);
+	} else {
+		dropdown->unbind();
+	}
 }
 
 void SelectWidget::setValue(int value) {
@@ -134,7 +166,7 @@ void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 	immediate.drawString2D(content.x, content.y, header);
 
 	if (!show) return;
-	const auto alpha = static_cast<uint8_t>(delta * 255);
+	alpha = static_cast<uint8_t>(delta * 255);
 
 	Color multiplied_separator_color = separator_color.fetch(state).multiplyAlpha(alpha);
 
@@ -144,7 +176,10 @@ void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 	immediate.setLineWidth(separator.fetch(state).pixels());
 	immediate.drawLine2D(padded.x, padded.y + padded.h, padded.x + padded.w, padded.y + padded.h);
 
-	// options
+}
+
+void SelectWidget::drawDropdown(ImmediateRenderer& immediate) {
+
 	for (int i = 0; i < (int) options.size(); i ++) {
 		int oy = padded.y + padded.h + content.h * i;
 

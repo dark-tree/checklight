@@ -1,6 +1,7 @@
 #pragma once
 
 #include "external.hpp"
+#include "overlay.hpp"
 #include "input/input.hpp"
 #include "shared/box.hpp"
 #include "layout/flow.hpp"
@@ -70,6 +71,9 @@ class Widget : public std::enable_shared_from_this<Widget> {
 		void add(const std::shared_ptr<Widget>& child);
 		void remove(const std::shared_ptr<Widget>& child);
 
+		/// Register a root UI overlay object
+		virtual void overlay(const std::shared_ptr<Overlay>& overlay);
+
 	public:
 
 		/// Child elements flow direction
@@ -108,10 +112,10 @@ class Widget : public std::enable_shared_from_this<Widget> {
 		/// Radius of the widget border
 		StyleProperty<RadiusUnit> radius = RadiusUnit {};
 
-		/// Widget color
+		/// Widget background color
 		StyleProperty<Color> background = Color {};
 
-		/// Widget color
+		/// Widget border color
 		StyleProperty<Color> border_color = Color {};
 
 	public:

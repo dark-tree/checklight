@@ -395,7 +395,16 @@ void Widget::update() {
 		return;
 	}
 
-	out::error("UI update died during propagation! Is the RootWidget missing?");
+	out::error("UI update was lost during propagation! Is the RootWidget missing?");
+}
+
+void Widget::overlay(const std::shared_ptr<Overlay>& overlay) {
+	if (auto locked = parent.lock()) {
+		locked->overlay(overlay);
+		return;
+	}
+
+	out::error("UI overlay was lost during propagation! Is the RootWidget missing?");
 }
 
 /*

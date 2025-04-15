@@ -6,8 +6,13 @@ class RootWidget : public PanelWidget {
 
 	private:
 
+	std::shared_ptr<Overlay> over;
 		int x, y;
 		bool dirty = true;
+
+	protected:
+
+		void overlay(const std::shared_ptr<Overlay>& overlay) override;
 
 	public:
 
@@ -15,6 +20,7 @@ class RootWidget : public PanelWidget {
 		RootWidget(int x, int y);
 
 		void draw(ImmediateRenderer& immediate, ElementState state) override;
+		bool event(WidgetContext& context, const InputEvent& event) override;
 
 		/// Mark the GUI for rebuilding
 		void update() override;

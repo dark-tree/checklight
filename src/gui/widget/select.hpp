@@ -2,6 +2,23 @@
 
 #include "gui/widget.hpp"
 
+class SelectWidget;
+
+class DropdownOverlay : public Overlay {
+
+	private:
+
+		SelectWidget* parent;
+
+	public:
+
+		DropdownOverlay(SelectWidget* parent);
+
+		void draw(ImmediateRenderer& immediate) override;
+		bool event(WidgetContext& context, const InputEvent& event) override;
+
+};
+
 class SelectWidget : public InputWidget {
 
 	public:
@@ -9,6 +26,8 @@ class SelectWidget : public InputWidget {
 		using Callback = std::function<void(int)>;
 
 	private:
+
+		friend class DropdownOverlay;
 
 		struct Option {
 			std::string label;
@@ -20,9 +39,11 @@ class SelectWidget : public InputWidget {
 
 		int value = -1;
 
+		std::shared_ptr<DropdownOverlay> dropdown;
 		double cooldown = 0;
 		bool unrolled = false;
 		int option = OPTION_NONE;
+		uint8_t alpha = 0;
 
 		std::string placeholder = "Select";
 		std::vector<Option> options;
@@ -33,6 +54,9 @@ class SelectWidget : public InputWidget {
 
 		/// Change option value, and call callback if applicable
 		void setValue(int value);
+
+		/// Drow the extended part of the dropdown
+		void drawDropdown(ImmediateRenderer& immediate);
 
 	public:
 
@@ -62,7 +86,7 @@ class SelectWidget : public InputWidget {
 
 	public:
 
-		SelectWidget() = default;
+		SelectWidget();
 		SelectWidget(const std::vector<std::string>& labels);
 
 		void setOptions(const std::vector<std::string>& labels);
