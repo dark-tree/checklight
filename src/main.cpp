@@ -46,12 +46,19 @@ static void entry(Args& args) {
 			text->setText("Slider value: " + std::to_string(int(100 * slider->getValue())));
 		});
 
-		left->addWidget(sub2);
-		left->addWidget(slider);
+		// left->addWidget(sub2);
+		// left->addWidget(slider);
 
 		slider->onChange([] (float value) {
 			out::info("Slider value changed to: %f", value);
 		});
+
+		std::vector<std::string> options = {"EEVEE", "Cycles", "Checklight"};
+		auto select = std::make_shared<SelectWidget>(options);
+		auto field = std::make_shared<FieldWidget>();
+
+		left->addWidget(select);
+		left->addWidget(field);
 
 		panel->addWidget(left);
 	}
@@ -86,6 +93,7 @@ static void entry(Args& args) {
 	panel->gap = Unit::px(20);
 	panel->vertical = VerticalAlignment::CENTER;
 	panel->horizontal = HorizontalAlignment::CENTER;
+	// panel->width = Unit::px(400);
 
 	context->setRoot(panel);
 

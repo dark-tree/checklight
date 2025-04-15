@@ -102,7 +102,12 @@ int TextCursor::end() const {
  */
 
 FieldWidget::FieldWidget()
-: InputWidget() {}
+: InputWidget() {
+	min_height = Unit::px(30);
+	min_width = Unit::px(100);
+	color = Color {100, 100, 100};
+	radius = Unit::px(10);
+}
 
 float FieldWidget::getCursorOffset(int glyph) const {
 	const auto& glyphs = baked->getQuads();
@@ -150,6 +155,10 @@ utf8::UnicodeVector FieldWidget::getDisplayUnicodes() {
 		return result;
 	}
 
+	if (text.empty()) {
+		return utf8::toCodePoints(placeholder.c_str());
+	}
+
 	return text;
 }
 
@@ -186,41 +195,23 @@ bool FieldWidget::applyCursorSelection(const PositionedEvent* event, bool drag) 
 
 void FieldWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
-	if (isFocused()) {
-		immediate.setRectRadius(5);
-		immediate.setFill(255, 255, 0);
-		immediate.drawRect2D(padded.expand(8, 8, 8, 8));
-	}
+	state = computeWidgetState();
+	drawBasicPanel(immediate, state);
 
-	if (enabled) {
-		if (hovered) {
-			if (pressed) {
-				immediate.setFill(255, 100, 100);
-			} else {
-				immediate.setFill(255, 80, 80);
-			}
-		} else {
-			immediate.setFill(255, 0, 0);
-		}
-	} else {
-		immediate.setFill(70, 70, 70);
-	}
-
-	immediate.setRectRadius(10);
-	immediate.drawRect2D(padded);
-
+	immediate.setWrapping(false);
+	immediate.setTextAlignment(VerticalAlignment::CENTER);
 	immediate.setTextAlignment(HorizontalAlignment::LEFT);
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
 	immediate.setTextBox(content.w, content.h);
-	baked = immediate.bakeUnicode(content.x, content.y, getDisplayUnicodes());
 
 	if (text.empty()) {
 		immediate.setFill(50, 50, 50, 200);
-		immediate.drawString2D(content.x, content.y, placeholder);
 	} else {
 		immediate.setFill(0, 0, 0);
-		immediate.drawText2D(0, 0, *baked);
 	}
+
+	baked = immediate.bakeUnicode(content.x, content.y, getDisplayUnicodes());
+	immediate.drawText2D(0, 0, *baked);
 
 	if (isFocused()) {
 		immediate.setLineWidth(1);
@@ -266,8 +257,8 @@ bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 		uint32_t codepoint = unicode->unicode;
 
 		if (kind == INTEGER) {
-			if (codepoint < '0') return false;
-			if (codepoint > '9') return false;
+			if (codepoint < '0') return true;
+			if (codepoint > '9') return true;
 		}
 
 		cursor.insert(text, codepoint);

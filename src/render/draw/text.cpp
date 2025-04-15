@@ -152,7 +152,7 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 	const auto submit = [&] {
 		const int start = lines.empty() ? 0 : lines.back().end;
 
-		if (start == static_cast<int>(adjusted.size()) - 1) {
+		if (adjusted.empty()) {
 			return;
 		}
 

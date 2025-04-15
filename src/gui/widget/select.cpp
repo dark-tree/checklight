@@ -7,13 +7,36 @@
 #include "render/immediate.hpp"
 #include "gui/context.hpp"
 
-SelectWidget::SelectWidget()
-: InputWidget(), callback([] () noexcept -> void {}) {
+SelectWidget::SelectWidget(const std::vector<std::string>& labels) {
+	setOptions(labels);
+	min_height = Unit::px(30);
+	min_width = Unit::px(100);
 
-	for (int i = 0; i < 5; i ++) {
-		options.emplace_back("Option: " + std::to_string(i));
+	color = Color {100, 100, 100};
+	radius = Unit::px(10);
+	vertical = VerticalAlignment::CENTER;
+	horizontal = HorizontalAlignment::CENTER;
+}
+
+void SelectWidget::setOptions(const std::vector<std::string>& labels) {
+	this->options.clear();
+	this->value = -1;
+
+	for (const auto& label : labels) {
+		options.emplace_back(label);
 	}
+}
 
+int SelectWidget::getSelected() const {
+	return this->value;
+}
+
+void SelectWidget::setSelected(int option) {
+	this->value = option;
+}
+
+void SelectWidget::onSelect(const Callback& callback) {
+	this->callback = callback;
 }
 
 void SelectWidget::setUnrolled(bool unrolled) {
@@ -21,31 +44,25 @@ void SelectWidget::setUnrolled(bool unrolled) {
 	this->cooldown = glfwGetTime();
 }
 
+void SelectWidget::setValue(int value) {
+	if (this->value == value) {
+		return;
+	}
+
+	this->value = value;
+
+	if (callback) {
+		callback(value);
+	}
+}
+
 void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
-	if (isFocused()) {
-		immediate.setRectRadius(5);
-		immediate.setFill(255, 255, 0);
-		immediate.drawRect2D(padded.expand(8, 8, 8, 8));
-	} else {
-		if (unrolled) {
-			setUnrolled(false);
-		}
+	if (!isFocused() && unrolled) {
+		setUnrolled(false);
 	}
 
-	if (enabled) {
-		if (hovered) {
-			if (pressed) {
-				immediate.setFill(255, 100, 100);
-			} else {
-				immediate.setFill(255, 80, 80);
-			}
-		} else {
-			immediate.setFill(255, 0, 0);
-		}
-	} else {
-		immediate.setFill(70, 70, 70);
-	}
+	state = computeWidgetState();
 
 	double speed = 8;
 	double time = std::clamp((glfwGetTime() - cooldown) * speed, 0.0, 1.0);
@@ -53,20 +70,46 @@ void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 	if (!unrolled) time = 1 - time;
 	double delta = ease::ofInOut(time);
 
-	// background
-	immediate.setRectRadius(10, (1 - delta) * 10);
-	immediate.drawRect2D(padded);
+	const RadiusUnit corners = radius.fetch(state);
+	const Color background = color.fetch(state);
+	const Color border = border_color.fetch(state);
 
+	// configure border and background radius
+	immediate.setRectRadius(
+		corners.top_left.pixels(),
+		corners.top_right.pixels(),
+		corners.bottom_left.pixels() * (1 - delta),
+		corners.bottom_right.pixels() * (1 - delta)
+	);
+
+	// border width
+	const int width = this->border.fetch(state).pixels();
+	immediate.setStrokeWidth(width);
+
+	// background
+	immediate.setStroke(border);
+	immediate.setFill(background);
+
+	immediate.drawRect2D(padded);
 	immediate.setFont("assets/font/OpenSans-Variable.ttf");
-	immediate.setFill(0, 0, 0);
+
+	if (value == -1) {
+		immediate.setFill(20, 20, 20);
+	} else {
+		immediate.setFill(0, 0, 0);
+	}
+
+	immediate.setTextAlignment(horizontal.fetch(state));
+	immediate.setTextAlignment(vertical.fetch(state));
 	immediate.setTextBox(content.w, content.h);
-	immediate.drawString2D(content.x, content.y, "Selected: " + std::to_string(value));
+
+	std::string header = value == -1 ? placeholder : options[value].label;
+	immediate.drawString2D(content.x, content.y, header);
 
 	if (!show) return;
 	const auto alpha = static_cast<uint8_t>(delta * 255);
 
 	immediate.setRectRadius(0);
-
 	immediate.setFill(50, 50, 50, alpha);
 	immediate.setLineWidth(1);
 	immediate.drawLine2D(padded.x, padded.y + padded.h, padded.x + padded.w, padded.y + padded.h);
@@ -123,7 +166,7 @@ bool SelectWidget::event(WidgetContext& context, const InputEvent& any) {
 
 			if (keyboard->keycode == GLFW_KEY_ENTER) {
 				if (unrolled) {
-					value = option;
+					setValue(option);
 				} else {
 					option = value;
 
@@ -188,7 +231,7 @@ bool SelectWidget::event(WidgetContext& context, const InputEvent& any) {
 				if (button->isReleaseEvent()) {
 					pressed = false;
 					setUnrolled(hovered && !unrolled);
-					value = option;
+					setValue(option);
 					return true;
 				}
 			}
