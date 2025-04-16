@@ -1,10 +1,19 @@
 #pragma once
+
 #include "external.hpp"
-#include "gui.hpp"
+#include "widget/button.hpp"
+#include "widget/field.hpp"
+#include "widget/panel.hpp"
+#include "widget/select.hpp"
+#include "widget/slider.hpp"
+#include "widget/root.hpp"
+#include "widget/text.hpp"
 
 struct Theme {
 
 	protected:
+
+		friend class WrapTheme;
 
 		// shared styles
 		virtual void styleCommon(const std::shared_ptr<Widget>& widget) const = 0;

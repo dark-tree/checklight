@@ -26,7 +26,7 @@ static void entry(Args& args) {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
-	DarkTheme theme {};
+	AutoTheme theme {};
 	auto context = std::make_shared<WidgetContext>();
 	auto panel = theme.newRoot(20, 20);
 	auto text = theme.newText("Język lechicki z grupy zachodniosłowiańskiej");

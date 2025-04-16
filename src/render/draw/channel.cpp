@@ -62,7 +62,7 @@ bool VertexChannel::draw(PushConstant& push, CommandRecorder& recorder) {
 
 			if (command.sync) {
 				// only tell the renderer to retry if we actually have something to do
-				return (++ command_index) != commands.size();
+				return static_cast<size_t>(++ command_index) != commands.size();
 			}
 		}
 	}

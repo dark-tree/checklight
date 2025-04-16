@@ -27,6 +27,7 @@
 #include <sstream>
 #include <variant>
 #include <array>
+#include <regex>
 
 // GLFW
 #define GLFW_INCLUDE_VULKAN
