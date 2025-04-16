@@ -36,5 +36,6 @@ struct Theme {
 		std::shared_ptr<SliderWidget> newSlider(float value) const;
 		std::shared_ptr<SliderWidget> newSlider(float value, float step) const;
 		std::shared_ptr<TextWidget> newText(const std::string& value) const;
+		std::shared_ptr<RootWidget> newRoot(int x, int y) const;
 
 };

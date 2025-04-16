@@ -26,10 +26,9 @@ static void entry(Args& args) {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
+	DarkTheme theme {};
 	auto context = std::make_shared<WidgetContext>();
-	auto panel = std::make_shared<RootWidget>(10, 10);
-	LightTheme theme {};
-
+	auto panel = theme.newRoot(20, 20);
 	auto text = theme.newText("Język lechicki z grupy zachodniosłowiańskiej");
 
 	{
@@ -39,11 +38,7 @@ static void entry(Args& args) {
 		left->gap = Unit::px(10);
 
 		auto sub2 = theme.newButton("Apply");
-		sub2->min_width =  Unit::px(100);
-
 		auto slider = theme.newSlider();
-		slider->min_width =  Unit::px(100);
-		slider->min_height = Unit::px(20); // TODO ????
 
 		sub2->onClick([=] () {
 			out::info("Clicked left button!");
@@ -58,7 +53,7 @@ static void entry(Args& args) {
 		});
 
 		auto select = theme.newSelect({"EEVEE", "Cycles", "Checklight"});
-		auto field = theme.newTextField("Hi :3");
+		auto field = theme.newTextField();
 
 		left->addWidget(select);
 		left->addWidget(field);

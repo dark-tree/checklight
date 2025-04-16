@@ -92,3 +92,10 @@ std::shared_ptr<TextWidget> Theme::newText(const std::string& value) const {
 	text->setText(value);
 	return text;
 }
+
+std::shared_ptr<RootWidget> Theme::newRoot(int x, int y) const {
+	auto root = std::make_shared<RootWidget>(x, y);
+	styleCommon(root);
+	stylePanel(root);
+	return root;
+}

@@ -21,7 +21,7 @@ class SliderWidget : public InputWidget {
 	public:
 
 		/// Radius of the slider knob
-		StyleProperty<Unit> knob_size = Unit::px(8);
+		StyleProperty<Unit> knob_size = Unit::px(4);
 
 		/// Color of the slider knob
 		StyleProperty<Color> knob_color = Color {200, 200, 200};

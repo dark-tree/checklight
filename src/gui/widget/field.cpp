@@ -193,6 +193,7 @@ void FieldWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 	state = computeWidgetState();
 	drawBasicPanel(immediate, state);
 
+	immediate.setStroke(OFF);
 	immediate.setWrapping(false);
 	immediate.setTextAlignment(vertical.fetch(state));
 	immediate.setTextAlignment(horizontal.fetch(state));

@@ -10,7 +10,11 @@ void LightTheme::styleCommon(const std::shared_ptr<Widget>& widget) const {
 		return {180, 180, 200};
 	};
 
+	widget->border_color = Color {40, 40, 80};
 
+	widget->border.transition(100ms, ease::ofInOut) = [] (const ElementState& state) noexcept -> Unit {
+		return state.focused ? Unit::px(4) : Unit::px(0);
+	};
 }
 
 void LightTheme::styleInput(const std::shared_ptr<InputWidget>& widget) const {
@@ -18,12 +22,7 @@ void LightTheme::styleInput(const std::shared_ptr<InputWidget>& widget) const {
 }
 
 void LightTheme::styleButton(const std::shared_ptr<ButtonWidget>& widget) const {
-	widget->border_color = Color {40, 40, 80};
-
-	widget->border.transition(100ms, ease::ofInOut) = [] (const ElementState& state) noexcept -> Unit {
-		return state.focused ? Unit::px(4) : Unit::px(0);
-	};
-
+	widget->min_width = Unit::px(100);
 	widget->vertical = VerticalAlignment::CENTER;
 	widget->horizontal = HorizontalAlignment::CENTER;
 }
@@ -60,10 +59,13 @@ void LightTheme::styleSelect(const std::shared_ptr<SelectWidget>& widget) const 
 }
 
 void LightTheme::styleSlider(const std::shared_ptr<SliderWidget>& widget) const {
+	widget->min_width = Unit::px(100);
 	widget->knob_border_color = Color {40, 40, 80};
+	widget->border = Unit::zero();
+	widget->knob_size = Unit::px(7);
 
-	widget->knob_border = [] (const ElementState& state) noexcept -> Unit {
-		return state.focused ? Unit::px(1) : Unit::px(0);
+	widget->knob_border.transition(100ms, ease::ofInOut) = [] (const ElementState& state) noexcept -> Unit {
+		return state.focused ? Unit::px(4) : Unit::px(0);
 	};
 }
 
