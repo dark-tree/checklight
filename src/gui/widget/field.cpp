@@ -305,3 +305,11 @@ bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 
 	return used;
 }
+
+const utf8::UnicodeVector& FieldWidget::getUnicodeValue() const {
+	return text;
+}
+
+void FieldWidget::setValue(const std::string& value) {
+	text = utf8::toCodePoints(value.c_str());
+}

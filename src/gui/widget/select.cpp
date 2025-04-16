@@ -11,7 +11,7 @@
  * DropdownOverlay
  */
 
-DropdownOverlay::DropdownOverlay(SelectWidget* parent) {
+DropdownOverlay::DropdownOverlay(SelectWidget* parent) noexcept {
 	this->parent = parent;
 }
 
@@ -30,11 +30,7 @@ bool DropdownOverlay::event(WidgetContext& context, const InputEvent& event) {
 
 SelectWidget::SelectWidget() {
 	this->dropdown = std::make_shared<DropdownOverlay>(this);
-}
 
-SelectWidget::SelectWidget(const std::vector<std::string>& labels)
-: SelectWidget() {
-	setOptions(labels);
 	min_height = Unit::px(30);
 	min_width = Unit::px(100 - 8);
 
@@ -60,6 +56,11 @@ SelectWidget::SelectWidget(const std::vector<std::string>& labels)
 	arrow.transition(100ms) = [] (const ElementState& state) noexcept -> Color {
 		return state.isActive() ? Color {10, 10, 10} : Color {40, 40, 40};
 	};
+}
+
+SelectWidget::SelectWidget(const std::vector<std::string>& labels)
+: SelectWidget() {
+	setOptions(labels);
 }
 
 void SelectWidget::setOptions(const std::vector<std::string>& labels) {

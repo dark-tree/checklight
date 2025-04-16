@@ -12,7 +12,7 @@ class DropdownOverlay : public Overlay {
 
 	public:
 
-		DropdownOverlay(SelectWidget* parent);
+		DropdownOverlay(SelectWidget* parent) noexcept;
 
 		void draw(ImmediateRenderer& immediate) override;
 		bool event(WidgetContext& context, const InputEvent& event) override;

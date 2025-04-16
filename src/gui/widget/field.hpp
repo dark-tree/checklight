@@ -103,4 +103,7 @@ class FieldWidget : public InputWidget {
 		void draw(ImmediateRenderer& immediate, ElementState state) override;
 		bool event(WidgetContext& context, const InputEvent &event) override;
 
+		const utf8::UnicodeVector& getUnicodeValue() const;
+		void setValue(const std::string& value);
+
 };

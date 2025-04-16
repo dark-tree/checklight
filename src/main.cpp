@@ -1,5 +1,7 @@
 
 #include <gui/context.hpp>
+#include <gui/theme/dark.hpp>
+#include <gui/theme/light.hpp>
 #include <gui/widget/panel.hpp>
 #include <gui/widget/root.hpp>
 #include <gui/widget/text.hpp>
@@ -26,18 +28,19 @@ static void entry(Args& args) {
 
 	auto context = std::make_shared<WidgetContext>();
 	auto panel = std::make_shared<RootWidget>(10, 10);
+	LightTheme theme {};
 
-	auto text = std::make_shared<TextWidget>("Język lechicki z grupy zachodniosłowiańskiej");
+	auto text = theme.newText("Język lechicki z grupy zachodniosłowiańskiej");
 
 	{
 
-		auto left = std::make_shared<PanelWidget>();
+		auto left = theme.newPanel();
 		left->flow = Flow::TOP_TO_BOTTOM;
 		left->gap = Unit::px(10);
 
-		auto sub2 = std::make_shared<ButtonWidget>("Lorem ipsum dolor sit amet");
+		auto sub2 = theme.newButton("Lorem ipsum dolor sit amet");
 
-		auto slider = std::make_shared<SliderWidget>();
+		auto slider = theme.newSlider();
 		slider->width = Unit::grow();
 		slider->min_height = Unit::px(20); // TODO ????
 
@@ -53,9 +56,8 @@ static void entry(Args& args) {
 			out::info("Slider value changed to: %f", value);
 		});
 
-		std::vector<std::string> options = {"EEVEE", "Cycles", "Checklight"};
-		auto select = std::make_shared<SelectWidget>(options);
-		auto field = std::make_shared<FieldWidget>();
+		auto select = theme.newSelect({"EEVEE", "Cycles", "Checklight"});
+		auto field = theme.newTextField("Hi :3");
 
 		left->addWidget(select);
 		left->addWidget(field);
@@ -64,7 +66,7 @@ static void entry(Args& args) {
 	}
 
 	{
-		auto sub = std::make_shared<PanelWidget>();
+		auto sub = theme.newPanel();
 		panel->addWidget(sub);
 
 		sub->width = Unit::px(100);
@@ -80,7 +82,7 @@ static void entry(Args& args) {
 	}
 
 	{
-		auto sub = std::make_shared<PanelWidget>();
+		auto sub = theme.newPanel();
 		panel->addWidget(sub);
 
 		sub->background = {250, 100, 100};
