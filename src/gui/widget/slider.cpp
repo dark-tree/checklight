@@ -15,12 +15,6 @@ SliderWidget::SliderWidget(float value, float step)
 : InputWidget() {
 	setValue(value);
 	setStep(step);
-
-	this->knob_border_color = Color {40, 40, 80};
-
-	this->knob_border = [] (const ElementState& state) noexcept -> Unit {
-		return state.focused ? Unit::px(1) : Unit::px(0);
-	};
 }
 
 void SliderWidget::updateValue() {

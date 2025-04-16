@@ -22,18 +22,19 @@ struct Theme {
 
 		virtual ~Theme() = default;
 
-		std::shared_ptr<ButtonWidget> newButton() const;
+		virtual std::shared_ptr<ButtonWidget> newButton() const;
+		virtual std::shared_ptr<FieldWidget> newTextField() const;
+		virtual std::shared_ptr<PanelWidget> newPanel() const;
+		virtual std::shared_ptr<SelectWidget> newSelect() const;
+		virtual std::shared_ptr<SliderWidget> newSlider() const;
+		virtual std::shared_ptr<TextWidget> newText() const;
+
 		std::shared_ptr<ButtonWidget> newButton(const std::string& label) const;
-		std::shared_ptr<FieldWidget> newTextField() const;
 		std::shared_ptr<FieldWidget> newTextField(const std::string& value) const;
-		std::shared_ptr<PanelWidget> newPanel() const;
-		std::shared_ptr<SelectWidget> newSelect() const;
 		std::shared_ptr<SelectWidget> newSelect(const std::vector<std::string>& labels) const;
 		std::shared_ptr<SelectWidget> newSelect(std::initializer_list<const char*> options) const ;
-		std::shared_ptr<SliderWidget> newSlider() const;
 		std::shared_ptr<SliderWidget> newSlider(float value) const;
 		std::shared_ptr<SliderWidget> newSlider(float value, float step) const;
-		std::shared_ptr<TextWidget> newText() const;
 		std::shared_ptr<TextWidget> newText(const std::string& value) const;
 
 };

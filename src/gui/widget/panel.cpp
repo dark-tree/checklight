@@ -3,9 +3,7 @@
 
 #include <render/immediate.hpp>
 
-PanelWidget::PanelWidget() {
-
-}
+PanelWidget::PanelWidget() {}
 
 void PanelWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 	drawBasicPanel(immediate, state);

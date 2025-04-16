@@ -102,14 +102,7 @@ int TextCursor::end() const {
  */
 
 FieldWidget::FieldWidget()
-: InputWidget() {
-	min_height = Unit::px(30);
-	min_width = Unit::px(100);
-	background = Color {100, 100, 100};
-	radius = Unit::px(10);
-	vertical = VerticalAlignment::CENTER;
-	horizontal = HorizontalAlignment::LEFT;
-}
+: InputWidget() {}
 
 float FieldWidget::getCursorOffset(int glyph) const {
 	const auto& glyphs = baked->getQuads();

@@ -30,32 +30,6 @@ bool DropdownOverlay::event(WidgetContext& context, const InputEvent& event) {
 
 SelectWidget::SelectWidget() {
 	this->dropdown = std::make_shared<DropdownOverlay>(this);
-
-	min_height = Unit::px(30);
-	min_width = Unit::px(100 - 8);
-
-	background = [] (const ElementState& state) noexcept -> Color {
-		if (state.interaction == ElementState::PRESSED) return {220, 220, 240};
-		if (state.interaction == ElementState::HOVER) return {200, 200, 220};
-
-		return {180, 180, 200};
-	};
-
-	option_color = [] (const ElementState& state) noexcept -> Color {
-		if (state.interaction == ElementState::PRESSED) return {230, 230, 240};
-		if (state.interaction == ElementState::HOVER) return {200, 200, 220};
-
-		return {140, 140, 180};
-	};
-
-	radius = Unit::px(10);
-	vertical = VerticalAlignment::CENTER;
-	horizontal = HorizontalAlignment::LEFT;
-	padding = BoxUnit {Unit::zero(), Unit::zero(), Unit::px(8), Unit::zero()};
-
-	arrow.transition(100ms) = [] (const ElementState& state) noexcept -> Color {
-		return state.isActive() ? Color {10, 10, 10} : Color {40, 40, 40};
-	};
 }
 
 SelectWidget::SelectWidget(const std::vector<std::string>& labels)
@@ -169,17 +143,16 @@ void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 	if (!show) return;
 	alpha = static_cast<uint8_t>(delta * 255);
 
-	Color multiplied_separator_color = separator_color.fetch(state).multiplyAlpha(alpha);
-
 	// separator
-	immediate.setRectRadius(0);
-	immediate.setFill(multiplied_separator_color);
+	immediate.setFill(separator_color.fetch(state).multiplyAlpha(alpha));
 	immediate.setLineWidth(separator.fetch(state).pixels());
 	immediate.drawLine2D(padded.x, padded.y + padded.h, padded.x + padded.w, padded.y + padded.h);
 
 }
 
 void SelectWidget::drawDropdown(ImmediateRenderer& immediate) {
+
+	immediate.setRectRadius(0);
 
 	for (int i = 0; i < (int) options.size(); i ++) {
 		int oy = padded.y + padded.h + content.h * i;

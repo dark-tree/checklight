@@ -35,13 +35,14 @@ static void entry(Args& args) {
 	{
 
 		auto left = theme.newPanel();
-		left->flow = Flow::TOP_TO_BOTTOM;
+		left->flow = Flow::LEFT_TO_RIGHT;
 		left->gap = Unit::px(10);
 
-		auto sub2 = theme.newButton("Lorem ipsum dolor sit amet");
+		auto sub2 = theme.newButton("Apply");
+		sub2->min_width =  Unit::px(100);
 
 		auto slider = theme.newSlider();
-		slider->width = Unit::grow();
+		slider->min_width =  Unit::px(100);
 		slider->min_height = Unit::px(20); // TODO ????
 
 		sub2->onClick([=] () {
@@ -49,8 +50,8 @@ static void entry(Args& args) {
 			text->setText("Slider value: " + std::to_string(int(100 * slider->getValue())));
 		});
 
-		// left->addWidget(sub2);
-		// left->addWidget(slider);
+		left->addWidget(sub2);
+		left->addWidget(slider);
 
 		slider->onChange([] (float value) {
 			out::info("Slider value changed to: %f", value);

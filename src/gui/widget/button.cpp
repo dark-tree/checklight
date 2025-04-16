@@ -8,26 +8,7 @@
 
 
 ButtonWidget::ButtonWidget()
-: InputWidget() {
-
-	this->border_color = Color {40, 40, 80};
-
-	this->border.transition(100ms, ease::ofInOut) = [] (const ElementState& state) noexcept -> Unit {
-		return state.focused ? Unit::px(4) : Unit::px(0);
-	};
-
-	this->radius = Unit::px(4);
-
-	this->background = [] (const ElementState& state) noexcept -> Color {
-		if (state.interaction == ElementState::PRESSED) return {220, 220, 240};
-		if (state.interaction == ElementState::HOVER) return {200, 200, 220};
-
-		return {180, 180, 200};
-	};
-
-	this->padding = BoxUnit {Unit::px(2)};
-
-}
+: InputWidget() {}
 
 ButtonWidget::ButtonWidget(const std::string& label)
 : ButtonWidget() {

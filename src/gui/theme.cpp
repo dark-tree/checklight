@@ -2,47 +2,47 @@
 
 std::shared_ptr<ButtonWidget> Theme::newButton() const {
 	auto widget = std::make_shared<ButtonWidget>();
-	styleButton(widget);
-	styleInput(widget);
 	styleCommon(widget);
+	styleInput(widget);
+	styleButton(widget);
 	return widget;
 }
 
 std::shared_ptr<FieldWidget> Theme::newTextField() const {
 	auto widget = std::make_shared<FieldWidget>();
-	styleField(widget);
-	styleInput(widget);
 	styleCommon(widget);
+	styleInput(widget);
+	styleField(widget);
 	return widget;
 }
 
 std::shared_ptr<PanelWidget> Theme::newPanel() const {
 	auto widget = std::make_shared<PanelWidget>();
-	stylePanel(widget);
 	styleCommon(widget);
+	stylePanel(widget);
 	return widget;
 }
 
 std::shared_ptr<SelectWidget> Theme::newSelect() const {
 	auto widget = std::make_shared<SelectWidget>();
-	styleSelect(widget);
-	styleInput(widget);
 	styleCommon(widget);
+	styleInput(widget);
+	styleSelect(widget);
 	return widget;
 }
 
 std::shared_ptr<SliderWidget> Theme::newSlider() const {
 	auto widget = std::make_shared<SliderWidget>();
-	styleSlider(widget);
-	styleInput(widget);
 	styleCommon(widget);
+	styleInput(widget);
+	styleSlider(widget);
 	return widget;
 }
 
 std::shared_ptr<TextWidget> Theme::newText() const {
 	auto widget = std::make_shared<TextWidget>();
-	styleText(widget);
 	styleCommon(widget);
+	styleText(widget);
 	return widget;
 }
 
