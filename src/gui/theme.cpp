@@ -46,6 +46,13 @@ std::shared_ptr<TextWidget> Theme::newText() const {
 	return widget;
 }
 
+std::shared_ptr <ImageWidget> Theme::newImage() const {
+	auto widget = std::make_shared<ImageWidget>();
+	styleCommon(widget);
+	styleImage(widget);
+	return widget;
+}
+
 std::shared_ptr<ButtonWidget> Theme::newButton(const std::string& label) const {
 	auto button = newButton();
 	button->addWidget(newText(label));
@@ -91,6 +98,12 @@ std::shared_ptr<TextWidget> Theme::newText(const std::string& value) const {
 	auto text = newText();
 	text->setText(value);
 	return text;
+}
+
+std::shared_ptr <ImageWidget> Theme::newImage(const std::string& sprite) const {
+	auto image = newImage();
+	image->setSprite(sprite);
+	return image;
 }
 
 std::shared_ptr<RootWidget> Theme::newRoot(int x, int y) const {

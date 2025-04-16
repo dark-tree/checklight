@@ -19,6 +19,7 @@ class WrapTheme : public Theme {
 		void styleSelect(const std::shared_ptr<SelectWidget>& widget) const override;
 		void styleSlider(const std::shared_ptr<SliderWidget>& widget) const override;
 		void styleText(const std::shared_ptr<TextWidget>& widget) const override;
+		void styleImage(const std::shared_ptr<ImageWidget>& widget) const override;
 
 	protected:
 

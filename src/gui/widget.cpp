@@ -48,6 +48,9 @@ void Widget::drawBasicPanel(ImmediateRenderer& immediate, const ElementState& st
 	const Color color = background.fetch(state);
 	const Color border = border_color.fetch(state);
 
+	// reset state
+	immediate.setSprite(OFF);
+
 	// configure border and background radius
 	immediate.setRectRadius(
 		corners.top_left.pixels(),
@@ -380,6 +383,12 @@ Widget::~Widget() {
 }
 
 bool Widget::event(WidgetContext& context, const InputEvent& any) {
+	if (const auto* event = any.as<PositionedEvent>()) {
+		if (event->isWithinBox(padded)) {
+			return true;
+		}
+	}
+
 	return false;
 }
 

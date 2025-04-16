@@ -62,7 +62,7 @@ static void entry(Args& args) {
 	}
 
 	{
-		auto sub = theme.newPanel();
+		auto sub = theme.newImage("assets/image/corners.png");
 		panel->addWidget(sub);
 
 		sub->width = Unit::px(100);

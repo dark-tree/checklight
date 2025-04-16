@@ -32,6 +32,10 @@ void WrapTheme::styleText(const std::shared_ptr<TextWidget>& widget) const {
 	theme->styleText(widget);
 }
 
+void WrapTheme::styleImage(const std::shared_ptr<ImageWidget>& widget) const {
+	theme->styleImage(widget);
+}
+
 void WrapTheme::setTheme(const std::shared_ptr<Theme>& theme) {
 	this->theme = theme;
 }

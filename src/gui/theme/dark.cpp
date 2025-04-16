@@ -77,3 +77,6 @@ void DarkTheme::styleText(const std::shared_ptr<TextWidget>& widget) const {
 	widget->color = Color {150, 150, 150};
 }
 
+void DarkTheme::styleImage(const std::shared_ptr<ImageWidget>& widget) const {
+}
+

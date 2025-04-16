@@ -72,3 +72,6 @@ void LightTheme::styleSlider(const std::shared_ptr<SliderWidget>& widget) const 
 void LightTheme::styleText(const std::shared_ptr<TextWidget>& widget) const {
 }
 
+void LightTheme::styleImage(const std::shared_ptr<ImageWidget>& widget) const {
+}
+

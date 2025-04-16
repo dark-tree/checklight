@@ -14,7 +14,7 @@ void PanelWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 }
 
 bool PanelWidget::event(WidgetContext& context, const InputEvent& event) {
-	bool used = false;
+	bool used = Widget::event(context, event);
 
 	for (auto& widget : children) {
 		used |= widget->event(context, event);
