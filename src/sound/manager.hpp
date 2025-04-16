@@ -112,5 +112,4 @@ public:
 	
 	/// Remove every expired pointer from vectors
 	void cleanupVectors();
-
 };

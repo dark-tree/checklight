@@ -117,13 +117,17 @@ int main() {
 		.shadow = true
 	});
 
-	SoundListener listener;
-	listener.setPosition(0, 0, 0);
+	SoundListener::setPosition(0, 0, 0);
 	SoundManager& sm = SoundManager::getInstance();
 	auto sso = std::make_shared<SoundSourceObject>();
 	sm.addSource(sso);
-	sm.createSoundClipAndAddToSourceObject("assets/sounds/testOGG.ogg", sso);
-	
+	sm.createSoundClipAndAddToSourceObject("assets/sounds/testWAV.wav", sso);
+	sso->setPosition(0, 0, 0);
+	sso->setMaxDistance(20);
+	sso->setReferenceDistance(1.0f);
+	sso->setRolloffFactor(1.0f);
+	sso->setMinGain(0.0f);
+	SoundListener::setDistanceModel(AL_INVERSE_DISTANCE);
 
 	while (!window.shouldClose()) {
 		window.poll();
@@ -143,10 +147,11 @@ int main() {
 		point_light->position = glm::vec3(3.0, 2.0, 18.0 * sin(glfwGetTime() / 8));
 		point_light->color = glm::vec3(sin(glfwGetTime() / 2) * 0.5 + 0.5, sin(glfwGetTime() / 3 + 2) * 0.5 + 0.5, sin(glfwGetTime() / 5 + 4) * 0.5 + 0.5);
 		system.getLightManager().flush();
-
+		
 		// render the scene
 		system.draw();
 		sm.playSound(sso);
+		SoundListener::setPosition(current_board->getCamPos().x, current_board->getCamPos().y, current_board->getCamPos().z);
 	}
 
 	system.wait();

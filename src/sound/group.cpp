@@ -5,13 +5,13 @@
 
 void SoundGroup::addObserversSoundSourceObject(std::shared_ptr<SoundSourceObject> sso) {
 	if (!sso) {
-		std::cerr << ("SoundGroupParameters -> addObserversSoundSourceObject: SoundSourceObject not exist\f");
+		std::cerr << ("SoundGroupParameters -> addObserversSoundSourceObject: SoundSourceObject not exist\n");
 		return;
 	}
 
 	// check if exist a source with a given name
 	if (findInVector(observers_vector_sso, sso) != observers_vector_sso.end()) {
-		std::cerr << ("SoundGroupParameters -> addObserversSoundSourceObject: SoundSourceObject already exist\f");
+		std::cerr << ("SoundGroupParameters -> addObserversSoundSourceObject: SoundSourceObject already exist\n");
 		return;
 	}
 

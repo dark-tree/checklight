@@ -5,7 +5,7 @@ SoundSourceObject::SoundSourceObject(){
 	alGenSources(1, &source);
 	ALenum error;
 	if ((error = alGetError()) != AL_NO_ERROR) {
-		std::cerr << ("Sound -> SSOinit: Failed to generate sources\f");  //throw exception
+		std::cerr << ("Sound -> SSOinit: Failed to generate sources\n");  //throw exception
 		return;
 	}
 
@@ -134,7 +134,7 @@ void SoundSourceObject::setConeOuterAngle(float cone_outer_angle) {
 void SoundSourceObject::addBuffer(SoundClip clip){
 	ALuint buffer = clip.getBuffer();
 	if (buffer==0) {
-		std::cerr << ("Source -> addBuffer: Buffer doesnt exist\f");	//throw exception
+		std::cerr << ("Source -> addBuffer: Buffer doesnt exist\n");	//throw exception
 		return;
 	}
 
@@ -142,14 +142,14 @@ void SoundSourceObject::addBuffer(SoundClip clip){
 
 	ALenum error = alGetError();
 	if (error != AL_NO_ERROR) {
-		std::cerr << ("Source -> addBuffer: OpenAL error " + std::to_string(error) +"\f");
+		std::cerr << ("Source -> addBuffer: OpenAL error " + std::to_string(error) +"\n");
 		return;
 	}
 }
 
 void SoundSourceObject::addBuffer(std::shared_ptr<SoundClip> clip) {
 	if (clip->getBuffer() == 0) {
-		std::cerr << ("Source -> addBuffer: Buffer doesnt exist\f");	//throw exception
+		std::cerr << ("Source -> addBuffer: Buffer doesnt exist\n");	//throw exception
 		return;
 	}
 
@@ -166,7 +166,7 @@ void SoundSourceObject::addBuffer(std::shared_ptr<SoundClip> clip) {
 
 	ALenum error = alGetError();
 	if (error != AL_NO_ERROR) {
-		std::cerr << ("Source -> addBuffer: OpenAL error " + std::to_string(error)+"\f");
+		std::cerr << ("Source -> addBuffer: OpenAL error " + std::to_string(error)+"\n");
 		return;
 	}
 }
@@ -195,7 +195,7 @@ void SoundSourceObject::updateParameters() {
 		float min_gain = (sso_sg->getMinGain() <= sso_max_distance) ? sso_sg->getMinGain() : sso_min_gain;
 
 		if (min_gain > max_gain)
-			std::cerr << ("Source -> updateParameters: min_gain is bigger than max_gain\f");
+			std::cerr << ("Source -> updateParameters: min_gain is bigger than max_gain\n");
 				
 		alSourcef(source, AL_MAX_DISTANCE, max_gain);
 		alSourcef(source, AL_MAX_DISTANCE, min_gain);
@@ -254,7 +254,7 @@ void SoundSourceObject::updateMovement() {
 
 void SoundSourceObject::playSound(){
 	if (!alIsSource(source)) {
-		std::cerr << ("Source -> playSound: No valid sound source found!\f");
+		std::cerr << ("Source -> playSound: No valid sound source found!\n");
 		return;
 	}
 
@@ -262,7 +262,7 @@ void SoundSourceObject::playSound(){
 		alSourcePlay(source);
 		ALenum error = alGetError();
 		if ((error = alGetError()) != AL_NO_ERROR) {
-			std::cerr << ("Sound -> playSound: Failed to play clip\f");  //throw exception
+			std::cerr << ("Sound -> playSound: Failed to play clip\n");  //throw exception
 			return;
 		}
 	}
@@ -270,28 +270,28 @@ void SoundSourceObject::playSound(){
 
 void SoundSourceObject::stopSound(){
 	if (!alIsSource(source)) {
-		std::cerr << ("Source -> stopSound: No valid sound source found!\f");
+		std::cerr << ("Source -> stopSound: No valid sound source found!\n");
 		return;
 	}
 
 	alSourceStop(source);
 	ALenum error = alGetError();
 	if ((error = alGetError()) != AL_NO_ERROR) {
-		std::cerr << ("Sound -> stopSound: Failed to stop clip\f");  //throw exception
+		std::cerr << ("Sound -> stopSound: Failed to stop clip\n");  //throw exception
 		return;
 	}
 }
 
 void SoundSourceObject::pauseSound() {
 	if (!alIsSource(source)) {
-		std::cerr << ("Source -> pauseSound: No valid sound source found!\f");
+		std::cerr << ("Source -> pauseSound: No valid sound source found!\n");
 		return;
 	}
 
 	alSourcePause(source);
 	ALenum error = alGetError();
 	if ((error = alGetError()) != AL_NO_ERROR) {
-		std::cerr << ("Sound -> pauseSound: Failed to pause clip\f");  //throw exception
+		std::cerr << ("Sound -> pauseSound: Failed to pause clip\n");  //throw exception
 		return;
 	}
 }

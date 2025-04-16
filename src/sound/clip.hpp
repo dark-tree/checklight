@@ -13,7 +13,11 @@ private:
 	/// Path of buffer in buffer
 	std::string path;
 
+protected:
+
+	/// Load ogg file to buffer
 	void loadOGGFile(const char* filename);
+	/// Load wav file to buffer
 	void loadWAVFile(const char* filename);
 
 public:
@@ -22,7 +26,10 @@ public:
 	~SoundClip();
 
 	/// Method to create audio buffer for audio file
-	/// Enable only .ogg files
+	/// If the audio file has more than 1 channel, converts to mono
+	/// by extracting only one channel (first channel)
+	/// If you want to use other method to convert, overwrite loadOGGFile or loadWAVFile
+	/// Enable only OGG and WAV files
 	/// 
 	/// @param path Path to the audio file
 	void loadAudio(const char* path);
