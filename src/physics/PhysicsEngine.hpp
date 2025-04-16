@@ -632,6 +632,12 @@ public:
         a.setVelocity(a.getVelocity() - friction_impulse_vector * inverse_mass_a);
         b.setVelocity(b.getVelocity() + friction_impulse_vector * inverse_mass_b);
 
+        //applying rotational forces
+        glm::vec3 ra = collision_point - a.getPosition();
+        glm::vec3 rb = collision_point - b.getPosition();
+        a.setAngularVelocity(a.getAngularVelocity() + glm::cross(ra, impulse_vector) / a.getMomentOfInertia());
+        b.setAngularVelocity(b.getAngularVelocity() + glm::cross(rb, -impulse_vector) / b.getMomentOfInertia());
+
     }
 
     std::vector<PhysicsElement> getElements()

@@ -149,7 +149,7 @@ public:
     }
 
     /// Returns the rotation of an object
-    glm::quat getAngularVelocity()
+    glm::vec3 getAngularVelocity()
     {
         return angular_velocity;
     }
@@ -191,6 +191,8 @@ public:
                 sphere_collider_radius = glm::length(vec3);
             }
         }
+        findCenterOfMass();
+        findMass();
     }
 
     /// Returns the object vertices
