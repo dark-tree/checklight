@@ -10,6 +10,12 @@
 #include "PhysicsElement.hpp"
 #include "shared/math.hpp"
 
+struct SupportPoint {
+    glm::vec3 point;    // Minkowski difference point
+    glm::vec3 point_a;   // Support point on A
+    glm::vec3 point_b;   // Support point on B
+};
+
 class PhysicsEngine {
 protected:
 
@@ -44,8 +50,19 @@ public:
                     auto [isColliding, simplex] = gilbertJohnsonKeerthi(elements[i], elements[j]);
                     if (isColliding)
                     {
-                        auto [collision_depth, collision_normal] = expandingPolytope(simplex, elements[i], elements[j]);
-                        applyForces(elements[i], elements[j], collision_depth, collision_normal);
+                        auto [dn, collision_point] = expandingPolytope(simplex, elements[i], elements[j]);
+                        auto [collision_depth, collision_normal] = dn;
+
+                        //safeguard for objects going deeper into themselves instead of uncolliding
+                        if (glm::dot(collision_normal, collision_point - elements[i].getPosition()) >= glm::dot(collision_normal, collision_point - elements[j].getPosition())){
+                            applyForces(elements[i], elements[j], collision_depth, collision_normal, collision_point);
+                        }
+                        else
+                        {
+                            applyForces(elements[j], elements[i], collision_depth, collision_normal, collision_point);
+                        }
+
+
                         //TODO on collision function in pawn
                     }
                 }
@@ -377,12 +394,17 @@ public:
      * @param simplex end simplex of GJK Algorithm
      * @param a 1st colliding physics element
      * @param b 2nd colliding physics element
-     * @return std::pair containing the depth of the collision and a glm::vec3 containing the normal of the collision
+     * @return std::pair containing the depth of the collision, a glm::vec3 containing the normal of the collision and a glm::vec3 with the point of the collision in global space
      */
-    std::pair<float, glm::vec3> expandingPolytope(std::vector<glm::vec3>& simplex, PhysicsElement& a, PhysicsElement& b)
+    std::pair<std::pair<float, glm::vec3>, glm::vec3> expandingPolytope(std::vector<glm::vec3>& simplex, PhysicsElement& a, PhysicsElement& b)
     {
-        //create a copy of end simplex to be turned into a polytope
-        std::vector<glm::vec3> polytope(simplex.begin(), simplex.end());
+        //create a copy of end simplex to be turned into a polytope, it may differ slightly from the original simplex,
+        //but the algorithm will work properly regardless - this is just an arbitrary starting point
+        std::vector<SupportPoint> polytope;
+        for (auto p : simplex) {
+            polytope.push_back(calculateSupportWithPoints(a, b, p));
+        }
+
         std::vector<glm::ivec3> faces = {
                 {0, 1, 2},
                 {0, 3, 1},
@@ -405,8 +427,8 @@ public:
             min_normal[2] = normal_list[closest_face][2];
             min_distance = normal_list[closest_face][3];
 
-            glm::vec3 support_point = calculateSupport(a, b, min_normal);
-            float next_point_distance = glm::dot(min_normal, support_point);
+            SupportPoint support_point = calculateSupportWithPoints(a, b, min_normal);
+            float next_point_distance = glm::dot(min_normal, support_point.point);
 
             //Check if the support point in the direction of the closest face is a vertex belonging to that face.
             //This works cause the distance from point a to a plane B is equal to the got product of
@@ -440,7 +462,7 @@ public:
                 for (int i = 0; i < normal_list.size(); i++)
                 {
                     //check for direction
-                    if (glm::dot( glm::vec3(normal_list[i][0], normal_list[i][1], normal_list[i][2]), support_point) > 0)
+                    if (glm::dot( glm::vec3(normal_list[i][0], normal_list[i][1], normal_list[i][2]), support_point.point) > 0)
                     {
                         //check whether the 3 faces of a given edge are unique and add them to the edge list.
                         addUniqueEdge(unique_edges, faces, i, 0, 1);
@@ -491,12 +513,39 @@ public:
             }
         }
 
+        //calculating the collision point via barycentric coordinates
+        //project the origin onto the closest face to get barycentric coordinates
+        glm::ivec3 face = faces[closest_face];
+        glm::vec3 p0 = polytope[face[0]].point;
+        glm::vec3 p1 = polytope[face[1]].point;
+        glm::vec3 p2 = polytope[face[2]].point;
+        glm::vec3 normal = glm::cross(p1 - p0, p2 - p0); //we can't use the normal from the normal list because it's normalized
+
+        float denominator = glm::dot(normal, normal);
+        float weight1 = glm::dot(glm::cross(-p0, p2 - p0), normal) / denominator;
+        float weight2 = glm::dot(glm::cross(p1 - p0,  -p0), normal) / denominator;
+        float weight0 = 1 - weight1 - weight2;
+
+        // Interpolate the support points from A and B
+        glm::vec3 collision_a = weight0 * polytope[face[0]].point_a + weight1 * polytope[face[1]].point_a + weight2 * polytope[face[2]].point_a;
+        glm::vec3 collision_b = weight0 * polytope[face[0]].point_b + weight1 * polytope[face[1]].point_b + weight2 * polytope[face[2]].point_b;
+
+        glm::vec3 collision_point = (collision_a + collision_b) / 2.0f;
+
         //better to overcompensate the correction distance than under compensate and cause this whole mess to run again
-        return {min_distance * 1.01, min_normal};
+        return {{min_distance * 1.01, min_normal}, collision_point};
+    }
+
+    /// Used to calculate a support point of the minkowski difference in a given direction, returns furthest points as well
+    SupportPoint calculateSupportWithPoints(PhysicsElement& a, PhysicsElement& b, glm::vec3& direction)
+    {
+        glm::vec3 a_point = a.furthestPoint(direction);
+        glm::vec3 b_point = b.furthestPoint(-direction);
+        return {a_point - b_point, a_point, b_point};
     }
 
     /// Function for returning the normalized normals of given faces of a polytope
-    std::pair<std::vector<glm::vec4>, int> getFaceNormals(std::vector<glm::vec3>& polytope, std::vector<glm::ivec3>& faces)
+    std::pair<std::vector<glm::vec4>, int> getFaceNormals(std::vector<SupportPoint>& polytope, std::vector<glm::ivec3>& faces)
     {
         //prepare variables needed for finding face normals and the closes face
         std::vector<glm::vec4> normal_list;
@@ -506,9 +555,9 @@ public:
         //check normal for each face
         for (int i = 0; i < faces.size(); ++i) {
             //a, b and c are the points making up the face
-            glm::vec3 a = polytope[faces[i][0]];
-            glm::vec3 b = polytope[faces[i][1]];
-            glm::vec3 c = polytope[faces[i][2]];
+            glm::vec3 a = polytope[faces[i][0]].point;
+            glm::vec3 b = polytope[faces[i][1]].point;
+            glm::vec3 c = polytope[faces[i][2]].point;
 
             //find the normal of a given face from the cross product of vector AB and AC
             glm::vec3 normal = glm::normalize(glm::cross(b - a, c - a));
@@ -557,9 +606,8 @@ public:
         }
     }
 
-    void applyForces(PhysicsElement& a, PhysicsElement& b, float collision_depth, glm::vec3 collision_normal)
+    void applyForces(PhysicsElement& a, PhysicsElement& b, float collision_depth, glm::vec3& collision_normal, glm::vec3& collision_point)
     {
-        //TODO test wether the + and - are correctly placed
         //positional correction
         glm::vec3 correction_vector = collision_normal * collision_depth;
         a.setPosition(a.getPosition() - correction_vector * (b.getMass()/(a.getMass() + b.getMass())));
@@ -583,8 +631,6 @@ public:
         glm::vec3 friction_impulse_vector = -tangent_velocity * (impulse_scalar * a.getCoefficientOfFriction() * b.getCoefficientOfFriction());
         a.setVelocity(a.getVelocity() - friction_impulse_vector * inverse_mass_a);
         b.setVelocity(b.getVelocity() + friction_impulse_vector * inverse_mass_b);
-
-        //todo modify epa to return collision point so that we can apply rotation
 
     }
 
