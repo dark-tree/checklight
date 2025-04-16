@@ -25,6 +25,7 @@ void RootWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 			over->bind(false);
 			over = nullptr;
 		} else {
+			immediate.synchronize();
 			over->draw(immediate);
 		}
 	}

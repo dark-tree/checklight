@@ -16,6 +16,7 @@ class Attachment {
 		 */
 		bool magicity;
 
+		VkExtent2D extent;
 		TextureDelegate settings;
 		Texture texture;
 
@@ -70,4 +71,7 @@ class Attachment {
 
 		/// Close the underlying texture
 		void close(LogicalDevice device);
+
+		/// Get attachment size (if it has been allcoated)
+		VkExtent2D getExtent() const;
 };

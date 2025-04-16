@@ -59,9 +59,14 @@ void Attachment::markSwapchainBacked(){
 
 void Attachment::allocate(LogicalDevice& device, VkExtent2D extent, Allocator& allocator) {
 	Image image = allocator.allocateImage(Memory::DEVICE, extent.width, extent.height, getFormat(), settings.vk_usage, 1, 1, settings.vk_samples, settings.debug_name.c_str());
-	texture = settings.buildTexture(device, image);
+	this->texture = settings.buildTexture(device, image);
+	this->extent = extent;
 }
 
 void Attachment::close(LogicalDevice device) {
 	texture.closeImageViewSampler(device.getHandle());
+}
+
+VkExtent2D Attachment::getExtent() const {
+	return extent;
 }

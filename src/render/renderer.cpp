@@ -321,7 +321,6 @@ void Renderer::createSwapchain() {
 	this->immediate.setResolution(width(), height());
 
 	// allocate all attachments (except for color)
-	attachment_depth.allocate(device, extent, allocator);
 	attachment_albedo.allocate(device, extent, allocator);
 	attachment_color_msaa.allocate(device, extent, allocator);
 	attachment_depth_msaa.allocate(device, extent, allocator);
@@ -363,14 +362,6 @@ void Renderer::createAttachments() {
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 		.setClearColor(0.0f, 0.0f, 0.0f, 1.0f)
 		.setDebugName("Screen")
-		.createAttachment();
-
-	attachment_depth = TextureBuilder::begin()
-		.setFormat(VK_FORMAT_D32_SFLOAT)
-		.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT)
-		.setClearDepth(1.0f)
-		.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-		.setDebugName("Depth")
 		.createAttachment();
 
 	attachment_color_msaa = TextureBuilder::begin()
@@ -600,7 +591,6 @@ void Renderer::createFrames() {
 void Renderer::lateClose() {
 
 	// close all attachments
-	attachment_depth.close(device);
 	attachment_albedo.close(device);
 	attachment_color_msaa.close(device);
 	attachment_depth_msaa.close(device);
@@ -874,8 +864,6 @@ void Renderer::draw() {
 		.then(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_ACCESS_UNIFORM_READ_BIT)
 		.done();
 
-	recorder.transitionLayout(attachment_depth, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
-
 	// ray trace
 	recorder.bindPipeline(pipeline_trace_3d)
 		.bindDescriptorSet(frame.set_raytrace)
@@ -898,11 +886,18 @@ void Renderer::draw() {
 	recorder.bindDescriptorSet(frame.set_immediate);
 	immediate.basic_3d.draw(mesh_constant, recorder);
 
-	recorder.bindPipeline(pipeline_immediate_2d);
-	immediate.basic.draw(mesh_constant, recorder);
+	bool render = true;
 
-	recorder.bindPipeline(pipeline_text_2d);
-	immediate.text.draw(mesh_constant, recorder);
+	while (render) {
+		render = false;
+
+		recorder.bindPipeline(pipeline_immediate_2d);
+		render |= immediate.basic.draw(mesh_constant, recorder);
+
+		recorder.bindPipeline(pipeline_text_2d);
+		render |= immediate.text.draw(mesh_constant, recorder);
+
+	}
 
 	recorder.endRenderPass();
 

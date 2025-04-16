@@ -46,6 +46,7 @@ TextBakery TextWidget::getBakery(int width, int height, const ElementState& stat
 TextWidget::TextWidget()
 : TextWidget("") {}
 
+
 TextWidget::TextWidget(const std::string& text) {
 	updateWidgetText(text);
 }

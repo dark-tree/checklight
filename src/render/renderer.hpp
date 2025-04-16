@@ -95,7 +95,6 @@ class Renderer {
 
 		// attachments
 		Attachment attachment_screen;
-		Attachment attachment_depth;
 		Attachment attachment_color_msaa;
 		Attachment attachment_depth_msaa;
 		Attachment attachment_albedo;

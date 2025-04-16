@@ -97,6 +97,7 @@ class ImmediateRenderer {
 
 		void clear();
 		Sprite getSprite(const std::string& path);
+		void synchronize();
 
 		void setFill(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 		void setFill(const Color& color);

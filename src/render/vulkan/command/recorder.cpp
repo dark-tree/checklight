@@ -302,3 +302,31 @@ CommandRecorder& CommandRecorder::blit(const Image& dst, VkImageLayout layout_ds
 	vkCmdBlitImage(vk_buffer, src.getHandle(), layout_src, dst.getHandle(), layout_dst, 1, &blit, VK_FILTER_NEAREST);
 	return *this;
 }
+
+CommandRecorder& CommandRecorder::clearAttachment(const Attachment& attachment) {
+	VkClearAttachment clear {};
+	clear.aspectMask = attachment.getAspect();
+	clear.clearValue = attachment.getClearValue();
+	clear.colorAttachment = 0;
+
+	// we don't support color attachments as 1. We don't need it
+	// and 2. It's harder to do. We would neet to pass the index of this
+	// attachment in the bound attachments in the colorAttachment field
+	// as this is just a small thing to fix an issue in immediate we really don't need to
+	// go that far. If this proves useful it's a relatively simple thing to add.
+	if (clear.aspectMask & VK_IMAGE_ASPECT_COLOR_BIT) {
+		FAULT("Unimplemented clear operation!");
+	}
+
+	VkRect2D area {};
+	area.offset = {0, 0};
+	area.extent = attachment.getExtent();
+
+	VkClearRect rect {};
+	rect.baseArrayLayer = 0;
+	rect.layerCount = attachment.getTexture().getTextureImage().getLayerCount();
+	rect.rect = area;
+
+	vkCmdClearAttachments(vk_buffer, 1, &clear, 1, &rect);
+	return *this;
+}
