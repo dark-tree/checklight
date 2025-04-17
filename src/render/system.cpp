@@ -75,6 +75,10 @@ std::shared_ptr<RenderObject> RenderSystem::createRenderObject() {
 std::map<std::string, std::shared_ptr<ObjMaterial>> RenderSystem::importMaterials(const std::string& path) {
 	std::string mtl_path = ObjObject::getMtllib(path);
 
+	if (mtl_path.empty()) {
+		return {};
+	}
+
 	if (std::filesystem::exists(mtl_path)) {
 		return ObjMaterial::open(mtl_path);
 	}
