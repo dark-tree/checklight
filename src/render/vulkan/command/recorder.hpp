@@ -106,4 +106,7 @@ class CommandRecorder {
 
 		/// Blit one image into another
 		CommandRecorder& blit(const Image& dst, VkImageLayout layout_dst, const Image& src, VkImageLayout layout_src);
+
+		/// Clear the given attachment
+		CommandRecorder& clearAttachment(const Attachment& attachment);
 };

@@ -21,10 +21,5 @@ public:
 	 */ 
 	void setActive(bool value);
 
-	/*
-	 * if set true component will be removed at the end of the update cycle
-	 */
-	void queueRemove(bool value);
-
 };
 

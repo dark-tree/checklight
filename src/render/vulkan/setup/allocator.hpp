@@ -110,7 +110,7 @@ class Allocator {
 		 * @param[in] levels Number om image mip-map levels
 		 * @param[in] name   (Optional) name for the buffer
 		 */
-		Image allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels, NULLABLE const char* name);
+		Image allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels, VkSampleCountFlagBits samples, NULLABLE const char* name);
 
 		/**
 		 * @brief Allocate raytracing acceleration structure of given size

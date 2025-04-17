@@ -1,6 +1,7 @@
 #pragma once
 
 #include "external.hpp"
+#include "ease.hpp"
 
 namespace math {
 

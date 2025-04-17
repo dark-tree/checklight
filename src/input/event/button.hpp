@@ -9,12 +9,6 @@ class ButtonEvent : public CodedEvent {
 
 	public:
 
-		static constexpr Type type = InputEvent::BUTTON;
-
-		Type getType() const override;
-
-	public:
-
 		int button;
 
 		ButtonEvent(int button, int action, int mods, double x, double y);

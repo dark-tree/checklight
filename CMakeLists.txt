@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 project(CHECKLIGHT)
 include(FetchContent)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(FETCHCONTENT_QUIET OFF)
 
@@ -131,6 +131,9 @@ add_library(checklight_shared_system ${CHECKLIGHT_SHARED_SOURCES})
 file(GLOB_RECURSE CHECKLIGHT_INPUT_SOURCES "src/input/*.cpp")
 add_library(checklight_input_system ${CHECKLIGHT_INPUT_SOURCES})
 
+file(GLOB_RECURSE CHECKLIGHT_GUI_SOURCES "src/gui/*.cpp")
+add_library(checklight_gui_system ${CHECKLIGHT_GUI_SOURCES})
+
 add_library(checklight_external
 		lib/stb_image.cpp
 		lib/stb_image_write.cpp
@@ -170,17 +173,27 @@ target_link_libraries(checklight_input_system PRIVATE
 		checklight_common
 )
 
+target_link_libraries(checklight_gui_system PRIVATE
+		checklight_common
+		checklight_input_system
+		checklight_render_system
+		checklight_shared_system
+)
+
 target_link_libraries(checklight PRIVATE
 		checklight_common
 		checklight_render_system
 		checklight_shared_system
 		checklight_input_system
+		checklight_gui_system
 		checklight_engine_system
 )
 
 target_link_libraries(checklight_test PRIVATE
 		checklight_common
+		checklight_gui_system
 		checklight_shared_system
+		checklight_render_system
 )
 
 target_include_directories(checklight_test PRIVATE
@@ -201,26 +214,28 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 			-pedantic
 
 			# Errors
-			-Werror=return-type       # Fail if when return in non-void function is missing
-			-Werror=return-local-addr # Fail if a pointer to a local variable is returned
-			-Werror=init-self         # Fail if a class member is initialized with itself
-			-Werror=uninitialized     # Fail if a uninitialized variables is used
-			-Werror=cast-qual         # Fail when you try to cast the const away
+			-Werror=return-type         # Fail if when return in non-void function is missing
+			-Werror=return-local-addr   # Fail if a pointer to a local variable is returned
+			-Werror=init-self           # Fail if a class member is initialized with itself
+			-Werror=uninitialized       # Fail if a uninitialized variables is used
+			-Werror=cast-qual           # Fail when you try to cast the const away
 
 			# Warnings
-			-Wnoexcept                # Warn if the lack of noexcept disables some optimizations
-			-Wunreachable-code        # Warn if a section of code is unreachable
-			-Wparentheses             # Warn if there is a high chance we forgot about some parentheses
-			-Wlogical-op              # Warn if there is a high chance we messed up the logical operator
-			-Wdisabled-optimization   # Warn if you managed to confuse the compiler :skull:
-			-Wswitch-default          # Warn whenever a switch statement does not have a default case
-			-Wredundant-decls         # Warn if anything is declared more than once in the same scope
-			-Wmissing-declarations    # Warn if a global function is defined without a previous declaration
+			-Wnoexcept                  # Warn if the lack of noexcept disables some optimizations
+			-Wunreachable-code          # Warn if a section of code is unreachable
+			-Wparentheses               # Warn if there is a high chance we forgot about some parentheses
+			-Wlogical-op                # Warn if there is a high chance we messed up the logical operator
+			-Wdisabled-optimization     # Warn if you managed to confuse the compiler :skull:
+			-Wswitch-default            # Warn whenever a switch statement does not have a default case
+			-Wredundant-decls           # Warn if anything is declared more than once in the same scope
+			-Wmissing-declarations      # Warn if a global function is defined without a previous declaration
 
 			# Ignore some warnings that I deemed stupid
-			-Wno-unused-parameter     # Not really an error to ignore something, we may enable it later
-			-Wno-volatile             # GLM does this, so unless we want hundreds of warnings we need to disable this
-			-Wno-variadic-macros      # Allow so called 'variadic macros'
+			-Wno-unused-parameter       # Not really an error to ignore something, we may enable it later
+			-Wno-volatile               # GLM does this, so unless we want hundreds of warnings we need to disable this
+			-Wno-variadic-macros        # Allow so called 'variadic macros'
+			-Wno-format-security        # We have to disable it to create our own print-like functions
+			-Wno-misleading-indentation # Don't complain about non-issues such as "if (thing) do();"
 	)
 endif()
 

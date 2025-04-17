@@ -30,6 +30,22 @@ Box2D Box2D::split_left_right(int width) {
 	return {xn, y, width, h};
 }
 
+Box2D Box2D::expand(int top, int bottom, int left, int right) const {
+	int dx = left + right;
+	int dy = top + bottom;
+
+	return Box2D {x - left, y - bottom, w + dx, h + dy};
+}
+
+Box2D Box2D::reserve(int min_width, int min_height) const {
+	Box2D copy = *this;
+
+	copy.w = std::max(min_width, copy.w);
+	copy.h = std::max(min_height, copy.h);
+
+	return copy;
+}
+
 bool Box2D::empty() const {
 	return (w == 0) || (h == 0);
 }

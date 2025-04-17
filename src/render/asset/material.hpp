@@ -68,28 +68,28 @@ class MaterialManager {
 		MaterialManager();
 
 		/**
-		* Frees all resources, including the TextureManager
-		*/
+		 * Frees all resources, including the TextureManager
+		 */
 		void close(const LogicalDevice& device);
 
 		/**
-		* Creates a new material. The material is not uploaded to the GPU until `flush()` is called
-		*/
+		 * Creates a new material. The material is not uploaded to the GPU until `flush()` is called
+		 */
 		RenderMaterial& createMaterial();
 
 		/**
-		* Uploads all pending materials to the GPU and flushes the TextureManager
-		*/
+		 * Uploads all pending materials to the GPU and flushes the TextureManager
+		 */
 		void flush(Allocator& allocator, CommandRecorder& recorder, TaskQueue& queue, LogicalDevice& device);
 
 		/**
-		* Returns the material buffer
-		*/
+		 * Returns the material buffer
+		 */
 		const ReusableBuffer& getMaterialBuffer();
 
 		/**
-		* Returns the TextureManager
-		*/
+		 * Returns the TextureManager
+		 */
 		TextureManager& getTextureManager();
 
 	private:

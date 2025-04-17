@@ -49,7 +49,7 @@ void QueryPool::load(size_t count, void* buffer, VkQueryResultFlags flags) {
 	}
 
 	if (count > length) {
-		throw std::runtime_error {"Incompatible query result buffer!"};
+		FAULT("Incompatible query result buffer!");
 	}
 
 	vkGetQueryPoolResults(vk_device, vk_pool, 0, count, entry * count, buffer, entry, flags | VK_QUERY_RESULT_64_BIT);

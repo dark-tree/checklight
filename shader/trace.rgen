@@ -249,5 +249,5 @@ void main() {
 	 * Write to the output image
 	 */	
 
-	imageStore(colorImage, ivec2(gl_LaunchIDEXT.xy), vec4(outColor, depthValue));
+	 imageStore(colorImage, ivec2(gl_LaunchIDEXT.xy), vec4(outColor, depthValue));
 }

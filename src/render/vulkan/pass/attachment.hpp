@@ -22,7 +22,7 @@ class AttachmentBuilder {
 
 	public:
 
-		AttachmentBuilder(RenderPassBuilder& builder, const Attachment& attachment, VkSampleCountFlagBits samples);
+		AttachmentBuilder(RenderPassBuilder& builder, const Attachment& attachment);
 
 		/**
 		 * @brief Specify load operation.

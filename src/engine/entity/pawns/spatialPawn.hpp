@@ -8,7 +8,7 @@ protected:
 	glm::quat rotation;
 	glm::vec3 scale;
 
-	glm::mat3x4 result;
+	glm::mat4x3 affineTransformMatrix;
 
 public:
 	SpatialPawn();
@@ -51,7 +51,7 @@ public:
 	/**
 	 * Returns affine transform matrix of an object. (Its rotation scale and position combined!)
 	 */
-	glm::mat3x4 getMatrix() const;
+	glm::mat4x3 getMatrix() const;
 
 	/**
 	 * Returns facing direction, TODO check if this is normalised

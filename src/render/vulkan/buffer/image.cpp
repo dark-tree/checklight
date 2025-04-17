@@ -1,6 +1,7 @@
 
 #include "image.hpp"
 #include "buffer.hpp"
+#include <shared/file.hpp>
 
 /*
  * ImageData
@@ -88,9 +89,44 @@ void ImageData::clear(std::initializer_list<uint8_t> value) {
 }
 
 void ImageData::save(const std::string& path) const {
+	file::createPathDirectories(path);
+
 	if (!stbi_write_png(path.c_str(), w, h, c, pixels, w * c)) {
-		throw std::runtime_error {"Failed to save image '" + path + "'"};
+		FAULT("Failed to save image '", path, "'");
 	}
+}
+
+ImageData ImageData::expand(int margin) {
+	if (margin < 0) {
+		FAULT("Invalid image margin ", margin, "!");
+	}
+
+	ImageData result = ImageData::allocate(w + margin * 2, h + margin * 2, channels());
+	result.blit(margin, margin, *this);
+
+	// short-circuit when no margin
+	if (margin == 0) {
+		return result;
+	}
+
+	for (int i = 1; i <= margin; i ++) {
+
+		int start = margin - i;
+		int end = margin + i;
+		int last = end - 1;
+
+		for (int y = start; y < (h + end); y ++) {
+			memcpy(result.pixel(start, y), result.pixel(start + 1, y), channels());
+			memcpy(result.pixel(w + last, y), result.pixel(w + last - 1, y), channels());
+		}
+
+		for (int x = start; x < (w + end); x ++) {
+			memcpy(result.pixel(x, start), result.pixel(x, start + 1), channels());
+			memcpy(result.pixel(x, h + last), result.pixel(x, h + last - 1), channels());
+		}
+	}
+
+	return result;
 }
 
 ImageData ImageData::loadFromFile(const std::string& path, int channels) {
@@ -98,7 +134,7 @@ ImageData ImageData::loadFromFile(const std::string& path, int channels) {
 	void* pixels = stbi_load(path.c_str(), &w, &h, &ignored, channels);
 
 	if (!pixels) {
-		throw std::runtime_error {"Failed to load image from '" + path + "'"};
+		FAULT("Failed to load image from '" + path + "'");
 	}
 
 	return {Type::STB_IMAGE, pixels, w, h, channels};
@@ -186,7 +222,7 @@ void ManagedImageDataSet::resize(int ws, int hs) {
 
 	// once we have layers you can no longer resize the image vertically
 	if ((layer != 0) && (hs != 1)) {
-		throw std::runtime_error {"Can't resize the image vertically after a layer was already added!"};
+		FAULT("Can't resize the image vertically after a layer was already added!");
 	}
 
 	// actually resize all the image levels
@@ -222,7 +258,7 @@ void ManagedImageDataSet::addLayer(ImageData image, ImageScaling scaling) {
 
 	// width never changes when adding layers, the image only gets longer
 	if (image.width() != level(0).width() || image.height() != height) {
-		throw std::runtime_error {"Image dimensions don't match the sprite array!"};
+		FAULT("Image dimensions don't match the sprite array!");
 	}
 
 	// check the "capacity", if too small, double the image in height
@@ -294,11 +330,11 @@ MutableImage ManagedImageDataSet::upload(Allocator& allocator, CommandRecorder& 
 
 	// verify the given format again the first level (all levels are the same)
 	if (getFormatInfo(format).size != (size_t) level(0).channels()) {
-		throw std::runtime_error {"The specified image format doesn't match pixel size!"};
+		FAULT("The specified image format doesn't match pixel size!");
 	}
 
 	Buffer staging = allocator.allocateBuffer(Memory::STAGED, total, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, "Image Staging");
-	Image image = allocator.allocateImage(Memory::DEVICE, layer_width, layer_height, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, layer_count, levels(), "Untitled");
+	Image image = allocator.allocateImage(Memory::DEVICE, layer_width, layer_height, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, layer_count, levels(), VK_SAMPLE_COUNT_1_BIT, "Untitled");
 
 	MutableImage uploader {staging, image};
 	int level = 0;
@@ -417,7 +453,7 @@ ImageView ImageView::create(VkDevice device, const Image& image, VkImageViewType
 	VkImageView view;
 
 	if (vkCreateImageView(device, &create_info, nullptr, &view) != VK_SUCCESS) {
-		throw std::runtime_error ("Failed to create image view!");
+		FAULT("Failed to create image view!");
 	}
 
 	return ImageView {view};

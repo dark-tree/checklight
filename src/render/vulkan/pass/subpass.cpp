@@ -6,11 +6,15 @@
  * Subpass
  */
 
-Subpass::Subpass(uint32_t attachments) noexcept
-: attachments(attachments) {}
+Subpass::Subpass(uint32_t attachments, VkSampleCountFlagBits depth_samples) noexcept
+: attachments(attachments), depth_samples(depth_samples) {}
 
 uint32_t Subpass::getAttachmentCount() const {
 	return attachments;
+}
+
+VkSampleCountFlagBits Subpass::getDepthSamples() const {
+	return depth_samples;
 }
 
 /*
@@ -20,7 +24,7 @@ uint32_t Subpass::getAttachmentCount() const {
 VkAttachmentReference SubpassBuilder::getReference(uint32_t attachment, VkImageLayout layout) {
 
 	if (attachment >= attachment_count) {
-		throw std::runtime_error {"Attachment index " + std::to_string(attachment) + " out of bounds, only " + std::to_string(attachment_count) + " have been defined up to this point!"};
+		FAULT("Attachment index ", attachment, " out of bounds, only ", attachment_count, " have been defined up to this point!");
 	}
 
 	preserve.append(attachment);
@@ -44,7 +48,7 @@ VkSubpassDescription SubpassBuilder::finalize(const std::vector<uint32_t>& prese
 	uint32_t resolve_count = resolves.size();
 
 	if (resolve_count != 0 && resolve_count != color_count) {
-		throw std::runtime_error {"Invalid number of resolve attachments! Must be 0 or equal to the number of color attachments!"};
+		FAULT("Invalid number of resolve attachments! Must be 0 or equal to the number of color attachments!");
 	}
 
 	description.inputAttachmentCount = input_count;
@@ -59,10 +63,15 @@ VkSubpassDescription SubpassBuilder::finalize(const std::vector<uint32_t>& prese
 	// this is here so that the renderpass can retain the information about
 	// how many attachments were there for each subpass - this is then used during pipeline
 	// creation to setup blending for each attachment
-	subpass_attachments.emplace_back(color_count);
+	subpass_attachments.emplace_back(color_count, depth_samples);
 
 	return description;
 
+}
+
+void SubpassBuilder::addAttachment(Attachment::Ref attachment) {
+	references.insert(attachment.index);
+	samplings.push_back(attachment.samples);
 }
 
 SubpassBuilder::SubpassBuilder(RenderPassBuilder& builder, VkPipelineBindPoint bind_point, uint32_t attachment_count, Pyramid<uint32_t>& preserve)
@@ -73,25 +82,26 @@ SubpassBuilder::SubpassBuilder(RenderPassBuilder& builder, VkPipelineBindPoint b
 }
 
 SubpassBuilder& SubpassBuilder::addInput(Attachment::Ref attachment, VkImageLayout target_layout) {
-	references.insert(attachment.index);
+	addAttachment(attachment);
 	inputs.push_back(getReference(attachment.index, target_layout));
 	return *this;
 }
 
 SubpassBuilder& SubpassBuilder::addOutput(Attachment::Ref attachment, VkImageLayout target_layout) {
-	references.insert(attachment.index);
+	addAttachment(attachment);
 	colors.push_back(getReference(attachment.index, target_layout));
 	return *this;
 }
 
 SubpassBuilder& SubpassBuilder::addDepth(Attachment::Ref attachment, VkImageLayout target_layout) {
-	references.insert(attachment.index);
+	addAttachment(attachment);
 	depth = getReference(attachment.index, target_layout);
+	depth_samples = attachment.samples;
 	return *this;
 }
 
 SubpassBuilder& SubpassBuilder::addResolve(Attachment::Ref attachment, VkImageLayout target_layout) {
-	references.insert(attachment.index);
+	addAttachment(attachment);
 	resolves.push_back(getReference(attachment.index, target_layout));
 	return *this;
 }

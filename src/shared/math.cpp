@@ -62,4 +62,3 @@ VkTransformMatrixKHR math::toVulkanAffine(const glm::mat4x3& matrix) {
 size_t math::alignUp(size_t size, size_t alignment) {
 	return (size + alignment - 1) & ~(alignment - 1);
 }
-

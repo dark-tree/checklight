@@ -8,6 +8,7 @@ class Pawn;
 
 class Component : public Entity, public InputListener {
 protected:
+	friend Pawn;
 	///Pawn that owns this component
 	Pawn* parent;
 
@@ -21,14 +22,16 @@ protected:
 	virtual void onFixedUpdate(FixedContext c) = 0;
 	virtual bool checkValidity(const Pawn& p) = 0;
 	InputResult onEvent(const InputEvent& event) override = 0;
+	virtual void onConnected() = 0;
 public:
+
 	Component();
 
 	/**
 	 * TODO make it into a virtual function, that returns const char* lub std::string_view, potentially remove name form entity???? check if that breaks sth in pawn
 	 */
 	std::string getComponentName() const;
-	void onAdded();
 
-	friend class Pawn;
+
+	std::string toString();
 };

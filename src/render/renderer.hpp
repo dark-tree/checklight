@@ -22,6 +22,7 @@
 #include "render/vulkan/raytrace/instance.hpp"
 #include "render/vulkan/raytrace/factory.hpp"
 #include "render/asset/material.hpp"
+#include "render/asset/asset.hpp"
 #include "render/asset/light.hpp"
 
 class Renderer {
@@ -48,6 +49,7 @@ class Renderer {
 
 		friend class RenderFrame;
 		friend class RenderMesh;
+		friend class RenderModel;
 		friend class RenderCommander;
 		friend class ReusableBuffer;
 		friend class AccelStructFactory;
@@ -57,6 +59,7 @@ class Renderer {
 		/// this is used as an offset into a framebuffer set
 		uint32_t current_image;
 
+		AssetLoader assets;
 		WindowSystem windows;
 		std::unique_ptr<Window> window;
 		ImmediateRenderer immediate;
@@ -80,7 +83,7 @@ class Renderer {
 		// raytracing
 		std::unique_ptr<InstanceManager> instances;
 		AccelStructFactory bakery;
-		AccelStruct tlas;
+		std::shared_ptr<RenderModel> tlas;
 		ShaderTable shader_table;
 
 		// shaders
@@ -98,8 +101,9 @@ class Renderer {
 		Shader shader_denoise2_fragment;
 
 		// attachments
-		Attachment attachment_color;
-		Attachment attachment_depth;
+		Attachment attachment_screen;
+		Attachment attachment_color_msaa;
+		Attachment attachment_depth_msaa;
 		Attachment attachment_albedo;
 		Attachment attachment_illumination;
 		Attachment attachment_prev_illumination;
@@ -143,6 +147,9 @@ class Renderer {
 
 		// push constants
 		PushConstant mesh_constant;
+
+		// current multisampling anti-aliasing setting
+		VkSampleCountFlagBits msaa;
 
 	private:
 
@@ -218,9 +225,6 @@ class Renderer {
 
 		/// Build pending acceleration structures
 		void rebuildBottomLevel(CommandRecorder& recorder);
-
-		/// Get the immediate style GUI/Debug Renderer
-		ImmediateRenderer& getImmediateRenderer();
 
 		/// Get the material manager
 		MaterialManager& getMaterialManager();

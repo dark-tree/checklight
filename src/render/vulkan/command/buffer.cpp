@@ -50,7 +50,7 @@ CommandBuffer CommandPool::allocate(VkCommandBufferLevel level) const {
 	VkCommandBuffer buffer;
 
 	if (vkAllocateCommandBuffers(vk_device, &create_info, &buffer) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to allocate a command buffer!"};
+		FAULT("Failed to allocate a command buffer!");
 	}
 
 	return {vk_pool, buffer, vk_device};
@@ -70,7 +70,7 @@ CommandPool CommandPool::create(LogicalDevice& device, const Family& family, boo
 	VkCommandPool pool;
 
 	if (vkCreateCommandPool(device.getHandle(), &create_info, nullptr, &pool) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create command pool!"};
+		FAULT("Failed to create command pool!");
 	}
 
 	return {pool, device.getHandle()};

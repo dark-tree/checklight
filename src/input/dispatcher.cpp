@@ -1,11 +1,16 @@
 
 #include "dispatcher.hpp"
+#include "shared/logger.hpp"
 
 /*
  * InputDispatcher
  */
 
 void InputDispatcher::registerListener(const std::shared_ptr<InputListener>& listener, int priority) {
+	if (!listener) {
+		FAULT("Given input listener is null!");
+	}
+
 	listeners.insert(priority, listener);
 }
 

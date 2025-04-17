@@ -1,9 +1,37 @@
 #include "board.hpp"
 #include "entity/pawns/spatialPawn.hpp"
+#include "shared/logger.hpp"
 
 /*
  * Board
  */
+
+
+Board::Board() {
+	pawns_to_remove = new std::queue<std::shared_ptr<Pawn>>();
+	pawns_to_remove_from_hashmap = new std::queue<std::shared_ptr<Pawn>>();
+	components_to_remove = new std::queue<std::shared_ptr<Component>>();
+}
+
+void Board::queueRemove(const std::shared_ptr<Pawn>& pToRemove) {
+#ifdef ENGINE_DEBUG
+	if(pToRemove->to_remove && pToRemove->getState() != PawnState::REMOVED){
+		FAULT("Pawn unprepared to be removed!");
+	}
+#endif
+	if(pToRemove->is_tracked_on_hash){
+		//pawn needs to be removed from hashmap
+		pawns_to_remove->push(pToRemove);
+		pawns_to_remove_from_hashmap->push(pToRemove);
+	}
+	else{
+		pawns_to_remove->push(pToRemove);
+	}
+}
+
+void Board::queueRemove(const std::shared_ptr<Component>& pToRemove) {
+	components_to_remove->push(pToRemove);
+}
 
 void Board::updateBoard() {
 	pawns.updateTree();
@@ -15,8 +43,9 @@ void Board::fixedUpdateBoard() {
 }
 
 
-void Board::addPawnToRoot(std::shared_ptr<Pawn>& pawn) {
+void Board::addPawnToRoot(const std::shared_ptr<Pawn>& pawn) {
 	pawns.addToRoot(pawn);
+	pawn->setBoard(this);
 }
 
 
@@ -30,35 +59,31 @@ std::shared_ptr<Pawn> Board::findPawnByID(uint32_t id, size_t position) {
 	if (query_result.size() > position) {
 		return query_result[position];
 	}
-	else {
-		throw std::runtime_error("trying to get nonexistent Pawn");
-	}
+
+	FAULT("Trying to get nonexistent Pawn!"); //TODO
 }
 
 
 std::shared_ptr<Pawn> Board::findPawnByID(int32_t id) {
 	if (id < 0) {
-		throw std::runtime_error("Id can't be negative");
+		FAULT("ID can't be negative!");
 	}
-	else {
-		return pawns.findByID((uint32_t)id);
-	}
+
+	return pawns.findByID((uint32_t)id);
 }
 
 
 std::shared_ptr<Pawn> Board::findPawnByID(int32_t id, size_t position) {
 	if (id < 0) {
-		throw std::runtime_error("Id can't be negative");
+		FAULT("ID can't be negative!");
 	}
-	else {
-		std::vector query_result = pawns.findAllByID(static_cast<uint32_t>(id));
-		if (query_result.size() > position) {
-			return query_result[position];
-		}
-		else {
-			throw std::runtime_error("trying to get nonexistent Pawn");
-		}
+
+	std::vector query_result = pawns.findAllByID(static_cast<uint32_t>(id));
+	if (query_result.size() > position) {
+		return query_result[position];
 	}
+
+	FAULT("Trying to get nonexistent Pawn!"); //TODO
 }
 
 
@@ -77,9 +102,8 @@ std::shared_ptr<Pawn> Board::findPawnByName(const std::string& name, size_t posi
 	if (query_result.size() > position) {
 		return query_result[position];
 	}
-	else {
-		throw std::runtime_error("trying to get nonexistent Pawn");
-	}
+
+	FAULT("Trying to get nonexistent Pawn!"); //TODO
 }
 
 
@@ -88,10 +112,13 @@ std::vector<std::shared_ptr<Pawn>> Board::findPawnsByName(const std::string& nam
 }
 
 
-std::string Board::printBoardTree() {
-	return pawns.print();
+void Board::printBoardTree() {
+	out::debug("Entity Tree:\n%s",(pawns.toString() + " ").c_str());
 }
 
+void Board::printBoardTreeVerbose() {
+	out::debug("Entity Tree:\n%s",(pawns.toStringVerbose() + " ").c_str());
+}
 
 void Board::setBoardName(const std::string& new_name) {
 	name = new_name;
@@ -113,5 +140,73 @@ glm::vec3 Board::getCamPos() {
 glm::vec3 Board::getCamForward() {
     return cameraPawn.lock()->getForwardVector();
 }
+
+Board::~Board() {
+	delete pawns_to_remove;
+	delete pawns_to_remove_from_hashmap;
+}
+
+void Board::dequeueRemove(size_t amount) {
+	while (!pawns_to_remove->empty()) {
+		std::shared_ptr<Pawn>* to_be_removed = &pawns_to_remove->front();
+
+		std::destroy((*to_be_removed)->children.begin(), (*to_be_removed)->children.end());
+
+		std::weak_ptr parent = (*to_be_removed)->parent;
+		if(!parent.expired()){
+			auto& children = parent.lock()->getChildren();
+			children.erase(
+					std::remove_if(children.begin(), children.end(), [id = (*to_be_removed)->id](const std::shared_ptr<Pawn>& x) {
+						return x->id == id;
+					}),
+					children.end()
+			);
+		}
+
+		(*to_be_removed)->parent.reset();
+
+#ifdef ENGINE_DEBUG
+		if(!to_be_removed->get()->is_tracked_on_hash){ //pawn should die here
+			std::weak_ptr<Pawn> check = *to_be_removed;
+			pawns_to_remove->pop();
+
+			if(!check.expired()){
+				FAULT("There is some reference to a pawn, not good...");
+			}
+		}
+		else{
+			pawns_to_remove->pop();
+		}
+	}
+#elif
+	pawns_to_remove->pop();
+#endif
+
+	for(size_t i = 0; i < (pawns_to_remove_from_hashmap->size() > amount ? amount : pawns_to_remove_from_hashmap->size()); i++){
+		std::shared_ptr<Pawn>* to_be_removed = &pawns_to_remove_from_hashmap->front();
+
+#ifdef ENGINE_DEBUG
+		if(!to_be_removed->get()->is_tracked_on_hash){
+			FAULT("Trying to remove pawn from hashmap that is explicitly mark for net being in the hashmap");
+		}
+#endif
+		pawns.removeFromMaps((*to_be_removed)->name,(*to_be_removed)->id);
+
+		pawns_to_remove_from_hashmap->pop();
+	}
+	for(size_t i = 0; i < (components_to_remove->size() > amount ? amount : components_to_remove->size()); i++){
+		std::shared_ptr<Component>* to_be_removed = &components_to_remove->front();
+
+		//todo removing from components hashmap after adding it
+
+		components_to_remove->pop();
+	}
+}
+
+
+
+
+
+
 
 

@@ -4,7 +4,7 @@
  * SpatialPawn
  */
 
-SpatialPawn::SpatialPawn() {
+SpatialPawn::SpatialPawn() : Pawn() {
 	position = {0,0,0};
 	rotation = {1,0,0,0};
 	scale = {1,1,1};
@@ -38,8 +38,13 @@ glm::vec3 SpatialPawn::getScale() const {
 	return scale;
 }
 
-glm::mat3x4 SpatialPawn::getMatrix() const {
-	return result; //TODO
+glm::mat4x3 SpatialPawn::getMatrix() const {
+	glm::mat4 translation = glm::translate(glm::mat4(1.0f), position);
+	glm::mat4 rotMatrix = glm::toMat4(rotation);
+	glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+
+	glm::mat4 affineMatrix = translation * rotMatrix * scaleMatrix;
+	return glm::mat4x3(affineMatrix); //TODO
 }
 
 glm::vec3 SpatialPawn::getForwardVector() {

@@ -9,12 +9,6 @@ class ResizeEvent : public InputEvent {
 
 	public:
 
-		static constexpr Type type = InputEvent::RESIZE;
-
-		Type getType() const override;
-
-	public:
-
 		int width;
 		int height;
 
