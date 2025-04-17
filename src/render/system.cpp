@@ -57,10 +57,15 @@ void RenderSystem::setProjectionMatrix(float fov, float near_plane, float far_pl
 	projection[1][1] *= -1;
 
 	getFrame().uniforms.projection = projection;
+	getFrame().uniforms.projection_inv = glm::inverse(projection);
+
+	getFrame().uniforms.near = near_plane;
+	getFrame().uniforms.far = far_plane;
 }
 
 void RenderSystem::setViewMatrix(glm::vec3 eye, glm::vec3 direction) {
 	getFrame().uniforms.view = glm::lookAt(eye, eye + direction, glm::vec3(0.0f, 1.0f, 0.0f));
+	getFrame().uniforms.view_inv = glm::inverse(getFrame().uniforms.view);
 }
 
 std::shared_ptr<RenderObject> RenderSystem::createRenderObject() {
@@ -109,6 +114,11 @@ std::vector<std::shared_ptr<RenderModel>> RenderSystem::importObj(const std::str
 
 	for (auto& [name, material] : imported) {
 		RenderMaterial& render_material = system->materials.createMaterial();
+
+		render_material.albedo = glm::vec4(material->diffuse, material->alpha);
+		render_material.emissive = material->emissive;
+		render_material.specular = material->specular;
+		render_material.shininess = material->shininess;
 
 		if (!material->diffuseMap.empty()) {
 			render_material.albedo_texture = open_texture(material->diffuseMap);
@@ -178,4 +188,25 @@ AssetLoader& RenderSystem::getAssetLoader() {
 
 ImmediateRenderer& RenderSystem::getImmediateRenderer() {
 	return immediate;
+}
+
+RenderParameters& RenderSystem::getParameters() {
+	return this->parameters;
+}
+
+void RenderSystem::draw() {
+
+	SceneUniform& scene = getFrame().uniforms;
+
+	scene.time = glfwGetTime();
+
+	parameters.updateSceneUniform(scene);
+
+	Renderer::draw();
+
+	scene.prev_projection = scene.projection;
+	scene.prev_projection_inv = scene.projection_inv;
+
+	scene.prev_view = scene.view;
+	scene.prev_view_inv = scene.view_inv;
 }

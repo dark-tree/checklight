@@ -39,7 +39,7 @@ class TextureManager {
 		/**
 		* Maximum number of textures that can be created and stored in a single TextureManager instance
 		*/
-		static const uint32_t MAX_TEXTURES = 100;
+		static const uint32_t MAX_TEXTURES = 200;
 
 	private:
 
@@ -51,7 +51,13 @@ class TextureManager {
 };
 
 struct RenderMaterial {
-	uint32_t index;	
+	uint32_t index;
+	
+	glm::vec4 albedo = glm::vec4(1.0f);
+	glm::vec3 emissive = glm::vec3(0.0f);
+	glm::vec3 specular = glm::vec3(0.0f);
+	float shininess = 0.0f;
+
 	TextureHandle albedo_texture;
 };
 
@@ -88,7 +94,6 @@ class MaterialManager {
 
 	private:
 
-		size_t capacity;
 		TextureManager texture_manager;
 		std::vector<RenderMaterial> materials;
 		ReusableBuffer material_buffer;

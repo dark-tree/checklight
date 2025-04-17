@@ -15,6 +15,7 @@ RenderObject::RenderObject(uint32_t index)
 	setActive(true);
 	setShader(0);
 	setMatrix(glm::identity<glm::mat4x3>());
+	setPortal(glm::zero<glm::mat4>());
 }
 
 const VkAccelerationStructureInstanceKHR* RenderObject::getInstanceData() const {
@@ -53,3 +54,6 @@ void RenderObject::setActive(bool active) {
 	instance.mask = (active ? 0xff : 0x00);
 }
 
+void RenderObject::setPortal(const glm::mat4& portal) {
+	data.portal = portal;
+}

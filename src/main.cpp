@@ -97,6 +97,7 @@ static void entry(Args& args) {
 	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 	window.getInputDispatcher().registerListener(std::dynamic_pointer_cast<InputListener>(context));
 	auto models = system.importObj("assets/models/checklight.obj");
+	auto cube = system.importObj("assets/models/cube.obj");
 
 	BoardManager manager(window);
 
@@ -141,6 +142,38 @@ static void entry(Args& args) {
 		objects.push_back(object);
 	}
 
+	for (auto& model : cube) {
+		auto object = system.createRenderObject();
+		object->setMatrix(glm::translate(glm::identity<glm::mat4>(), glm::vec3(4, 0, 4)));
+		object->setModel(model);
+
+		glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(-4, 8, 4));
+		portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 0, 1));
+		object->setPortal(portal);
+		objects.push_back(object);
+	}
+
+	system.getParameters().setAmbientLight(glm::vec3(0.0, 0.0, 0.0));
+	system.getParameters().setDenoise(true);
+	system.getParameters().setShadows(true);
+	system.getParameters().setGISamples(1);
+
+	system.getLightManager().addLight({
+		.type = Light::DIRECTIONAL,
+		.color = glm::vec3(1.0, 1.0, 1.0),
+		.direction = glm::vec3(0.0, 3.5, -1.0),
+		.intensity = 1.5,
+		.shadow = true
+	});
+
+	auto point_light = system.getLightManager().addLight({
+		.type = Light::POINT,
+		.position = glm::vec3(3.0, 2.0, 18.0),
+		.color = glm::vec3(0.0, 0.0, 1.0),
+		.intensity = 50.0,
+		.shadow = true
+	});
+
 	while (!window.shouldClose()) {
 		window.poll();
 
@@ -154,8 +187,13 @@ static void entry(Args& args) {
 
 		// update uniforms
 		// do this once at the beginning of frame rendering
-		system.setProjectionMatrix(40.0f, 0.001f, 10000.0f);
+		system.setProjectionMatrix(65.0f, 0.01f, 1000.0f);
 		system.setViewMatrix(current_board->getCamPos(), current_board->getCamForward());
+
+		// update lights
+		point_light->position = glm::vec3(3.0, 2.0, 18.0 * sin(glfwGetTime() / 8));
+		point_light->color = glm::vec3(sin(glfwGetTime() / 2) * 0.5 + 0.5, sin(glfwGetTime() / 3 + 2) * 0.5 + 0.5, sin(glfwGetTime() / 5 + 4) * 0.5 + 0.5);
+		system.getLightManager().flush();
 
 		// render the scene
 		system.draw();
@@ -169,6 +207,11 @@ static void entry(Args& args) {
 	}
 
 	models.clear();
+
+	for (auto& model : cube) {
+		system.closeModel(model);
+		model.reset();
+	}
 
 	RenderSystem::system.reset();
 

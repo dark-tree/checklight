@@ -52,6 +52,8 @@ class RenderSystem : public Renderer {
 		 * Specifies the perspective used, this should most likely stay constant
 		 * but needs to be called AT LEAST when window size changes to account for the aspect ratio
 		 *
+		 * @note This call also updates the previous projection matrix to the current projection matrix
+		 *
 		 * @param fov  Camera field of view
 		 * @param near The closest anything can be to the camera and render
 		 * @param far  The furthest anything can be from the camera and render
@@ -61,6 +63,8 @@ class RenderSystem : public Renderer {
 		/**
 		 * Specifies the view used, this should be called ever frame
 		 * to account for the camera movement.
+		 *
+		 * @note This call also updates the previous view matrix to the current view matrix
 		 *
 		 * @param eye     The position of the "eye" in 3D world space
 		 * @param facing  Directional vector that specific in which way the camera looks.
@@ -92,4 +96,13 @@ class RenderSystem : public Renderer {
 		 */
 		ImmediateRenderer& getImmediateRenderer();
 
+		/**
+		 * Get the current render parameters
+		 */
+		RenderParameters& getParameters();
+
+		/**
+		 * Render the next frame, all rendering should happen inside this call
+		 */
+		void draw() override;
 };
