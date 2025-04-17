@@ -218,10 +218,14 @@ GraphicsPipelineBuilder& GraphicsPipelineBuilder::withRenderPass(RenderPass& ren
 		FAULT("Specified render pass has ", count, " subpasses but, subpass with index ", subpass_index, " was requested!");
 	}
 
-	blending.attachmentCount = render_pass.getSubpass(subpass_index).getAttachmentCount();
-	vk_pass = render_pass.vk_pass;
-	subpass = subpass_index;
-	multisampling.rasterizationSamples = render_pass.samples;
+	auto& subpass = render_pass.getSubpass(subpass_index);
+
+	this->blending.attachmentCount = subpass.getAttachmentCount();
+	this->vk_pass = render_pass.vk_pass;
+	this->subpass = subpass_index;
+	this->multisampling.rasterizationSamples = subpass.getDepthSamples();
+	this->samples = render_pass.getSampleArray();
+
 	return *this;
 }
 
@@ -240,8 +244,19 @@ GraphicsPipeline GraphicsPipelineBuilder::build() {
 		shaders.push_back(stage.getConfig());
 	}
 
+	// otherwise we would have to check it
+	static_assert(VK_STRUCTURE_TYPE_ATTACHMENT_SAMPLE_COUNT_INFO_AMD == VK_STRUCTURE_TYPE_ATTACHMENT_SAMPLE_COUNT_INFO_NV);
+
+	VkAttachmentSampleCountInfoAMD sample_info {};
+	sample_info.sType = VK_STRUCTURE_TYPE_ATTACHMENT_SAMPLE_COUNT_INFO_AMD;
+	sample_info.pNext = nullptr;
+	sample_info.colorAttachmentCount = samples.size();
+	sample_info.pColorAttachmentSamples = samples.data();
+	sample_info.depthStencilAttachmentSamples = multisampling.rasterizationSamples;
+
 	VkGraphicsPipelineCreateInfo create_info {};
 	create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	create_info.pNext = &sample_info;
 	create_info.layout = pipeline_layout;
 
 	create_info.stageCount = (uint32_t) shaders.size();

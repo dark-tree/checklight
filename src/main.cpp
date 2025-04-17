@@ -209,7 +209,6 @@ static void entry(Args& args) {
 	models.clear();
 
 	for (auto& model : cube) {
-		system.closeModel(model);
 		model.reset();
 	}
 

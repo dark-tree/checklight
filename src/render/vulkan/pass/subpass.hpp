@@ -11,14 +11,18 @@ class Subpass {
 	private:
 
 		uint32_t attachments;
+		VkSampleCountFlagBits depth_samples;
 
 	public:
 
 		Subpass() = default;
-		Subpass(uint32_t attachments) noexcept;
+		Subpass(uint32_t attachments, VkSampleCountFlagBits depth_samples) noexcept;
 
 		/// Get the number of attachments used by this subpass
 		uint32_t getAttachmentCount() const;
+
+		/// Get the sampling of the depth attachment used by this subpass
+		VkSampleCountFlagBits getDepthSamples() const;
 
 };
 
@@ -36,6 +40,9 @@ class SubpassBuilder {
 		Pyramid<uint32_t>& preserve;
 		std::set<uint32_t> references;
 
+		std::vector<VkSampleCountFlagBits> samplings;
+		VkSampleCountFlagBits depth_samples = VK_SAMPLE_COUNT_1_BIT;
+
 		std::vector<VkAttachmentReference> inputs;
 		std::vector<VkAttachmentReference> colors;
 		std::vector<VkAttachmentReference> resolves;
@@ -46,6 +53,8 @@ class SubpassBuilder {
 		VkAttachmentReference getReference(uint32_t attachment, VkImageLayout layout);
 		bool shouldPreserve(uint32_t attachment) const;
 		VkSubpassDescription finalize(const std::vector<uint32_t>& preserve, std::vector<Subpass>& subpass_attachments);
+
+		void addAttachment(Attachment::Ref attachment);
 
 	public:
 

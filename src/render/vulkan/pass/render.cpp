@@ -6,9 +6,10 @@
  * RenderPass
  */
 
-RenderPass::RenderPass(VkDevice vk_device, VkRenderPass vk_pass, std::vector<VkClearValue>& values, std::vector<Subpass>& subpass_info, FramebufferSet& framebuffer, VkSampleCountFlagBits samples)
+RenderPass::RenderPass(VkDevice vk_device, VkRenderPass vk_pass, std::vector<VkClearValue>& values, std::vector<Subpass>& subpass_info, FramebufferSet& framebuffer, const std::vector<VkSampleCountFlagBits>& samples)
 : framebuffer(framebuffer), vk_device(vk_device), vk_pass(vk_pass), values(values), subpasses(subpass_info), samples(samples) {
-	values.shrink_to_fit();
+	this->values.shrink_to_fit();
+	this->samples.shrink_to_fit();
 }
 
 void RenderPass::close() {
@@ -24,6 +25,10 @@ int RenderPass::getSubpassCount() const {
 	return subpasses.size();
 }
 
+const std::vector<VkSampleCountFlagBits>& RenderPass::getSampleArray() const {
+	return samples;
+}
+
 void RenderPass::prepareFramebuffers(const Swapchain& swapchain) {
 	framebuffer.construct(vk_pass, vk_device, swapchain);
 }
@@ -36,27 +41,16 @@ VkFramebuffer RenderPass::getFramebuffer(uint32_t i) {
  * RenderPassBuilder
  */
 
-void RenderPassBuilder::setSampleCount(VkSampleCountFlagBits samples) {
-	if (samples == VK_SAMPLE_COUNT_1_BIT) {
-		return;
-	}
-
-	if (count != VK_SAMPLE_COUNT_1_BIT && count != samples) {
-		FAULT("Consistent sample count must be used within a render pass!");
-	}
-
-	this->count = samples;
-}
-
 Attachment::Ref RenderPassBuilder::addAttachment(AttachmentBuilder& builder) {
 	attachments.push_back(builder);
 	framebuffer.addAttachment(builder.attachment);
-	return Attachment::Ref::of(attachments.size() - 1);
+	samples.push_back(builder.attachment.getSamples());
+
+	return Attachment::Ref::of(attachments.size() - 1, builder.attachment.getSamples());
 }
 
 AttachmentBuilder RenderPassBuilder::addAttachment(const Attachment& attachment) {
 	values.push_back(attachment.getClearValue());
-	setSampleCount(attachment.getSamples());
 	return {*this, attachment};
 }
 
@@ -135,6 +129,6 @@ RenderPass RenderPassBuilder::build(const LogicalDevice& device, const char* nam
 	VulkanDebug::setDebugName(device.getHandle(), VK_OBJECT_TYPE_RENDER_PASS, render_pass, name);
 	framebuffer.setDebugName(name);
 
-	return {device.getHandle(), render_pass, values, subpass_info, framebuffer, count};
+	return RenderPass {device.getHandle(), render_pass, values, subpass_info, framebuffer, samples};
 
 }

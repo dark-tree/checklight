@@ -5,11 +5,11 @@
  * Attachment::Ref
  */
 
-Attachment::Ref::Ref(int index)
-: index(index) {}
+Attachment::Ref::Ref(int index, VkSampleCountFlagBits samples)
+: index(index), samples(samples) {}
 
-Attachment::Ref Attachment::Ref::of(int index) {
-	return Ref {index};
+Attachment::Ref Attachment::Ref::of(int index, VkSampleCountFlagBits samples) {
+	return Ref {index, samples};
 }
 
 /*

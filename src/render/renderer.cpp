@@ -113,6 +113,7 @@ void Renderer::pickDevice() {
 		VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
 		VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
 		VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+		VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME
 	};
 
 	std::vector<const char*> optional_extensions = {
@@ -137,6 +138,25 @@ void Renderer::pickDevice() {
 				out::logger.print(" * Missing required extension '%s'!\n", name);
 				fail = true;
 			}
+		}
+
+		bool mixed_sampling = false;
+
+		// AMD
+		if (device->hasExtension(VK_AMD_MIXED_ATTACHMENT_SAMPLES_EXTENSION_NAME)) {
+			required_extensions.push_back(VK_AMD_MIXED_ATTACHMENT_SAMPLES_EXTENSION_NAME);
+			mixed_sampling = true;
+		}
+
+		// NVIDIA
+		if (device->hasExtension(VK_NV_FRAMEBUFFER_MIXED_SAMPLES_EXTENSION_NAME)) {
+			required_extensions.push_back(VK_NV_FRAMEBUFFER_MIXED_SAMPLES_EXTENSION_NAME);
+			mixed_sampling = true;
+		}
+
+		if (!mixed_sampling) {
+			out::logger.print(" * Neither '%s' nor '%s' extensions are supported!\n", VK_AMD_MIXED_ATTACHMENT_SAMPLES_EXTENSION_NAME, VK_NV_FRAMEBUFFER_MIXED_SAMPLES_EXTENSION_NAME);
+			fail = true;
 		}
 
 		auto* features_base = (const VkPhysicalDeviceFeatures2*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2);
@@ -186,6 +206,11 @@ void Renderer::pickDevice() {
 
 		if (!features_base->features.shaderInt64) {
 			out::logger.print(" * Feature 'shader int64_t' unsupported!\n");
+			fail = true;
+		}
+
+		if (!features_base->features.shaderStorageImageMultisample) {
+			out::logger.print(" * Feature 'shader storage image multisample' unsupported!\n");
 			fail = true;
 		}
 
@@ -267,6 +292,7 @@ void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family que
 	features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 	features.pNext = &features_vk12;
 	features.features.shaderInt64 = true; // needed for the shader
+	features.features.shaderStorageImageMultisample = true; // needed for non-multisampled raytracing
 
 	// we will now connect with the selected driver
 	VkDeviceCreateInfo create_info {};

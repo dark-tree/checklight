@@ -29,11 +29,15 @@ class Attachment {
 		struct Ref {
 
 			private:
-				explicit Ref(int index);
+
+				explicit Ref(int index, VkSampleCountFlagBits samples);
 
 			public:
+
 				const uint32_t index;
-				static Ref of(int index);
+				const VkSampleCountFlagBits samples;
+
+				static Ref of(int index, VkSampleCountFlagBits samples);
 
 		};
 
