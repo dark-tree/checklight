@@ -10,7 +10,7 @@
 layout(location = 0) rayPayloadEXT HitPayload rPayload;
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT TLAS;
-layout(binding = 1, set = 0, rgba32f) uniform image2DMS colorImage;            // W
+layout(binding = 1, set = 0, rgba32f) uniform image2D colorImage;              // W
 layout(binding = 6, set = 0, rgba32f) uniform image2D illuminationImage;       // W
 layout(binding = 7, set = 0, rgba32f) uniform image2D prevIlluminationImage;   // R
 layout(binding = 8, set = 0, rgba32f) uniform image2D normalImage;             // W
@@ -249,7 +249,5 @@ void main() {
 	 * Write to the output image
 	 */	
 
-    for (int i = 0; i < imageSamples(colorImage); i ++) {
-	    imageStore(colorImage, ivec2(gl_LaunchIDEXT.xy), i, vec4(outColor, depthValue));
-	}
+	 imageStore(colorImage, ivec2(gl_LaunchIDEXT.xy), vec4(outColor, depthValue));
 }
