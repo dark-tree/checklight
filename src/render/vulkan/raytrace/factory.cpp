@@ -127,7 +127,7 @@ void AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator,
 
 		// close all previous structures
 		for (auto& previous : previouses) {
-			previous.close(device);
+			previous.close(device.getHandle());
 		}
 	}
 

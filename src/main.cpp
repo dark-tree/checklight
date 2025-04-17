@@ -168,10 +168,7 @@ static void entry(Args& args) {
 		object.reset();
 	}
 
-	for (auto& model : models) {
-		system.closeModel(model);
-		model.reset();
-	}
+	models.clear();
 
 	RenderSystem::system.reset();
 

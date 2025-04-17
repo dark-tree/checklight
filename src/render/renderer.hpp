@@ -47,6 +47,7 @@ class Renderer {
 
 		friend class RenderFrame;
 		friend class RenderMesh;
+		friend class RenderModel;
 		friend class RenderCommander;
 		friend class ReusableBuffer;
 		friend class AccelStructFactory;
@@ -78,7 +79,7 @@ class Renderer {
 		// raytracing
 		std::unique_ptr<InstanceManager> instances;
 		AccelStructFactory bakery;
-		AccelStruct tlas;
+		std::shared_ptr<RenderModel> tlas;
 		ShaderTable shader_table;
 
 		// shaders

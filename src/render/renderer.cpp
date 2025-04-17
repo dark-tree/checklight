@@ -650,9 +650,9 @@ void Renderer::rebuildTopLevel(CommandRecorder& recorder) {
 	instances->flush(recorder);
 
 	// Recreate TLAS and update descriptors
-	tlas.close(device);
-	tlas = bakery.submit(device, allocator, config)->getStructure();
-	getFrame().set_raytrace.structure(0, tlas);
+	// tlas.close(device);
+	tlas = bakery.submit(device, allocator, config);
+	getFrame().set_raytrace.structure(0, tlas->getStructure());
 
 	bakery.bake(device, allocator, recorder);
 
@@ -793,7 +793,7 @@ Renderer::~Renderer() {
 	// It's important to maintain the correct order
 	closeRenderPasses();
 	bakery.close();
-	tlas.close(device);
+	tlas.reset();
 	shader_table.close();
 
 	shader_world_vertex.close();

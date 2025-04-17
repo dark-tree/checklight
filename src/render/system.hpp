@@ -81,11 +81,6 @@ class RenderSystem : public Renderer {
 		std::vector<std::shared_ptr<RenderModel>> importObj(const std::string& path);
 
 		/**
-		 * Close RenderModel, the resources used by the model will be released.
-		 */
-		void closeModel(std::shared_ptr<RenderModel> model);
-
-		/**
 		 * Get asset manager, this class can be used to request many resources
 		 * used during rendering (sprites, fonts)
 		 */
