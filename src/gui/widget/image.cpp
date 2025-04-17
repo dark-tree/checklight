@@ -13,6 +13,10 @@ void ImageWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 	drawBasicPanel(immediate, state);
 
+	// clear image tint
+	immediate.setStroke(OFF);
+	immediate.setFill(255, 255, 255);
+
 	if (!sprite.empty()) {
 		immediate.setSprite(sprite);
 		immediate.drawRect2D(padded);

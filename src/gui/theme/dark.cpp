@@ -58,7 +58,7 @@ void DarkTheme::styleSelect(const std::shared_ptr<SelectWidget>& widget) const {
 	widget->padding = BoxUnit {Unit::zero(), Unit::zero(), Unit::px(8), Unit::zero()};
 
 	widget->arrow.transition(100ms) = [] (const ElementState& state) noexcept -> Color {
-		return state.isActive() ? Color {10, 10, 10} : Color {40, 40, 40};
+		return state.isActive() ? Color {80, 80, 85} : Color {40, 40, 45};
 	};
 }
 
@@ -67,10 +67,14 @@ void DarkTheme::styleSlider(const std::shared_ptr<SliderWidget>& widget) const {
 	widget->knob_border_color = Color {80, 80, 200};
 	widget->border = Unit::zero();
 	widget->knob_size = Unit::px(7);
+	widget->knob_inset = 7;
 
 	widget->knob_border.transition(100ms, ease::ofInOut) = [] (const ElementState& state) noexcept -> Unit {
 		return state.focused ? Unit::px(4) : Unit::px(0);
 	};
+
+	widget->divot_color = Color {100, 100, 100};
+	widget->divot_extend = Unit::px(2);
 }
 
 void DarkTheme::styleText(const std::shared_ptr<TextWidget>& widget) const {

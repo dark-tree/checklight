@@ -495,6 +495,39 @@ TEST(gui_rebuild_propagation) {
 
 };
 
+TEST(gui_minimal_fit) {
+
+	auto context = std::make_shared<WidgetContext>();
+	auto root = std::make_shared<RootWidget>();
+
+	auto vertical = std::make_shared<PanelWidget>();
+	vertical->flow = Flow::TOP_TO_BOTTOM;
+
+	auto item_1 = std::make_shared<PanelWidget>();
+	item_1->min_height = Unit::px(10);
+	item_1->min_width = Unit::px(10);
+	vertical->addWidget(item_1);
+
+	auto item_2 = std::make_shared<PanelWidget>();
+	item_2->min_height = Unit::px(10);
+	item_2->min_width = Unit::px(10);
+	vertical->addWidget(item_2);
+
+	auto item_3 = std::make_shared<PanelWidget>();
+	item_3->min_height = Unit::px(10);
+	item_3->min_width = Unit::px(10);
+	vertical->addWidget(item_3);
+
+	root->addWidget(vertical);
+	root->rebuildLayout();
+
+	CHECK(root->content.x, 0);
+	CHECK(root->content.y, 0);
+	CHECK(root->content.w, 10);
+	CHECK(root->content.h, 30);
+
+};
+
 TEST(style_interpolate_numericals) {
 
 	int i0 = interpolate(2, 10, 0);

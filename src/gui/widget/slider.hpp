@@ -44,6 +44,9 @@ class SliderWidget : public InputWidget {
 		/// Divot extend from the rail
 		StyleProperty<Unit> divot_extend = Unit::px(1);
 
+		/// What a peculiar property! I must report it post hazel!
+		float knob_inset = 4;
+
 	public:
 
 		SliderWidget();

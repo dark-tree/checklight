@@ -100,7 +100,8 @@ void Widget::applyFitSizing(Channel channel) {
 
 	// try to fit children along channel
 	if (sizing_unit.metric == Metric::FIT) {
-		int value = 0;
+		int high_value = 0;
+		int low_value = 0;
 
 		const bool along = WidgetFlow::isAligned(flow.fetch(state), channel);
 		const int spacing = gap.fetch(state).pixels();
@@ -108,30 +109,31 @@ void Widget::applyFitSizing(Channel channel) {
 		// get widths of all children
 		for (const std::shared_ptr<Widget>& widget : children) {
 			int inherent = widget->getOuterSizing(state, channel);
+			int min = widget->minimal.get(channel);
 
-			value = along
-				? value + inherent + spacing     // along flow direction
-				: std::max(value, inherent); // acros flow direction
+			high_value = along
+				? high_value + inherent + spacing     // along flow direction
+				: std::max(high_value, inherent); // acros flow direction
+
+			low_value = along
+				? low_value + min + spacing     // along flow direction
+				: std::max(low_value, min); // acros flow direction
 		}
 
 		// remove trailing element gap
 		if (along) {
-			value -= spacing;
+			high_value -= spacing;
+			low_value -= spacing;
 		}
 
-		preferred = std::max(value, low_bound);
+		if (low_bound < low_value) {
+			low_bound = low_value;
+		}
+
+		preferred = std::max(high_value, low_bound);
 	}
 
 	// ignore GROW sizing, that is handled in applyGrowSizing()
-
-	// get the highest minimal size
-	for (const std::shared_ptr<Widget>& widget : children) {
-		int min = widget->minimal.get(channel);
-
-		if (min > low_bound) {
-			low_bound = min;
-		}
-	}
 
 	// apply calculated size
 	sizing.get(channel) = preferred;

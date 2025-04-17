@@ -34,7 +34,7 @@ static void entry(Args& args) {
 	{
 
 		auto left = theme.newPanel();
-		left->flow = Flow::LEFT_TO_RIGHT;
+		left->flow = Flow::TOP_TO_BOTTOM;
 		left->gap = Unit::px(10);
 
 		auto sub2 = theme.newButton("Apply");

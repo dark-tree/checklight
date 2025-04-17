@@ -63,10 +63,14 @@ void LightTheme::styleSlider(const std::shared_ptr<SliderWidget>& widget) const 
 	widget->knob_border_color = Color {40, 40, 80};
 	widget->border = Unit::zero();
 	widget->knob_size = Unit::px(7);
+	widget->knob_inset = 7;
 
 	widget->knob_border.transition(100ms, ease::ofInOut) = [] (const ElementState& state) noexcept -> Unit {
 		return state.focused ? Unit::px(4) : Unit::px(0);
 	};
+
+	widget->divot_color = Color {30, 30, 30};
+	widget->divot_extend = Unit::px(2);
 }
 
 void LightTheme::styleText(const std::shared_ptr<TextWidget>& widget) const {

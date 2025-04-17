@@ -38,7 +38,7 @@ void SliderWidget::updateValue() {
 }
 
 glm::vec2 SliderWidget::getKnobPosition(float value) {
-	return {content.x + value * content.w, content.y + content.h / 2};
+	return {content.x + knob_inset + value * (content.w - 2 * knob_inset), content.y + content.h / 2};
 }
 
 void SliderWidget::draw(ImmediateRenderer& immediate, ElementState state) {
@@ -55,7 +55,7 @@ void SliderWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 		int divots = 1.0f / step;
 		float length = content.w;
-		float interval = length / divots;
+		float interval = (length - knob_inset * 2) / divots;
 		float sy = knob.y - rail / 2;
 
 		immediate.setFill(rail_color.fetch(state));
@@ -64,7 +64,7 @@ void SliderWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 		// only draw divots if we have good enough spacing
 		if (interval >= 8) {
-			float offset = content.x;
+			float offset = content.x + knob_inset;
 
 			immediate.setFill(divot_color.fetch(state));
 			immediate.setLineWidth(1);
