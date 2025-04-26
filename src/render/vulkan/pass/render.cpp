@@ -25,8 +25,16 @@ int RenderPass::getSubpassCount() const {
 	return subpasses.size();
 }
 
-const std::vector<VkSampleCountFlagBits>& RenderPass::getSampleArray() const {
-	return samples;
+std::vector<VkSampleCountFlagBits> RenderPass::getSampleArray() const {
+	std::vector<VkSampleCountFlagBits> combined;
+
+	for (auto& subpass : subpasses) {
+		for (auto sampling : subpass.getSampleArray()) {
+			combined.push_back(sampling);
+		}
+	}
+
+	return combined;
 }
 
 void RenderPass::prepareFramebuffers(const Swapchain& swapchain) {
@@ -44,7 +52,6 @@ VkFramebuffer RenderPass::getFramebuffer(uint32_t i) {
 Attachment::Ref RenderPassBuilder::addAttachment(AttachmentBuilder& builder) {
 	attachments.push_back(builder);
 	framebuffer.addAttachment(builder.attachment);
-	samples.push_back(builder.attachment.getSamples());
 
 	return Attachment::Ref::of(attachments.size() - 1, builder.attachment.getSamples());
 }
@@ -129,6 +136,6 @@ RenderPass RenderPassBuilder::build(const LogicalDevice& device, const char* nam
 	VulkanDebug::setDebugName(device.getHandle(), VK_OBJECT_TYPE_RENDER_PASS, render_pass, name);
 	framebuffer.setDebugName(name);
 
-	return RenderPass {device.getHandle(), render_pass, values, subpass_info, framebuffer, samples};
+	return RenderPass {device.getHandle(), render_pass, values, subpass_info, framebuffer, {}};
 
 }

@@ -6,8 +6,8 @@
  * Subpass
  */
 
-Subpass::Subpass(uint32_t attachments, VkSampleCountFlagBits depth_samples) noexcept
-: attachments(attachments), depth_samples(depth_samples) {}
+Subpass::Subpass(uint32_t attachments, VkSampleCountFlagBits depth_samples, std::vector<VkSampleCountFlagBits>& samplings) noexcept
+: attachments(attachments), depth_samples(depth_samples), samplings(samplings) {}
 
 uint32_t Subpass::getAttachmentCount() const {
 	return attachments;
@@ -15,6 +15,10 @@ uint32_t Subpass::getAttachmentCount() const {
 
 VkSampleCountFlagBits Subpass::getDepthSamples() const {
 	return depth_samples;
+}
+
+const std::vector<VkSampleCountFlagBits>& Subpass::getSampleArray() const {
+	return samplings;
 }
 
 /*
@@ -63,7 +67,7 @@ VkSubpassDescription SubpassBuilder::finalize(const std::vector<uint32_t>& prese
 	// this is here so that the renderpass can retain the information about
 	// how many attachments were there for each subpass - this is then used during pipeline
 	// creation to setup blending for each attachment
-	subpass_attachments.emplace_back(color_count, depth_samples);
+	subpass_attachments.emplace_back(color_count, depth_samples, samplings);
 
 	return description;
 
@@ -71,7 +75,6 @@ VkSubpassDescription SubpassBuilder::finalize(const std::vector<uint32_t>& prese
 
 void SubpassBuilder::addAttachment(Attachment::Ref attachment) {
 	references.insert(attachment.index);
-	samplings.push_back(attachment.samples);
 }
 
 SubpassBuilder::SubpassBuilder(RenderPassBuilder& builder, VkPipelineBindPoint bind_point, uint32_t attachment_count, Pyramid<uint32_t>& preserve)
@@ -89,6 +92,7 @@ SubpassBuilder& SubpassBuilder::addInput(Attachment::Ref attachment, VkImageLayo
 
 SubpassBuilder& SubpassBuilder::addOutput(Attachment::Ref attachment, VkImageLayout target_layout) {
 	addAttachment(attachment);
+	samplings.push_back(attachment.samples);
 	colors.push_back(getReference(attachment.index, target_layout));
 	return *this;
 }

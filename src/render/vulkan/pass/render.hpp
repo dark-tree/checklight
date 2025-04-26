@@ -34,7 +34,7 @@ class RenderPass {
 		 * Get the per-attachment sample counts, this is need to construct pipelines
 		 * with varying per-color-attachment sample counts
 		 */
-		const std::vector<VkSampleCountFlagBits>& getSampleArray() const;
+		std::vector<VkSampleCountFlagBits> getSampleArray() const;
 
 		/**
 		 * Allocate (or reallocate if already present) the underlying framebuffers
@@ -58,7 +58,6 @@ class RenderPassBuilder {
 		std::vector<AttachmentBuilder> attachments;
 		std::vector<SubpassBuilder> subpasses;
 		std::vector<DependencyBuilder> dependencies;
-		std::vector<VkSampleCountFlagBits> samples;
 
 		Pyramid<uint32_t> preserve;
 

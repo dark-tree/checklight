@@ -12,17 +12,21 @@ class Subpass {
 
 		uint32_t attachments;
 		VkSampleCountFlagBits depth_samples;
+		std::vector<VkSampleCountFlagBits> samplings;
 
 	public:
 
 		Subpass() = default;
-		Subpass(uint32_t attachments, VkSampleCountFlagBits depth_samples) noexcept;
+		Subpass(uint32_t attachments, VkSampleCountFlagBits depth_samples, std::vector<VkSampleCountFlagBits>& samplings) noexcept;
 
 		/// Get the number of attachments used by this subpass
 		uint32_t getAttachmentCount() const;
 
 		/// Get the sampling of the depth attachment used by this subpass
 		VkSampleCountFlagBits getDepthSamples() const;
+
+		/// Get the sampling of the depth attachment used by this subpass
+		const std::vector<VkSampleCountFlagBits>& getSampleArray() const;
 
 };
 
