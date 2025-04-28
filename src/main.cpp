@@ -13,6 +13,7 @@
 
 static void entry(Args& args) {
 
+
 	ApplicationParameters parameters;
 	parameters.setName("My Checklight Game!");
 	parameters.setDimensions(1200, 800);
@@ -133,6 +134,30 @@ static void entry(Args& args) {
 	sp->addPawnToRoot(pawn);
 	sp->addPawnToRoot(pawnThatRendersTheCube);
 	sp->addPawnToRoot(pawnThatRendersTheSphere);
+
+	//--------------------------------
+	{
+		BoardManager manager;
+		std::shared_ptr<Board> board = manager.getCurrentBoard().lock();
+
+		std::shared_ptr<Pawn> r1 = std::make_shared<Pawn>();
+		std::shared_ptr<Pawn> r2 = std::make_shared<Pawn>();
+		std::shared_ptr<Pawn> r3 = std::make_shared<Pawn>();
+
+		board->addPawnToRoot(r1);
+		board->addPawnToRoot(r2);
+		board->addPawnToRoot(r3);
+
+		std::shared_ptr<Pawn> r4 = std::make_shared<Pawn>();
+		std::shared_ptr<Pawn> r5 = std::make_shared<Pawn>();
+		std::shared_ptr<Pawn> r6 = std::make_shared<Pawn>();
+
+		r4->addChild(r5);
+		board->addPawnToRoot(r4);
+
+		r5->addChild(r6);
+	}
+	//------------------------------------------
 
 
 	std::vector<std::shared_ptr<RenderObject>> objects;

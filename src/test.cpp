@@ -447,7 +447,7 @@ TEST(pawn_tree_pawn_addition) {
 	std::shared_ptr<Pawn> r5 = std::make_shared<Pawn>();
 	std::shared_ptr<Pawn> r6 = std::make_shared<Pawn>();
 
-	r4->addChild(r5); //upsi bubsi kolejnosc psuje XD
+	r4->addChild(r5); //order changes the behaviour
 	board->addPawnToRoot(r4);
 
 	r5->addChild(r6);
