@@ -121,7 +121,7 @@ int main() {
 	SoundManager& sm = SoundManager::getInstance();
 	auto sso = std::make_shared<SoundSourceObject>();
 	sm.addSource(sso);
-	sm.createSoundClipAndAddToSourceObject("assets/sounds/testWAV.wav", sso);
+	sm.createSoundClipAndAddToSourceObject("assets/sounds/testOGG.ogg", sso);
 	sso->setPosition(0, 0, 0);
 	sso->setMaxDistance(20);
 	sso->setReferenceDistance(1.0f);
@@ -151,7 +151,8 @@ int main() {
 		// render the scene
 		system.draw();
 		sm.playSound(sso);
-		SoundListener::setPosition(current_board->getCamPos().x, current_board->getCamPos().y, current_board->getCamPos().z);
+		SoundListener::setPosition(current_board->getCamPos());
+		SoundListener::setOrientation(current_board->getCamForward(),glm::vec3(0.0f,1.0f,0.0f));
 	}
 
 	system.wait();

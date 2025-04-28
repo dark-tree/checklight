@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef SOUND_LISTENER_HPP
 #define SOUND_LISTENER_HPP
 #include "external.hpp"
@@ -23,11 +21,6 @@ public:
 		alListener3f(AL_VELOCITY, velocity.x, velocity.y, velocity.z);
 	}
 
-	static void setOrientation(float x,float y, float z) {
-		alListener3f(AL_ORIENTATION, z, y, z);
-	}
-
-
 	/// Set the listener's orientation using two vectors: the "at" vector and the "up" vector.
 	///
 	/// @param at The "at" vector, representing the direction the listener is facing.
@@ -41,25 +34,13 @@ public:
 		alDistanceModel(distance_model);
 	}
 
-	static float* getPosition() {
-		float* position = new float[3];
-		alGetListenerfv(AL_POSITION, position);
-		return position;
-	}
-
-	static glm::vec3 getPositionV3() {
+	static glm::vec3 getPosition() {
 		glm::vec3 position;
 		alGetListener3f(AL_POSITION, &position.x, &position.y, &position.z);
 		return position;
 	}
 
-	static float* getVelocity() {
-		float* velocity = new float[3];
-		alGetListenerfv(AL_VELOCITY,velocity);
-		return velocity;
-	}
-
-	static glm::vec3 getVelocityV3() {
+	static glm::vec3 getVelocity() {
 		glm::vec3 velocity;
 		alGetListener3f(AL_VELOCITY, &velocity.x, &velocity.y, &velocity.z);
 		return velocity;
@@ -67,10 +48,12 @@ public:
 
 	/// Get the listener's orientation as two vectors: the "at" vector and the "up" vector.
 	/// The returned array contains 6 floats: [at_x, at_y, at_z, up_x, up_y, up_z].
-	static float* getOrientation() {
-		float* orientation = new float[6];
+	static std::pair<glm::vec3,glm::vec3> getOrientation() {
+		float orientation[6];
 		alGetListenerfv(AL_ORIENTATION, orientation);
-		return orientation;
+		glm::vec3 at(orientation[0], orientation[1], orientation[2]);
+		glm::vec3 up(orientation[3], orientation[4], orientation[5]);
+		return { at,up };
 	}
 
 	static ALenum getDistanceModel() {

@@ -27,6 +27,7 @@ void SoundClip::loadOGGFile(const char* filename) {
 
 	if (size_block == -1) {
 		std::cerr << ("SoundClip -> OGG file load error\n");
+		free(output);
 		return;
 	}
 	this->path = filename;
@@ -35,12 +36,12 @@ void SoundClip::loadOGGFile(const char* filename) {
 	if (channels >= 2) {
 		/// Resize to 1 channel
 		size_block /= channels;
-		short* output2 = new short[size_block];
+		short* output2 = (short*) malloc(size_block*sizeof(short));
 		/// Get data only from 1 channel
 		for (int i = 0;i < size_block;i++) {
 			output2[i] = output[i * channels];
 		}
-		delete[] output;
+		free(output);						//zwalnianie pamieci poprawic
 		output = output2;
 	}
 
@@ -48,7 +49,7 @@ void SoundClip::loadOGGFile(const char* filename) {
 	ALsizei audio_size = size_block * sizeof(short);
 	// Create buffer
 	alBufferData(buffer, format, output, audio_size, sample_rate);
-	delete[] output;
+	free(output);							//zwalnianie pamieci poprawic
 	ALenum error;
 	if ((error = alGetError()) != AL_NO_ERROR) {
 		std::cerr << ("Clip -> loadOGGFile: Failed to load file to buffer\n");  //throw exception
