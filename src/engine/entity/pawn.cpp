@@ -227,6 +227,10 @@ Pawn::Pawn() : Entity() {
 	is_tracked_on_hash = false;
 }
 
+Pawn::Pawn(const std::string &s) : Pawn(){
+	name = s;
+}
+
 
 void Pawn::addComponent(std::shared_ptr<Component>& c) {
 	if (c->checkValidity(*this)) {

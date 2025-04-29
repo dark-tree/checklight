@@ -12,8 +12,6 @@
 #include "engine/entity/component/matrixAnimation.hpp"
 
 static void entry(Args& args) {
-
-
 	ApplicationParameters parameters;
 	parameters.setName("My Checklight Game!");
 	parameters.setDimensions(1200, 800);
@@ -71,38 +69,13 @@ static void entry(Args& args) {
 	panel->horizontal = HorizontalAlignment::CENTER;
 
 	panel->rebuild(10, 10);
-
-	// auto slider = std::make_shared<SliderWidget>([] () noexcept {
-	//
-	// });
-	// slider->setBounds({600, 300, 100, 50});
-	//
-	// auto button = std::make_shared<ButtonWidget>("Hello", [] () noexcept {
-	// 	out::debug("Pressed button!");
-	// });
-	// button->setBounds({600, 400, 100, 50});
-	//
-	// auto input = std::make_shared<FieldWidget>([] () noexcept {
-	//
-	// });
-	// input->setBounds({600, 500, 100, 50});
-	//
-	// auto select = std::make_shared<SelectWidget>([] () noexcept {
-	//
-	// });
-	// select->setBounds({600, 600, 100, 50});
-
 	context->setRoot(panel);
-	// panel->addWidget(slider);
-	// panel->addWidget(button);
-	// panel->addWidget(input);
-	// panel->addWidget(select);
 
-	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
+	window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 	window.getInputDispatcher().registerListener(std::dynamic_pointer_cast<InputListener>(context));
 	auto models = system.importObj("assets/models/checklight.obj");
 
-	BoardManager manager;
+	BoardManager manager(std::shared_ptr<InputDispatcher>(&window.getInputDispatcher()));
 
 	std::shared_ptr<Pawn> pawn = std::make_shared<Pawn>();
 
@@ -141,18 +114,24 @@ static void entry(Args& args) {
 		std::shared_ptr<Board> board = manager.getCurrentBoard().lock();
 
 		std::shared_ptr<Pawn> r1 = std::make_shared<Pawn>();
+		r1->setName("r1");
 		std::shared_ptr<Pawn> r2 = std::make_shared<Pawn>();
+		r2->setName("r2");
 		std::shared_ptr<Pawn> r3 = std::make_shared<Pawn>();
+		r3->setName("r3");
 
 		board->addPawnToRoot(r1);
 		board->addPawnToRoot(r2);
 		board->addPawnToRoot(r3);
 
 		std::shared_ptr<Pawn> r4 = std::make_shared<Pawn>();
+		r4->setName("r4");
 		std::shared_ptr<Pawn> r5 = std::make_shared<Pawn>();
+		r5->setName("r5");
 		std::shared_ptr<Pawn> r6 = std::make_shared<Pawn>();
+		r6->setName("r6");
 
-		r4->addChild(r5);
+		r4->addChild(r5); //order changes the behaviour
 		board->addPawnToRoot(r4);
 
 		r5->addChild(r6);

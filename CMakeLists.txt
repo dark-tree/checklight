@@ -118,6 +118,10 @@ target_include_directories(checklight_common INTERFACE
 		${CHECKLIGHT_LIBRARIES}
 )
 
+target_link_options(checklight_common INTERFACE
+		-static
+)
+
 file(GLOB_RECURSE CHECKLIGHT_ENGINE_SOURCES "src/engine/*.cpp")
 add_library(checklight_engine_system ${CHECKLIGHT_ENGINE_SOURCES})
 

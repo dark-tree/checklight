@@ -89,6 +89,8 @@ public:
 
 	Pawn();
 
+	Pawn(const std::string& s);
+
 	/**
 	 * Adds a new component to a pawn
 	 */
