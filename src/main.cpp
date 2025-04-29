@@ -108,37 +108,6 @@ static void entry(Args& args) {
 	sp->addPawnToRoot(pawnThatRendersTheCube);
 	sp->addPawnToRoot(pawnThatRendersTheSphere);
 
-	//--------------------------------
-	{
-		BoardManager manager;
-		std::shared_ptr<Board> board = manager.getCurrentBoard().lock();
-
-		std::shared_ptr<Pawn> r1 = std::make_shared<Pawn>();
-		r1->setName("r1");
-		std::shared_ptr<Pawn> r2 = std::make_shared<Pawn>();
-		r2->setName("r2");
-		std::shared_ptr<Pawn> r3 = std::make_shared<Pawn>();
-		r3->setName("r3");
-
-		board->addPawnToRoot(r1);
-		board->addPawnToRoot(r2);
-		board->addPawnToRoot(r3);
-
-		std::shared_ptr<Pawn> r4 = std::make_shared<Pawn>();
-		r4->setName("r4");
-		std::shared_ptr<Pawn> r5 = std::make_shared<Pawn>();
-		r5->setName("r5");
-		std::shared_ptr<Pawn> r6 = std::make_shared<Pawn>();
-		r6->setName("r6");
-
-		r4->addChild(r5); //order changes the behaviour
-		board->addPawnToRoot(r4);
-
-		r5->addChild(r6);
-	}
-	//------------------------------------------
-
-
 	std::vector<std::shared_ptr<RenderObject>> objects;
 
 	for (auto& model : models) {
