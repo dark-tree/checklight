@@ -3,40 +3,6 @@
 #include "engine/engine.hpp"
 #include "sound/sound.hpp"
 
-class MyInputListener : public InputListener {
-	std::weak_ptr<SoundSourceObject> sso;
-	SoundManager& sm = SoundManager::getInstance();
-public:
-	MyInputListener(std::weak_ptr<SoundSourceObject> sso) {
-		this->sso = sso;
-	}
-	InputResult onEvent(const InputEvent& any) override {
-
-		// check & assert the event to a KeyboardEvent
-		if (const auto* event = any.as<KeyboardEvent>()) {
-
-			// if user pressed CTRL+Q
-			if (event->wasPressed(GLFW_KEY_P)) {
-				sm.playSound(sso);
-				
-				// cancel further event processing
-				return InputResult::BLOCK;
-			}
-			if (event->wasPressed(GLFW_KEY_O)) {
-				
-				sso.lock()->stopSound();
-				// cancel further event processing
-				return InputResult::BLOCK;
-			}
-		}
-
-		// ignore all other events
-		// in our setup all of those will be routed to DebugInputListener
-		return InputResult::PASS;
-	}
-
-};
-
 static void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
 	immediate.setSprite("assets/image/corners.png");
 
@@ -155,16 +121,8 @@ int main() {
 	SoundListener::setPosition(0, 0, 0);
 	SoundManager& sm = SoundManager::getInstance();
 	auto sso = std::make_shared<SoundSourceObject>();
-	auto sso1 = std::make_shared<SoundSourceObject>();
 	sm.addSource(sso);
 	sm.createSoundClipAndAddToSourceObject("assets/sounds/testOGG.ogg", sso);
-	sm.addSource(sso1);
-	sm.createSoundClipAndAddToSourceObject("assets/sounds/5.ogg", sso1);
-	sso1->setPosition(0.0f, 0.0f, 0.0f);
-	sso1->setMaxDistance(sizeof(float));
-	sso1->setRolloffFactor(0.0f);
-	sso1->setGain(0.5f);
-	sso1->setMinGain(0.3f);
 	sso->setPosition(0.0f, 4.8f, 0.0f);
 	sso->setMaxDistance(10.0f);
 	sso->setReferenceDistance(1.0f);
@@ -172,7 +130,7 @@ int main() {
 	sso->setMinGain(0.0f);
 	sso->setMaxGain(1.0f);
 	SoundListener::setDistanceModel(AL_LINEAR_DISTANCE);
-	window.getInputDispatcher().registerListener(std::make_shared<MyInputListener>(sso1));
+	///window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>(sso1));
 	while (!window.shouldClose()) {
 		window.poll();
 
