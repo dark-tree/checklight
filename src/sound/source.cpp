@@ -282,7 +282,7 @@ void SoundSourceObject::addBuffer(SoundClip clip){
 		std::cerr << ("Source -> addBuffer: Buffer doesnt exist\n");	//throw exception
 		return;
 	}
-
+	alGetError();
 	alSourcei(source, AL_BUFFER, buffer);
 
 	ALenum error = alGetError();
@@ -297,7 +297,7 @@ void SoundSourceObject::addBuffer(std::shared_ptr<SoundClip> clip) {
 		std::cerr << ("Source -> addBuffer: Buffer doesnt exist\n");	//throw exception
 		return;
 	}
-
+	alGetError();
 	sc_buffer = clip;
 	if (sc_buffer){
 		alSourcei(source, AL_BUFFER, sc_buffer->getBuffer());
@@ -403,6 +403,7 @@ void SoundSourceObject::playSound(){
 	}
 
 	if (!isPlaying()) {
+		alGetError();
 		alSourcePlay(source);
 		if (alGetError() != AL_NO_ERROR) {
 			std::cerr << ("Sound -> playSound: Failed to play clip\n");  //throw exception
@@ -416,7 +417,7 @@ void SoundSourceObject::stopSound(){
 		std::cerr << ("Source -> stopSound: No valid sound source found!\n");
 		return;
 	}
-
+	alGetError();
 	alSourceStop(source);
 	if (alGetError() != AL_NO_ERROR) {
 		std::cerr << ("Sound -> stopSound: Failed to stop clip\n");  //throw exception
@@ -429,7 +430,7 @@ void SoundSourceObject::pauseSound() {
 		std::cerr << ("Source -> pauseSound: No valid sound source found!\n");
 		return;
 	}
-
+	alGetError();
 	alSourcePause(source);
 	if (alGetError() != AL_NO_ERROR) {
 		std::cerr << ("Sound -> pauseSound: Failed to pause clip\n");  //throw exception
