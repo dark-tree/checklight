@@ -164,7 +164,7 @@ void SoundSourceObject::updateMute() {
 			alSourcef(source, AL_GAIN, 0);
 		}
 		else {
-			alSourcef(source, AL_GAIN, sso_sg->getGain() + sso_gain);
+			alSourcef(source, AL_GAIN, sso_sg->getGain() * sso_gain);
 		}
 	}
 	else {
@@ -179,7 +179,7 @@ void SoundSourceObject::updateMute() {
 
 void SoundSourceObject::updatePitch() {
 	if (this->sso_sg != nullptr) {
-		alSourcef(source, AL_PITCH, sso_sg->getPitch() + sso_pitch);
+		alSourcef(source, AL_PITCH, sso_sg->getPitch() * sso_pitch);
 	}
 	else {
 		alSourcef(source, AL_PITCH, sso_pitch);
@@ -188,7 +188,7 @@ void SoundSourceObject::updatePitch() {
 
 void SoundSourceObject::updateGain() {
 	if (this->sso_sg != nullptr) {
-		alSourcef(source, AL_GAIN, sso_sg->getGain() + sso_gain);
+		alSourcef(source, AL_GAIN, sso_sg->getGain() * sso_gain);
 	}
 	else {
 		alSourcef(source, AL_GAIN, sso_gain);
@@ -232,7 +232,7 @@ void SoundSourceObject::updateMinMaxGain() {
 
 void SoundSourceObject::updateRolloffFactor() {
 	if (this->sso_sg != nullptr) {
-		alSourcef(source, AL_ROLLOFF_FACTOR, sso_sg->getRolloffFactor() + sso_rolloff_factor);
+		alSourcef(source, AL_ROLLOFF_FACTOR, sso_sg->getRolloffFactor() * sso_rolloff_factor);
 	}
 	else {
 		alSourcef(source, AL_ROLLOFF_FACTOR, sso_rolloff_factor);
@@ -241,7 +241,7 @@ void SoundSourceObject::updateRolloffFactor() {
 
 void SoundSourceObject::updateReferenceDistance() {
 	if (this->sso_sg != nullptr) {
-		alSourcef(source, AL_REFERENCE_DISTANCE, sso_sg->getReferenceDistance() + sso_reference_distance);
+		alSourcef(source, AL_REFERENCE_DISTANCE, sso_sg->getReferenceDistance() * sso_reference_distance);
 	}
 	else {
 		alSourcef(source, AL_REFERENCE_DISTANCE, sso_reference_distance);
@@ -250,7 +250,7 @@ void SoundSourceObject::updateReferenceDistance() {
 
 void SoundSourceObject::updateConeOuterGain() {
 	if (this->sso_sg != nullptr) {
-		alSourcef(source, AL_CONE_OUTER_GAIN, sso_sg->getConeOuterGain() + sso_cone_outer_gain);
+		alSourcef(source, AL_CONE_OUTER_GAIN, sso_sg->getConeOuterGain() * sso_cone_outer_gain);
 	}
 	else {
 		alSourcef(source, AL_CONE_OUTER_GAIN, sso_cone_outer_gain);
@@ -328,8 +328,8 @@ void SoundSourceObject::addGroupParameters(std::shared_ptr<SoundGroup> sg) {
 void SoundSourceObject::updateParameters() {
 	//if sso_sg_parameter has nullptr set default parameters for this SSO
 	if (this->sso_sg != nullptr){
-		alSourcef(source, AL_PITCH, sso_sg->getPitch() + sso_pitch);
-
+		alSourcef(source, AL_PITCH, sso_sg->getPitch() * sso_pitch);
+		alSourcef(source, AL_GAIN, sso_sg->getGain() * sso_gain);
 		alSourcei(source, AL_LOOPING, sso_sg->getLooping() || sso_looping);
 
 		float max_gain = (sso_sg->getMaxGain() > sso_max_gain) ? sso_sg->getMaxGain() : sso_max_gain;
@@ -343,9 +343,9 @@ void SoundSourceObject::updateParameters() {
 		alSourcef(source, AL_MIN_GAIN, min_gain);
 
 		alSourcef(source, AL_MAX_DISTANCE, sso_sg->getMaxDistance() + sso_max_distance);
-		alSourcef(source, AL_ROLLOFF_FACTOR, sso_sg->getRolloffFactor() + sso_rolloff_factor);
-		alSourcef(source, AL_REFERENCE_DISTANCE, sso_sg->getReferenceDistance() + sso_reference_distance);
-		alSourcef(source, AL_CONE_OUTER_GAIN, sso_sg->getConeOuterGain() + sso_cone_outer_gain);
+		alSourcef(source, AL_ROLLOFF_FACTOR, sso_sg->getRolloffFactor() * sso_rolloff_factor);
+		alSourcef(source, AL_REFERENCE_DISTANCE, sso_sg->getReferenceDistance() * sso_reference_distance);
+		alSourcef(source, AL_CONE_OUTER_GAIN, sso_sg->getConeOuterGain() * sso_cone_outer_gain);
 		alSourcef(source, AL_CONE_INNER_ANGLE, sso_sg->getConeInnerAngle() + sso_cone_inner_angle);
 		alSourcef(source, AL_CONE_OUTER_ANGLE, sso_sg->getConeOuterAngle() + sso_cone_outer_angle);
 		if (sso_sg->getMute() || sso_is_mute) {
