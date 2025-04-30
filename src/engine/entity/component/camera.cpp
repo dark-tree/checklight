@@ -6,7 +6,7 @@
 
 
 
-Camera::Camera() : GameComponent() {
+Camera::Camera(SpatialPawn* s) : GameComponent(s) {
 	position = { 0,0,0 };
 	direction = { 1,0,0 };
 	pressed_right = false;

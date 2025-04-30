@@ -10,6 +10,7 @@
 #include "engine/engine.hpp"
 #include "gui/gui.hpp"
 #include "engine/entity/component/matrixAnimation.hpp"
+#include "glm/gtc/noise.hpp"
 
 static void entry(Args& args) {
 	ApplicationParameters parameters;
@@ -71,7 +72,7 @@ static void entry(Args& args) {
 	panel->rebuild(10, 10);
 	context->setRoot(panel);
 
-	window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
+	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 	window.getInputDispatcher().registerListener(std::dynamic_pointer_cast<InputListener>(context));
 	auto models = system.importObj("assets/models/checklight.obj");
 
@@ -86,19 +87,11 @@ static void entry(Args& args) {
 
 	pawnThatRendersTheSphere->setPosition({2,1,2});
 
-	std::shared_ptr<Component> renderSphere = std::make_shared<RenderComponent>(Models::SPHERE);
-	std::shared_ptr<Component> renderCube = std::make_shared<RenderComponent>(Models::CUBE);
+	pawnThatRendersTheSphere->createComponent<RenderComponent>(Models::SPHERE);
+	pawnThatRendersTheSphere->createComponent<MatrixAnimation>(MatrixAnimation::TRANSLATE);
 
-	std::shared_ptr<Component> rotateCube = std::make_shared<MatrixAnimation>(MatrixAnimation::ROTATE);
-	std::shared_ptr<Component> moveSphere = std::make_shared<MatrixAnimation>(MatrixAnimation::TRANSLATE);
-
-
-	pawnThatRendersTheSphere->addComponent(renderSphere);
-	pawnThatRendersTheSphere->addComponent(moveSphere);
-
-	pawnThatRendersTheCube->addComponent(renderCube);
-	pawnThatRendersTheCube->addComponent(rotateCube);
-
+	pawnThatRendersTheCube->createComponent<RenderComponent>(Models::CUBE);
+	pawnThatRendersTheCube->createComponent<MatrixAnimation>(MatrixAnimation::ROTATE);
 
 	pawn->setName("Test");
 
@@ -116,6 +109,8 @@ static void entry(Args& args) {
 		object->setModel(model);
 		objects.push_back(object);
 	}
+
+	pawnThatRendersTheCube.reset();
 
 	while (!window.shouldClose()) {
 		window.poll();

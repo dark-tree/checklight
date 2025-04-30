@@ -23,10 +23,9 @@ BoardManager::BoardManager(std::shared_ptr<InputDispatcher> disp) {
 
 	standardSetup();
 
-	physics_thread = std::thread(fixedUpdateCycle, this);
-	// physicsDelegator->enqueue( [this]() {
-	// 	fixedUpdateCycle();
-	// });
+	physics_thread = std::thread([this]() {
+		fixedUpdateCycle();
+	});
 }
 
 BoardManager::~BoardManager() {
@@ -37,12 +36,11 @@ BoardManager::~BoardManager() {
 
 
 void BoardManager::standardSetup(){
-	std::shared_ptr<Pawn> cameraPawn = std::make_shared<SpatialPawn>();
-	std::shared_ptr<Component> cam = std::make_shared<Camera>();
+	std::shared_ptr<SpatialPawn> cameraPawn = std::make_shared<SpatialPawn>();
+	auto cam = cameraPawn->createComponent<Camera>();
 
 	if (dispatcher) dispatcher->registerListener(cam);
 
-	cameraPawn->addComponent(cam);
 	cameraPawn->setName("Main Camera");
 
 

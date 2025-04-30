@@ -1,5 +1,5 @@
 #pragma once
-#include "gameComponent.hpp"
+#include "game.hpp"
 
 
 class MatrixAnimation : public GameComponent {
@@ -21,11 +21,11 @@ protected:
 	void shape();
 
 public:
+	MatrixAnimation() = delete;
 
+	MatrixAnimation(SpatialPawn* s);
 
-	MatrixAnimation();
-
-	MatrixAnimation(AnimationType type);
+	MatrixAnimation(SpatialPawn* s, AnimationType type);
 
 	void setAnimation(AnimationType newType);
 

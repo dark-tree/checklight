@@ -1,10 +1,11 @@
-#include "renderComponent.hpp"
+#include "render.hpp"
 #include "engine/entity/context.hpp"
 #include "render/system.hpp"
 #include "engine/data/models.hpp"
 #include "engine/entity/pawns/spatialPawn.hpp"
 
-RenderComponent::RenderComponent(Models::Shape s) : GameComponent(){
+
+RenderComponent::RenderComponent(SpatialPawn* sp, Models::Shape s) : GameComponent(sp){
 	renderObject = RenderSystem::system->createRenderObject();
 	renderObject->setMatrix(glm::identity<glm::mat4x3>());
 	renderObject->setModel(Models::getShape(s));
@@ -37,8 +38,8 @@ void RenderComponent::setRendering(bool is_rendering) {
 
 void RenderComponent::remove() {
 	GameComponent::remove();
-	//TODO remove form GPU
-	// renderObject->setActive(false);
+	//it will be removed when necessary
+	renderObject->setActive(false);
 }
 
 RenderComponent::~RenderComponent() {

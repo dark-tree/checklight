@@ -3,9 +3,9 @@
 #include "data/models.cpp"
 
 #include "entity/component/camera.hpp"
-#include "entity/component/gameComponent.hpp"
-#include "entity/component/uiComponent.hpp"
-#include "entity/component/renderComponent.hpp"
+#include "entity/component/game.hpp"
+#include "entity/component/ui.hpp"
+#include "entity/component/render.hpp"
 
 #include "entity/pawns/rootPawn.hpp"
 #include "entity/pawns/spatialPawn.hpp"

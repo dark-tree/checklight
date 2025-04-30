@@ -1,6 +1,7 @@
 #pragma once
 #include "entity.hpp"
 #include "input/input.hpp"
+#include "../trait.hpp"
 
 struct Context;
 struct FixedContext;
@@ -20,12 +21,15 @@ protected:
 	 * All the things that happens on fixed update of the engine (fixed intervals between updates, updates with the same frequency as physics)
 	 */
 	virtual void onFixedUpdate(FixedContext c) = 0;
-	virtual bool checkValidity(const Pawn& p) = 0;
 	InputResult onEvent(const InputEvent& event) override = 0;
 	virtual void onConnected() = 0;
 public:
 
-	Component();
+
+
+	Component(Pawn* p) : Entity() {
+		parent = p;
+	}
 
 	/**
 	 * TODO make it into a virtual function, that returns const char* lub std::string_view, potentially remove name form entity???? check if that breaks sth in pawn
@@ -35,4 +39,11 @@ public:
 	virtual void remove();
 
 	std::string toString();
+};
+
+template <DerivedTrait<Pawn> T>
+struct OwnedComponent : Component {
+	OwnedComponent() = delete;
+
+	OwnedComponent(T* t) : Component(t) {}
 };

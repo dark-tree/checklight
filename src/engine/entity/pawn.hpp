@@ -3,11 +3,11 @@
 #include "component.hpp"
 #include "input/input.hpp"
 #include "context.hpp"
+#include "../trait.hpp"
 
 class PawnTree;
 class Board;
 class RootPawn;
-
 
 namespace PawnState {
 	enum State{
@@ -31,6 +31,10 @@ namespace PawnState {
 	bool convert(Pawn* new_child,Pawn* new_parent);
 }
 
+/**
+ * Enables the component to bind to this enclosing pawn
+ */
+#define COMPONENT_BIND_POINT template<DerivedTrait<Component> T, typename... Args> std::shared_ptr<Component> createComponent(Args... args) { return addComponent(std::make_shared<T>(this, args...)); }
 
 class Pawn : public Entity, public std::enable_shared_from_this<Pawn> {
 protected:
@@ -94,14 +98,10 @@ public:
 	/**
 	 * Adds a new component to a pawn
 	 */
-	void addComponent(std::shared_ptr<Component>& c);
+	//todo fix
+	std::shared_ptr<Component>& addComponent(std::shared_ptr<Component> c);
 
-	/**
-	 * TODO will be removed
-	 */
-	template <typename T>
-	typename std::enable_if<std::is_base_of<Component, T>::value, void>::type
-		createComponent();
+	COMPONENT_BIND_POINT
 
 	/**
 	 * Checks if a pawn belongs to a Scene (contains a RootPawn in its parent chain)
@@ -188,4 +188,6 @@ public:
 	 * mark a Pawn and all its children as "Removed", unpin it from Pawn Tree
 	 */
 	bool remove();
+
+	std::vector<std::shared_ptr<Component>>& getComponents();
 };

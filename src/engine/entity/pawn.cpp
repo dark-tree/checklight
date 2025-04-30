@@ -231,13 +231,10 @@ Pawn::Pawn(const std::string &s) : Pawn(){
 	name = s;
 }
 
-
-void Pawn::addComponent(std::shared_ptr<Component>& c) {
-	if (c->checkValidity(*this)) {
-		c->parent = this;
-		c->onConnected();
-		components.push_back(std::move(c));
-	}
+std::shared_ptr<Component>& Pawn::addComponent(std::shared_ptr<Component> c) {
+	c->parent = this;
+	c->onConnected();
+	return components.emplace_back(c);
 }
 
 void Pawn::setBoard(Board* s) {
@@ -247,16 +244,6 @@ void Pawn::setBoard(Board* s) {
 void Pawn::propagateRemove() {
 	for(const std::shared_ptr<Pawn>& c : children){
 		c->safeRemove();
-	}
-}
-
-template <typename T>
-typename std::enable_if<std::is_base_of<Component, T>::value, void>::type
-Pawn::createComponent() {
-	std::shared_ptr<Component> c = std::make_unique<T>();
-	if (c->checkValidity(*this)) {
-		c->parent = this;
-		components.push_back(std::move(c));
 	}
 }
 
@@ -413,6 +400,10 @@ bool Pawn::remove() {
 		out::warn("Trying to remove() the same pawn more than once!");
 		return false;
 	}
+}
+
+std::vector<std::shared_ptr<Component>> & Pawn::getComponents() {
+	return components;
 }
 
 bool Pawn::safeRemove(){

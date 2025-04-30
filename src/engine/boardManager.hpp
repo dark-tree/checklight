@@ -51,7 +51,7 @@ public:
 	/**
 	 * facilitates fixed update
 	 */
-	[[noreturn]] void fixedUpdateCycle();
+	void fixedUpdateCycle();
 
 	/**
 	 * if board expires it tries to load other one if board recovery is set to true...

@@ -2,14 +2,14 @@
 #include "engine/entity/context.hpp"
 #include "engine/entity/pawns/spatialPawn.hpp"
 
-MatrixAnimation::MatrixAnimation() {
+MatrixAnimation::MatrixAnimation(SpatialPawn* s) : GameComponent(s){
 	animationSpeed = 1;
 	old_percentage = 0;
 	percentage = 0;
 	type = NONE;
 }
 
-MatrixAnimation::MatrixAnimation(MatrixAnimation::AnimationType type) {
+MatrixAnimation::MatrixAnimation(SpatialPawn* s, MatrixAnimation::AnimationType type) : GameComponent(s){
 	animationSpeed = 1;
 	old_percentage = 0;
 	percentage = 0;

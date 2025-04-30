@@ -1,5 +1,5 @@
 #pragma once
-#include "gameComponent.hpp"
+#include "game.hpp"
 #include "../pawns/spatialPawn.hpp"
 
 class Camera : public GameComponent {
@@ -35,6 +35,8 @@ protected:
 	InputResult onEvent(const InputEvent& event) override;
 
 public:
+	Camera(SpatialPawn* s);
+
 	glm::vec3 getCamPosition();
 
 	glm::vec3 getCamFacing();
@@ -42,6 +44,4 @@ public:
 	double getSpeed();
 
 	void setSpeed(double speed);
-
-	Camera();
 };

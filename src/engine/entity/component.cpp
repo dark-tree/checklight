@@ -6,10 +6,6 @@
  * Component
  */
 
-Component::Component() : Entity() {
-	parent = nullptr;
-}
-
 std::string Component::getComponentName() const {
 	return std::remove_reference_t<decltype(*this)>::class_name;
 }

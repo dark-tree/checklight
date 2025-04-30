@@ -9,6 +9,10 @@ class SurfacePawn : public Pawn {
 
 	glm::mat3x4 result;
 public:
+	SurfacePawn();
+
+	COMPONENT_BIND_POINT
+
 	/**
 	 * Translates Pawn by specified value
 	 */

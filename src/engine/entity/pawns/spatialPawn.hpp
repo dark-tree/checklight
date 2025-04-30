@@ -13,6 +13,8 @@ protected:
 public:
 	SpatialPawn();
 
+	COMPONENT_BIND_POINT
+
 	/**
 	 * Translates Pawn by specified value
 	 */
