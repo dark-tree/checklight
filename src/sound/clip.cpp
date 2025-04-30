@@ -4,8 +4,7 @@ SoundClip::SoundClip(){
 	alGetError();
 	alGenBuffers(1, &buffer);
 	
-	ALenum error;
-	if ((error = alGetError()) != AL_NO_ERROR){
+	if (alGetError() != AL_NO_ERROR){
 		std::cerr << ("Clip -> SCinit: Failed to generate buffers\n");  //throw exception
 		return;
 	}
