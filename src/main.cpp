@@ -130,7 +130,7 @@ int main() {
 	sso->setMinGain(0.0f);
 	sso->setMaxGain(1.0f);
 	SoundListener::setDistanceModel(AL_LINEAR_DISTANCE);
-	///window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>(sso1));
+	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 	while (!window.shouldClose()) {
 		window.poll();
 

@@ -24,9 +24,6 @@ private:
 	/// Vector to storing sound groups
 	std::vector<std::weak_ptr<SoundGroup>> v_groups;
 
-	/// Mutex for thread safety
-	std::mutex sound_manager_mutex;
-
 	/// Constructor
 	SoundManager();
 	/// Destructor

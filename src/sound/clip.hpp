@@ -11,7 +11,7 @@ private:
 	/// Path to the audio file
 	std::string path;
 	/// Method to convert channels to mono
-	void convertChannels(int *audio_size, int channels, short** data);
+	void convertChannels(int *audio_size, int channels, short* data);
 
 protected:
 

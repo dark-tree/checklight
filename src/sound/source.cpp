@@ -300,9 +300,8 @@ void SoundSourceObject::addBuffer(std::shared_ptr<SoundClip> clip) {
 	}
 
 	sc_buffer = clip;
-	auto lockedClip = sc_buffer.lock();
-	if (lockedClip){
-		alSourcei(source, AL_BUFFER, lockedClip->getBuffer());
+	if (sc_buffer){
+		alSourcei(source, AL_BUFFER, sc_buffer->getBuffer());
 	}
 	else {
 		std::cerr << ("Source -> addBuffer: sc_buffer doesnt exist");

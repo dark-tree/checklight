@@ -15,7 +15,7 @@ private:
 	/// Shared pointer to SoundGroup where we get offset for parameters and movement
 	std::shared_ptr<SoundGroup> sso_sg;
 	/// Weak pointer to SoundClip where we get buffer
-	std::weak_ptr<SoundClip> sc_buffer;
+	std::shared_ptr<SoundClip> sc_buffer;
 
 	/// Parameters for sound source
 
@@ -79,7 +79,7 @@ public:
 	/// Get sound group
 	std::shared_ptr<SoundGroup> getSoundGroup() const { return sso_sg; };
 	/// Get sound clip
-	std::weak_ptr<SoundClip> getSoundClip() const { return sc_buffer; };
+	std::shared_ptr<SoundClip> getSoundClip() const { return sc_buffer; };
 
 	/// Get sound source (first one)
 	ALuint getSource();

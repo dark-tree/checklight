@@ -130,7 +130,6 @@ std::shared_ptr<SoundClip>& SoundManager::createSoundClipAndAddToSourceObject(co
 }
 
 void SoundManager::playSound(const std::weak_ptr <SoundSourceObject>& sso){
-	//std::lock_guard<std::mutex> lock(sound_manager_mutex);
 
 	if (sso.expired()) {
 		std::cerr << ("SoundManager -> playSound: SoundSourceObject not exist\n");
@@ -145,7 +144,6 @@ void SoundManager::playSound(const std::weak_ptr <SoundSourceObject>& sso){
 }
 
 void SoundManager::stopSound(const std::shared_ptr <SoundSourceObject>& sso) {
-	std::lock_guard<std::mutex> lock(sound_manager_mutex);
 	if (!sso) {
 		std::cerr << ("SoundManager -> stopSound: SoundSourceObject not exist\n");
 		return;
@@ -159,7 +157,6 @@ void SoundManager::stopSound(const std::shared_ptr <SoundSourceObject>& sso) {
 }
 
 void SoundManager::pauseSound(const std::shared_ptr <SoundSourceObject>& sso) {
-	std::lock_guard<std::mutex> lock(sound_manager_mutex);
 	if (!sso) {
 		std::cerr << ("SoundManager -> pauseSound: SoundSourceObject not exist\n");
 		return;
