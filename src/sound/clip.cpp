@@ -15,6 +15,34 @@ SoundClip::~SoundClip(){
 	alDeleteBuffers(1, &buffer);
 }
 
+void SoundClip::convertChannels(int* audio_size, int channels, short** data) {
+	/// Resize to 1 channel
+	int new_audio_size = *audio_size / channels;
+	/// Get data only from 1 channel
+	short* output = (short*)malloc(new_audio_size*sizeof(short));
+	if (output == nullptr) {
+		std::cerr << ("SoundClip -> convertChannels: Memory allocation error\n");
+		free(output);
+		return;
+	}
+	int j = 0;
+	int sum_audio = 0;
+	for (int i = 0; i < *audio_size; i++) {
+		sum_audio += (*data)[i];
+		/// Check if we are at the end of the block of channels
+		/// If we are, get average of the channels and save to the output
+		/// All channels convert to mono as average of the channels
+		if (i % channels == (channels-1)) {
+			output[j] = sum_audio/channels;
+			sum_audio = 0;
+			j++;
+		}	
+	}
+	free(*data);
+	*audio_size = new_audio_size;
+	*data = output;
+}
+
 void SoundClip::loadOGGFile(const char* filename) {
 	// clean up errors
 	alGetError();
@@ -34,15 +62,7 @@ void SoundClip::loadOGGFile(const char* filename) {
 
 	/// Check of the file has more than 2 channels. If it has, convert it to mono
 	if (channels >= 2) {
-		/// Resize to 1 channel
-		size_block /= channels;
-		short* output2 = (short*) malloc(size_block*sizeof(short));
-		/// Get data only from 1 channel
-		for (int i = 0;i < size_block;i++) {
-			output2[i] = output[i * channels];
-		}
-		free(output);						//zwalnianie pamieci poprawic
-		output = output2;
+		convertChannels(&size_block, channels, &output);
 	}
 
 	ALenum format = AL_FORMAT_MONO16;
@@ -50,8 +70,8 @@ void SoundClip::loadOGGFile(const char* filename) {
 	// Create buffer
 	alBufferData(buffer, format, output, audio_size, sample_rate);
 	free(output);							//zwalnianie pamieci poprawic
-	ALenum error;
-	if ((error = alGetError()) != AL_NO_ERROR) {
+
+	if (alGetError() != AL_NO_ERROR) {
 		std::cerr << ("Clip -> loadOGGFile: Failed to load file to buffer\n");  //throw exception
 		return;
 	}
@@ -85,25 +105,30 @@ void SoundClip::loadWAVFile(const char* filename) {
 	std::ifstream wav_file(filename, std::ios::binary);
 	WAVFile wav_header;
 	/// Read header from file
-	wav_file.read(reinterpret_cast<char*>(&wav_header), sizeof(WAVFile));
+	if (!wav_file.read(reinterpret_cast<char*>(&wav_header), sizeof(WAVFile))) {
+		std::cerr << ("SoundClip -> WAV file load error\n");
+		return;
+	}
 
 	ALsizei frequency = wav_header.sample_rate;
 	/// Read all audio data without header from file
-	short* data = new short[wav_header.subchunk2_size];
-	wav_file.read(reinterpret_cast<char*>(data), wav_header.subchunk2_size);
+	short* data = (short*)malloc(wav_header.subchunk2_size*sizeof(short));
+	if (data == nullptr) {
+		std::cerr << ("SoundClip -> Memory allocation error\n");
+		free(data);
+		return;
+	}
+
+	if (!wav_file.read(reinterpret_cast<char*>(data), wav_header.subchunk2_size)) {
+		std::cerr << ("SoundClip -> WAV file load error\n");
+		free(data);
+		return;
+	}
 	ALsizei audio_size = wav_header.subchunk2_size;
 
 	/// Check of the file has more than 2 channels. If it has, convert it to mono
 	if (wav_header.num_channels >= 2) {
-		/// Resize to 1 channel
-		audio_size /= wav_header.num_channels;
-		/// Get data only from 1 channel
-		short* output = new short[audio_size];
-		for (int i = 0; i < audio_size; i++) {
-			output[i] = data[i * wav_header.num_channels];
-		}
-		delete[] data;
-		data = output;
+		convertChannels(&audio_size, wav_header.num_channels, &data);
 	}
 
 	ALenum format;
@@ -115,15 +140,14 @@ void SoundClip::loadWAVFile(const char* filename) {
 	}
 	else {
 		std::cerr << ("SoundClip -> WAV file load error\n");
-		delete[] data;
+		free(data);
 		return;
 	}
 
 	alBufferData(buffer, format, data, audio_size, frequency);
-	delete[] data;
+	free(data);
 
-	ALenum error;
-	if ((error = alGetError()) != AL_NO_ERROR) {
+	if (alGetError() != AL_NO_ERROR) {
 		std::cerr << ("Clip -> loadWAVFile: Failed to load file to buffer\n");  //throw exception
 		return;
 	}

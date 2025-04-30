@@ -1,5 +1,3 @@
-#ifndef SOUND_LISTENER_HPP
-#define SOUND_LISTENER_HPP
 #include "external.hpp"
 
 /// Class to manage the sound listener in OpenAL.
@@ -73,5 +71,3 @@ public:
 		std::cout << "  Distance Model: " << distanceModel << std::endl;
 	}
 };
-
-#endif //SOUND_LISTENER_HPP

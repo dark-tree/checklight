@@ -69,6 +69,13 @@ public:
 	/// Get direction of sound source object with offset from sound group
 	glm::vec3 getRealDirection();
 
+	/// Update source position with sound group position
+	void updatePosition();
+	/// Update source velocity with sound group velocity
+	void updateVelocity();
+	/// Update source direction with sound group direction
+	void updateDirection();
+
 	/// Get sound group
 	std::shared_ptr<SoundGroup> getSoundGroup() const { return sso_sg; };
 	/// Get sound clip
@@ -105,6 +112,19 @@ public:
 	float getConeOuterGain() const { return sso_cone_outer_gain; };
 	float getConeInnerAngle() const { return sso_cone_inner_angle; };
 	float getConeOuterAngle() const { return sso_cone_outer_angle; };
+
+	/// Update individual parameter with sound group parameter
+	void updateMute();
+	void updatePitch();
+	void updateGain();
+	void updateLooping();
+	void updateMaxDistance();
+	void updateMinMaxGain();
+	void updateRolloffFactor();
+	void updateReferenceDistance();
+	void updateConeOuterGain();
+	void updateConeInnerAngle();
+	void updateConeOuterAngle();
 
 	/// Connect sound clip to sound source
 	/// 

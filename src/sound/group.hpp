@@ -44,7 +44,6 @@ private:
 	void notifyObserversSSO(void (SoundSourceObject::* method)());
 public:
 	SoundGroup() {};
-	~SoundGroup() { observers_vector_sso.clear(); }
 
 	void addObserversSoundSourceObject(std::shared_ptr<SoundSourceObject> sso);
 

@@ -26,7 +26,7 @@ ALuint SoundSourceObject::getSource(){
 	return 0;
 }
 
-//========================MOVEMENT========================
+/// ========================MOVEMENT========================
 
 void SoundSourceObject::setPosition(float x, float y, float z)
 {
@@ -67,69 +67,215 @@ glm::vec3 SoundSourceObject::getRealDirection() {
 	return sso_direction;
 }
 
-//========================PARAMETERS========================
+void SoundSourceObject::updatePosition() {
+	if (this->sso_sg != nullptr) {
+		alSource3f(source, AL_POSITION, sso_position.x + sso_sg->getPosition().x, sso_position.y + sso_sg->getPosition().y, sso_position.z + sso_sg->getPosition().z);
+	}
+	else {
+		alSource3f(source, AL_POSITION, sso_position.x, sso_position.y, sso_position.z);
+	}
+}
+
+void SoundSourceObject::updateVelocity() {
+	if (this->sso_sg != nullptr) {
+		alSource3f(source, AL_VELOCITY, sso_velocity.x + sso_sg->getVelocity().x, sso_velocity.y + sso_sg->getVelocity().y, sso_velocity.z + sso_sg->getVelocity().z);
+	}
+	else {
+		alSource3f(source, AL_VELOCITY, sso_velocity.x, sso_velocity.y, sso_velocity.z);
+	}
+}
+
+void SoundSourceObject::updateDirection() {
+	if (this->sso_sg != nullptr) {
+		alSource3f(source, AL_DIRECTION, sso_direction.x + sso_sg->getDirection().x, sso_direction.y + sso_sg->getDirection().y, sso_direction.z + sso_sg->getDirection().z);
+	}
+	else {
+		alSource3f(source, AL_DIRECTION, sso_direction.x, sso_direction.y, sso_direction.z);
+	}
+}
+
+/// ========================PARAMETERS========================
 
 void SoundSourceObject::setMute(bool mute) {
 	sso_is_mute = mute;
-	updateParameters();
+	updateMute();
 }
 
 void SoundSourceObject::setPitch(float pitch) {
 	sso_pitch = pitch;
-	updateParameters();
+	updatePitch();
 }
 
 void SoundSourceObject::setGain(float gain) {
 	sso_gain = gain;
-	updateParameters();
+	updateGain();
 }
 
 void SoundSourceObject::setLooping(bool looping) {
 	sso_looping = looping;
-	updateParameters();
+	updateLooping();
 }
 
 void SoundSourceObject::setMaxDistance(float max_distance) {
 	sso_max_distance = max_distance;
-	updateParameters();
+	updateMaxDistance();
 }
 
 void SoundSourceObject::setMinGain(float min_gain) {
 	sso_min_gain = min_gain;
-	updateParameters();
+	updateGain();
 }
 
 void SoundSourceObject::setMaxGain(float max_gain) {
 	sso_max_gain = max_gain;
-	updateParameters();
+	updateGain();
 }
 
 void SoundSourceObject::setRolloffFactor(float rolloff_factor) {
 	sso_rolloff_factor = rolloff_factor;
-	updateParameters();
+	updateRolloffFactor();
 }
 
 void SoundSourceObject::setReferenceDistance(float reference_distance) {
 	sso_reference_distance = reference_distance;
-	updateParameters();
+	updateReferenceDistance();
 }
 
 void SoundSourceObject::setConeOuterGain(float cone_outer_gain) {
 	sso_cone_outer_gain = cone_outer_gain;
-	updateParameters();
+	updateConeOuterGain();
 }
 
 void SoundSourceObject::setConeInnerAngle(float cone_inner_angle) {
 	sso_cone_inner_angle = cone_inner_angle;
-	updateParameters();
+	updateConeInnerAngle();
 }
 
 void SoundSourceObject::setConeOuterAngle(float cone_outer_angle) {
 	sso_cone_outer_angle = cone_outer_angle;
-	updateParameters();
+	updateConeOuterAngle();
 }
 
-//========================BUFFER========================
+/// ========================UPDATE========================
+
+void SoundSourceObject::updateMute() {
+	if (this->sso_sg != nullptr) {
+		if (sso_sg->getMute() || sso_is_mute) {
+			alSourcef(source, AL_GAIN, 0);
+		}
+		else {
+			alSourcef(source, AL_GAIN, sso_sg->getGain() + sso_gain);
+		}
+	}
+	else {
+		if (sso_is_mute) {
+			alSourcef(source, AL_GAIN, 0);
+		}
+		else {
+			alSourcef(source, AL_GAIN, sso_gain);
+		}
+	}
+}
+
+void SoundSourceObject::updatePitch() {
+	if (this->sso_sg != nullptr) {
+		alSourcef(source, AL_PITCH, sso_sg->getPitch() + sso_pitch);
+	}
+	else {
+		alSourcef(source, AL_PITCH, sso_pitch);
+	}
+}
+
+void SoundSourceObject::updateGain() {
+	if (this->sso_sg != nullptr) {
+		alSourcef(source, AL_GAIN, sso_sg->getGain() + sso_gain);
+	}
+	else {
+		alSourcef(source, AL_GAIN, sso_gain);
+	}
+}
+
+void SoundSourceObject::updateLooping() {
+	if (this->sso_sg != nullptr) {
+		alSourcei(source, AL_LOOPING, sso_sg->getLooping() || sso_looping);
+	}
+	else {
+		alSourcei(source, AL_LOOPING, sso_looping);
+	}
+}
+
+void SoundSourceObject::updateMaxDistance() {
+	if (this->sso_sg != nullptr) {
+		alSourcef(source, AL_MAX_DISTANCE, sso_sg->getMaxDistance() + sso_max_distance);
+	}
+	else {
+		alSourcef(source, AL_MAX_DISTANCE, sso_max_distance);
+	}
+}
+
+void SoundSourceObject::updateMinMaxGain() {
+	if (this->sso_sg != nullptr) {
+		float max_gain = (sso_sg->getMaxGain() > sso_max_gain) ? sso_sg->getMaxGain() : sso_max_gain;
+		float min_gain = (sso_sg->getMinGain() <= sso_min_gain) ? sso_sg->getMinGain() : sso_min_gain;
+
+		if (min_gain > max_gain) {
+			std::cerr << ("Source -> updateParameters: min_gain is bigger than max_gain\n");
+		}
+		alSourcef(source, AL_MAX_GAIN, max_gain);
+		alSourcef(source, AL_MIN_GAIN, min_gain);
+	}
+	else {
+		alSourcef(source, AL_MIN_GAIN, sso_min_gain);
+		alSourcef(source, AL_MAX_GAIN, sso_max_gain);
+	}
+}
+
+void SoundSourceObject::updateRolloffFactor() {
+	if (this->sso_sg != nullptr) {
+		alSourcef(source, AL_ROLLOFF_FACTOR, sso_sg->getRolloffFactor() + sso_rolloff_factor);
+	}
+	else {
+		alSourcef(source, AL_ROLLOFF_FACTOR, sso_rolloff_factor);
+	}
+}
+
+void SoundSourceObject::updateReferenceDistance() {
+	if (this->sso_sg != nullptr) {
+		alSourcef(source, AL_REFERENCE_DISTANCE, sso_sg->getReferenceDistance() + sso_reference_distance);
+	}
+	else {
+		alSourcef(source, AL_REFERENCE_DISTANCE, sso_reference_distance);
+	}
+}
+
+void SoundSourceObject::updateConeOuterGain() {
+	if (this->sso_sg != nullptr) {
+		alSourcef(source, AL_CONE_OUTER_GAIN, sso_sg->getConeOuterGain() + sso_cone_outer_gain);
+	}
+	else {
+		alSourcef(source, AL_CONE_OUTER_GAIN, sso_cone_outer_gain);
+	}
+}
+
+void SoundSourceObject::updateConeInnerAngle() {
+	if (this->sso_sg != nullptr) {
+		alSourcef(source, AL_CONE_INNER_ANGLE, sso_sg->getConeInnerAngle() + sso_cone_inner_angle);
+	}
+	else {
+		alSourcef(source, AL_CONE_INNER_ANGLE, sso_cone_inner_angle);
+	}
+}
+
+void SoundSourceObject::updateConeOuterAngle() {
+	if (this->sso_sg != nullptr) {
+		alSourcef(source, AL_CONE_OUTER_ANGLE, sso_sg->getConeOuterAngle() + sso_cone_outer_angle);
+	}
+	else {
+		alSourcef(source, AL_CONE_OUTER_ANGLE, sso_cone_outer_angle);
+	}
+}
+
+/// ========================BUFFER========================
 
 void SoundSourceObject::addBuffer(SoundClip clip){
 	ALuint buffer = clip.getBuffer();
@@ -171,7 +317,7 @@ void SoundSourceObject::addBuffer(std::shared_ptr<SoundClip> clip) {
 	}
 }
 
-//========================SOUND GROUP========================
+///========================SOUND GROUP========================
 
 void SoundSourceObject::addGroupParameters(std::shared_ptr<SoundGroup> sg) {
 	this->sso_sg = sg;
@@ -184,28 +330,27 @@ void SoundSourceObject::updateParameters() {
 	if (this->sso_sg != nullptr){
 		alSourcef(source, AL_PITCH, sso_sg->getPitch() + sso_pitch);
 
-		if (sso_sg->getMute() || sso_is_mute){
-			alSourcef(source, AL_GAIN,0);
-		}
-		else
-			alSourcef(source, AL_GAIN, sso_sg->getGain() + sso_gain);
 		alSourcei(source, AL_LOOPING, sso_sg->getLooping() || sso_looping);
 
-		float max_gain = (sso_sg->getMaxGain() > sso_max_distance) ? sso_sg->getMaxGain() : sso_max_gain;
-		float min_gain = (sso_sg->getMinGain() <= sso_max_distance) ? sso_sg->getMinGain() : sso_min_gain;
+		float max_gain = (sso_sg->getMaxGain() > sso_max_gain) ? sso_sg->getMaxGain() : sso_max_gain;
+		float min_gain = (sso_sg->getMinGain() <= sso_min_gain) ? sso_sg->getMinGain() : sso_min_gain;
 
-		if (min_gain > max_gain)
+		if (min_gain > max_gain) {
 			std::cerr << ("Source -> updateParameters: min_gain is bigger than max_gain\n");
+		}
 				
-		alSourcef(source, AL_MAX_DISTANCE, max_gain);
-		alSourcef(source, AL_MAX_DISTANCE, min_gain);
+		alSourcef(source, AL_MAX_GAIN, max_gain);
+		alSourcef(source, AL_MIN_GAIN, min_gain);
 
-		//@TODO zastanowic sie nad tymi parametrami
+		alSourcef(source, AL_MAX_DISTANCE, sso_sg->getMaxDistance() + sso_max_distance);
 		alSourcef(source, AL_ROLLOFF_FACTOR, sso_sg->getRolloffFactor() + sso_rolloff_factor);
 		alSourcef(source, AL_REFERENCE_DISTANCE, sso_sg->getReferenceDistance() + sso_reference_distance);
 		alSourcef(source, AL_CONE_OUTER_GAIN, sso_sg->getConeOuterGain() + sso_cone_outer_gain);
 		alSourcef(source, AL_CONE_INNER_ANGLE, sso_sg->getConeInnerAngle() + sso_cone_inner_angle);
 		alSourcef(source, AL_CONE_OUTER_ANGLE, sso_sg->getConeOuterAngle() + sso_cone_outer_angle);
+		if (sso_sg->getMute() || sso_is_mute) {
+			alSourcef(source, AL_GAIN, 0);
+		}
 	}
 	else {
 		alSourcef(source, AL_PITCH, sso_pitch);
@@ -219,25 +364,28 @@ void SoundSourceObject::updateParameters() {
 		alSourcef(source, AL_CONE_OUTER_GAIN, sso_cone_outer_gain);
 		alSourcef(source, AL_CONE_INNER_ANGLE, sso_cone_inner_angle);
 		alSourcef(source, AL_CONE_OUTER_ANGLE, sso_cone_outer_angle);
+		if (sso_is_mute) {
+			alSourcef(source, AL_GAIN, 0);
+		}
 	}
 }
 
 void SoundSourceObject::updateMovement() {
 	if (this->sso_sg != nullptr) {
-		glm::vec3 actual_position = { 0.0f,0.0f,0.0f };
+		glm::vec3 actual_position;
 		actual_position.x= sso_position.x + sso_sg->getPosition().x;
 		actual_position.y = sso_position.y + sso_sg->getPosition().y;
 		actual_position.z = sso_position.z + sso_sg->getPosition().z;
 		alSource3f(source, AL_POSITION, actual_position.x, actual_position.y, actual_position.z);
 
-		glm::vec3 actual_velocity = { 0.0f,0.0f,0.0f };
+		glm::vec3 actual_velocity;
 		actual_velocity.x = sso_velocity.x + sso_sg->getVelocity().x;
 		actual_velocity.y = sso_velocity.y + sso_sg->getVelocity().y;
 		actual_velocity.z = sso_velocity.z + sso_sg->getVelocity().z;
 
 		alSource3f(source, AL_VELOCITY, actual_velocity.x, actual_velocity.y, actual_velocity.z);
 			
-		glm::vec3 actual_direction = { 0.0f,0.0f,0.0f };
+		glm::vec3 actual_direction;
 		actual_direction.x = sso_direction.x + sso_sg->getDirection().x;
 		actual_direction.y = sso_direction.y + sso_sg->getDirection().y;
 		actual_direction.z = sso_direction.z + sso_sg->getDirection().z;
@@ -250,7 +398,7 @@ void SoundSourceObject::updateMovement() {
 	}
 }
 
-//========================CONTROLLS========================
+///========================CONTROLLS========================
 
 void SoundSourceObject::playSound(){
 	if (!alIsSource(source)) {
