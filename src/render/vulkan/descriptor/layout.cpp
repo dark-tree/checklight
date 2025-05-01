@@ -26,7 +26,11 @@ void DescriptorSetLayout::appendUsedTypes(std::vector<VkDescriptorType>& vector)
 
 	for (DescriptorType type : types) {
 		if (type.enabled) {
-			vector.push_back(type.vk_type);
+			vector.reserve(vector.size() + type.count);
+
+			for (int i = 0; i < type.count; i++) {
+				vector.push_back(type.vk_type);
+			}
 		}
 	}
 }
@@ -39,10 +43,11 @@ VkDescriptorSetLayout DescriptorSetLayout::getHandle() const {
  * DescriptorSetLayoutBuilder
  */
 
-void DescriptorSetLayoutBuilder::addBindingTypeMapping(uint32_t index, VkDescriptorType type) {
+void DescriptorSetLayoutBuilder::addBindingTypeMapping(uint32_t index, VkDescriptorType type, int count) {
 	types.resize(index + 1);
 	DescriptorType& descriptor = types[index];
 
+	descriptor.count = count;
 	descriptor.vk_type = type;
 	descriptor.enabled = true;
 }
@@ -63,7 +68,7 @@ DescriptorSetLayoutBuilder& DescriptorSetLayoutBuilder::descriptor(uint32_t inde
 	binding.descriptorCount = count;
 
 	bindings.push_back(binding);
-	addBindingTypeMapping(index, type);
+	addBindingTypeMapping(index, type, count);
 	indices.insert(index);
 
 	return *this;

@@ -14,6 +14,7 @@ const char* Logger::getLevelName(Level level) {
 		case INFO: return "INFO";
 		case WARNING: return "WARN";
 		case ERROR: return "ERROR";
+		default: return "UNKNOWN";
 	}
 
 	UNREACHABLE;

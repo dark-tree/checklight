@@ -53,7 +53,7 @@ void VertexChannel::pushSync() {
 
 bool VertexChannel::draw(PushConstant& push, CommandRecorder& recorder) {
 	if (!buffer.isEmpty()) {
-		for (; command_index < commands.size(); command_index ++) {
+		for (; command_index < (int) commands.size(); command_index ++) {
 			Command& command = commands[command_index];
 
 			if (command.count != 0) {
