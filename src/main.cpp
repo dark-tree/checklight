@@ -157,6 +157,7 @@ static void entry(Args& args) {
 	system.getParameters().setDenoise(true);
 	system.getParameters().setShadows(true);
 	system.getParameters().setGISamples(1);
+	system.getParameters().setPortalGIEnable(false);
 
 	system.getLightManager().createDirectionalLight(
 		{0.0, 3.5, -1.0},
