@@ -76,8 +76,8 @@ void AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator,
 	int alignment = RenderSystem::system->physical->getScratchBufferAlignment();
 
 	// prepare scratch buffer
-	reserveScratchSpace(allocator, batch_scratch);
-	reserveQueryPool(device, elements.size() + alignment);
+	reserveScratchSpace(allocator, batch_scratch + alignment);
+	reserveQueryPool(device, elements.size());
 	VkDeviceAddress address = math::alignUp(device.getAddress(scratch), alignment);
 
 	// prepare all acceleration structures for building
