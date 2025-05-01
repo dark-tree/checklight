@@ -1,5 +1,6 @@
 
 #include <gui/context.hpp>
+#include <gui/debug/render.hpp>
 #include <gui/theme/dark.hpp>
 #include <gui/theme/light.hpp>
 #include <gui/widget/panel.hpp>
@@ -16,83 +17,29 @@
 
 static void entry(Args& args) {
 
+	// Basic information about the program being run
 	ApplicationParameters parameters;
 	parameters.setName("My Checklight Game!");
 	parameters.setDimensions(1200, 800);
 
+	// Open the window and start the vulkan renderer
 	RenderSystem::init(parameters);
 	Models::init();
 
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
+	RenderParameters& options = system.getParameters();
 
+	// Configure the renderer
+	options.setAmbientLight(glm::vec3(0.0, 0.0, 0.0));
+	options.setDenoise(true);
+	options.setShadows(true);
+	options.setGISamples(1);
+	options.setPortalGIEnable(false);
+
+	// Simple overlay to play with render options
 	AutoTheme theme {};
-	auto context = std::make_shared<WidgetContext>();
-	auto panel = theme.newRoot(20, 20);
-	auto text = theme.newText("Język lechicki z grupy zachodniosłowiańskiej");
-
-	{
-
-		auto left = theme.newPanel();
-		left->flow = Flow::TOP_TO_BOTTOM;
-		left->gap = Unit::px(10);
-
-		auto sub2 = theme.newButton("Apply");
-		auto slider = theme.newSlider();
-
-		sub2->onClick([=] () {
-			out::info("Clicked left button!");
-			text->setText("Slider value: " + std::to_string(int(100 * slider->getValue())));
-		});
-
-		left->addWidget(sub2);
-		left->addWidget(slider);
-
-		slider->onChange([] (float value) {
-			out::info("Slider value changed to: %f", value);
-		});
-
-		auto select = theme.newSelect({"EEVEE", "Cycles", "Checklight"});
-		auto field = theme.newTextField();
-
-		left->addWidget(select);
-		left->addWidget(field);
-
-		panel->addWidget(left);
-	}
-
-	{
-		auto sub = theme.newImage("assets/image/corners.png");
-		panel->addWidget(sub);
-
-		sub->width = Unit::px(100);
-		sub->height = Unit::px(100);
-		sub->min_width = Unit::px(100);
-		sub->min_height = Unit::px(100);
-		sub->background = {100, 100, 100};
-		sub->radius = Unit::px(10);
-		sub->border = Unit::px(2);
-		sub->border_color = {0, 0, 0};
-		sub->padding = Unit::px(10);
-		sub->margin = Unit::px(10);
-	}
-
-	{
-		auto sub = theme.newPanel();
-		panel->addWidget(sub);
-
-		sub->background = {250, 100, 100};
-		sub->addWidget(text);
-	}
-
-	panel->flow = Flow::LEFT_TO_RIGHT;
-	panel->padding = Unit::px(10);
-	panel->gap = Unit::px(20);
-	panel->vertical = VerticalAlignment::CENTER;
-	panel->horizontal = HorizontalAlignment::CENTER;
-	// panel->width = Unit::px(400);
-
-	context->setRoot(panel);
+	auto context = RenderSystemOverlay::create(theme);
 
 	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 	window.getInputDispatcher().registerListener(std::dynamic_pointer_cast<InputListener>(context));
@@ -153,12 +100,6 @@ static void entry(Args& args) {
 		objects.push_back(object);
 	}
 
-	system.getParameters().setAmbientLight(glm::vec3(0.0, 0.0, 0.0));
-	system.getParameters().setDenoise(true);
-	system.getParameters().setShadows(true);
-	system.getParameters().setGISamples(1);
-	system.getParameters().setPortalGIEnable(false);
-
 	system.getLightManager().createDirectionalLight(
 		{0.0, 3.5, -1.0},
 		{1.0, 1.0, 1.0},
@@ -180,6 +121,7 @@ static void entry(Args& args) {
 		manager.updateCycle();
 		std::shared_ptr<Board> current_board = manager.getCurrentBoard().lock();
 
+		// draw render system overlay
 		context->draw(system.getImmediateRenderer());
 
 		//drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());

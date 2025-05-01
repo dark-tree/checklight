@@ -152,6 +152,7 @@ void SelectWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
 void SelectWidget::drawDropdown(ImmediateRenderer& immediate) {
 
+	immediate.setStroke(OFF);
 	immediate.setRectRadius(0);
 
 	for (int i = 0; i < (int) options.size(); i ++) {
