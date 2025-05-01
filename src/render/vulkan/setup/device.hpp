@@ -24,6 +24,7 @@ class PhysicalDevice {
 
 		// properties
 		VkPhysicalDeviceRayTracingPipelinePropertiesKHR ray_properties;
+		VkPhysicalDeviceAccelerationStructurePropertiesKHR accel_properties;
 
 		VkPhysicalDeviceProperties2KHR properties;
 		VkPhysicalDeviceFeatures2KHR features;
@@ -105,6 +106,11 @@ class PhysicalDevice {
 		 * Get the supported sampling count that is the closest to the preferred value
 		 */
 		VkSampleCountFlagBits getSampleCount(VkSampleCountFlagBits preferred) const;
+
+		/**
+		 * Get alignment requirement of the Acceleration Structure Scratch buffer
+		 */
+		int getScratchBufferAlignment() const;
 
 };
 

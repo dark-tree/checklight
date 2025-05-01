@@ -11,11 +11,11 @@ layout(location = 0) rayPayloadEXT HitPayload rPayload;
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT TLAS;
 layout(binding = 1, set = 0, rgba32f) uniform image2D colorImage;              // W
-layout(binding = 6, set = 0, rgba32f) uniform image2D illuminationImage;       // W
-layout(binding = 7, set = 0, rgba32f) uniform image2D prevIlluminationImage;   // R
-layout(binding = 8, set = 0, rgba32f) uniform image2D normalImage;             // W
-layout(binding = 9, set = 0, rgba32f) uniform image2D prevNormalImage;         // R
-layout(binding = 10, set = 0, rgba32f) uniform image2D solidIlluminationImage; // W
+layout(binding = 6, set = 0, rgba16f) uniform image2D illuminationImage;       // W
+layout(binding = 7, set = 0, rgba16f) uniform image2D prevIlluminationImage;   // R
+layout(binding = 8, set = 0, rgba16f) uniform image2D normalImage;             // W
+layout(binding = 9, set = 0, rgba16f) uniform image2D prevNormalImage;         // R
+layout(binding = 10, set = 0, rgba16f) uniform image2D solidIlluminationImage; // W
 layout(binding = 11, set = 0, rgba32f) uniform image2D worldPosImage;          // W
 layout(binding = 12, set = 0, rgba32f) uniform image2D prevWorldPosImage;      // R
 
