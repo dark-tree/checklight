@@ -371,7 +371,7 @@ bool Pawn::remove() {
 		FAULT("Cant remove root pawn!");
 	}
 	if(!to_remove){
-#ifdef ENGINE_DEBUG
+#if ENGINE_DEBUG
 		if(pawn_state == PawnState::REMOVED)
 			FAULT("Pawn state is REMOVED before using remove() function on it");
 #endif
@@ -392,7 +392,7 @@ bool Pawn::remove() {
 		return true;
 	}
 	else{
-#ifdef ENGINE_DEBUG
+#if ENGINE_DEBUG
 		for(const auto& c : components){
 			if(c->to_remove) FAULT("all children should be removed in a pawn described as removed!");
 		}
@@ -407,13 +407,13 @@ std::vector<std::shared_ptr<Component>> & Pawn::getComponents() {
 }
 
 bool Pawn::safeRemove(){
-#ifdef ENGINE_DEBUG
+#if ENGINE_DEBUG
 	if(isRoot()){
 		FAULT("This shouldn't be root as its as this function should only be called for children of removed pawn");
 	}
 #endif
 	if(to_remove){
-#ifdef ENGINE_DEBUG
+#if ENGINE_DEBUG
 		if(pawn_state == PawnState::REMOVED)
 			FAULT("Pawn state is REMOVED before using remove() function on it");
 #endif

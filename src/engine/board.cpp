@@ -14,7 +14,7 @@ Board::Board() {
 }
 
 void Board::queueRemove(const std::shared_ptr<Pawn>& pToRemove) {
-#ifdef ENGINE_DEBUG
+#if ENGINE_DEBUG
 	if(pToRemove->to_remove && pToRemove->getState() != PawnState::REMOVED){
 		FAULT("Pawn unprepared to be removed!");
 	}
@@ -165,7 +165,7 @@ void Board::dequeueRemove(size_t amount) {
 
 		(*to_be_removed)->parent.reset();
 
-#ifdef ENGINE_DEBUG
+#if ENGINE_DEBUG
 		if(!to_be_removed->get()->is_tracked_on_hash){ //pawn should die here
 			std::weak_ptr<Pawn> check = *to_be_removed;
 			pawns_to_remove->pop();
@@ -185,7 +185,7 @@ void Board::dequeueRemove(size_t amount) {
 	for(size_t i = 0; i < (pawns_to_remove_from_hashmap->size() > amount ? amount : pawns_to_remove_from_hashmap->size()); i++){
 		std::shared_ptr<Pawn>* to_be_removed = &pawns_to_remove_from_hashmap->front();
 
-#ifdef ENGINE_DEBUG
+#if ENGINE_DEBUG
 		if(!to_be_removed->get()->is_tracked_on_hash){
 			FAULT("Trying to remove pawn from hashmap that is explicitly mark for net being in the hashmap");
 		}
