@@ -1,7 +1,7 @@
-
 #include "render/render.hpp"
 #include "input/input.hpp"
 #include "engine/engine.hpp"
+#include "sound/sound.hpp"
 
 static void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
 	immediate.setSprite("assets/image/corners.png");
@@ -52,6 +52,7 @@ static void drawUserInterface(ImmediateRenderer& immediate, float width, float h
 }
 
 int main() {
+	
 
 	std::string path = std::filesystem::current_path().generic_string();
 	printf("INFO: Current working directory: %s\n", path.c_str());
@@ -65,7 +66,7 @@ int main() {
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
 
-	//window.getInputDispatcher().registerListener( std::make_shared<DebugInputListener>());
+	
 	auto models = system.importObj("assets/models/checklight.obj");
 	auto cube = system.importObj("assets/models/cube.obj");
 
@@ -117,6 +118,19 @@ int main() {
 		.shadow = true
 	});
 
+	SoundListener::setPosition(0, 0, 0);
+	SoundManager& sm = SoundManager::getInstance();
+	auto sso = std::make_shared<SoundSourceObject>();
+	sm.addSource(sso);
+	sm.createSoundClipAndAddToSourceObject("assets/sounds/testOGG.ogg", sso);
+	sso->setPosition(0.0f, 4.8f, 0.0f);
+	sso->setMaxDistance(10.0f);
+	sso->setReferenceDistance(1.0f);
+	sso->setRolloffFactor(1.0f);
+	sso->setMinGain(0.0f);
+	sso->setMaxGain(1.0f);
+	SoundListener::setDistanceModel(AL_LINEAR_DISTANCE);
+	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 	while (!window.shouldClose()) {
 		window.poll();
 
@@ -135,9 +149,12 @@ int main() {
 		point_light->position = glm::vec3(3.0, 2.0, 18.0 * sin(glfwGetTime() / 8));
 		point_light->color = glm::vec3(sin(glfwGetTime() / 2) * 0.5 + 0.5, sin(glfwGetTime() / 3 + 2) * 0.5 + 0.5, sin(glfwGetTime() / 5 + 4) * 0.5 + 0.5);
 		system.getLightManager().flush();
-
+		
 		// render the scene
 		system.draw();
+		sm.playSound(sso);
+		SoundListener::setPosition(current_board->getCamPos());
+		SoundListener::setOrientation(current_board->getCamForward(),glm::vec3(0.0f,1.0f,0.0f));
 	}
 
 	system.wait();
