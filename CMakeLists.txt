@@ -11,7 +11,6 @@ set(FETCHCONTENT_QUIET OFF)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 include(${CMAKE_SOURCE_DIR}/cmake/ShaderBuild.cmake)
 
-find_package(Python REQUIRED COMPONENTS Interpreter)
 find_package(Threads REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(Vulkan REQUIRED)
