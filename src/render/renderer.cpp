@@ -116,15 +116,13 @@ void Renderer::pickDevice() {
 		VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME
 	};
 
-	std::vector<const char*> optional_extensions = {
-	};
-
 	std::vector<std::string> debug;
 
 	for (auto& device : devices) {
 
 		out::info("Checking device '%s'...", device->getName());
 		bool fail = false;
+		bool multisampling = false;
 
 		// we need the device to be able to render to our window
 		if (!device->canUseSurface(surface)) {
@@ -138,25 +136,6 @@ void Renderer::pickDevice() {
 				out::logger.print(" * Missing required extension '%s'!\n", name);
 				fail = true;
 			}
-		}
-
-		bool mixed_sampling = false;
-
-		// AMD
-		if (device->hasExtension(VK_AMD_MIXED_ATTACHMENT_SAMPLES_EXTENSION_NAME)) {
-			required_extensions.push_back(VK_AMD_MIXED_ATTACHMENT_SAMPLES_EXTENSION_NAME);
-			mixed_sampling = true;
-		}
-
-		// NVIDIA
-		if (device->hasExtension(VK_NV_FRAMEBUFFER_MIXED_SAMPLES_EXTENSION_NAME)) {
-			required_extensions.push_back(VK_NV_FRAMEBUFFER_MIXED_SAMPLES_EXTENSION_NAME);
-			mixed_sampling = true;
-		}
-
-		if (!mixed_sampling) {
-			out::logger.print(" * Neither '%s' nor '%s' extensions are supported!\n", VK_AMD_MIXED_ATTACHMENT_SAMPLES_EXTENSION_NAME, VK_NV_FRAMEBUFFER_MIXED_SAMPLES_EXTENSION_NAME);
-			fail = true;
 		}
 
 		auto* features_base = (const VkPhysicalDeviceFeatures2*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2);
@@ -209,9 +188,12 @@ void Renderer::pickDevice() {
 			fail = true;
 		}
 
-		if (!features_base->features.shaderStorageImageMultisample) {
-			out::logger.print(" * Feature 'shader storage image multisample' unsupported!\n");
-			fail = true;
+		// AMD
+		if (device->hasExtension(VK_AMD_MIXED_ATTACHMENT_SAMPLES_EXTENSION_NAME)) {
+			if (!features_base->features.shaderStorageImageMultisample) {
+				required_extensions.push_back(VK_AMD_MIXED_ATTACHMENT_SAMPLES_EXTENSION_NAME);
+				multisampling = true;
+			}
 		}
 
 		if (fail) {
@@ -232,7 +214,7 @@ void Renderer::pickDevice() {
 			}
 
 			// we found the one, continue with this device and family
-			createDevice(std::move(device), queue_family, required_extensions, optional_extensions);
+			createDevice(std::move(device), queue_family, required_extensions, multisampling);
 			return;
 		}
 
@@ -242,18 +224,8 @@ void Renderer::pickDevice() {
 	FAULT("No device could have been selected!");
 }
 
-void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family queue_family, std::vector<const char*>& extensions, std::vector<const char*>& optionals) {
+void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family queue_family, std::vector<const char*>& extensions, bool multisampling) {
 	out::info("Selected '%s' (queue #%d)", physical->getName(), queue_family.getIndex());
-
-	// enable supported optional extensions
-	for (auto name : optionals) {
-		if (!physical->hasExtension(name)) {
-			out::warn("Missing optional extension '%s'!", name);
-			continue;
-		}
-
-		extensions.emplace_back(name);
-	}
 
 	// we use only one queue at this time
 	const float priority = 1.0f;
@@ -285,7 +257,7 @@ void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family que
 	features_vk12.storageBuffer8BitAccess = true; // needed for the shader RGBA block
 	features_vk12.shaderInt8 = true; // needed for the shader RGBA block
 	features_vk12.runtimeDescriptorArray = true; // needed for the shader
-	features_vk12.shaderSampledImageArrayNonUniformIndexing = true; // needed for the shader
+	features_vk12.shaderSampledImageArrayNonUniformIndexing = multisampling; // needed for the shader
 
 	// Basic device features
 	VkPhysicalDeviceFeatures2KHR features {};
@@ -317,6 +289,16 @@ void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family que
 	this->device = {vk_device, physical};
 	this->family = queue_family;
 	this->physical = std::move(physical);
+
+	// msaa is what will be really used for rendering
+	// change the getSampleCount argument to control intend
+	msaa = multisampling ? physical->getSampleCount(VK_SAMPLE_COUNT_8_BIT) : VK_SAMPLE_COUNT_1_BIT;
+
+	if (msaa > VK_SAMPLE_COUNT_1_BIT) {
+		out::info("Multisampling supported, using %d samples!", msaa);
+	} else {
+		out::error("Multisampling is not supported!");
+	}
 
 	#if ENGINE_DEBUG
 		Proxy::loadDebugDeviceFunctions(this->device);
@@ -981,10 +963,6 @@ Renderer::Renderer(ApplicationParameters& parameters)
 
 	// render pass used during mesh rendering
 	mesh_constant = createPushConstant(VK_SHADER_STAGE_VERTEX_BIT, sizeof(MeshConstant));
-
-	// msaa is what will be really used for rendering
-	// change the getSampleCount argument to control intend
-	msaa = physical->getSampleCount(VK_SAMPLE_COUNT_8_BIT);
 
 	createAttachments();
 	createRenderPasses();

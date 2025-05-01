@@ -166,7 +166,7 @@ class Renderer {
 		void pickDevice();
 
 		/// Loads the LogicalDevice, and Family
-		void createDevice(std::shared_ptr<PhysicalDevice> device, Family queue_family, std::vector<const char*>& extensions, std::vector<const char*>& optional);
+		void createDevice(std::shared_ptr<PhysicalDevice> device, Family queue_family, std::vector<const char*>& extensions, bool multisampling);
 
 		void createShaders();
 		void createAttachments();
