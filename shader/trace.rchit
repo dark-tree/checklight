@@ -39,9 +39,8 @@ struct RenderObjectData {
 
 struct Light {
 	uint type;
-	vec3 position;
+	vec3 vector;
 	vec3 color;
-	vec3 direction;
 	float intensity;
 	bool shadow;
 };
@@ -162,7 +161,7 @@ void main() {
 			vec3 lightColor = light.color * light.intensity;
 			
 			if (light.type == LIGHT_TYPE_DIRECTIONAL) {
-				vec3 lightDirection = normalize(light.direction);
+				vec3 lightDirection = normalize(light.vector);
 				bool inShadow = false;
 
 				if (light.shadow && uSceneObject.shadows) {
@@ -175,8 +174,8 @@ void main() {
 				}
 			}
 			else if (light.type == LIGHT_TYPE_POINT) {
-				vec3 lightDirection = normalize(light.position - positionWS);
-				float distance = length(light.position - positionWS);
+				vec3 lightDirection = normalize(light.vector - positionWS);
+				float distance = length(light.vector - positionWS);
 				bool inShadow = false;
 
 				if (light.shadow && uSceneObject.shadows) {

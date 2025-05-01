@@ -158,21 +158,19 @@ static void entry(Args& args) {
 	system.getParameters().setShadows(true);
 	system.getParameters().setGISamples(1);
 
-	system.getLightManager().addLight({
-		.type = Light::DIRECTIONAL,
-		.color = glm::vec3(1.0, 1.0, 1.0),
-		.direction = glm::vec3(0.0, 3.5, -1.0),
-		.intensity = 1.5,
-		.shadow = true
-	});
+	system.getLightManager().createDirectionalLight(
+		{0.0, 3.5, -1.0},
+		{1.0, 1.0, 1.0},
+		1.5,
+		true
+	);
 
-	auto point_light = system.getLightManager().addLight({
-		.type = Light::POINT,
-		.position = glm::vec3(3.0, 2.0, 18.0),
-		.color = glm::vec3(0.0, 0.0, 1.0),
-		.intensity = 50.0,
-		.shadow = true
-	});
+	auto point_light = system.getLightManager().createPointLight(
+		{3.0, 2.0, 18.0},
+		{0.0, 0.0, 1.0},
+		50.0,
+		true
+	);
 
 	while (!window.shouldClose()) {
 		window.poll();
@@ -191,7 +189,7 @@ static void entry(Args& args) {
 		system.setViewMatrix(current_board->getCamPos(), current_board->getCamForward());
 
 		// update lights
-		point_light->position = glm::vec3(3.0, 2.0, 18.0 * sin(glfwGetTime() / 8));
+		point_light->vector = glm::vec3(3.0, 2.0, 18.0 * sin(glfwGetTime() / 8));
 		point_light->color = glm::vec3(sin(glfwGetTime() / 2) * 0.5 + 0.5, sin(glfwGetTime() / 3 + 2) * 0.5 + 0.5, sin(glfwGetTime() / 5 + 4) * 0.5 + 0.5);
 		system.getLightManager().flush();
 

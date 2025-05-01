@@ -362,7 +362,7 @@ void Renderer::createShaders() {
 	shader_trace_shadow_miss = Shader::loadFromFile(device, "shadow.rmiss", VK_SHADER_STAGE_MISS_BIT_KHR);
 	shader_trace_hit = Shader::loadFromFile(device, "trace.rchit", VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
 	shader_blit_vertex = Shader::loadFromFile(device, "blit.vert", VK_SHADER_STAGE_VERTEX_BIT);
-	shader_blit_fragment = Shader::loadFromFile(device, "blit.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+	shader_blur_fragment = Shader::loadFromFile(device, "blur.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 	shader_denoise_fragment = Shader::loadFromFile(device, "denoise.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 	shader_denoise2_fragment = Shader::loadFromFile(device, "denoise2.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 
@@ -684,7 +684,7 @@ void Renderer::createPipelines() {
 		.withScissors(0, 0, extent.width, extent.height)
 		.withCulling(false)
 		.withRenderPass(pass_compose, 0)
-		.withShaders(shader_blit_vertex, shader_blit_fragment)
+		.withShaders(shader_blit_vertex, shader_blur_fragment)
 		.withDescriptorSetLayout(layout_compose)
 		.withDepthTest(VK_COMPARE_OP_ALWAYS, true, true)
 		.build();
@@ -1017,7 +1017,7 @@ Renderer::~Renderer() {
 	shader_trace_shadow_miss.close();
 	shader_trace_hit.close();
 	shader_blit_vertex.close();
-	shader_blit_fragment.close();
+	shader_blur_fragment.close();
 	shader_denoise_fragment.close();
 	shader_denoise2_fragment.close();
 

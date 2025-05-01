@@ -96,7 +96,7 @@ class Renderer {
 		Shader shader_trace_shadow_miss;
 		Shader shader_trace_hit;
 		Shader shader_blit_vertex;
-		Shader shader_blit_fragment;
+		Shader shader_blur_fragment;
 		Shader shader_denoise_fragment;
 		Shader shader_denoise2_fragment;
 
