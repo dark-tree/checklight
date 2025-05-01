@@ -506,11 +506,18 @@ void Renderer::createRenderPasses() {
 			.then(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_MEMORY_READ_BIT)
 			.next();
 
-		builder.addSubpass()
-			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-			.addResolve(screen, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.next();
+		if (msaa >= VK_SAMPLE_COUNT_1_BIT) {
+			builder.addSubpass()
+				.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+				.addResolve(screen, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.next();
+		} else {
+			builder.addSubpass()
+				.addOutput(screen, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+				.next();
+		}
 
 		pass_immediate = builder.build(device, "Immediate");
 
