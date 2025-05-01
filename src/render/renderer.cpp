@@ -144,53 +144,53 @@ void Renderer::pickDevice() {
 		auto* features_accel = (const VkPhysicalDeviceAccelerationStructureFeaturesKHR*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR);
 
 		if (!features_vk12->bufferDeviceAddress) {
-			out::logger.print(" * Feature 'buffer device address' unsupported!\n");
+			out::logger.print(" * Feature 'bufferDeviceAddress' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_ray->rayTracingPipeline) {
-			out::logger.print(" * Feature 'ray tracing pipeline' unsupported!\n");
+			out::logger.print(" * Feature 'rayTracingPipeline' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_accel->accelerationStructure) {
-			out::logger.print(" * Feature 'acceleration structure' unsupported!\n");
+			out::logger.print(" * Feature 'accelerationStructure' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_vk12->scalarBlockLayout) {
-			out::logger.print(" * Feature 'scalar block layout' unsupported!\n");
+			out::logger.print(" * Feature 'scalarBlockLayout' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_vk12->storageBuffer8BitAccess) {
-			out::logger.print(" * Feature 'storage buffer 8bit access' unsupported!\n");
+			out::logger.print(" * Feature 'storageBuffer8BitAccess' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_vk12->shaderInt8) {
-			out::logger.print(" * Feature 'shader int8_t' unsupported!\n");
+			out::logger.print(" * Feature 'shaderInt8' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_vk12->runtimeDescriptorArray) {
-			out::logger.print(" * Feature 'runtime descriptor array' unsupported!\n");
+			out::logger.print(" * Feature 'runtimeDescriptorArray' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_vk12->shaderSampledImageArrayNonUniformIndexing) {
-			out::logger.print(" * Feature 'shader sampled image array non uniform indexing' unsupported!\n");
+			out::logger.print(" * Feature 'shaderSampledImageArrayNonUniformIndexing' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_base->features.shaderInt64) {
-			out::logger.print(" * Feature 'shader int64_t' unsupported!\n");
+			out::logger.print(" * Feature 'shaderInt64' unsupported!\n");
 			fail = true;
 		}
 
 		// AMD
 		if (device->hasExtension(VK_AMD_MIXED_ATTACHMENT_SAMPLES_EXTENSION_NAME)) {
-			if (!features_base->features.shaderStorageImageMultisample) {
+			if (features_base->features.shaderStorageImageMultisample) {
 				required_extensions.push_back(VK_AMD_MIXED_ATTACHMENT_SAMPLES_EXTENSION_NAME);
 				multisampling = true;
 			}
@@ -257,14 +257,14 @@ void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family que
 	features_vk12.storageBuffer8BitAccess = true; // needed for the shader RGBA block
 	features_vk12.shaderInt8 = true; // needed for the shader RGBA block
 	features_vk12.runtimeDescriptorArray = true; // needed for the shader
-	features_vk12.shaderSampledImageArrayNonUniformIndexing = multisampling; // needed for the shader
+	features_vk12.shaderSampledImageArrayNonUniformIndexing = true; // needed for the shader
 
 	// Basic device features
 	VkPhysicalDeviceFeatures2KHR features {};
 	features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 	features.pNext = &features_vk12;
 	features.features.shaderInt64 = true; // needed for the shader
-	features.features.shaderStorageImageMultisample = true; // needed for non-multisampled raytracing
+	features.features.shaderStorageImageMultisample = multisampling; // needed for non-multisampled raytracing
 
 	// we will now connect with the selected driver
 	VkDeviceCreateInfo create_info {};
@@ -292,7 +292,7 @@ void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family que
 
 	// msaa is what will be really used for rendering
 	// change the getSampleCount argument to control intend
-	msaa = multisampling ? physical->getSampleCount(VK_SAMPLE_COUNT_8_BIT) : VK_SAMPLE_COUNT_1_BIT;
+	msaa = multisampling ? this->physical->getSampleCount(VK_SAMPLE_COUNT_8_BIT) : VK_SAMPLE_COUNT_1_BIT;
 
 	if (msaa > VK_SAMPLE_COUNT_1_BIT) {
 		out::info("Multisampling supported, using %d samples!", msaa);
