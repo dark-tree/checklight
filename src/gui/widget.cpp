@@ -385,7 +385,7 @@ Widget::~Widget() {
 }
 
 bool Widget::event(WidgetContext& context, const InputEvent& any) {
-	if (const auto* event = any.as<PositionedEvent>()) {
+	if (const auto* event = any.as<ButtonEvent>()) {
 		if (event->isWithinBox(padded)) {
 			return true;
 		}

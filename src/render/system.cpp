@@ -198,6 +198,10 @@ RenderParameters& RenderSystem::getParameters() {
 	return this->parameters;
 }
 
+int RenderSystem::getFrameRate() const {
+	return frame_rate;
+}
+
 void RenderSystem::draw() {
 
 	SceneUniform& scene = getFrame().uniforms;
@@ -206,7 +210,17 @@ void RenderSystem::draw() {
 
 	parameters.updateSceneUniform(scene);
 
+	auto current = std::chrono::steady_clock::now();
+
 	Renderer::draw();
+
+	if (current - previous > std::chrono::milliseconds(1000)) {
+		frame_rate = frame_count;
+		previous = current;
+		frame_count = 1;
+	} else {
+		frame_count ++;
+	}
 
 	scene.prev_projection = scene.projection;
 	scene.prev_projection_inv = scene.projection_inv;

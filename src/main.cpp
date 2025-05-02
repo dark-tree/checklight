@@ -124,10 +124,18 @@ static void entry(Args& args) {
 		// draw render system overlay
 		context->draw(system.getImmediateRenderer());
 
-		//drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());
+		// draw framerate onto the screen
+		const int fps = system.getFrameRate();
+		ImmediateRenderer& immediate = system.getImmediateRenderer();
+		immediate.setFontSize(30);
+		immediate.setFill(0, 0, 0);
+		immediate.setTextBox(OFF);
+		immediate.setWrapping(false);
+		immediate.setTextAlignment(HorizontalAlignment::RIGHT);
+		immediate.setTextAlignment(VerticalAlignment::TOP);
+		immediate.drawString2D(system.width() - 10, 10, "FPS: " + std::to_string(fps));
 
-		// update uniforms
-		// do this once at the beginning of frame rendering
+		// update uniforms, do this once at the beginning of frame rendering
 		system.setProjectionMatrix(65.0f, 0.01f, 1000.0f);
 		system.setViewMatrix(current_board->getCamPos(), current_board->getCamForward());
 
@@ -141,19 +149,6 @@ static void entry(Args& args) {
 	}
 
 	system.wait();
-	Models::terminate();//temporary
-
-	for (auto& object : objects) {
-		object.reset();
-	}
-
-	models.clear();
-
-	for (auto& model : cube) {
-		model.reset();
-	}
-
-	RenderSystem::system.reset();
 
 }
 
@@ -170,7 +165,8 @@ int main(int argc, const char* argv[]) {
 
 	entry(args);
 
-	Models::terminate();//temporary
+	Models::terminate();
+	RenderSystem::system.reset();
 
 	// Try to close all engine systems before the logger shuts itself of
 	RenderSystem::system.reset();

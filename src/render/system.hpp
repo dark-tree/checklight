@@ -18,6 +18,9 @@ class RenderSystem : public Renderer {
 		/// Import materials for an OBJ file specified by the path
 		static std::map<std::string, std::shared_ptr<ObjMaterial>> importMaterials(const std::string& path);
 
+		int frame_count = 0, frame_rate = 0;
+		std::chrono::steady_clock::time_point previous = std::chrono::steady_clock::now();
+
 	public:
 
 		static std::unique_ptr<RenderSystem> system;
@@ -100,6 +103,12 @@ class RenderSystem : public Renderer {
 		 * Get the current render parameters
 		 */
 		RenderParameters& getParameters();
+
+		/**
+		 * Returns current approximate framerate
+		 * as the number of frames emitted per seconds
+		 */
+		int getFrameRate() const;
 
 		/**
 		 * Render the next frame, all rendering should happen inside this call
