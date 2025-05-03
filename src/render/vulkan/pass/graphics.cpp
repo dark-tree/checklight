@@ -254,9 +254,17 @@ GraphicsPipeline GraphicsPipelineBuilder::build() {
 	sample_info.pColorAttachmentSamples = samples.data();
 	sample_info.depthStencilAttachmentSamples = multisampling.rasterizationSamples;
 
+	VkSampleCountFlagBits max_samples = multisampling.rasterizationSamples;
+
+	for (auto sample : samples) {
+		if (sample > max_samples) {
+			max_samples = sample;
+		}
+	}
+
 	VkGraphicsPipelineCreateInfo create_info {};
 	create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	create_info.pNext = &sample_info;
+	create_info.pNext = max_samples > 1 ? &sample_info : nullptr;
 	create_info.layout = pipeline_layout;
 
 	create_info.stageCount = (uint32_t) shaders.size();

@@ -261,6 +261,10 @@ bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 		cursor.insert(text, codepoint);
 		cursor.move(text, +1, false);
 		cooldown = glfwGetTime();
+
+		if (callback) {
+			callback(text);
+		}
 		return true;
 	}
 
@@ -274,12 +278,20 @@ bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 			if (keyboard->keycode == GLFW_KEY_BACKSPACE) {
 				cursor.eraseBackward(text);
 				cooldown = glfwGetTime();
+
+				if (callback) {
+					callback(text);
+				}
 				return true;
 			}
 
 			if (keyboard->keycode == GLFW_KEY_DELETE) {
 				cursor.eraseForward(text);
 				cooldown = glfwGetTime();
+
+				if (callback) {
+					callback(text);
+				}
 				return true;
 			}
 
@@ -306,4 +318,12 @@ const utf8::UnicodeVector& FieldWidget::getUnicodeValue() const {
 
 void FieldWidget::setValue(const std::string& value) {
 	text = utf8::toCodePoints(value.c_str());
+
+	if (callback) {
+		callback(text);
+	}
+}
+
+void FieldWidget::onChange(const Callback& callback) {
+	this->callback = callback;
 }

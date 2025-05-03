@@ -64,9 +64,12 @@ bool TextWidget::event(WidgetContext& context, const InputEvent& event) {
 	return false;
 }
 
-void TextWidget::setText(const std::string& text) {
+void TextWidget::setText(const std::string& text, bool update_widget) {
 	updateWidgetText(text);
-	update();
+
+	if (update_widget) {
+		update();
+	}
 }
 
 

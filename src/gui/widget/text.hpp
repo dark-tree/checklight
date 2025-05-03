@@ -42,6 +42,6 @@ class TextWidget : public Widget {
 		void draw(ImmediateRenderer& immediate, ElementState state) override;
 		bool event(WidgetContext& context, const InputEvent &event) override;
 
-		void setText(const std::string& text);
+		void setText(const std::string& text, bool update_widget = true);
 
 };

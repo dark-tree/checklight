@@ -51,6 +51,8 @@ class FieldWidget : public InputWidget {
 
 	public:
 
+		using Callback = std::function<void(const utf8::UnicodeVector&)>;
+
 		enum Kind {
 			INTEGER,
 			TEXT,
@@ -66,6 +68,7 @@ class FieldWidget : public InputWidget {
 		TextCursor cursor;
 		std::optional<BakedText> baked {};
 		utf8::UnicodeVector text;
+		Callback callback;
 
 		/// Get the cursor offset, in pixels, given a position in text
 		float getCursorOffset(int glyph) const;
@@ -105,5 +108,7 @@ class FieldWidget : public InputWidget {
 
 		const utf8::UnicodeVector& getUnicodeValue() const;
 		void setValue(const std::string& value);
+
+		void onChange(const Callback& callback);
 
 };

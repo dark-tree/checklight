@@ -96,7 +96,7 @@ std::shared_ptr<SliderWidget> Theme::newSlider(float value, float step) const {
 
 std::shared_ptr<TextWidget> Theme::newText(const std::string& value) const {
 	auto text = newText();
-	text->setText(value);
+	text->setText(value, false);
 	return text;
 }
 

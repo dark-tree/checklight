@@ -481,19 +481,9 @@ void Renderer::createRenderPasses() {
 
 		RenderPassBuilder builder;
 
-		Attachment::Ref color = builder.addAttachment(attachment_color_msaa)
-			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.next();
-
 		Attachment::Ref depth = builder.addAttachment(attachment_depth_msaa)
 			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-			.next();
-
-		Attachment::Ref screen = builder.addAttachment(attachment_screen)
-			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
-			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
 			.next();
 
 		builder.addDependency()
@@ -507,12 +497,30 @@ void Renderer::createRenderPasses() {
 			.next();
 
 		if (msaa > VK_SAMPLE_COUNT_1_BIT) {
+
+			Attachment::Ref color = builder.addAttachment(attachment_color_msaa)
+				.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.next();
+
+			Attachment::Ref screen = builder.addAttachment(attachment_screen)
+				.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+				.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+				.next();
+
 			builder.addSubpass()
 				.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 				.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 				.addResolve(screen, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 				.next();
+
 		} else {
+
+			Attachment::Ref screen = builder.addAttachment(attachment_screen)
+				.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+				.next();
+
 			builder.addSubpass()
 				.addOutput(screen, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 				.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
@@ -526,11 +534,6 @@ void Renderer::createRenderPasses() {
 	{ // compose 2d pass
 
 		RenderPassBuilder builder;
-
-		Attachment::Ref color = builder.addAttachment(attachment_color_msaa)
-			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
-			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.next();
 
 		Attachment::Ref depth = builder.addAttachment(attachment_depth_msaa)
 			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
@@ -557,12 +560,34 @@ void Renderer::createRenderPasses() {
 			.then(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_MEMORY_READ_BIT)
 			.next();
 
-		builder.addSubpass()
-			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.addOutput(prev_normal, VK_IMAGE_LAYOUT_GENERAL)
-			.addOutput(prev_pos, VK_IMAGE_LAYOUT_GENERAL)
-			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-			.next();
+		if (msaa > VK_SAMPLE_COUNT_1_BIT) {
+
+			Attachment::Ref color = builder.addAttachment(attachment_color_msaa)
+				.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+				.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.next();
+
+			builder.addSubpass()
+				.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.addOutput(prev_normal, VK_IMAGE_LAYOUT_GENERAL)
+				.addOutput(prev_pos, VK_IMAGE_LAYOUT_GENERAL)
+				.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+				.next();
+
+		} else {
+
+			Attachment::Ref screen = builder.addAttachment(attachment_screen)
+				.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+				.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.next();
+
+			builder.addSubpass()
+				.addOutput(screen, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.addOutput(prev_normal, VK_IMAGE_LAYOUT_GENERAL)
+				.addOutput(prev_pos, VK_IMAGE_LAYOUT_GENERAL)
+				.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+				.next();
+		}
 
 		pass_compose = builder.build(device, "Compose");
 
