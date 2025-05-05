@@ -68,6 +68,7 @@ void Renderer::createInstance(ApplicationParameters& parameters) {
 	// information required for creating an instance
 	VkInstanceCreateInfo create_info {};
 	create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+	create_info.pNext = &messenger_info;
 	create_info.pApplicationInfo = &app_info;
 	create_info.enabledExtensionCount = extension.size();
 	create_info.ppEnabledExtensionNames = extension.data();

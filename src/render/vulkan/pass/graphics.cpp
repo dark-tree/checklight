@@ -132,7 +132,7 @@ GraphicsPipelineBuilder& GraphicsPipelineBuilder::withLineWidth(float width) {
 }
 
 GraphicsPipelineBuilder& GraphicsPipelineBuilder::withCulling(bool enable, VkFrontFace face, VkCullModeFlags mode) {
-	rasterizer.cullMode = enable ? mode : VK_CULL_MODE_NONE;
+	rasterizer.cullMode = enable ? mode : static_cast<VkCullModeFlags>(VK_CULL_MODE_NONE);
 	rasterizer.frontFace = face;
 	return *this;
 }

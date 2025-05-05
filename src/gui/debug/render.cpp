@@ -50,11 +50,11 @@ std::shared_ptr<WidgetContext> RenderSystemOverlay::create(Theme& theme) {
 	}
 
 	{
-		auto control = theme.newSlider(parameters.getSkyEmission());
+		auto control = theme.newSlider(parameters.getSkyEmission() / 100);
 		control->width = Unit::grow();
 
 		control->onChange([] (float value) {
-			RenderSystem::system->getParameters().setSkyEmission(value);
+			RenderSystem::system->getParameters().setSkyEmission(value * 100);
 		});
 
 		settings->addWidget(createOption(theme, "Sky Emission", control));
