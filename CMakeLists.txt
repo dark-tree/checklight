@@ -150,6 +150,7 @@ add_executable(checklight_test "src/test.cpp")
 target_link_libraries(checklight_engine_system PRIVATE
 		checklight_common
 		checklight_shared_system
+		checklight_render_system
 )
 
 target_link_libraries(checklight_render_system PRIVATE
@@ -160,6 +161,7 @@ target_link_libraries(checklight_render_system PRIVATE
 		msdfgen::msdfgen-core
 		msdfgen::msdfgen-ext
 		Freetype::Freetype
+		checklight_shared_system
 )
 
 target_link_libraries(checklight_shared_system PRIVATE
