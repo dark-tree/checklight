@@ -16,7 +16,7 @@ struct WidgetFlow {
 		return (int(flow) & 0b10) ? Channel::WIDTH : Channel::HEIGHT;
 	}
 
-	/// Convert flow to it's direction (sign)
+	/// Convert flow to its direction (sign)
 	static constexpr int asDirection(Flow flow) {
 		return (int(flow) & 0b01) ? -1 : +1;
 	}

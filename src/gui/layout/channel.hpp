@@ -9,7 +9,7 @@ enum struct Channel : int {
 
 struct WidgetChannel {
 
-	/// Convert flow to it's primary axis
+	/// Convert flow to its primary axis
 	static constexpr Channel getOpposite(Channel channel) {
 		return (channel == Channel::HEIGHT) ? Channel::WIDTH : Channel::HEIGHT;
 	}
