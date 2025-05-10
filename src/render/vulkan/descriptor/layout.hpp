@@ -6,6 +6,7 @@ class LogicalDevice;
 
 struct DescriptorType {
 	VkDescriptorType vk_type;
+	int count;
 	bool enabled;
 
 	inline DescriptorType() noexcept
@@ -47,7 +48,7 @@ class DescriptorSetLayoutBuilder {
 		std::vector<DescriptorType> types;
 		std::set<uint32_t> indices;
 
-		void addBindingTypeMapping(uint32_t index, VkDescriptorType type);
+		void addBindingTypeMapping(uint32_t index, VkDescriptorType type, int count);
 
 	public:
 

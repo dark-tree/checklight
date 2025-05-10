@@ -10,10 +10,10 @@
 AccelStruct::AccelStruct(const Buffer& buffer, VkAccelerationStructureKHR vk_structure)
 : buffer(buffer), vk_structure(vk_structure) {}
 
-void AccelStruct::close(const LogicalDevice& device) {
+void AccelStruct::close(VkDevice vk_device) {
 	if (buffer.allocated()) {
 		VulkanDebug::endLifetime(vk_structure);
-		Proxy::vkDestroyAccelerationStructureKHR(device.getHandle(), vk_structure, nullptr);
+		Proxy::vkDestroyAccelerationStructureKHR(vk_device, vk_structure, nullptr);
 		buffer.close();
 	}
 }

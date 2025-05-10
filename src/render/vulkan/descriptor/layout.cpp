@@ -15,7 +15,7 @@ void DescriptorSetLayout::close() {
 
 VkDescriptorType DescriptorSetLayout::getType(uint32_t index) const {
 	if (index >= types.size()) {
-		throw std::runtime_error {"Descriptor index out of defined range!"};
+		FAULT("Descriptor index out of defined range!");
 	}
 
 	return types.at(index).vk_type;
@@ -26,7 +26,11 @@ void DescriptorSetLayout::appendUsedTypes(std::vector<VkDescriptorType>& vector)
 
 	for (DescriptorType type : types) {
 		if (type.enabled) {
-			vector.push_back(type.vk_type);
+			vector.reserve(vector.size() + type.count);
+
+			for (int i = 0; i < type.count; i++) {
+				vector.push_back(type.vk_type);
+			}
 		}
 	}
 }
@@ -39,10 +43,11 @@ VkDescriptorSetLayout DescriptorSetLayout::getHandle() const {
  * DescriptorSetLayoutBuilder
  */
 
-void DescriptorSetLayoutBuilder::addBindingTypeMapping(uint32_t index, VkDescriptorType type) {
+void DescriptorSetLayoutBuilder::addBindingTypeMapping(uint32_t index, VkDescriptorType type, int count) {
 	types.resize(index + 1);
 	DescriptorType& descriptor = types[index];
 
+	descriptor.count = count;
 	descriptor.vk_type = type;
 	descriptor.enabled = true;
 }
@@ -53,7 +58,7 @@ DescriptorSetLayoutBuilder::DescriptorSetLayoutBuilder(VkDescriptorSetLayoutCrea
 DescriptorSetLayoutBuilder& DescriptorSetLayoutBuilder::descriptor(uint32_t index, VkDescriptorType type, VkShaderStageFlags shader, uint32_t count) {
 
 	if (indices.contains(index)) {
-		throw std::runtime_error {"Attempted to redefine descriptor set binding index!"};
+		FAULT("Attempted to redefine descriptor set binding index!");
 	}
 
 	VkDescriptorSetLayoutBinding binding {};
@@ -63,7 +68,7 @@ DescriptorSetLayoutBuilder& DescriptorSetLayoutBuilder::descriptor(uint32_t inde
 	binding.descriptorCount = count;
 
 	bindings.push_back(binding);
-	addBindingTypeMapping(index, type);
+	addBindingTypeMapping(index, type, count);
 	indices.insert(index);
 
 	return *this;
@@ -79,7 +84,7 @@ DescriptorSetLayout DescriptorSetLayoutBuilder::done(LogicalDevice device) const
 	create_info.pBindings = bindings.data();
 
 	if (vkCreateDescriptorSetLayout(device.getHandle(), &create_info, nullptr, &layout) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create descriptor set!"};
+		FAULT("Failed to create descriptor set!");
 	}
 
 	return {device.getHandle(), layout, types};

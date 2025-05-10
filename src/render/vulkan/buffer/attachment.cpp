@@ -5,11 +5,11 @@
  * Attachment::Ref
  */
 
-Attachment::Ref::Ref(int index)
-: index(index) {}
+Attachment::Ref::Ref(int index, VkSampleCountFlagBits samples)
+: index(index), samples(samples) {}
 
-Attachment::Ref Attachment::Ref::of(int index) {
-	return Ref {index};
+Attachment::Ref Attachment::Ref::of(int index, VkSampleCountFlagBits samples) {
+	return Ref {index, samples};
 }
 
 /*
@@ -21,7 +21,7 @@ Attachment::Attachment(const TextureDelegate& settings)
 	this->settings.debug_name += " Attachment";
 
 	if (settings.view_info.format == VK_FORMAT_UNDEFINED) {
-		throw std::runtime_error {"Attachment format can't be left undefined!"};
+		FAULT("Attachment format can't be left undefined!");
 	}
 }
 
@@ -41,6 +41,10 @@ VkImageAspectFlags Attachment::getAspect() const {
 	return settings.view_info.subresourceRange.aspectMask;
 }
 
+VkSampleCountFlagBits Attachment::getSamples() const {
+	return settings.vk_samples;
+}
+
 const Texture& Attachment::getTexture() const {
 	return texture;
 }
@@ -53,11 +57,16 @@ void Attachment::markSwapchainBacked(){
 	magicity = true;
 }
 
-void Attachment::allocate(LogicalDevice& device, int width, int height, Allocator& allocator) {
-	Image image = allocator.allocateImage(Memory::DEVICE, width, height, getFormat(), settings.vk_usage, 1, 1, settings.debug_name.c_str());
-	texture = settings.buildTexture(device, image);
+void Attachment::allocate(LogicalDevice& device, VkExtent2D extent, Allocator& allocator) {
+	Image image = allocator.allocateImage(Memory::DEVICE, extent.width, extent.height, getFormat(), settings.vk_usage, 1, 1, settings.vk_samples, settings.debug_name.c_str());
+	this->texture = settings.buildTexture(device, image);
+	this->extent = extent;
 }
 
 void Attachment::close(LogicalDevice device) {
 	texture.closeImageViewSampler(device.getHandle());
+}
+
+VkExtent2D Attachment::getExtent() const {
+	return extent;
 }

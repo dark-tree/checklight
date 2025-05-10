@@ -3,6 +3,7 @@
 #include "external.hpp"
 #include "family.hpp"
 #include "queue.hpp"
+#include "shared/logger.hpp"
 
 class Buffer;
 class SwapchainInfo;
@@ -23,6 +24,7 @@ class PhysicalDevice {
 
 		// properties
 		VkPhysicalDeviceRayTracingPipelinePropertiesKHR ray_properties;
+		VkPhysicalDeviceAccelerationStructurePropertiesKHR accel_properties;
 
 		VkPhysicalDeviceProperties2KHR properties;
 		VkPhysicalDeviceFeatures2KHR features;
@@ -47,59 +49,68 @@ class PhysicalDevice {
 		const char* getName() const;
 
 		/**
-		 * @brief Check if the device's swap chain is compatible with our window surface,
-		 *        we will consider it compatible if at least one image format and presentation mode match
+		 * Check if the device's swap chain is compatible with our window surface,
+		 * we will consider it compatible if at least one image format and presentation mode match
 		 *
-		 * @param surface the window surface to check compatibility with
+		 * @param[in] surface the window surface to check compatibility with
 		 */
 		bool canUseSurface(VkSurfaceKHR surface) const;
 
 		/**
-		 * @brief Get the underlying vulkan object handle
-		 * @note  Try to avoid using this function when possible
+		 * Get the underlying vulkan object handle
 		 */
 		VkPhysicalDevice getHandle() const;
 
 		/**
-		 * @brief Get the list of extensions supported by this device
+		 * Get the list of extensions supported by this device
 		 */
 		bool hasExtension(const char* name) const;
 
 		/**
-		 * @brief Get the list of queue families supported by this device
+		 * Get the list of queue families supported by this device
 		 */
 		std::vector<Family> getFamilies() const;
 
 		/**
-		 * @brief Get information about supported swapchain configurations
+		 * Get information about supported swapchain configurations
 		 */
 		SwapchainInfo getSwapchainInfo(VkSurfaceKHR surface);
 
 		/**
-		 * @brief Get the cached device properties
+		 * Get the cached device properties
 		 */
 		const VkPhysicalDeviceProperties& getProperties() const;
 
 		/**
-		 * @brief Get the cached device limits
+		 * Get the cached device limits
 		 */
 		const VkPhysicalDeviceLimits& getLimits() const;
 
 		/**
-		 * @brief Get the cached device feature chain entry
+		 * Get the cached device feature chain entry
 		 */
 		const void* getFeatures(VkStructureType type) const;
 
 		/**
-		 * @brief Get the cached device properties chain entry
+		 * Get the cached device properties chain entry
 		 */
 		const void* getProperties(VkStructureType type) const;
 
 		/**
-		 * @brief Get the device's maximal ray invocation recursion
-		 *        depth, learn more in @see RaytracePipelineBuilder::withRecursionDepth()
+		 * Get the device's maximal ray invocation recursion
+		 * depth, learn more in @see RaytracePipelineBuilder::withRecursionDepth()
 		 */
 		int getMaxRaytraceRecursionDepth() const;
+
+		/**
+		 * Get the supported sampling count that is the closest to the preferred value
+		 */
+		VkSampleCountFlagBits getSampleCount(VkSampleCountFlagBits preferred) const;
+
+		/**
+		 * Get alignment requirement of the Acceleration Structure Scratch buffer
+		 */
+		int getScratchBufferAlignment() const;
 
 };
 
@@ -123,7 +134,7 @@ class LogicalDevice {
 			PFN_vkVoidFunction address = vkGetDeviceProcAddr(vk_device, name);
 
 			if (address == nullptr) {
-				printf("ERROR: Device function '%s' failed to load!\n", name);
+				out::error("Device function '%s' failed to load!", name);
 			}
 
 			return (F) address;

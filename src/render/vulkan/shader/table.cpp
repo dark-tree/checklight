@@ -21,7 +21,7 @@ ShaderTable ShaderTableLayout::allocate(const LogicalDevice& device, Allocator& 
 ShaderTable::ShaderTable(const LogicalDevice& device, Allocator& allocator, GraphicsPipeline& pipeline, int generate, int miss, int hit, int call) {
 
 	if (pipeline.getType() != PipelineType::RAYTRACE) {
-		throw std::runtime_error {"Expected a raytrace pipeline!"};
+		FAULT("Expected a raytrace pipeline!");
 	}
 
 	const VkStructureType type = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
@@ -47,7 +47,7 @@ ShaderTable::ShaderTable(const LogicalDevice& device, Allocator& allocator, Grap
 	std::vector<uint8_t> handles;
 	handles.resize(properties->shaderGroupHandleSize * total_handles);
 	if (Proxy::vkGetRayTracingShaderGroupHandlesKHR(device.getHandle(), pipeline.getHandle(), 0, total_handles, handles.size(), handles.data()) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to load shader group handles!"};
+		FAULT("Failed to load shader group handles!");
 	}
 
 	VkDeviceSize buffer_size = vk_region_generate.size + vk_region_miss.size + vk_region_hit.size + vk_region_call.size;

@@ -24,10 +24,10 @@ AttachmentBuilder& AttachmentBuilder::output(VkAttachmentStoreOp color, VkAttach
 	return *this;
 }
 
-AttachmentBuilder::AttachmentBuilder(RenderPassBuilder& builder, const Attachment& attachment, VkSampleCountFlagBits samples)
+AttachmentBuilder::AttachmentBuilder(RenderPassBuilder& builder, const Attachment& attachment)
 : attachment(attachment), builder(builder) {
 	description.format = attachment.getFormat();
-	description.samples = samples;
+	description.samples = attachment.getSamples();
 }
 
 Attachment::Ref AttachmentBuilder::next() {

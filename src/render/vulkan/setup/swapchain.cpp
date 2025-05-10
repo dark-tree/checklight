@@ -135,7 +135,7 @@ Swapchain SwapchainBuilder::build(LogicalDevice& device, VkSurfaceKHR vk_surface
 	VkSwapchainKHR swapchain;
 
 	if (vkCreateSwapchainKHR(device.getHandle(), &create_info, nullptr, &swapchain) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create swapchain!"};
+		FAULT("Failed to create swapchain!");
 	}
 
 	return {swapchain, format, extent, device.getHandle()};

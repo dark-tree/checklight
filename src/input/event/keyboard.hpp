@@ -10,12 +10,6 @@ class KeyboardEvent : public CodedEvent {
 
 	public:
 
-		static constexpr Type type = InputEvent::KEYBOARD;
-
-		Type getType() const override;
-
-	public:
-
 		int keycode;
 		int scancode;
 
@@ -26,5 +20,8 @@ class KeyboardEvent : public CodedEvent {
 
 		/// Check is the given GLFW_KEY_* was released
 		bool wasReleased(int keycode) const;
+
+		/// Check if the given GLFW_KEY_* was typed
+		bool wasTyped(int keycode) const;
 
 };

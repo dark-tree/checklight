@@ -18,15 +18,23 @@ class RenderPass {
 		VkRenderPass vk_pass;
 		std::vector<VkClearValue> values;
 		std::vector<Subpass> subpasses;
+		std::vector<VkSampleCountFlagBits> samples;
+		VkSampleCountFlagBits depth_samples = VK_SAMPLE_COUNT_1_BIT;
 
 	public:
 
 		RenderPass() = default;
-		RenderPass(VkDevice vk_device, VkRenderPass vk_pass, std::vector<VkClearValue>& values, std::vector<Subpass>& subpass_info, FramebufferSet& framebuffer);
+		RenderPass(VkDevice vk_device, VkRenderPass vk_pass, std::vector<VkClearValue>& values, std::vector<Subpass>& subpass_info, FramebufferSet& framebuffer, const std::vector<VkSampleCountFlagBits>& samples);
 
 		void close();
 		const Subpass& getSubpass(int subpass) const;
 		int getSubpassCount() const;
+
+		/**
+		 * Get the per-attachment sample counts, this is need to construct pipelines
+		 * with varying per-color-attachment sample counts
+		 */
+		std::vector<VkSampleCountFlagBits> getSampleArray() const;
 
 		/**
 		 * Allocate (or reallocate if already present) the underlying framebuffers
@@ -66,7 +74,7 @@ class RenderPassBuilder {
 		 * @brief Begin attachment creation
 		 * Adds and makes usable an attachment for subpasses in this RenderPass
 		 */
-		AttachmentBuilder addAttachment(const Attachment& attachment, VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT);
+		AttachmentBuilder addAttachment(const Attachment& attachment);
 
 		/**
 		 * @brief Begin subpass creation

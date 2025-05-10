@@ -40,8 +40,8 @@ uint32_t utf8::loadNext(const char* utf8, int* offset) {
 	return 0;
 }
 
-std::vector<uint32_t> utf8::toCodePoints(const char* utf8) {
-	std::vector<uint32_t> points;
+utf8::UnicodeVector utf8::toCodePoints(const char* utf8) {
+	UnicodeVector points;
 	int offset = 0;
 
 	while (true) {

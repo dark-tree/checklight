@@ -70,7 +70,7 @@ class ImageData {
 
 		/**
 		 * Clears the image, setting all pixels in the image to the
-		 * given value, must contains EXACTLY 'channels()' components
+		 * given value, must contain EXACTLY 'channels()' components
 		 */
 		void clear(std::initializer_list<uint8_t> value);
 
@@ -81,7 +81,13 @@ class ImageData {
 		void save(const std::string& path) const;
 
 		/**
-		 * Returns an image data buffer for the image pointer to by the
+		 * Creates an image copy expanded in every direction by given number of pixels,
+		 * the new pixels are filled according to the given mode
+		 */
+		ImageData expand(int margin);
+
+		/**
+		 * Returns an image data buffer for the image pointed to by the
 		 * given file path and of the given number of channels
 		 */
 		static ImageData loadFromFile(const std::string& path, int channels = 4);

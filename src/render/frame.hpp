@@ -24,8 +24,15 @@ struct SceneUniform {
 	float far;
 	glm::vec3 ambient_color;
 	int gi_samples;
+	float gi_brightness;
 	bool32 denoise;
 	bool32 shadows;
+	glm::vec3 portal_tint;
+	int portal_jumps;
+	bool32 portal_gi;
+	glm::vec3 sky_color;
+	float sky_emission;
+	int gi_max_sample_age;
 };
 
 class RenderFrame {

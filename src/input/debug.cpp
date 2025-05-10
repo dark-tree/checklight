@@ -1,5 +1,8 @@
 
 #include "debug.hpp"
+
+#include <shared/logger.hpp>
+
 #include "input.hpp"
 
 /*
@@ -46,34 +49,34 @@ InputResult DebugInputListener::onEvent(const InputEvent& any) {
 		std::string action = actionToString(event->action);
 		std::string modifier = modifiersToString(event->mods);
 
-		printf("DEBUG: ButtonEvent {button=%d, action=%s, modifier=%s, x=%d, y=%d}\n", event->button, action.c_str(), modifier.c_str(), (int) event->x, (int) event->y);
+		out::debug("ButtonEvent {button=%d, action=%s, modifier=%s, x=%d, y=%d}", event->button, action.c_str(), modifier.c_str(), (int) event->x, (int) event->y);
 	}
 
 	if (const auto* event = any.as<KeyboardEvent>()) {
 		std::string action = actionToString(event->action);
 		std::string modifier = modifiersToString(event->mods);
 
-		printf("DEBUG: KeyboardEvent {keycode=%d, scancode=%d, action=%s, modifier=%s, x=%d, y=%d}\n", event->keycode, event->scancode, action.c_str(), modifier.c_str(), (int) event->x, (int) event->y);
+		out::debug("KeyboardEvent {keycode=%d, scancode=%d, action=%s, modifier=%s, x=%d, y=%d}", event->keycode, event->scancode, action.c_str(), modifier.c_str(), (int) event->x, (int) event->y);
 	}
 
 	if (const auto* event = any.as<ScrollEvent>()) {
-		printf("DEBUG: ScrollEvent {vertical=%d, horizontal=%d, x=%d, y=%d}\n", (int) event->vertical, (int) event->horizontal, (int) event->x, (int) event->y);
+		out::debug("ScrollEvent {vertical=%d, horizontal=%d, x=%d, y=%d}", (int) event->vertical, (int) event->horizontal, (int) event->x, (int) event->y);
 	}
 
 	if (const auto* event = any.as<UnicodeEvent>()) {
-		printf("DEBUG: UnicodeEvent {unicode=%u, x=%d, y=%d}\n", event->unicode, (int) event->x, (int) event->y);
+		out::debug("UnicodeEvent {unicode=%u, x=%d, y=%d}", event->unicode, (int) event->x, (int) event->y);
 	}
 
-	if (const auto* event = any.as<CloseEvent>()) {
-		printf("DEBUG: CloseEvent {}\n");
+	if ([[maybe_unused]] const auto* event = any.as<CloseEvent>()) {
+		out::debug("CloseEvent {}");
 	}
 
 	if (const auto* event = any.as<ResizeEvent>()) {
-		printf("DEBUG: ResizeEvent {width=%d, height=%d}\n", event->width, event->height);
+		out::debug("ResizeEvent {width=%d, height=%d}", event->width, event->height);
 	}
 
 	if (const auto* event = any.as<MouseEvent>()) {
-		if (show_mouse) printf("DEBUG: MouseEvent {x=%d, y=%d}\n", (int) event->x, (int) event->y);
+		if (show_mouse) out::debug("MouseEvent {x=%d, y=%d}", (int) event->x, (int) event->y);
 	}
 
 	// don't interfere with normal event processing, "ignore" all events

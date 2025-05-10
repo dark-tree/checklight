@@ -1,17 +1,20 @@
 
 #include "model.hpp"
 
+#include <render/system.hpp>
+
 /*
  * RenderModel
  */
 
 RenderModel::RenderModel(const LogicalDevice& device, const AccelStruct& structure) {
+	this->vk_device = device.getHandle();
 	setStructure(device, structure);
 }
 
-void RenderModel::close(const LogicalDevice& device) {
-	structure.close(device);
-	this->mesh.reset();
+RenderModel::~RenderModel() {
+	structure.close(vk_device);
+	mesh.reset();
 }
 
 VkDeviceAddress RenderModel::getAddress() const {

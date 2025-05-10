@@ -1,30 +1,44 @@
 
 #include "window.hpp"
+
+#include <shared/logger.hpp>
+
 #include "input/input.hpp"
+
+/*
+ * Viewport
+ */
+
+Viewport viewport {0, 0};
+
+void Viewport::setCurrent(int width, int height) {
+	viewport.width = width;
+	viewport.height = height;
+}
+
+Viewport Viewport::getCurrent() {
+	return viewport;
+}
 
 /*
  * WindowSystem
  */
 
-void WindowSystem::glfwErrorCallback(int code, const char* description) {
-	printf("[GLFW] Error %d: %s\n", code, description);
-}
-
 WindowSystem::WindowSystem() {
 	if (!glfwInit()) {
-		throw std::runtime_error {"Failed to initialize GLFW!"};
+		FAULT("Failed to initialize GLFW!");
 	}
 
 	if (!glfwVulkanSupported()) {
-		throw std::runtime_error {"Failed to find vulkan loader!"};
+		FAULT("Failed to find Vulkan loader!");
 	}
 
-	glfwSetErrorCallback(glfwErrorCallback);
+	glfwSetErrorCallback(Window::glfwErrorCallback);
 }
 
 WindowSystem::~WindowSystem() {
 	glfwTerminate();
-	printf("INFO: GLFW terminated\n");
+	out::info("GLFW terminated");
 }
 
 std::vector<const char*> WindowSystem::getRequiredExtensions() const {
@@ -123,20 +137,22 @@ void Window::glfwWindowCloseCallback(GLFWwindow* glfw_window) {
 void Window::glfwWindowResizeCallback(GLFWwindow* glfw_window, int width, int height) {
 	auto* window = (Window*) glfwGetWindowUserPointer(glfw_window);
 
+	Viewport::setCurrent(width, height);
+
 	if (window) {
 		window->getInputDispatcher().onEvent(ResizeEvent {width, height});
 	}
 }
 
 void Window::glfwErrorCallback(int error_code, const char* description) {
-	printf("ERROR: GLFW [%d]: %s\n", error_code, description);
+	out::error("GLFW [%d]: %s", error_code, description);
 }
 
 Window::Window(uint32_t w, uint32_t h, std::string title_string) {
 
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE);
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwSetErrorCallback(glfwErrorCallback);
+	Viewport::setCurrent(w, h);
 
 	#if !defined(NDEBUG)
 	title_string += " (Debug Build)";
@@ -144,11 +160,10 @@ Window::Window(uint32_t w, uint32_t h, std::string title_string) {
 
 	handle = glfwCreateWindow(w, h, title_string.c_str(), nullptr, nullptr);
 	if (handle == nullptr) {
-		throw std::runtime_error {"Failed to create GLFW window!"};
+		FAULT("Failed to create GLFW window!");
 	}
 
 	glfwSetWindowUserPointer(handle, this);
-	glfwSetInputMode(handle, GLFW_STICKY_KEYS, GL_TRUE);
 
 	// send events to the root input consumer
 	glfwSetKeyCallback(handle, glfwKeyCallback);
@@ -162,6 +177,13 @@ Window::Window(uint32_t w, uint32_t h, std::string title_string) {
 
 Window::~Window() {
 	glfwDestroyWindow(handle);
+
+	for (auto [id, cursor] : cursors) {
+		glfwDestroyCursor(cursor);
+	}
+
+	out::info("Unloaded %d cursors", (int) cursors.size());
+	cursors.clear();
 }
 
 GLFWwindow* Window::getHandle() const {
@@ -176,6 +198,7 @@ void Window::poll() {
 
 	setMouseCapture(event.capture_flag);
 	setShouldClose(event.close_flag);
+	setMouseIcon(event.icon);
 }
 
 bool Window::shouldClose() const {
@@ -208,4 +231,24 @@ void Window::setShouldClose(bool close) {
 
 		glfwSetWindowShouldClose(handle, close);
 	}
+}
+
+void Window::setMouseIcon(CursorIcon::Icon cursor) {
+	if (icon == cursor) {
+		return;
+	}
+
+	auto it = cursors.find(cursor);
+	GLFWcursor* pointer = nullptr;
+
+	if (it != cursors.end()) {
+		pointer = it->second;
+	} else {
+		out::debug("Loaded standard cursor icon '%s'", CursorIcon::toString(cursor));
+		pointer = glfwCreateStandardCursor(cursor);
+		cursors[cursor] = pointer;
+	}
+
+	icon = cursor;
+	glfwSetCursor(handle, pointer);
 }
