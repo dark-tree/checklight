@@ -23,7 +23,7 @@ static void entry(Args& args) {
 	parameters.setDimensions(1200, 800);
 
 	// Open the window and start the vulkan renderer
-	RenderSystem::init(parameters);
+	auto guard = RenderSystem::init(parameters);
 	Models::init();
 
 	RenderSystem& system = *RenderSystem::system;
@@ -149,6 +149,7 @@ static void entry(Args& args) {
 	}
 
 	system.wait();
+	Models::terminate();
 
 }
 
@@ -164,12 +165,6 @@ int main(int argc, const char* argv[]) {
 	}
 
 	entry(args);
-
-	Models::terminate();
-	RenderSystem::system.reset();
-
-	// Try to close all engine systems before the logger shuts itself of
-	RenderSystem::system.reset();
 
 	return 0;
 

@@ -5,6 +5,7 @@
 #include "application.hpp"
 #include "window.hpp"
 #include "asset/obj.hpp"
+#include "shared/singleton.hpp"
 
 class RenderCommander;
 class RenderMesh;
@@ -23,8 +24,8 @@ class RenderSystem : public Renderer {
 
 	public:
 
-		static std::unique_ptr<RenderSystem> system;
-		static void init(ApplicationParameters& parameters);
+		static inline Singleton<RenderSystem> system;
+		static SingletonGuard<RenderSystem> init(ApplicationParameters& parameters);
 
 	public:
 

@@ -10,10 +10,8 @@
  * RenderSystem
  */
 
-std::unique_ptr<RenderSystem> RenderSystem::system {nullptr};
-
-void RenderSystem::init(ApplicationParameters& parameters) {
-	RenderSystem::system = std::make_unique<RenderSystem>(parameters);
+SingletonGuard<RenderSystem> RenderSystem::init(ApplicationParameters& parameters) {
+	return system.create(parameters);
 }
 
 RenderSystem::RenderSystem(ApplicationParameters& parameters)
