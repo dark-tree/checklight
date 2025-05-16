@@ -1,5 +1,6 @@
 
 #include "semaphore.hpp"
+#include "shared/logger.hpp"
 
 /*
  * Semaphore
@@ -12,7 +13,7 @@ Semaphore::Semaphore(VkDevice vk_device)
 	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
 	if (vkCreateSemaphore(vk_device, &create_info, nullptr, &vk_semaphore) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create a semaphore!"};
+		FAULT("Failed to create a semaphore!");
 	}
 }
 

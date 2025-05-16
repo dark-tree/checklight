@@ -14,17 +14,11 @@ class CloseEvent : public InputEvent {
 
 	public:
 
-		static constexpr Type type = InputEvent::CLOSE;
-
-		Type getType() const override;
-
-	public:
-
 		CloseEvent() = default;
 
 		/**
 		 * Abort the automatic window closing,
-		 * for example to show a confirm message or save game state.
+		 * for example to show a confirmation message or save game state.
 		 * By default, unless abort() is closed the window will close and application terminate
 		 * after returning from this event.
 		 */

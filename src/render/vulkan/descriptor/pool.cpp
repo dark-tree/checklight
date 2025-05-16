@@ -32,7 +32,7 @@ DescriptorSet DescriptorPool::allocate(const DescriptorSetLayout& layout) const 
 	alloc_info.descriptorPool = vk_pool;
 
 	if (vkAllocateDescriptorSets(vk_device, &alloc_info, &set) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to allocate descriptor set!"};
+		FAULT("Failed to allocate descriptor set!");
 	}
 
 	return {vk_device, set, &layout};

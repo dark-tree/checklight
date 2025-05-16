@@ -57,12 +57,12 @@ void TextureDelegate::checkImageFormat(VkFormat provided) const {
 	}
 
 	if (view_info.format != provided) {
-		throw std::runtime_error {"Image format incompatible, was the contain set intentionally?"};
+		FAULT("Image format incompatible, was the format set intentionally?");
 	}
 }
 
-TextureDelegate::TextureDelegate(VkImageUsageFlags usage, VkClearValue clear, VkImageViewCreateInfo view, VkSamplerCreateInfo sampler, const std::string& debug_name)
-: debug_name(debug_name), vk_usage(usage), vk_clear(clear), view_info(view), sampler_info(sampler) {}
+TextureDelegate::TextureDelegate(VkImageUsageFlags usage, VkClearValue clear, VkImageViewCreateInfo view, VkSamplerCreateInfo sampler, VkSampleCountFlagBits samples, const std::string& debug_name)
+: debug_name(debug_name), vk_usage(usage), vk_clear(clear), view_info(view), sampler_info(sampler), vk_samples(samples) {}
 
 Texture TextureDelegate::buildTexture(LogicalDevice& device, const Image& image) const {
 
@@ -81,11 +81,11 @@ Texture TextureDelegate::buildTexture(LogicalDevice& device, const Image& image)
 	VkSampler sampler;
 
 	if (vkCreateImageView(device.getHandle(), &view_info, nullptr, &view) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create image view!"};
+		FAULT("Failed to create image view!");
 	}
 
 	if (vkCreateSampler(device.getHandle(), &sampler_info, nullptr, &sampler) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create image sampler!"};
+		FAULT("Failed to create image sampler!");
 	}
 
 	VulkanDebug::beginLifetime(VK_OBJECT_TYPE_IMAGE_VIEW, view, debug_name.c_str());
@@ -194,13 +194,18 @@ TextureBuilder& TextureBuilder::setFormat(VkFormat format) {
 	return *this;
 }
 
+TextureBuilder& TextureBuilder::setSampleCount(VkSampleCountFlagBits samples) {
+	vk_samples = samples;
+	return *this;
+}
+
 TextureBuilder& TextureBuilder::setUsage(VkImageUsageFlags usage) {
 	vk_usage = usage;
 	return *this;
 }
 
 TextureDelegate TextureBuilder::createDelegate() const {
-	return {vk_usage, vk_clear, view_info, sampler_info, debug_name};
+	return {vk_usage, vk_clear, view_info, sampler_info, vk_samples, debug_name};
 }
 
 Texture TextureBuilder::createTexture(LogicalDevice& device, const Image& image) const {

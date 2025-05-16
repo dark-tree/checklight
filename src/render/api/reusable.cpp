@@ -41,7 +41,7 @@ void ReusableBuffer::closeStagingBuffer() {
 
 void ReusableBuffer::allocateBuffers(size_t elements, size_t size) {
 	if (usage == 0) {
-		throw std::runtime_error {"Usage not specified during construction!"};
+		FAULT("Usage not specified during construction!");
 	}
 
 	size_t bytes = elements * size;
@@ -56,7 +56,7 @@ void ReusableBuffer::allocateBuffers(size_t elements, size_t size) {
 
 void ReusableBuffer::writeToStaging(const void* data, size_t elements, size_t size, size_t offset) {
 	if (!this->staging) {
-		throw std::runtime_error {"Can't write to staging, buffer missing!"};
+		FAULT("Can't write to staging, buffer missing!");
 	}
 
 	size_t bytes = elements * size;

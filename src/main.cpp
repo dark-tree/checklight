@@ -1,80 +1,84 @@
 
+#include <gui/context.hpp>
+#include <gui/debug/render.hpp>
+#include <gui/theme/dark.hpp>
+#include <gui/theme/light.hpp>
+#include <gui/widget/panel.hpp>
+#include <gui/widget/root.hpp>
+#include <gui/widget/text.hpp>
+#include <shared/args.hpp>
+#include <shared/logger.hpp>
+
 #include "render/render.hpp"
 #include "input/input.hpp"
 #include "engine/engine.hpp"
+#include "gui/gui.hpp"
+#include "engine/entity/component/matrixAnimation.hpp"
 
-static void drawUserInterface(ImmediateRenderer& immediate, float width, float height) {
-	immediate.setSprite("assets/image/corners.png");
+static void entry(Args& args) {
 
-	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(1 + glfwGetTime() * 8) + 1) / 16, 0)));
-	immediate.setSprite("assets/image/skay.png");
-	immediate.setColor(255, 255, 255);
-	immediate.drawCircle2D(50, 50, 40);
-
-	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(2 + glfwGetTime() * 8) + 1) / 16, 0)));
-	immediate.setSprite("assets/image/lucek.png");
-	immediate.drawCircle2D(150, 50, 40);
-
-	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(3 + glfwGetTime() * 8) + 1) / 16, 0)));
-	immediate.setSprite("assets/image/wiesiu.png");
-	immediate.drawCircle2D(250, 50, 40);
-
-	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(4 + glfwGetTime() * 8) + 1) / 16, 0)));
-	immediate.setSprite("assets/image/magistermaks.png");
-	immediate.drawCircle2D(350, 50, 40);
-
-	immediate.setMatrix2D(glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, (sin(5 + glfwGetTime() * 8) + 1) / 16, 0)));
-	immediate.setSprite("assets/image/mug12.png");
-	immediate.drawCircle2D(450, 50, 40);
-	immediate.setMatrix2D(glm::identity<glm::mat4>());
-
-	immediate.setSprite("assets/image/vulkan-1.png");
-	immediate.drawRect2D(0, height - 126, 310, 126);
-
-	immediate.setFont("assets/font/OpenSans-Variable.ttf");
-	immediate.setFontSize(100);
-	immediate.drawText2D(300, 200, "Cześć Świecie!");
-
-	immediate.setColor(200, 0, 0);
-	immediate.setSprite(OFF);
-	immediate.setLineWidth(1);
-	immediate.drawLine2D(300, 200, 800, 200);
-
-	immediate.setColor(255, 255, 255);
-	immediate.setFontSize(25);
-	immediate.drawText2D(300, 220, "Checklight - Game engine based on the Vulkan API");
-
-	immediate.setSprite("assets/image/corners.png");
-	immediate.setLineWidth(0.1);
-	immediate.drawLine3D(0, 0, 0, sin(glfwGetTime() / 3) * 50, 10, cos(glfwGetTime() / 3) * 50);
-	immediate.drawRect3D(sin(glfwGetTime() / 3) * 50, 10, cos(glfwGetTime() / 3) * 50, 2, 2);
-
-}
-
-int main() {
-
-	std::string path = std::filesystem::current_path().generic_string();
-	printf("INFO: Current working directory: %s\n", path.c_str());
-
+	// Basic information about the program being run
 	ApplicationParameters parameters;
 	parameters.setName("My Checklight Game!");
 	parameters.setDimensions(1200, 800);
 
-	RenderSystem::init(parameters);
+	// Open the window and start the vulkan renderer
+	auto guard = RenderSystem::init(parameters);
+	Models::init();
 
 	RenderSystem& system = *RenderSystem::system;
 	Window& window = system.getWindow();
+	RenderParameters& options = system.getParameters();
 
-	//window.getInputDispatcher().registerListener( std::make_shared<DebugInputListener>());
+	// Configure the renderer
+	options.setAmbientLight(glm::vec3(0.0, 0.0, 0.0));
+	options.setDenoise(true);
+	options.setShadows(true);
+	options.setGISamples(1);
+	options.setPortalGIEnable(false);
+
+	// Simple overlay to play with render options
+	AutoTheme theme {};
+	auto context = RenderSystemOverlay::create(theme);
+
+	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
+	window.getInputDispatcher().registerListener(std::dynamic_pointer_cast<InputListener>(context));
 	auto models = system.importObj("assets/models/checklight.obj");
 	auto cube = system.importObj("assets/models/cube.obj");
 
-	BoardManager m(window);
+	BoardManager manager(window);
 
-	std::shared_ptr<Pawn> p = std::make_shared<Pawn>();
-	p->setName("Test");
+	std::shared_ptr<Pawn> pawn = std::make_shared<Pawn>();
 
-	m.getCurrentBoard().lock()->addPawnToRoot(p);
+	auto pawnThatRendersTheCube = std::make_shared<SpatialPawn>();
+	auto pawnThatRendersTheSphere = std::make_shared<SpatialPawn>();
+
+	pawnThatRendersTheCube->setPosition({-2,1,-2});
+
+	pawnThatRendersTheSphere->setPosition({2,1,2});
+
+	std::shared_ptr<Component> renderSphere = std::make_shared<RenderComponent>(Models::SPHERE);
+	std::shared_ptr<Component> renderCube = std::make_shared<RenderComponent>(Models::CUBE);
+
+	std::shared_ptr<Component> rotateCube = std::make_shared<MatrixAnimation>(MatrixAnimation::ROTATE);
+	std::shared_ptr<Component> moveSphere = std::make_shared<MatrixAnimation>(MatrixAnimation::TRANSLATE);
+
+
+	pawnThatRendersTheSphere->addComponent(renderSphere);
+	pawnThatRendersTheSphere->addComponent(moveSphere);
+
+	pawnThatRendersTheCube->addComponent(renderCube);
+	pawnThatRendersTheCube->addComponent(rotateCube);
+
+
+	pawn->setName("Test");
+
+	std::shared_ptr<Board> sp = manager.getCurrentBoard().lock();
+
+	sp->addPawnToRoot(pawn);
+	sp->addPawnToRoot(pawnThatRendersTheCube);
+	sp->addPawnToRoot(pawnThatRendersTheSphere);
+
 
 	std::vector<std::shared_ptr<RenderObject>> objects;
 
@@ -96,43 +100,47 @@ int main() {
 		objects.push_back(object);
 	}
 
-	system.getParameters().setAmbientLight(glm::vec3(0.0, 0.0, 0.0));
-	system.getParameters().setDenoise(true);
-	system.getParameters().setShadows(true);
-	system.getParameters().setGISamples(1);
+	system.getLightManager().createDirectionalLight(
+		{0.0, 3.5, -1.0},
+		{1.0, 1.0, 1.0},
+		1.5,
+		true
+	);
 
-	system.getLightManager().addLight({
-		.type = Light::DIRECTIONAL,
-		.color = glm::vec3(1.0, 1.0, 1.0),
-		.direction = glm::vec3(0.0, 3.5, -1.0),
-		.intensity = 1.5,
-		.shadow = true
-	});
-
-	auto point_light = system.getLightManager().addLight({
-		.type = Light::POINT,
-		.position = glm::vec3(3.0, 2.0, 18.0),
-		.color = glm::vec3(0.0, 0.0, 1.0),
-		.intensity = 50.0,
-		.shadow = true
-	});
+	auto point_light = system.getLightManager().createPointLight(
+		{3.0, 2.0, 18.0},
+		{0.0, 0.0, 1.0},
+		50.0,
+		true
+	);
 
 	while (!window.shouldClose()) {
 		window.poll();
 
 		//physics update before rendering
-		m.updateCycle();
-		std::shared_ptr<Board> current_board = m.getCurrentBoard().lock();
+		manager.updateCycle();
+		std::shared_ptr<Board> current_board = manager.getCurrentBoard().lock();
 
-		drawUserInterface(system.getImmediateRenderer(), system.width(), system.height());
+		// draw render system overlay
+		context->draw(system.getImmediateRenderer());
 
-		// update uniforms
-		// do this once at the beginning of frame rendering
+		// draw framerate onto the screen
+		const int fps = system.getFrameRate();
+		ImmediateRenderer& immediate = system.getImmediateRenderer();
+		immediate.setFontSize(30);
+		immediate.setFill(0, 0, 0);
+		immediate.setTextBox(OFF);
+		immediate.setWrapping(false);
+		immediate.setTextAlignment(HorizontalAlignment::RIGHT);
+		immediate.setTextAlignment(VerticalAlignment::TOP);
+		immediate.drawString2D(system.width() - 10, 10, "FPS: " + std::to_string(fps));
+
+		// update uniforms, do this once at the beginning of frame rendering
 		system.setProjectionMatrix(65.0f, 0.01f, 1000.0f);
 		system.setViewMatrix(current_board->getCamPos(), current_board->getCamForward());
 
 		// update lights
-		point_light->position = glm::vec3(3.0, 2.0, 18.0 * sin(glfwGetTime() / 8));
+		point_light->vector = glm::vec3(3.0, 2.0, 18.0 * sin(glfwGetTime() / 8));
 		point_light->color = glm::vec3(sin(glfwGetTime() / 2) * 0.5 + 0.5, sin(glfwGetTime() / 3 + 2) * 0.5 + 0.5, sin(glfwGetTime() / 5 + 4) * 0.5 + 0.5);
 		system.getLightManager().flush();
 
@@ -141,21 +149,23 @@ int main() {
 	}
 
 	system.wait();
+	Models::terminate();
 
-	for (auto& object : objects) {
-		object.reset();
+}
+
+int main(int argc, const char* argv[]) {
+
+	Args args {argc, argv};
+
+	std::string path = std::filesystem::current_path().generic_string();
+	out::info("Current working directory: %s", path.c_str());
+
+	if (args.has("--verbose")) {
+		out::logger.setLogLevelMask(Logger::LEVEL_VERBOSE);
 	}
 
-	for (auto& model : models) {
-		system.closeModel(model);
-		model.reset();
-	}
+	entry(args);
 
-	for (auto& model : cube) {
-		system.closeModel(model);
-		model.reset();
-	}
-
-	RenderSystem::system.reset();
+	return 0;
 
 }

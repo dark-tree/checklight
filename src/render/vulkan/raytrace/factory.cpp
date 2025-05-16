@@ -1,9 +1,13 @@
 
 #include "factory.hpp"
+
+#include <shared/math.hpp>
+
 #include "render/vulkan/command/recorder.hpp"
 #include "render/vulkan/buffer/query.hpp"
 #include "render/api/model.hpp"
 #include "render/system.hpp"
+#include "shared/logger.hpp"
 
 /*
  * AccelStructFactory
@@ -24,7 +28,7 @@ void AccelStructFactory::reserveScratchSpace(Allocator& allocator, uint32_t byte
 	if (scratch.size() < bytes) {
 		scratch.close();
 		scratch = allocator.allocateBuffer(Memory::DEVICE, bytes, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, "Scratch");
-		printf("INFO: Reallocated scratch buffer, now using %d bytes of device memory\n", bytes);
+		out::info("Reallocated scratch buffer, now using %d bytes of device memory", bytes);
 	}
 }
 
@@ -40,7 +44,7 @@ void AccelStructFactory::reserveQueryPool(const LogicalDevice& device, int size)
 
 		query = QueryPool {device, VK_QUERY_TYPE_ACCELERATION_STRUCTURE_COMPACTED_SIZE_KHR, size};
 		query.setDebugName("Compaction Query Pool");
-		printf("INFO: Reallocated compaction query pool, now using %d slots\n", size);
+		out::info("Reallocated compaction query pool, now using %d slots", size);
 	}
 }
 
@@ -69,10 +73,12 @@ void AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator,
 	std::vector<AccelStructBakedConfig*> linkages;
 	linkages.reserve(elements.size());
 
+	int alignment = RenderSystem::system->physical->getScratchBufferAlignment();
+
 	// prepare scratch buffer
-	reserveScratchSpace(allocator, batch_scratch);
+	reserveScratchSpace(allocator, batch_scratch + alignment);
 	reserveQueryPool(device, elements.size());
-	VkDeviceAddress address = device.getAddress(scratch);
+	VkDeviceAddress address = math::alignUp(device.getAddress(scratch), alignment);
 
 	// prepare all acceleration structures for building
 	for (auto& baked : elements) {
@@ -126,7 +132,7 @@ void AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator,
 
 		// close all previous structures
 		for (auto& previous : previouses) {
-			previous.close(device);
+			previous.close(device.getHandle());
 		}
 	}
 

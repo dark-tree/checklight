@@ -1,5 +1,7 @@
 #pragma once
 
+#include <shared/logger.hpp>
+
 #include "external.hpp"
 #include "device.hpp"
 
@@ -19,7 +21,7 @@ class Instance {
 			PFN_vkVoidFunction address = vkGetInstanceProcAddr(vk_instance, name);
 
 			if (address == nullptr) {
-				printf("ERROR: Instance function '%s' failed to load!\n", name);
+				out::error("Instance function '%s' failed to load!", name);
 			}
 
 			return (F) address;
