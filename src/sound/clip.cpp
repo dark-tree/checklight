@@ -1,5 +1,7 @@
 #include "clip.hpp"
 
+#include "shared/logger.hpp"
+
 SoundClip::SoundClip(){
 	alGetError();
 	alGenBuffers(1, &buffer);
@@ -45,7 +47,7 @@ void SoundClip::loadOGGFile(const char* filename) {
 	ALsizei size_block = stb_vorbis_decode_filename(filename, &channels, &sample_rate, &output);
 
 	if (size_block == -1) {
-		std::cerr << ("SoundClip -> OGG file load error\n");
+		out::error("Failed to decode OGG file '%s'!", filename);
 		free(output);
 		return;
 	}
@@ -58,16 +60,16 @@ void SoundClip::loadOGGFile(const char* filename) {
 
 	ALenum format = AL_FORMAT_MONO16;
 	ALsizei audio_size = size_block * sizeof(short);
+
 	// Create buffer
 	alBufferData(buffer, format, output, audio_size, sample_rate);
-	free(output);							//zwalnianie pamieci poprawic
+	free(output);
 
 	if (alGetError() != AL_NO_ERROR) {
-		std::cerr << ("Clip -> loadOGGFile: Failed to load file to buffer\n");  //throw exception
-		return;
+		FAULT("Failed to upload the sound buffer!");
 	}
 
-	printf("SoundClip -> OGG file loaded\n");
+	out::debug("Loaded sound '%s'", filename);
 }
 
 void SoundClip::loadWAVFile(const char* filename) {
@@ -97,7 +99,7 @@ void SoundClip::loadWAVFile(const char* filename) {
 	WAVFile wav_header;
 	/// Read header from file
 	if (!wav_file.read(reinterpret_cast<char*>(&wav_header), sizeof(WAVFile))) {
-		std::cerr << ("SoundClip -> WAV file load error\n");
+		out::error("Failed decode WAV file '%s', can't read file header!", filename);
 		return;
 	}
 
@@ -107,7 +109,7 @@ void SoundClip::loadWAVFile(const char* filename) {
 	data.resize(wav_header.subchunk2_size);
 
 	if (!wav_file.read(reinterpret_cast<char*>(data.data()), wav_header.subchunk2_size)) {
-		std::cerr << ("SoundClip -> WAV file load error\n");
+		out::error("Failed decode WAV file '%s', can't read file chunk!", filename);
 		return;
 	}
 	ALsizei audio_size = wav_header.subchunk2_size;
@@ -123,39 +125,44 @@ void SoundClip::loadWAVFile(const char* filename) {
 	}
 	else if (wav_header.bits_per_sample == 16) {
 		format = AL_FORMAT_MONO16;
-	}
-	else {
-		std::cerr << ("SoundClip -> WAV file load error\n");
+	} else {
+		out::error("Failed decode WAV file '%s', unsupported channel count, expected mono or stereo!", filename);
 		return;
 	}
 
 	alBufferData(buffer, format, data.data(), audio_size, frequency);
 
 	if (alGetError() != AL_NO_ERROR) {
-		std::cerr << ("Clip -> loadWAVFile: Failed to load file to buffer\n");  //throw exception
-		return;
+		FAULT("Failed to upload the sound buffer!");
 	}
 
-	printf("SoundClip -> WAV file loaded\n");
+	out::debug("Loaded sound '%s'", filename);
 }
 
-void SoundClip::loadAudio(const char* filename){
-	std::ifstream input_file(filename, std::ios::binary);
+void SoundClip::loadAudio(const char* filename) {
+	std::ifstream input_file {filename, std::ios::binary};
+
 	if (!input_file) {
-		std::cerr << ("SoundClip -> addAudio: File not found\n");
+		out::error("Can't open sound file '%s'!", filename);
 		return;
 	}
+
 	char header[4];
 	input_file.read(header, 4);
 	input_file.close();
 
 	if (std::string(header, 4) == "OggS") {
 		loadOGGFile(filename);
-	}	
-	else if (std::string(header, 4) == "RIFF" || std::string(header, 4) == "WAVE") 
+		return;
+	}
+
+	if (std::string(header, 4) == "RIFF" || std::string(header, 4) == "WAVE") {
 		loadWAVFile(filename);
-	else
-		std::cerr << ("SoundClip -> addAudio: File not supported\n");
+		return;
+	}
+
+	out::error("Can't open sound file '%s', unsupported or invalid format!", filename);
+
 }
 
 ALuint SoundClip::getBuffer() {

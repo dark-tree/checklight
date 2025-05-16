@@ -1,17 +1,18 @@
 #include "group.hpp"
 #include "sound.hpp"
+#include "shared/logger.hpp"
 
 // ===============================SoundGroup===============================
 
 void SoundGroup::addObserversSoundSourceObject(std::shared_ptr<SoundSourceObject> sso) {
 	if (!sso) {
-		std::cerr << ("SoundGroupParameters -> addObserversSoundSourceObject: SoundSourceObject not exist\n");
+		out::warn("There was an attempt to add a invalid source to a group!");
 		return;
 	}
 
-	// check if exist a source with a given name
+	// check if a source with a given name exists
 	if (findInVector(observers_vector_sso, sso) != observers_vector_sso.end()) {
-		std::cerr << ("SoundGroupParameters -> addObserversSoundSourceObject: SoundSourceObject already exist\n");
+		out::warn("There was an attempt to add a already preset source to a group!");
 		return;
 	}
 

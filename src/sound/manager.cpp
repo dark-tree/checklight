@@ -1,22 +1,24 @@
 #include "manager.hpp"
 
+#include "shared/logger.hpp"
+
 // ================================== PRIVATE ==================================
 
 SoundManager::SoundManager(){
 	p_ALCDevice = alcOpenDevice(nullptr);
 	if (!p_ALCDevice) {
-		std::cerr << ("OpenAL -> init: Failed to open device\n");  //throw exception
+		FAULT("Failed to open OpenAL device");
 		return;
 	}
 
 	p_ALCContext = alcCreateContext(p_ALCDevice, nullptr);
 	if (!p_ALCContext || !alcMakeContextCurrent(p_ALCContext)) {
 		alcCloseDevice(p_ALCDevice);
-		std::cerr << ("OpenAL -> init: Failed to load context on the device\n");  //throw exception
+		FAULT("Failed to load OpenAL context");
 		return;
 	}
 
-	printf("OpenAL initialized successfully.\n");
+	out::info("Sound system ready!");
 }
 
 SoundManager::~SoundManager(){

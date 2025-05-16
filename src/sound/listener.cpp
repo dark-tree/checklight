@@ -1,4 +1,5 @@
 #include "external.hpp"
+#include "shared/logger.hpp"
 
 /// Class to manage the sound listener in OpenAL.
 class SoundListener {
@@ -63,11 +64,22 @@ public:
 	static void print() {
 		auto position = getPosition();
 		auto velocity = getVelocity();
-		ALenum distanceModel = getDistanceModel();
+		ALenum model = getDistanceModel();
 
-		std::cout << "SoundListener:" << std::endl;
-		std::cout << "  Position: (" << position[0] << ", " << position[1] << ", " << position[2] << ")" << std::endl;
-		std::cout << "  Velocity: (" << velocity[0] << ", " << velocity[1] << ", " << velocity[2] << ")" << std::endl;
-		std::cout << "  Distance Model: " << distanceModel << std::endl;
+		const char* value = [model] () -> const char* {
+			switch (model) {
+				case AL_NONE: return "AL_NONE";
+				case AL_INVERSE_DISTANCE: return "AL_INVERSE_DISTANCE";
+				case AL_INVERSE_DISTANCE_CLAMPED: return "AL_INVERSE_DISTANCE_CLAMPED";
+				case AL_LINEAR_DISTANCE: return "AL_LINEAR_DISTANCE";
+				case AL_LINEAR_DISTANCE_CLAMPED: return "AL_LINEAR_DISTANCE_CLAMPED";
+				case AL_EXPONENT_DISTANCE: return "AL_EXPONENT_DISTANCE";
+				case AL_EXPONENT_DISTANCE_CLAMPED: return "AL_EXPONENT_DISTANCE_CLAMPED";
+			};
+
+			return "UNKNOWN";
+		} ();
+
+		out::info("SoundListener position: (%f, %f, %f), velocity: (%f, %f, %f), model: %s", position[0], position[1], position[2], position[3], velocity[0], velocity[1], velocity[2], value);
 	}
 };
