@@ -1,63 +1,11 @@
 
 #include "immediate.hpp"
+
+#include "system.hpp"
 #include "vulkan/command/recorder.hpp"
 #include "asset/atlas.hpp"
 #include "shared/unicode.hpp"
 #include "shared/math.hpp"
-
-/*
- * VertexChannel
- */
-
-VertexChannel::VertexChannel(const std::string& string) {
-	buffer.setDebugName("Immediate " + string + " Vertex Channel");
-}
-
-void VertexChannel::close() {
-	clear();
-	buffer.close();
-}
-
-void VertexChannel::upload(CommandRecorder& recorder) {
-	if (!empty()) {
-		buffer.resize(vertices.size(), sizeof(element));
-		buffer.writeToStaging(vertices.data(), vertices.size(), sizeof(element));
-		buffer.flushStaging(recorder);
-	}
-}
-
-bool VertexChannel::empty() const {
-	return vertices.empty();
-}
-
-void VertexChannel::clear() {
-	vertices.clear();
-	commands.clear();
-}
-
-void VertexChannel::pushTransform(glm::mat4 matrix) {
-	if (!commands.empty()) {
-		Command& command = commands.back();
-
-		if (command.count == 0) {
-			command.constant.matrix = matrix;
-			return;
-		}
-	}
-
-	commands.emplace_back(MeshConstant {matrix}, 0);
-}
-
-void VertexChannel::draw(PushConstant& push, CommandRecorder& recorder) {
-	if (!buffer.isEmpty()) {
-		int offset = 0;
-
-		for (const auto& command : commands) {
-			recorder.writePushConstant(push, &command.constant).bindVertexBuffer(buffer.getBuffer()).draw(command.count, 1, offset, 0);
-			offset += command.count;
-		}
-	}
-}
 
 /*
  * ImmediateRenderer
@@ -67,10 +15,14 @@ void ImmediateRenderer::upload(CommandRecorder& recorder) {
 	basic.upload(recorder);
 	basic_3d.upload(recorder);
 	text.upload(recorder);
-	atlas->upload(recorder);
+	bool dump = loader.getSharedAtlas()->upload(recorder);
 
 	if (mapping != 0) {
-		throw std::runtime_error {"Texture mapping stack overflow!"};
+		FAULT("Texture mapping stack overflow!");
+	}
+
+	if (dump) {
+		loader.getSharedAtlas()->getImage().save("debug/atlas.png");
 	}
 
 	recorder.memoryBarrier()
@@ -84,11 +36,11 @@ void ImmediateRenderer::close(const LogicalDevice& device) {
 	basic.close();
 	text.close();
 	basic_3d.close();
-	atlas->close(device);
+	loader.getSharedAtlas()->close(device);
 }
 
 Texture& ImmediateRenderer::getAtlasTexture() {
-	return atlas->getTexture();
+	return loader.getSharedAtlas()->getTexture();
 }
 
 void ImmediateRenderer::clear() {
@@ -97,9 +49,9 @@ void ImmediateRenderer::clear() {
 	basic_3d.clear();
 }
 
-void ImmediateRenderer::drawVertex2D(float x, float y) {
+void ImmediateRenderer::drawVertex2D(const Color& color, float x, float y) {
 	if (!mapping) {
-		throw std::runtime_error {"No texture mapped!"};
+		FAULT("No texture mapped!");
 	}
 
 	float du = sprite.u2 - sprite.u1;
@@ -108,7 +60,7 @@ void ImmediateRenderer::drawVertex2D(float x, float y) {
 	float u = sprite.u1 + (x - tx) / tw * du;
 	float v = sprite.v1 + (y - ty) / th * dv;
 
-	drawVertex2D(x, y, u, v);
+	drawVertex2D(color, x, y, u, v);
 }
 
 float ImmediateRenderer::getBezierPoint(float a, float b, float c, float d, float t) {
@@ -147,6 +99,30 @@ void ImmediateRenderer::popTextureMap() {
 	mapping --;
 }
 
+void ImmediateRenderer::drawColoredQuad2D(const Color& color, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
+
+	if (mapping) {
+		drawVertex2D(color, x1, y1);
+		drawVertex2D(color, x2, y2);
+		drawVertex2D(color, x3, y3);
+
+		drawVertex2D(color, x1, y1);
+		drawVertex2D(color, x3, y3);
+		drawVertex2D(color, x4, y4);
+		return;
+	}
+
+	drawVertex2D(color, x1, y1, sprite.u1, sprite.v1);
+	drawVertex2D(color, x2, y2, sprite.u2, sprite.v1);
+	drawVertex2D(color, x3, y3, sprite.u2, sprite.v2);
+
+	drawVertex2D(color, x1, y1, sprite.u1, sprite.v1);
+	drawVertex2D(color, x3, y3, sprite.u2, sprite.v2);
+	drawVertex2D(color, x4, y4, sprite.u1, sprite.v2);
+
+}
+
+
 float ImmediateRenderer::getMaxPixelError() const {
 	return ((float) quality) / 100.0f;
 }
@@ -171,37 +147,15 @@ glm::quat ImmediateRenderer::getBillboardRotation(glm::vec3 center) const {
 	return ry;
 }
 
-glm::vec2 ImmediateRenderer::getTextOffset(const std::vector<uint32_t>& text, glm::vec2 extend) const {
-
-	if (!font) {
-		throw std::runtime_error {"No font set!"};
-	}
-
-	float mx = static_cast<int>(horizontal) / 2.0f;
-	float my = static_cast<int>(vertical) / 2.0f;
-
-	glm::vec2 offset = {
-		extend.x * mx / font_size,
-		extend.y * my / font_size
-	};
-
-	uint32_t prev = 0;
-	float ox = 0;
-	float oy = font_size / 2;
-
-	for (uint32_t unicode : text) {
-		font->getOrLoad(&ox, &oy, font_size / 100.0f, unicode, prev);
-		prev = unicode;
-	}
-
-	return glm::vec2 {ox * mx, oy * my} - offset;
+void ImmediateRenderer::useColor(const Color& color) {
+	this->active = color;
 }
 
-ImmediateRenderer::ImmediateRenderer()
-: atlas(std::make_shared<DynamicAtlas>()), images(atlas), fonts(atlas) {
-	this->blank = images.getOrLoad(DynamicImageAtlas::BLANK_SPRITE);
-	setSprite(this->blank);
-	setColor(255, 255, 255);
+ImmediateRenderer::ImmediateRenderer(AssetLoader& loader)
+: loader(loader), blank(loader.getBlankSprite()) {
+	setSprite(OFF);
+	setFill(255, 255, 255);
+	setStroke(OFF);
 	setResolution(1, 1);
 	setLineWidth(4);
 	setRectRadius(0);
@@ -209,20 +163,45 @@ ImmediateRenderer::ImmediateRenderer()
 	setQuality(ArcQuality::HIGH);
 	setBillboardMode(BillboardMode::ONE_AXIS);
 	setBillboardTarget({0, 0, 0});
-	setFontTilt(0);
 	setTextAlignment(VerticalAlignment::BOTTOM);
 	setTextAlignment(HorizontalAlignment::LEFT);
+	setWrapping(true);
+	setStrokeWidth(2);
 }
 
 Sprite ImmediateRenderer::getSprite(const std::string& path) {
-	return images.getOrLoad(path);
+	return loader.getSprite(path);
 }
 
-void ImmediateRenderer::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-	this->r = r;
-	this->g = g;
-	this->b = b;
-	this->a = a;
+void ImmediateRenderer::synchronize() {
+	text.pushSync();
+	basic.pushSync();
+}
+
+void ImmediateRenderer::setFill(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+	setFill({r, g, b, a});
+}
+
+void ImmediateRenderer::setFill(const Color& color) {
+	fill_enabled = (color.a != 0);
+	this->fill = color;
+}
+
+void ImmediateRenderer::setFill(Disabled disabled) {
+	fill_enabled = false;
+}
+
+void ImmediateRenderer::setStroke(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+	setStroke({r, g, b, a});
+}
+
+void ImmediateRenderer::setStroke(const Color& color) {
+	stroke_enabled = (color.a != 0);
+	this->stroke = color;
+}
+
+void ImmediateRenderer::setStroke(Disabled disabled) {
+	stroke_enabled = false;
 }
 
 void ImmediateRenderer::setResolution(uint32_t width, uint32_t height) {
@@ -262,11 +241,11 @@ void ImmediateRenderer::setSprite(Disabled disable) {
 }
 
 void ImmediateRenderer::setFont(const std::string& path) {
-	this->font = fonts.getOrLoad(path);
+	bakery.setFont(path);
 }
 
 void ImmediateRenderer::setFontSize(int size) {
-	this->font_size = size;
+	bakery.setSize(size);
 }
 
 void ImmediateRenderer::setQuality(ArcQuality quality) {
@@ -290,16 +269,12 @@ void ImmediateRenderer::setBillboardMode(BillboardMode mode) {
 	this->billboard = mode;
 }
 
-void ImmediateRenderer::setFontTilt(float tilt) {
-	this->font_tilt = tilt;
-}
-
 void ImmediateRenderer::setTextAlignment(VerticalAlignment alignment) {
-	this->vertical = alignment;
+	bakery.setAlignment(alignment);
 }
 
 void ImmediateRenderer::setTextAlignment(HorizontalAlignment alignment) {
-	this->horizontal = alignment;
+	bakery.setAlignment(alignment);
 }
 
 void ImmediateRenderer::setTextAlignment(VerticalAlignment vertical, HorizontalAlignment horizontal) {
@@ -307,17 +282,41 @@ void ImmediateRenderer::setTextAlignment(VerticalAlignment vertical, HorizontalA
 	setTextAlignment(horizontal);
 }
 
+void ImmediateRenderer::setTextBox(Disabled disabled) {
+	setTextBox(0, 0);
+}
+
+void ImmediateRenderer::setTextBox(int width, int height) {
+	bakery.setBounds(width, height);
+}
+
+void ImmediateRenderer::setWrapping(bool wrap) {
+	bakery.setWrapping(wrap);
+}
+
+void ImmediateRenderer::setStrokeWidth(float stroke) {
+	this->stroke_width = stroke;
+}
+
+BakedText ImmediateRenderer::bakeString(float x, float y, const std::string& text) {
+	return bakeUnicode(x, y, utf8::toCodePoints(text.c_str()));
+}
+
+BakedText ImmediateRenderer::bakeUnicode(float x, float y, const std::vector<uint32_t>& unicodes) {
+	return bakery.bakeUnicode(x, y, unicodes);
+}
+
 void ImmediateRenderer::setFont(const std::string& path, int size) {
 	setFont(path);
 	setFontSize(size);
 }
 
-void ImmediateRenderer::drawVertex2D(float x, float y, float u, float v) {
-	basic.write(x * iw - 1, y * ih - 1, 0, r, g, b, a, u, v);
+void ImmediateRenderer::drawVertex2D(const Color& color, float x, float y, float u, float v) {
+	basic.write(x * iw - 1, y * ih - 1, 0, color.r, color.g, color.b, color.a, u, v);
 }
 
-void ImmediateRenderer::drawVertex2D(glm::vec2 pos, float u, float v) {
-	drawVertex2D(pos.x, pos.y, u, v);
+void ImmediateRenderer::drawVertex2D(const Color& color, glm::vec2 pos, float u, float v) {
+	drawVertex2D(color, pos.x, pos.y, u, v);
 }
 
 void ImmediateRenderer::drawRect2D(float x, float y, float w, float h) {
@@ -334,15 +333,55 @@ void ImmediateRenderer::drawRect2D(float x, float y, float w, float h) {
 	drawArc2D(pcr.x, pcr.y, rtr, rtr, glm::radians(0.0f), -M_PI_2);
 	drawArc2D(pdr.x, pdr.y, rtl, rtl, glm::radians(270.0f), -M_PI_2);
 
-	// main rect body
-	drawQuad2D(par.x, par.y, pbr.x, pbr.y, pcr.x, pcr.y, pdr.x, pdr.y);
+	if (fill_enabled) {
 
-	// beveled walls
-	drawQuad2D(par.x, par.y, pdr.x, pdr.y, pdr.x - rtl, pdr.y, par.x - rbl, par.y);
-	drawQuad2D(pbr.x, pbr.y, pcr.x, pcr.y, pcr.x + rtr, pcr.y, pbr.x + rbr, pbr.y);
-	drawQuad2D(pcr.x, pcr.y, pdr.x, pdr.y, pdr.x, pdr.y - rtl, pcr.x, pcr.y - rtr);
-	drawQuad2D(par.x, par.y, pbr.x, pbr.y, pbr.x, pbr.y + rbr, par.x, par.y + rbl);
+		// main rect body
+		useColor(fill);
+		drawQuad2D(par.x, par.y, pbr.x, pbr.y, pcr.x, pcr.y, pdr.x, pdr.y);
 
+		// beveled walls
+		drawQuad2D(par.x, par.y, pdr.x, pdr.y, pdr.x - rtl, pdr.y, par.x - rbl, par.y);
+		drawQuad2D(pbr.x, pbr.y, pcr.x, pcr.y, pcr.x + rtr, pcr.y, pbr.x + rbr, pbr.y);
+		drawQuad2D(pcr.x, pcr.y, pdr.x, pdr.y, pdr.x, pdr.y - rtl, pcr.x, pcr.y - rtr);
+		drawQuad2D(par.x, par.y, pbr.x, pbr.y, pbr.x, pbr.y + rbr, par.x, par.y + rbl);
+	}
+
+	if (stroke_enabled) {
+
+		// extended radii
+		const float erbl = rbl + stroke_width;
+		const float erbr = rbr + stroke_width;
+		const float ertr = rtr + stroke_width;
+		const float ertl = rtl + stroke_width;
+
+		// beveled stroke
+		drawColoredQuad2D(stroke, pdr.x - rtl, pdr.y, par.x - rbl, par.y, par.x - erbl, par.y, pdr.x - ertl, pdr.y);
+		drawColoredQuad2D(stroke, pcr.x + rtr, pcr.y, pbr.x + rbr, pbr.y, pbr.x + erbr, pbr.y, pcr.x + ertr, pcr.y);
+		drawColoredQuad2D(stroke, pdr.x, pdr.y - rtl, pcr.x, pcr.y - rtr, pcr.x, pcr.y - ertr, pdr.x, pdr.y - ertl);
+		drawColoredQuad2D(stroke, pbr.x, pbr.y + rbr, par.x, par.y + rbl, par.x, par.y + erbl, pbr.x, pbr.y + erbr);
+
+	}
+
+	popTextureMap();
+
+}
+
+void ImmediateRenderer::drawRect2D(const Box2D& box) {
+	drawRect2D(box.x, box.y, box.w, box.h);
+}
+
+void ImmediateRenderer::drawTrig2D(float x1, float y1, float x2, float y2, float x3, float y3) {
+
+	float min_x = std::min(std::min(x1, x2), x3);
+	float min_y = std::min(std::min(y1, y2), y3);
+
+	float max_x = std::max(std::max(x1, x2), x3);
+	float max_y = std::max(std::max(y1, y2), y3);
+
+	pushTextureMap(min_x, min_y, max_x - min_x, max_y - min_y);
+	drawVertex2D(fill, x1, y1);
+	drawVertex2D(fill, x2, y2);
+	drawVertex2D(fill, x3, y3);
 	popTextureMap();
 
 }
@@ -355,13 +394,13 @@ void ImmediateRenderer::drawLine2D(float x1, float y1, float x2, float y2) {
 	glm::vec2 ab = pb - pa;
 	glm::vec2 pp = glm::normalize(glm::vec2 {-ab.y, ab.x}) * width;
 
-	drawVertex2D(pa + pp, sprite.u1, sprite.v1);
-	drawVertex2D(pb - pp, sprite.u2, sprite.v2);
-	drawVertex2D(pb + pp, sprite.u1, sprite.v2);
+	drawVertex2D(fill, pa + pp, sprite.u1, sprite.v1);
+	drawVertex2D(fill, pb - pp, sprite.u2, sprite.v2);
+	drawVertex2D(fill, pb + pp, sprite.u1, sprite.v2);
 
-	drawVertex2D(pa + pp, sprite.u1, sprite.v1);
-	drawVertex2D(pa - pp, sprite.u2, sprite.v1);
-	drawVertex2D(pb - pp, sprite.u2, sprite.v2);
+	drawVertex2D(fill, pa + pp, sprite.u1, sprite.v1);
+	drawVertex2D(fill, pa - pp, sprite.u2, sprite.v1);
+	drawVertex2D(fill, pb - pp, sprite.u2, sprite.v2);
 
 }
 
@@ -380,20 +419,22 @@ void ImmediateRenderer::drawSlantedLine2D(glm::vec2 p1, glm::vec2 d1, glm::vec2 
 	glm::vec2 b1 = p2 + s2;
 	glm::vec2 b2 = p2 - s2;
 
-	drawVertex2D(a1.x, a1.y, sprite.u1, sprite.v1);
-	drawVertex2D(a2.x, a2.y, sprite.u2, sprite.v1);
-	drawVertex2D(b1.x, b1.y, sprite.u1, sprite.v2);
+	drawVertex2D(fill, a1.x, a1.y, sprite.u1, sprite.v1);
+	drawVertex2D(fill, a2.x, a2.y, sprite.u2, sprite.v1);
+	drawVertex2D(fill, b1.x, b1.y, sprite.u1, sprite.v2);
 
-	drawVertex2D(b1.x, b1.y, sprite.u1, sprite.v2);
-	drawVertex2D(a2.x, a2.y, sprite.u2, sprite.v1);
-	drawVertex2D(b2.x, b2.y, sprite.u2, sprite.v2);
+	drawVertex2D(fill, b1.x, b1.y, sprite.u1, sprite.v2);
+	drawVertex2D(fill, a2.x, a2.y, sprite.u2, sprite.v1);
+	drawVertex2D(fill, b2.x, b2.y, sprite.u2, sprite.v2);
 }
 
 void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, float start, float angle, ArcMode mode) {
 
 	pushTextureMap(x - hrad, y - vrad, hrad * 2, vrad * 2);
 
-	float extent = std::max(hrad, vrad);
+	float herad = hrad + stroke_width;
+	float verad = vrad + stroke_width;
+	float extent = std::max(herad, verad);
 
 	float theta = 2 * acos(1 - getMaxPixelError() / extent);
 	int sides = (int) std::max(2.0f, (abs(angle) / theta));
@@ -406,9 +447,27 @@ void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, floa
 		float bx = x + hrad * cos(start + step * (i + 1));
 		float by = y + vrad * sin(start + step * (i + 1));
 
-		drawVertex2D(x, y);
-		drawVertex2D(ax, ay);
-		drawVertex2D(bx, by);
+		if (fill_enabled) {
+			drawVertex2D(fill, x, y);
+			drawVertex2D(fill, ax, ay);
+			drawVertex2D(fill, bx, by);
+		}
+
+		if (stroke_enabled) {
+			float cx = x + herad * cos(start + step * i);
+			float cy = y + verad * sin(start + step * i);
+
+			float dx = x + herad * cos(start + step * (i + 1));
+			float dy = y + verad * sin(start + step * (i + 1));
+
+			drawVertex2D(stroke, ax, ay);
+			drawVertex2D(stroke, cx, cy);
+			drawVertex2D(stroke, dx, dy);
+
+			drawVertex2D(stroke, ax, ay);
+			drawVertex2D(stroke, dx, dy);
+			drawVertex2D(stroke, bx, by);
+		}
 	}
 
 	if (angle > M_PI && mode == ArcMode::OPEN_CHORD) {
@@ -418,9 +477,11 @@ void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, floa
 		float bx = x + hrad * cos(start + angle);
 		float by = y + vrad * sin(start + angle);
 
-		drawVertex2D(x, y);
-		drawVertex2D(ax, ay);
-		drawVertex2D(bx, by);
+		if (fill_enabled) {
+			drawVertex2D(fill, x, y);
+			drawVertex2D(fill, ax, ay);
+			drawVertex2D(fill, bx, by);
+		}
 	}
 
 	popTextureMap();
@@ -436,26 +497,7 @@ void ImmediateRenderer::drawCircle2D(float x, float y, float radius) {
 }
 
 void ImmediateRenderer::drawQuad2D(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
-
-	if (mapping) {
-		drawVertex2D(x1, y1);
-		drawVertex2D(x2, y2);
-		drawVertex2D(x3, y3);
-
-		drawVertex2D(x1, y1);
-		drawVertex2D(x3, y3);
-		drawVertex2D(x4, y4);
-		return;
-	}
-
-	drawVertex2D(x1, y1, sprite.u1, sprite.v1);
-	drawVertex2D(x2, y2, sprite.u2, sprite.v1);
-	drawVertex2D(x3, y3, sprite.u2, sprite.v2);
-
-	drawVertex2D(x1, y1, sprite.u1, sprite.v1);
-	drawVertex2D(x3, y3, sprite.u2, sprite.v2);
-	drawVertex2D(x4, y4, sprite.u1, sprite.v2);
-
+	drawColoredQuad2D(fill, x1, y1, x2, y2, x3, y3, x4, y4);
 }
 
 void ImmediateRenderer::drawBezier2D(float ax, float ay, float bx, float by, float cx, float cy, float dx, float dy) {
@@ -486,7 +528,7 @@ void ImmediateRenderer::drawBezier2D(float ax, float ay, float bx, float by, flo
 
 	while (t < 1.0f) {
 
-		// Calculate point on the bezier curve
+		// Calculate point on the Bézier curve
 		const float px = getBezierPoint(ax, bx, cx, dx, t);
 		const float py = getBezierPoint(ay, by, cy, dy, t);
 		const glm::vec2 point {px, py};
@@ -513,40 +555,32 @@ void ImmediateRenderer::drawBezier2D(float ax, float ay, float bx, float by, flo
 
 }
 
-void ImmediateRenderer::drawText2D(float x, float y, const std::string& str) {
+void ImmediateRenderer::drawString2D(float x, float y, const std::string& str) {
+	drawText2D(0, 0, bakeString(x, y, str));
+}
 
-	if (!font) {
-		throw std::runtime_error {"No font set!"};
-	}
+void ImmediateRenderer::drawText2D(float x, float y, const BakedText& baked) {
+	for (GlyphQuad quad : baked.getQuads()) {
+		if (quad.shouldDraw()) {
 
-	std::vector<uint32_t> unicodes = utf8::toCodePoints(str.c_str());
-	uint32_t prev = 0;
+			const float x0 = (quad.x0 + x) * iw - 1;
+			const float x1 = (quad.x1 + x) * iw - 1;
+			const float y0 = (quad.y0 + y) * ih - 1;
+			const float y1 = (quad.y1 + y) * ih - 1;
 
-	glm::vec2 alignment = getTextOffset(unicodes, {0, 0});
+			text.write(x0, y1, 0, fill.r, fill.g, fill.b, fill.a, quad.s0, quad.t1);
+			text.write(x0, y0, 0, fill.r, fill.g, fill.b, fill.a, quad.s0, quad.t0);
+			text.write(x1, y0, 0, fill.r, fill.g, fill.b, fill.a, quad.s1, quad.t0);
 
-	for (uint32_t unicode : unicodes) {
-		GlyphQuad q = font->getOrLoad(&x, &y, font_size / 100.0f, unicode, prev);
-		prev = unicode;
-
-		const float x0 = (q.x0 - alignment.x) * iw - 1;
-		const float x1 = (q.x1 - alignment.x) * iw - 1;
-		const float y0 = (q.y0 + alignment.y) * ih - 1;
-		const float y1 = (q.y1 + alignment.y) * ih - 1;
-
-		if (q.shouldDraw()) {
-			text.write(x0, y1, 0, r, g, b, a, q.s0, q.t1);
-			text.write(x0, y0, 0, r, g, b, a, q.s0, q.t0);
-			text.write(x1, y0, 0, r, g, b, a, q.s1, q.t0);
-
-			text.write(x0, y1, 0, r, g, b, a, q.s0, q.t1);
-			text.write(x1, y0, 0, r, g, b, a, q.s1, q.t0);
-			text.write(x1, y1, 0, r, g, b, a, q.s1, q.t1);
+			text.write(x0, y1, 0, fill.r, fill.g, fill.b, fill.a, quad.s0, quad.t1);
+			text.write(x1, y0, 0, fill.r, fill.g, fill.b, fill.a, quad.s1, quad.t0);
+			text.write(x1, y1, 0, fill.r, fill.g, fill.b, fill.a, quad.s1, quad.t1);
 		}
 	}
 }
 
 void ImmediateRenderer::drawVertex3D(float x, float y, float z, float u, float v) {
-	basic_3d.write(x, y, z, r, g, b, a, u, v);
+	basic_3d.write(x, y, z, fill.r, fill.g, fill.b, fill.a, u, v);
 }
 
 void ImmediateRenderer::drawVertex3D(glm::vec3 pos, float u, float v) {

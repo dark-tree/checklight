@@ -105,7 +105,7 @@ Allocator::Allocator(LogicalDevice& logical, PhysicalDevice& physical, Instance&
 	create_info.pAllocationCallbacks = nullptr;
 
 	if (vmaCreateAllocator(&create_info, &vma_allocator) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create allocator!"};
+		FAULT("Failed to create allocator!");
 	}
 
 	vkGetPhysicalDeviceMemoryProperties(physical.getHandle(), &vk_properties);
@@ -116,7 +116,7 @@ void Allocator::close() {
 }
 
 void Allocator::print() {
-	printf("INFO: There are %d memory types and %d memory heaps\n", vk_properties.memoryTypeCount, vk_properties.memoryHeapCount);
+	out::info("There are %d memory types and %d memory heaps", vk_properties.memoryTypeCount, vk_properties.memoryHeapCount);
 
 	size_t free = 0;
 
@@ -128,7 +128,7 @@ void Allocator::print() {
 		}
 	}
 
-	printf("INFO: Found %lu MiB of device local free memory\n", free);
+	out::info("Found %lu MiB of device local free memory", free);
 }
 
 Buffer Allocator::allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags usage, const char* name) {
@@ -145,7 +145,7 @@ Buffer Allocator::allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags
 	VmaAllocation allocation;
 
 	if (vmaCreateBuffer(vma_allocator, &create_info, &allocation_info, &buffer, &allocation, nullptr) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to allocate buffer!"};
+		FAULT("Failed to allocate buffer!");
 	}
 
 	if (!name) {
@@ -157,7 +157,7 @@ Buffer Allocator::allocateBuffer(Memory memory, size_t bytes, VkBufferUsageFlags
 	return {buffer, {vma_allocator, allocation}, bytes};
 }
 
-Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels, const char* name) {
+Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat format, VkImageUsageFlags usage, int layers, int levels, VkSampleCountFlagBits samples, const char* name) {
 	VmaAllocationCreateInfo allocation_info {};
 	fromMemoryGroup(&allocation_info, memory);
 
@@ -174,14 +174,14 @@ Image Allocator::allocateImage(Memory memory, int width, int height, VkFormat fo
 	create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	create_info.usage = usage;
 	create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+	create_info.samples = samples;
 	create_info.flags = 0;
 
 	VkImage image;
 	VmaAllocation allocation;
 
 	if (vmaCreateImage(vma_allocator, &create_info, &allocation_info, &image, &allocation, nullptr) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to allocate image!"};
+		FAULT("Failed to allocate image!");
 	}
 
 	if (!name) {
@@ -210,7 +210,7 @@ AccelStruct Allocator::allocateAcceleration(VkAccelerationStructureTypeKHR type,
 	VkAccelerationStructureKHR structure;
 
 	if (Proxy::vkCreateAccelerationStructureKHR(vk_device, &create_info, nullptr, &structure) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to allocate acceleration structure!"};
+		FAULT("Failed to allocate acceleration structure!");
 	}
 
 	VulkanDebug::beginLifetime(VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR, structure, name);

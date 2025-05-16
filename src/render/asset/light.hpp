@@ -18,14 +18,13 @@ struct Light {
 			POINT = 2
 		};
 
-		using bool32 = uint32_t;
+		using bool32_t = uint32_t;
 
 		Type type;
-		glm::vec3 position;
+		glm::vec3 vector;
 		glm::vec3 color;
-		glm::vec3 direction;
 		float intensity;
-		bool32 shadow;
+		bool32_t shadow;
 
 };
 
@@ -38,12 +37,18 @@ class LightManager {
 		void close();
 
 		/**
-		 * Create a new light with the specified parameters and add it to the manager.
-		 * 
-		 * @param light Light parameters that will be used to create a new light
+		 * Create a new point light with the specified parameters and add it to the manager.
+		 *
 		 * @return Pointer to the newly created light
 		 */
-		std::shared_ptr<Light> addLight(Light light);
+		std::shared_ptr<Light> createPointLight(glm::vec3 position, glm::vec3 color, float intensity, bool shadow);
+
+		/**
+		 * Create a new directional light with the specified parameters and add it to the manager.
+		 *
+		 * @return Pointer to the newly created light
+		 */
+		std::shared_ptr<Light> createDirectionalLight(glm::vec3 direction, glm::vec3 color, float intensity, bool shadow);
 
 		/**
 		 * Add a light to the manager.
@@ -51,7 +56,7 @@ class LightManager {
 		 *
 		 * @param light Light to add
 		 */
-		void addLight(std::shared_ptr<Light> light);
+		void addLight(const std::shared_ptr<Light>& light);
 
 		/**
 		 * Remove a light from the manager
@@ -59,7 +64,7 @@ class LightManager {
 		 *
 		 * @param light Light to remove
 		 */
-		void removeLight(std::shared_ptr<Light> light);
+		void removeLight(const std::shared_ptr<Light>& light);
 
 		/**
 		 * Flush the light buffer.

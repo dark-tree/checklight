@@ -20,6 +20,9 @@ class CodedEvent : public PositionedEvent {
 		/// Check if the key/button was released
 		bool isReleaseEvent() const;
 
+		/// Check if the key/button was typed (allows key repeat)
+		bool isTypedEvent() const;
+
 		/// Check if the SHIFT key was held
 		bool isShiftPressed() const;
 

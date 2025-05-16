@@ -5,6 +5,8 @@
 #include "msdfgen.h"
 #include "msdfgen-ext.h"
 #include <ft2build.h>
+#include <shared/logger.hpp>
+
 #include FT_FREETYPE_H
 
 /*
@@ -13,6 +15,13 @@
 
 bool GlyphQuad::shouldDraw() const {
 	return true;
+}
+
+void GlyphQuad::applyOffset(glm::vec2 vec) {
+	x0 += vec.x;
+	x1 += vec.x;
+	y0 += vec.y;
+	y1 += vec.y;
 }
 
 /*
@@ -69,7 +78,7 @@ bool Font::loadUnicode(uint32_t unicode, float scale, float range) {
 			}
 		}
 
-		Sprite sprite = atlas->submit(image);
+		Sprite sprite = atlas->submitWithMargin(image);
 		image.close();
 
 		info.x0 = sprite.u1;
@@ -88,7 +97,7 @@ bool Font::loadUnicode(uint32_t unicode, float scale, float range) {
 Font::Font(std::shared_ptr<DynamicAtlas> atlas, std::string path, int weight) {
 
 	if (!freetype) {
-		throw std::runtime_error {"Failed to initialize FreeType library!"};
+		FAULT("Failed to initialize FreeType library!");
 	}
 
 	this->font = msdfgen::loadFont(freetype, path.c_str());
@@ -97,13 +106,26 @@ Font::Font(std::shared_ptr<DynamicAtlas> atlas, std::string path, int weight) {
 	this->path = path;
 
 	if (!font) {
-		throw std::runtime_error {"Failed to open font: '" + path + "'"};
+		FAULT("Failed to open font: '", path, "'!");
 	}
 
 	msdfgen::setFontVariationAxis(freetype, font, "Weight", weight);
 
+	metrics = new msdfgen::FontMetrics {};
+	msdfgen::getFontMetrics(*metrics, font, msdfgen::FONT_SCALING_EM_NORMALIZED);
+
 	FT_Face face = getFreeType();
-	printf("INFO: Loaded font '%s' from '%s'\n", face->family_name, path.c_str());
+	out::info("Loaded font '%s' from '%s'", face->family_name, path.c_str());
+	out::debug("Line height of '%s' is %fem", face->family_name, getLineHeight());
+}
+
+Font::~Font() {
+	delete metrics;
+	msdfgen::destroyFont(font);
+}
+
+float Font::getLineHeight() const {
+	return metrics->lineHeight;
 }
 
 GlyphQuad Font::getOrLoad(float* x, float* y, float scale, uint32_t unicode, int prev) {
@@ -119,29 +141,41 @@ GlyphQuad Font::getOrLoad(float* x, float* y, float scale, uint32_t unicode, int
 	auto pair = cdata.find(unicode);
 
 	if (pair == cdata.end()) {
-		loadUnicode(unicode, 64, 6);
+		loadUnicode(unicode, resolution * fraction, 6);
 		return getOrLoad(x, y, scale, unicode, prev);
 	}
 
 	GlyphInfo& info = pair->second;
+	quad.advance = info.advance * scale;
 
-	int round_x = (int) floor((*x + info.xoff * scale) + 0.5f);
-	int round_y = (int) floor((*y + info.yoff * scale) + 0.5f);
+	float width = info.xoff * scale;
+	float height = info.yoff * scale;
 
-	quad.x0 = round_x + kerning * 100 * scale;
-	quad.y0 = round_y;
-	quad.x1 = round_x + (info.x1 - info.x0) * scale;
-	quad.y1 = round_y + (info.y1 - info.y0) * scale;
+	float bx = *x + width;
+	float by = *y + height;
+
+	quad.x0 = bx + kerning * resolution * scale;
+	quad.y0 = by;
+	quad.x1 = bx + (info.x1 - info.x0) * scale;
+	quad.y1 = by + (info.y1 - info.y0) * scale;
 
 	quad.s0 = info.x0;
 	quad.t0 = info.y1;
 	quad.s1 = info.x1;
 	quad.t1 = info.y0;
 
-	*x += info.advance * scale;
+	*x += quad.advance;
 	return quad;
 
 }
+
+void Font::preloadAscii(const std::string& ascii) {
+	for (char chr : ascii) {
+		float x = 0, y = 0, scale = 100;
+		(void) getOrLoad(&x, &y, scale, chr, 0);
+	}
+}
+
 
 /*
  * DynamicFontAtlas
@@ -159,5 +193,7 @@ std::shared_ptr<Font> DynamicFontAtlas::getOrLoad(const std::string& path) {
 
 	auto font = std::make_shared<Font>(atlas, path, 500);
 	fonts[path] = font;
+
+	font->preloadAscii("0123456789");
 	return font;
 }

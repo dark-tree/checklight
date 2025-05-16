@@ -6,9 +6,10 @@
  * RenderPass
  */
 
-RenderPass::RenderPass(VkDevice vk_device, VkRenderPass vk_pass, std::vector<VkClearValue>& values, std::vector<Subpass>& subpass_info, FramebufferSet& framebuffer)
-: framebuffer(framebuffer), vk_device(vk_device), vk_pass(vk_pass), values(values), subpasses(subpass_info) {
-	values.shrink_to_fit();
+RenderPass::RenderPass(VkDevice vk_device, VkRenderPass vk_pass, std::vector<VkClearValue>& values, std::vector<Subpass>& subpass_info, FramebufferSet& framebuffer, const std::vector<VkSampleCountFlagBits>& samples)
+: framebuffer(framebuffer), vk_device(vk_device), vk_pass(vk_pass), values(values), subpasses(subpass_info), samples(samples) {
+	this->values.shrink_to_fit();
+	this->samples.shrink_to_fit();
 }
 
 void RenderPass::close() {
@@ -22,6 +23,18 @@ const Subpass& RenderPass::getSubpass(int subpass) const {
 
 int RenderPass::getSubpassCount() const {
 	return subpasses.size();
+}
+
+std::vector<VkSampleCountFlagBits> RenderPass::getSampleArray() const {
+	std::vector<VkSampleCountFlagBits> combined;
+
+	for (auto& subpass : subpasses) {
+		for (auto sampling : subpass.getSampleArray()) {
+			combined.push_back(sampling);
+		}
+	}
+
+	return combined;
 }
 
 void RenderPass::prepareFramebuffers(const Swapchain& swapchain) {
@@ -39,12 +52,13 @@ VkFramebuffer RenderPass::getFramebuffer(uint32_t i) {
 Attachment::Ref RenderPassBuilder::addAttachment(AttachmentBuilder& builder) {
 	attachments.push_back(builder);
 	framebuffer.addAttachment(builder.attachment);
-	return Attachment::Ref::of(attachments.size() - 1);
+
+	return Attachment::Ref::of(attachments.size() - 1, builder.attachment.getSamples());
 }
 
-AttachmentBuilder RenderPassBuilder::addAttachment(const Attachment& attachment, VkSampleCountFlagBits samples) {
+AttachmentBuilder RenderPassBuilder::addAttachment(const Attachment& attachment) {
 	values.push_back(attachment.getClearValue());
-	return {*this, attachment, samples};
+	return {*this, attachment};
 }
 
 RenderPassBuilder& RenderPassBuilder::addSubpass(SubpassBuilder& builder) {
@@ -116,12 +130,12 @@ RenderPass RenderPassBuilder::build(const LogicalDevice& device, const char* nam
 	VkRenderPass render_pass;
 
 	if (vkCreateRenderPass(device.getHandle(), &create_info, nullptr, &render_pass) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create render pass!"};
+		FAULT("Failed to create render pass!");
 	}
 
 	VulkanDebug::setDebugName(device.getHandle(), VK_OBJECT_TYPE_RENDER_PASS, render_pass, name);
 	framebuffer.setDebugName(name);
 
-	return {device.getHandle(), render_pass, values, subpass_info, framebuffer};
+	return RenderPass {device.getHandle(), render_pass, values, subpass_info, framebuffer, {}};
 
 }

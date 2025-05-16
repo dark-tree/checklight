@@ -8,7 +8,7 @@ class SurfacePawn : public Pawn {
 	float rotation;
 
 	glm::mat3x4 result;
-
+public:
 	/**
 	 * Translates Pawn by specified value
 	 */
@@ -23,7 +23,6 @@ class SurfacePawn : public Pawn {
 	 * Returns absolute position of a pawn in 2D space
 	 */
 	glm::vec2 getPosition() const;
-
 
 	/**
 	 * Sets absolute rotation of a pawn in 2D space in radians

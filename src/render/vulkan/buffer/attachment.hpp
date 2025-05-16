@@ -16,6 +16,7 @@ class Attachment {
 		 */
 		bool magicity;
 
+		VkExtent2D extent;
 		TextureDelegate settings;
 		Texture texture;
 
@@ -28,11 +29,15 @@ class Attachment {
 		struct Ref {
 
 			private:
-				explicit Ref(int index);
+
+				explicit Ref(int index, VkSampleCountFlagBits samples);
 
 			public:
+
 				const uint32_t index;
-				static Ref of(int index);
+				const VkSampleCountFlagBits samples;
+
+				static Ref of(int index, VkSampleCountFlagBits samples);
 
 		};
 
@@ -53,6 +58,9 @@ class Attachment {
 		/// Get the aspect flags of this attachment
 		VkImageAspectFlags getAspect() const;
 
+		/// Get per-pixel sample count of this image
+		VkSampleCountFlagBits getSamples() const;
+
 		/// Get the underlying texture, use only after a call to allocate()
 		const Texture& getTexture() const;
 
@@ -63,8 +71,11 @@ class Attachment {
 		void markSwapchainBacked();
 
 		/// Create the underlying texture
-		void allocate(LogicalDevice& device, int width, int height, Allocator& allocator);
+		void allocate(LogicalDevice& device, VkExtent2D extent, Allocator& allocator);
 
 		/// Close the underlying texture
 		void close(LogicalDevice device);
+
+		/// Get attachment size (if it has been allcoated)
+		VkExtent2D getExtent() const;
 };

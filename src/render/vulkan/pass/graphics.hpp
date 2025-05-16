@@ -22,6 +22,8 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		VkViewport vk_viewport {};
 		VkRect2D vk_scissor {};
 		VkRenderPass vk_pass {};
+		std::vector<VkSampleCountFlagBits> samples;
+		VkSampleCountFlagBits depth_samples = VK_SAMPLE_COUNT_1_BIT;
 		int subpass = -1;
 
 		void finalize();

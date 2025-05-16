@@ -3,6 +3,7 @@
 #include "render/api/commander.hpp"
 #include "render/system.hpp"
 #include "sprite.hpp"
+#include "shared/logger.hpp"
 
 /*
  * DynamicAtlas
@@ -14,7 +15,12 @@ Sprite DynamicAtlas::packSprite(ImageData& image) {
 
 	if (!box.empty()) {
 		atlas.blit(box.x, box.y, image);
-		return {box.x, box.y, box.x + box.w, box.y + box.h};
+		return {
+			static_cast<float>(box.x),
+			static_cast<float>(box.y),
+			static_cast<float>(box.x + box.w),
+			static_cast<float>(box.y + box.h)
+		};
 	}
 
 	int w = atlas.width();
@@ -49,7 +55,7 @@ void DynamicAtlas::resize() {
 	rewrite = false;
 	resized = false;
 	commander->complete();
-	printf("INFO: Dynamic atlas was resized!\n");
+	out::info("Dynamic atlas was resized!");
 }
 
 DynamicAtlas::DynamicAtlas() {
@@ -63,12 +69,22 @@ void DynamicAtlas::close(const LogicalDevice& device) {
 	image.close();
 }
 
-Sprite DynamicAtlas::submit(ImageData& image) {
-	rewrite = true;
-	return packSprite(image);
+ImageData & DynamicAtlas::getImage() {
+	return atlas;
 }
 
-void DynamicAtlas::upload(CommandRecorder& recorder) {
+Sprite DynamicAtlas::submitWithMargin(ImageData& image) {
+	rewrite = true;
+
+	ImageData extended = image.expand(4);
+	Sprite sprite = packSprite(extended);
+	extended.close();
+	return sprite.shrink(4);
+}
+
+bool DynamicAtlas::upload(CommandRecorder& recorder) {
+
+	bool dump = resized || rewrite;
 
 	// atlas run out of space and resized itself
 	if (resized) {
@@ -81,8 +97,10 @@ void DynamicAtlas::upload(CommandRecorder& recorder) {
 		image.upload(recorder);
 
 		rewrite = false;
-		printf("INFO: Dynamic atlas was uploaded!\n");
+		out::debug("Dynamic atlas was re-uploaded!");
 	}
+
+	return dump;
 
 }
 
@@ -99,7 +117,7 @@ DynamicImageAtlas::DynamicImageAtlas(const std::shared_ptr<DynamicAtlas>& atlas)
 
 	ImageData blank = ImageData::allocate(16, 16);
 	blank.clear({255, 255, 255, 255});
-	sprites[BLANK_SPRITE] = atlas->submit(blank);
+	sprites[BLANK_SPRITE] = atlas->submitWithMargin(blank);
 	blank.close();
 
 }
@@ -112,7 +130,7 @@ Sprite DynamicImageAtlas::getOrLoad(const std::string& path) {
 	}
 
 	ImageData data = ImageData::loadFromFile(path, 4);
-	Sprite sprite = atlas->submit(data);
+	Sprite sprite = atlas->submitWithMargin(data);
 	data.close();
 
 	sprites[path] = sprite;

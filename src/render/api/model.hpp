@@ -12,6 +12,7 @@ class RenderModel {
 
 	private:
 
+		VkDevice vk_device;
 		AccelStruct structure;
 		VkDeviceAddress address;
 		std::shared_ptr<RenderMesh> mesh;
@@ -19,11 +20,7 @@ class RenderModel {
 	public:
 
 		RenderModel(const LogicalDevice& device, const AccelStruct& structure);
-
-		/**
-		 * Close all underlying vulkan objects
-		 */
-		void close(const LogicalDevice& device);
+		~RenderModel();
 
 		/**
 		 * Get the underlying address of the stored acceleration structure,

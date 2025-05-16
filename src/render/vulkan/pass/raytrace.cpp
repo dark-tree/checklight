@@ -17,7 +17,7 @@ RaytracePipelineBuilder RaytracePipelineBuilder::of(const LogicalDevice& device)
 
 RaytracePipelineBuilder& RaytracePipelineBuilder::withRecursionDepth(int depth) {
 	if (depth > limit) {
-		throw std::runtime_error {"Requested recursion depth of " + std::to_string(depth) + " is bigger that the supported value of " + std::to_string(limit)};
+		FAULT("Requested recursion depth of ", depth, " is bigger that the supported value of ", limit);
 	}
 
 	this->depth = depth;
@@ -51,7 +51,7 @@ GraphicsPipeline RaytracePipelineBuilder::build() {
 	VkPipeline pipeline;
 
 	if (Proxy::vkCreateRayTracingPipelinesKHR(vk_device, VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &create_info, nullptr, &pipeline) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create raytrace pipeline!"};
+		FAULT("Failed to create raytrace pipeline!");
 	}
 
 	return {PipelineType::RAYTRACE, pipeline, pipeline_layout, vk_device};

@@ -49,7 +49,7 @@ class MyInputListener : public InputListener {
 				
 				// if user pressed CTRL+Q
 				if (event->wasPressed(GLFW_KEY_Q) && event->isCtrlPressed()) {
-					printf("DEBUG: Hello World!\n");
+					out::debug("Hello World!");
 					
 					// cancel further event processing
 					return InputResult::BLOCK;
