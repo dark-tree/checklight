@@ -26,7 +26,7 @@ SoundManager::~SoundManager(){
 	alcCloseDevice(p_ALCDevice);
 }
 
-void SoundManager::checkIfExistInVector(const std::string error_text, std::vector<std::weak_ptr<SoundSourceObject>>& vector, const std::shared_ptr <SoundSourceObject>& obj) {
+void SoundManager::checkIfExistInVector(const std::string& error_text, std::vector<std::weak_ptr<SoundSourceObject>>& vector, const std::shared_ptr <SoundSourceObject>& obj) {
 	auto source_find = findInVector(vector, obj);
 	if (source_find == vector.end()) {
 		std::cerr << error_text;
@@ -114,14 +114,14 @@ void SoundManager::connectClipWithSource(const std::shared_ptr<SoundClip>& sc,co
 	sso->addBuffer(sc);
 }
 
-std::shared_ptr<SoundClip>& SoundManager::createSoundClipAndLoadAudio(const char* path) {
+std::shared_ptr<SoundClip> SoundManager::createSoundClipAndLoadAudio(const char* path) {
 	auto sc = std::make_shared<SoundClip>();
 	addClip(sc);
 	loadAudioToClip(sc, path);
 	return sc;
 }
 
-std::shared_ptr<SoundClip>& SoundManager::createSoundClipAndAddToSourceObject(const char* path,const std::shared_ptr<SoundSourceObject>& sso) {
+std::shared_ptr<SoundClip> SoundManager::createSoundClipAndAddToSourceObject(const char* path,const std::shared_ptr<SoundSourceObject>& sso) {
 	auto sc = std::make_shared<SoundClip>();
 	addClip(sc);
 	loadAudioToClip(sc, path);

@@ -13,7 +13,6 @@ private:
 	/// Pointer to the audio context
 	ALCcontext* p_ALCContext=nullptr;
 
-	//@TODO Weak pointers are unnecesary to delete
 
 	/// Vector to storing sound clips 
 	/// Clips are stored as shared_ptr to allow multiple ownership
@@ -30,7 +29,7 @@ private:
 	~SoundManager();
 
 	/// Function to check if the object exist in the vector
-	void checkIfExistInVector(const std::string error_text, std::vector<std::weak_ptr<SoundSourceObject>>& vector, const std::shared_ptr<SoundSourceObject>& sso);
+	void checkIfExistInVector(const std::string& error_text, std::vector<std::weak_ptr<SoundSourceObject>>& vector, const std::shared_ptr<SoundSourceObject>& sso);
 
 public:
 	
@@ -44,11 +43,11 @@ public:
 	ALCcontext* getContext() { return p_ALCContext; }
 
 	/// Get vector of SoundSourceObject
-	const std::vector<std::weak_ptr<SoundSourceObject>>& const getVectorSoundSourceObject() { return v_sources; }
+	const std::vector<std::weak_ptr<SoundSourceObject>>& getVectorSoundSourceObject() { return v_sources; }
 	/// Get vector of SoundClip
-	const std::vector<std::shared_ptr<SoundClip>>& const getVectorSoundClip() { return v_clips; }
+	const std::vector<std::shared_ptr<SoundClip>>& getVectorSoundClip() { return v_clips; }
 	/// Get vector of SoundGroup
-	const std::vector<std::weak_ptr<SoundGroup>>& const getVectorSoundGroup() { return v_groups; }
+	const std::vector<std::weak_ptr<SoundGroup>>& getVectorSoundGroup() { return v_groups; }
 
 	/// Add a SoundSourceObject to the vector v_sources
 	/// 
@@ -87,7 +86,7 @@ public:
 	/// @param url Path to the audio file
 	/// @return std::shared_ptr to the SoundClip object.
 	/// Do not get std::weak_ptr from this function, because it will be deleted after the function call
-	std::shared_ptr<SoundClip>& createSoundClipAndLoadAudio(const char* path);
+	std::shared_ptr<SoundClip> createSoundClipAndLoadAudio(const char* path);
 
 	/// Create a new SoundClip, add it to the vector v_clips, load the audio file from the given URL and add it to the SoundSourceObject
 	/// 
@@ -95,7 +94,7 @@ public:
 	/// @param sso std::shared_ptr SoundSourceObject object
 	/// 
 	/// @return std::shared_ptr to the SoundClip object.
-	std::shared_ptr<SoundClip>& createSoundClipAndAddToSourceObject(const char* path,const std::shared_ptr<SoundSourceObject>& sso);
+	std::shared_ptr<SoundClip> createSoundClipAndAddToSourceObject(const char* path,const std::shared_ptr<SoundSourceObject>& sso);
 
 	/// Sound play control funtion
 	/// 
