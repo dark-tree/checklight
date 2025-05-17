@@ -7,7 +7,6 @@
 #include <cstdint>
 
 // C++ libs
-#include <iostream>
 #include <vector>
 #include <functional>
 #include <list>
@@ -57,6 +56,12 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/hash.hpp>
 #include <glm/gtx/norm.hpp>
+
+
+// OpenAL
+#include <AL/al.h>
+#include <AL/alc.h>
+
 
 // Vulkan Format Database
 #include "vk_format_info.hpp"
