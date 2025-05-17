@@ -1,11 +1,13 @@
 #include "source.hpp"
 
+#include "shared/logger.hpp"
+#include "debug.hpp"
+
 SoundSourceObject::SoundSourceObject(){
 	alGetError();
 	alGenSources(1, &source);
 	if (alGetError() != AL_NO_ERROR) {
-		std::cerr << ("Sound -> SSOinit: Failed to generate sources\n");  //throw exception
-		return;
+		FAULT("Failed to generate sound source!");
 	}
 
 	updateParameters();
@@ -218,8 +220,10 @@ void SoundSourceObject::updateMinMaxGain() {
 		float min_gain = (sso_sg->getMinGain() <= sso_min_gain) ? sso_sg->getMinGain() : sso_min_gain;
 
 		if (min_gain > max_gain) {
-			std::cerr << ("Source -> updateParameters: min_gain is bigger than max_gain\n");
+			out::warn("Sound min gain is bigger than max gain!");
+			min_gain = max_gain;
 		}
+
 		alSourcef(source, AL_MAX_GAIN, max_gain);
 		alSourcef(source, AL_MIN_GAIN, min_gain);
 	}
@@ -278,39 +282,25 @@ void SoundSourceObject::updateConeOuterAngle() {
 
 void SoundSourceObject::addBuffer(SoundClip clip){
 	ALuint buffer = clip.getBuffer();
-	if (buffer==0) {
-		std::cerr << ("Source -> addBuffer: Buffer doesnt exist\n");	//throw exception
-		return;
+
+	if (buffer == 0) {
+		FAULT("Invalid sound buffer!");
 	}
+
 	alGetError();
 	alSourcei(source, AL_BUFFER, buffer);
-
-	ALenum error = alGetError();
-	if (error != AL_NO_ERROR) {
-		std::cerr << ("Source -> addBuffer: OpenAL error " + std::to_string(error) +"\n");
-		return;
-	}
+	alCheckError("during buffer setting!");
 }
 
 void SoundSourceObject::addBuffer(std::shared_ptr<SoundClip> clip) {
 	if (clip->getBuffer() == 0) {
-		std::cerr << ("Source -> addBuffer: Buffer doesnt exist\n");	//throw exception
-		return;
+		FAULT("Invalid clip buffer!");
 	}
+
 	alGetError();
 	sc_buffer = clip;
-	if (sc_buffer){
-		alSourcei(source, AL_BUFFER, sc_buffer->getBuffer());
-	}
-	else {
-		std::cerr << ("Source -> addBuffer: sc_buffer doesnt exist");
-		return;
-	}
-	ALenum error = alGetError();
-	if (error != AL_NO_ERROR) {
-		std::cerr << ("Source -> addBuffer: OpenAL error " + std::to_string(error)+"\n");
-		return;
-	}
+	alSourcei(source, AL_BUFFER, sc_buffer->getBuffer());
+	alCheckError("during source creation!");
 }
 
 ///========================SOUND GROUP========================
@@ -332,7 +322,8 @@ void SoundSourceObject::updateParameters() {
 		float min_gain = (sso_sg->getMinGain() <= sso_min_gain) ? sso_sg->getMinGain() : sso_min_gain;
 
 		if (min_gain > max_gain) {
-			std::cerr << ("Source -> updateParameters: min_gain is bigger than max_gain\n");
+			out::warn("Sound min gain is bigger than max gain!");
+			min_gain = max_gain;
 		}
 				
 		alSourcef(source, AL_MAX_GAIN, max_gain);
@@ -398,44 +389,34 @@ void SoundSourceObject::updateMovement() {
 
 void SoundSourceObject::playSound(){
 	if (!alIsSource(source)) {
-		std::cerr << ("Source -> playSound: No valid sound source found!\n");
-		return;
+		FAULT("Invalid source handle!");
 	}
 
 	if (!isPlaying()) {
 		alGetError();
 		alSourcePlay(source);
-		if (alGetError() != AL_NO_ERROR) {
-			std::cerr << ("Sound -> playSound: Failed to play clip\n");  //throw exception
-			return;
-		}
+		alCheckError("while trying to play the source");
 	}
 }
 
 void SoundSourceObject::stopSound(){
 	if (!alIsSource(source)) {
-		std::cerr << ("Source -> stopSound: No valid sound source found!\n");
-		return;
+		FAULT("Invalid source handle!");
 	}
+
 	alGetError();
 	alSourceStop(source);
-	if (alGetError() != AL_NO_ERROR) {
-		std::cerr << ("Sound -> stopSound: Failed to stop clip\n");  //throw exception
-		return;
-	}
+	alCheckError("while trying to stop the source");
 }
 
 void SoundSourceObject::pauseSound() {
 	if (!alIsSource(source)) {
-		std::cerr << ("Source -> pauseSound: No valid sound source found!\n");
-		return;
+		FAULT("Invalid source handle!");
 	}
+
 	alGetError();
 	alSourcePause(source);
-	if (alGetError() != AL_NO_ERROR) {
-		std::cerr << ("Sound -> pauseSound: Failed to pause clip\n");  //throw exception
-		return;
-	}
+	alCheckError("while trying to pause the source");
 }
 
 bool SoundSourceObject::isPlaying(){
@@ -467,19 +448,19 @@ void SoundSourceObject::print() const {
 	alGetSourcefv(source, AL_VELOCITY, velocity);
 	alGetSourcefv(source, AL_DIRECTION, direction);
 
-	std::cout << "SoundSourceObject:" << std::endl;
-	std::cout << "  Pitch: " << pitch << std::endl;
-	std::cout << "  Gain: " << gain << std::endl;
-	std::cout << "  Looping: " << (looping ? "true" : "false") << std::endl;
-	std::cout << "  Max Distance: " << max_distance << std::endl;
-	std::cout << "  Min Gain: " << min_gain << std::endl;
-	std::cout << "  Max Gain: " << max_gain << std::endl;
-	std::cout << "  Rolloff Factor: " << rolloff_factor << std::endl;
-	std::cout << "  Reference Distance: " << reference_distance << std::endl;
-	std::cout << "  Cone Outer Gain: " << cone_outer_gain << std::endl;
-	std::cout << "  Cone Inner Angle: " << cone_inner_angle << std::endl;
-	std::cout << "  Cone Outer Angle: " << cone_outer_angle << std::endl;
-	std::cout << "  Position: (" << position[0] << ", " << position[1] << ", " << position[2] << ")" << std::endl;
-	std::cout << "  Velocity: (" << velocity[0] << ", " << velocity[1] << ", " << velocity[2] << ")" << std::endl;
-	std::cout << "  Direction: (" << direction[0] << ", " << direction[1] << ", " << direction[2] << ")" << std::endl;
+	out::info("SoundSourceObject:");
+	out::logger.print(" * Pitch: %f\n", pitch);
+	out::logger.print(" * Gain: %f\n", gain);
+	out::logger.print(" * Looping: %s\n", (looping ? "true" : "false"));
+	out::logger.print(" * Max Distance: %f\n", max_distance);
+	out::logger.print(" * Min Gain: %f\n", min_gain);
+	out::logger.print(" * Max Gain: %f\n", max_gain);
+	out::logger.print(" * Rolloff Factor: %f\n", rolloff_factor);
+	out::logger.print(" * Reference Distance: %f\n", reference_distance);
+	out::logger.print(" * Cone Outer Gain: %f\n", cone_outer_gain);
+	out::logger.print(" * Cone Inner Angle: %f\n", cone_inner_angle);
+	out::logger.print(" * Cone Outer Angle: %f\n", cone_outer_angle);
+	out::logger.print(" * Position: (%f, %f, %f)\n", position[0], position[1], position[2]);
+	out::logger.print(" * Velocity: (%f, %f, %f)\n", velocity[0], velocity[1], velocity[2]);
+	out::logger.print(" * Direction: (%f, %f, %f)\n", direction[0], direction[1], direction[2]);
 }

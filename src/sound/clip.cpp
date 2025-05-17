@@ -1,15 +1,12 @@
 #include "clip.hpp"
 
+#include "debug.hpp"
 #include "shared/logger.hpp"
 
 SoundClip::SoundClip(){
 	alGetError();
 	alGenBuffers(1, &buffer);
-	
-	if (alGetError() != AL_NO_ERROR){
-		std::cerr << ("Clip -> SCinit: Failed to generate buffers\n");  //throw exception
-		return;
-	}
+	alCheckError("durring clip creation");
 }
 
 SoundClip::~SoundClip(){

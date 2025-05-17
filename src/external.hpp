@@ -7,7 +7,6 @@
 #include <cstdint>
 
 // C++ libs
-#include <iostream>
 #include <vector>
 #include <functional>
 #include <list>

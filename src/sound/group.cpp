@@ -6,13 +6,13 @@
 
 void SoundGroup::addObserversSoundSourceObject(std::shared_ptr<SoundSourceObject> sso) {
 	if (!sso) {
-		out::warn("There was an attempt to add a invalid source to a group!");
+		out::warn("There was an attempt to add an invalid source to a group!");
 		return;
 	}
 
 	// check if a source with a given name exists
 	if (findInVector(observers_vector_sso, sso) != observers_vector_sso.end()) {
-		out::warn("There was an attempt to add a already preset source to a group!");
+		out::warn("There was an attempt to add an already preset source to a group!");
 		return;
 	}
 
