@@ -299,3 +299,11 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
 	add_dependencies(checklight_common copy-assets)
 	add_dependencies(checklight_common compile-shaders)
 endif()
+
+# Needed on MSVS to fix missing DLL errors during runtime
+if (WIN32)
+	add_custom_command(TARGET checklight_sound_system POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			"${openal-soft_BINARY_DIR}/OpenAL32.dll"
+			"${CMAKE_BINARY_DIR}/OpenAL32.dll")
+endif()
