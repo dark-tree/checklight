@@ -72,6 +72,9 @@ static void entry(Args& args) {
 	sp->addPawnToRoot(pawn);
 	sp->addPawnToRoot(pawnThatRendersTheCube);
 	sp->addPawnToRoot(pawnThatRendersTheSphere);
+    std::shared_ptr<SpatialPawn> camera_pawn = static_pointer_cast<SpatialPawn>(sp->getTree().findByName("Main Camera"));
+    camera_pawn->setPosition({10, 5, 10});
+    std::shared_ptr<Camera> camrera = static_pointer_cast<Camera>(camera_pawn->getComponents()[0]);
 
 	std::vector<std::shared_ptr<RenderObject>> objects;
 
