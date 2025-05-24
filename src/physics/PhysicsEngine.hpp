@@ -24,6 +24,11 @@ protected:
 public:
     //this is here for testing only todo move into protected after testing
     std::vector<PhysicsElement> elements; /// List of objects currently existing in the scene
+
+    PhysicsEngine(glm::vec3 gravity_strength){
+        this->gravity_strength = gravity_strength;
+    }
+
     /**
      * A single update step to the physics calculations. Moves objects according to their speed and gravity, detects collisions and applies forces in case of one.
      * @returns difference between time step and calculation time

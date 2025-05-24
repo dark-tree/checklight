@@ -378,10 +378,10 @@ protected:
         return total_mass;
     }
 
-    float findMomentOfInertia()
+    glm::mat3x3 findMomentOfInertia()
     {
         //TODO THIS MATHEMATICAL HELL
-        return 0;
+        return glm::mat3x3(1.0);
     }
 
 };
