@@ -42,9 +42,7 @@ void RenderComponent::remove() {
 	renderObject->setActive(false);
 }
 
-RenderComponent::~RenderComponent() {
-	printf("removing COMPONENT!");
-}
+RenderComponent::~RenderComponent() {}
 
 
 

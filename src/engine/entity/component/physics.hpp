@@ -3,7 +3,7 @@
 #include "render/render.hpp"
 #include "engine/data/models.hpp"
 #include "engine/data/collider.hpp"
-#include "engine/data/phisicsSurface.hpp"
+#include "engine/data/material.hpp"
 
 #pragma once
 
@@ -17,9 +17,13 @@ protected:
 
     bool is_static;
     glm::vec3 gravity_scale;
-    float mass;
 
-    Surface surface;
+    float mass;
+    bool initMass;
+
+    Material material;
+
+    float calculateMass();
 
 public:
     PhysicsComponent(SpatialPawn* sp, Models::Shape s);
@@ -27,7 +31,7 @@ public:
     void onFixedUpdate(FixedContext c) override;
 
     /// Sets the velocity using a glm::vec3
-    void setVelocity(glm::vec3 vec3);
+    void setVelocity(glm::vec3 velocity);
 
     /// Sets the velocity using individual float components
     void setVelocity(float x, float y, float z);
@@ -52,22 +56,19 @@ public:
 
 
     /// Gets the current velocity
-    glm::vec3 getVelocity();
+    glm::vec3 getVelocity() const;
 
     /// Gets the current angular velocity
-    glm::vec3 getAngularVelocity();
+    glm::vec3 getAngularVelocity() const;
 
     /// Gets the gravity scale
-    glm::vec3 getGravityScale();
-
-    /// Gets the mass
-    float getMass();
+    glm::vec3 getGravityScale() const;
 
     /// Gets the surface properties
-    Surface getSurface();
+    Surface getMaterial() const;
 
     /// Returns true if the object is static
-    bool isStatic();
+    bool isStatic() const;
 
     /// Gets the collider
     Collider getCollider();
@@ -78,9 +79,9 @@ public:
     /// Returns the furthest point from object origin in a given direction in relation to the world space
     glm::vec3 furthestPointInDirection(glm::vec3 direction);
 
+    /// Returns the mass of an object
+    float getMass(); //TODO use mass inside of engine
 
     ~PhysicsComponent() override;
-protected:
-
 };
 
