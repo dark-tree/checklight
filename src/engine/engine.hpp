@@ -8,6 +8,7 @@
 #include "entity/component/game.hpp"
 #include "entity/component/ui.hpp"
 #include "entity/component/render.hpp"
+#include "entity/component/physics.hpp"
 
 #include "entity/pawns/rootPawn.hpp"
 #include "entity/pawns/spatialPawn.hpp"

@@ -1,4 +1,5 @@
 #pragma once
+#include "entity/component/physics.hpp"
 #include "entity/pawns/rootPawn.hpp"
 
 class PawnTree {
@@ -8,11 +9,12 @@ protected:
 
 	std::unordered_multimap<std::string, std::shared_ptr<Pawn>> nameMap;
 	std::unordered_multimap<uint32_t, std::shared_ptr<Pawn>> idMap;
+	std::set<std::shared_ptr<PhysicsComponent>> physicsComponentsToUpdate;
 
 	/**
 	 * performs standard game update on all the tree elements, triggered by updateTree() function
 	 */
-	void updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update, double delta);
+	void updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update, double delta, std::mutex& mtx);
 
 	/**
 	 * performs standard game update on all the tree elements, triggered by fixedUpdateTree() function
@@ -93,7 +95,7 @@ public:
 	/**
 	 * performs standard game update on all the tree elements
 	 */
-	void updateTree(double delta);
+	void updateTree(double delta, std::mutex& mtx);
 
 	/**
 	 * performs fixed game update on all the tree elements
@@ -109,4 +111,16 @@ public:
 	 * returns whole pawn tree in string format
 	 */
 	std::string toStringVerbose();
+
+	/**
+	 * registers physicsComponent to be included in physics update
+	 */
+	void registerPhysicsComponent(std::shared_ptr<PhysicsComponent> physicsComponent);
+
+	/**
+	 * removes physicsComponent from registry that stores components to update in physics update
+	 */
+	void removePhysicsComponent(std::shared_ptr<PhysicsComponent> physicsComponent);
+
+	std::set<std::shared_ptr<PhysicsComponent>> getPhysicsComponents();
 };

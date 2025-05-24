@@ -15,6 +15,7 @@ private:
 	std::queue<std::shared_ptr<Pawn>>* pawns_to_remove_from_hashmap;
 	std::queue<std::shared_ptr<Component>>* components_to_remove;
 
+
 	/**
 	 * queue remove a pawn
 	 */
@@ -35,7 +36,7 @@ public:
 	/**
 	 * performs standard update on a pawn tree
 	 */
-	void updateBoard(double delta);
+	void updateBoard(double delta, std::mutex& mtx);
 
 	/**
 	 * performs fixed update on a pawn tree
@@ -112,6 +113,18 @@ public:
 	glm::vec3 getCamPos();
 
 	glm::vec3 getCamForward();
+
+	int pawnsToRemove() const;
+
+	/**
+	 * registers physicsComponent to be included in physics update
+	 */
+	void registerPhysicsComponent(std::shared_ptr<PhysicsComponent> physicsComponent);
+
+	/**
+	 * removes physicsComponent from registry that stores components to update in physics update
+	 */
+	void removePhysicsComponent(std::shared_ptr<PhysicsComponent> physicsComponent);
 
 	//TODO temporary funciton for testing
 public:

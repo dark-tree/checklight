@@ -215,6 +215,8 @@ target_link_libraries(checklight_gui_system PRIVATE
 
 target_link_libraries(checklight_physics_system PRIVATE
 		checklight_common
+		checklight_shared_system
+		checklight_engine_system
 )
 
 target_link_libraries(checklight PRIVATE

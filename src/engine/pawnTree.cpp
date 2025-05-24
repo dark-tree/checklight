@@ -99,10 +99,14 @@ void PawnTree::mountPawn(std::shared_ptr<Pawn> pawn) {
 		}
 	}
 
+	if (!pawn->physicsComponent.expired()) {
+		physicsComponentsToUpdate.insert(pawn->physicsComponent.lock());
+	}
+
 	//TODO test if it works
 	if (!isCopy) {
-		std::string p_name = pawn->getName();
-		uint32_t p_id = pawn->getEntityID();
+		const std::string p_name = pawn->getName();
+		const uint32_t p_id = pawn->getEntityID();
 		addPawnToHash(p_name,p_id,pawn);
 	}
 
@@ -123,20 +127,23 @@ std::shared_ptr<RootPawn> PawnTree::getRoot() {
 	return root;
 }
 
-void PawnTree::updateTree(double delta) {
+void PawnTree::updateTree(double delta, std::mutex& mtx) {
 	std::vector<std::shared_ptr<Pawn>> pawn_children = root->getChildren();
 	for (std::shared_ptr<Pawn> pawn_child : pawn_children) {
-		updateTreeRecursion(pawn_child, delta);
+		updateTreeRecursion(pawn_child, delta, mtx);
 	}
 }
 
-void PawnTree::updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update, double delta) {
+void PawnTree::updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update, double delta, std::mutex& mtx) {
+
+	mtx.lock();
 	pawn_to_update->onUpdate(delta);
+	mtx.unlock();
 
 	//TODO maybe create iterator of some kind with lambda
 	std::vector<std::shared_ptr<Pawn>> pawn_children = pawn_to_update->getChildren();
 	for (std::shared_ptr<Pawn> pawn_child : pawn_children) {
-		updateTreeRecursion(pawn_child, delta);
+		updateTreeRecursion(pawn_child, delta, mtx);
 	}
 }
 
@@ -164,6 +171,14 @@ std::string PawnTree::toString() {
 
 std::string PawnTree::toStringVerbose() {
 	return printStart(true);
+}
+
+void PawnTree::registerPhysicsComponent(std::shared_ptr<PhysicsComponent> physicsComponent) {
+	physicsComponentsToUpdate.insert(physicsComponent);
+}
+
+void PawnTree::removePhysicsComponent(std::shared_ptr<PhysicsComponent> physicsComponent) {
+	physicsComponentsToUpdate.erase(physicsComponent);
 }
 
 std::string PawnTree::printStart(bool verbose) {
@@ -211,6 +226,10 @@ void PawnTree::addPawnToHash(const std::string& p_name, uint32_t p_id, std::shar
 	nameMap.insert(std::pair<std::string, std::shared_ptr<Pawn>>(p_name, pawn));
 	idMap.insert(std::pair<uint32_t, std::shared_ptr<Pawn>>(p_id, pawn));
 	pawn->setTracked(true);
+}
+
+std::set<std::shared_ptr<PhysicsComponent>> PawnTree::getPhysicsComponents() {
+	return physicsComponentsToUpdate;
 }
 
 

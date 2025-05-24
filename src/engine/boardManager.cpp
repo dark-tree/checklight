@@ -5,13 +5,14 @@
 #include "shared/logger.hpp"
 #include <chrono>
 #include <render/render.hpp>
+#include <physics/PhysicsEngine.hpp>
 #include <render/renderer.hpp>
 
 /*
  * BoardManager
  */
 
-BoardManager::BoardManager(std::shared_ptr<InputDispatcher> disp) {
+BoardManager::BoardManager(std::shared_ptr<InputDispatcher> disp): physics_engine({0.0, 0.0, 0.0}, this) {
 	dispatcher = disp;
 
 	std::shared_ptr<Board> new_board = std::make_shared<Board>();
@@ -76,7 +77,7 @@ void BoardManager::updateCycle() {
 	//-----------update-------------
 
 	const auto now = std::chrono::high_resolution_clock::now();
-	usingBoard->updateBoard(std::chrono::duration<double>(now-before).count());
+	usingBoard->updateBoard(std::chrono::duration<double>(now-before).count(), physics_mutex);
 	before = now;
 
 	//------hardcoded updates-------
@@ -95,7 +96,13 @@ void BoardManager::updateCycle() {
 
 	//-----------remove--------------
 
-	usingBoard->dequeueRemove(100);
+	if (usingBoard->pawnsToRemove() > 0) { //maybe someday it will be smarter
+		physics_mutex.lock();
+		usingBoard->dequeueRemove(100);
+		physics_mutex.unlock();
+	}
+
+
 
 	//-----------debug---------------
 
@@ -119,7 +126,12 @@ void BoardManager::fixedUpdateCycle() {
 				std::chrono::duration<double>(TICK_DURATION));
 
 		if (!current_board.expired()) {
+			physics_mutex.lock();
+
 			current_board.lock()->fixedUpdateBoard();
+			physics_engine.physicsUpdate();
+
+			physics_mutex.unlock();
 		}
 		// auto end = std::chrono::steady_clock::now();
 		// double tick_calculation_time = std::chrono::duration<double>(end - start).count();

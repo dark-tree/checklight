@@ -32,8 +32,8 @@ void Board::queueRemove(const std::shared_ptr<Component> &pToRemove) {
     components_to_remove->push(pToRemove);
 }
 
-void Board::updateBoard(double delta) {
-    pawns.updateTree(delta);
+void Board::updateBoard(double delta, std::mutex& mtx) {
+    pawns.updateTree(delta, mtx);
 }
 
 
@@ -204,6 +204,17 @@ void Board::dequeueRemove(size_t amount) {
         }
     }
 
+int Board::pawnsToRemove() const {
+    return pawns_to_remove->size();
+}
+
+void Board::registerPhysicsComponent(std::shared_ptr<PhysicsComponent> physicsComponent) {
+    pawns.registerPhysicsComponent(physicsComponent);
+}
+
+void Board::removePhysicsComponent(std::shared_ptr<PhysicsComponent> physicsComponent) {
+    pawns.removePhysicsComponent(physicsComponent);
+}
 
 
 

@@ -1,4 +1,3 @@
-#pragma once
 #include "collider.hpp"
 
 Collider::Collider() {

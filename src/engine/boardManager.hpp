@@ -1,8 +1,13 @@
 #pragma once
+
+
+#include <physics/PhysicsEngine.hpp>
+
 #include "external.hpp"
 #include "render/window.hpp"
 #include "shared/thread/phased.hpp"
 #include "shared/thread/mailbox.hpp"
+
 
 enum BoardRevocery {
 	None,
@@ -14,6 +19,7 @@ class Board;
 
 class BoardManager {
 protected:
+	PhysicsEngine physics_engine;
 	unsigned long long globalTickNumber;
 	std::weak_ptr<Board> current_board;
 	std::vector<std::shared_ptr<Board>> boardList;
@@ -27,6 +33,8 @@ protected:
 	std::unique_ptr<PhasedTaskDelegator> task_delegator;
 	TaskPool task_pool;
 	std::thread physics_thread;
+
+	std::mutex physics_mutex;
 
 	std::atomic<bool> continue_loop;
 

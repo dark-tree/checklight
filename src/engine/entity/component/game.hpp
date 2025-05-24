@@ -5,7 +5,7 @@
 class SpatialPawn;
 
 class GameComponent : public OwnedComponent<SpatialPawn> { // TODO come up with better name
-protected:
+public:
 
 	GameComponent() = delete;
 

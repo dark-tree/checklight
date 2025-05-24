@@ -5,6 +5,8 @@
 #include "context.hpp"
 #include "../trait.hpp"
 
+class PhysicsComponent;
+
 class PawnTree;
 class Board;
 class RootPawn;
@@ -59,6 +61,7 @@ protected:
 	std::weak_ptr<RootPawn> root_pawn;
 
 	std::vector<std::shared_ptr<Component>> components; //TODO unique ptr ???
+	std::weak_ptr<PhysicsComponent> physicsComponent;
 
 	/**
 	 * All the things that happens on basic update of the engine (intervals between basic updates can vary)

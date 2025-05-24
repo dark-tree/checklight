@@ -5,6 +5,7 @@
 #include "../pawnTree.hpp"
 #include "../board.hpp"
 #include "shared/logger.hpp"
+#include "component/physics.hpp"
 
 
 /*
@@ -234,6 +235,12 @@ Pawn::Pawn(const std::string &s) : Pawn(){
 std::shared_ptr<Component>& Pawn::addComponent(std::shared_ptr<Component> c) {
 	c->parent = this;
 	c->onConnected();
+	if (auto const pc = std::dynamic_pointer_cast<PhysicsComponent>(c)) {
+		physicsComponent = pc;
+		if (isRooted()) { //TODO fix is_mounted to board
+			board->registerPhysicsComponent(pc);
+		}
+	}
 	return components.emplace_back(c);
 }
 
