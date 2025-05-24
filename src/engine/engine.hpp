@@ -1,6 +1,8 @@
 #pragma once
 
-#include "data/models.cpp"
+#include "data/models.hpp"
+#include "data/collider.hpp"
+#include "data/material.hpp"
 
 #include "entity/component/camera.hpp"
 #include "entity/component/game.hpp"

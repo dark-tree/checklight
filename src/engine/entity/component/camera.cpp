@@ -45,10 +45,10 @@ void Camera::onUpdate(Context c) {
 		pos += glm::vec3 {0.0f,1.0f,0.0f} * distance_multiplier;
 	}
 	if(pressed_left){
-		pos -= glm::cross(forward, math::UP) * distance_multiplier;
+		pos -= normalize(glm::cross(forward, math::UP)) * distance_multiplier;
 	}
 	if(pressed_right){
-		pos += glm::cross(forward, math::UP) * distance_multiplier;
+		pos += normalize(glm::cross(forward, math::UP)) * distance_multiplier;
 	}
 	if(mouse_move){
 		glm::vec2 mouse_difference = mouse_position - mouse_position_old;
