@@ -1,10 +1,23 @@
 #pragma once
 #include "external.hpp"
+#include "render/api/mesh.hpp"
 
 class Collider{
-private:
+protected:
     std::vector<glm::vec3> vertices;
     std::vector<glm::ivec3> triangles;
+    glm::vec3 center_of_mass;
+
+    float sphere_collider_radious;
+    glm::vec3 inertia_tensor;
+
+    float volume;
+
+    /// Finds the volume of an object, will be called if volumen is null
+    float findVolume();
+
+    /// Used to calculate center of mass of an object. Assumes uniform mass distribution
+    glm::vec3 findCenterOfMass();
 
 public:
     Collider(){
@@ -56,4 +69,39 @@ public:
     void setTriangles(std::vector<glm::ivec3> triangles){
         this->triangles = triangles;
     }
+
+    void LoadFromModel(std::shared_ptr<RenderMesh>){
+      //TODO replace this with actual code
+      this->vertices = Collider::getCube().getVertices();
+      this->triangles = Collider::getCube().getTriangles();
+    }
+
+    void calculateSphereColliderRadious(){
+      //TODO
+    }
+
+    void setAutoCenter();
+
+    /// Sets the center of mass of the object
+    void setCenterOfMass(glm::vec3 center_of_mass);
+
+    /// Sets the radius of the sphere collider
+    void setSphereColliderRadious(float sphere_collider_radious);
+
+    /// Sets the inertia tensor of the object
+    void setInertiaTensor(glm::vec3 inertia_tensor);
+
+    /// Gets the center of mass of the object
+    glm::vec3 getCenterOfMass();
+
+    /// Gets the inertia tensor of the object
+    glm::vec3 getInertiaTensor();
+
+    /// Gets the radius of the sphere collider
+    float getSphereColliderRadious();
+
+    /// Returns the volume of an object
+    float getVolume();
+
+
 };

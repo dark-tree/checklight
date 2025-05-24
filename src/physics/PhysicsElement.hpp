@@ -113,8 +113,8 @@ public:
         this->velocity = glm::vec3(x, y, z);
     }
 
-    /// Returns the velocity of an object
-    glm::vec3 getVelocity()
+        /// Returns the velocity of an object
+        glm::vec3 getVelocity()
     {
         return velocity;
     }
