@@ -10,10 +10,8 @@
  * RenderSystem
  */
 
-std::unique_ptr<RenderSystem> RenderSystem::system {nullptr};
-
-void RenderSystem::init(ApplicationParameters& parameters) {
-	RenderSystem::system = std::make_unique<RenderSystem>(parameters);
+SingletonGuard<RenderSystem> RenderSystem::init(ApplicationParameters& parameters) {
+	return system.create(parameters);
 }
 
 RenderSystem::RenderSystem(ApplicationParameters& parameters)
@@ -57,10 +55,15 @@ void RenderSystem::setProjectionMatrix(float fov, float near_plane, float far_pl
 	projection[1][1] *= -1;
 
 	getFrame().uniforms.projection = projection;
+	getFrame().uniforms.projection_inv = glm::inverse(projection);
+
+	getFrame().uniforms.near = near_plane;
+	getFrame().uniforms.far = far_plane;
 }
 
 void RenderSystem::setViewMatrix(glm::vec3 eye, glm::vec3 direction) {
 	getFrame().uniforms.view = glm::lookAt(eye, eye + direction, glm::vec3(0.0f, 1.0f, 0.0f));
+	getFrame().uniforms.view_inv = glm::inverse(getFrame().uniforms.view);
 }
 
 std::shared_ptr<RenderObject> RenderSystem::createRenderObject() {
@@ -69,6 +72,10 @@ std::shared_ptr<RenderObject> RenderSystem::createRenderObject() {
 
 std::map<std::string, std::shared_ptr<ObjMaterial>> RenderSystem::importMaterials(const std::string& path) {
 	std::string mtl_path = ObjObject::getMtllib(path);
+
+	if (mtl_path.empty()) {
+		return {};
+	}
 
 	if (std::filesystem::exists(mtl_path)) {
 		return ObjMaterial::open(mtl_path);
@@ -109,6 +116,11 @@ std::vector<std::shared_ptr<RenderModel>> RenderSystem::importObj(const std::str
 
 	for (auto& [name, material] : imported) {
 		RenderMaterial& render_material = system->materials.createMaterial();
+
+		render_material.albedo = glm::vec4(material->diffuse, material->alpha);
+		render_material.emissive = material->emissive;
+		render_material.specular = material->specular;
+		render_material.shininess = material->shininess;
 
 		if (!material->diffuseMap.empty()) {
 			render_material.albedo_texture = open_texture(material->diffuseMap);
@@ -172,14 +184,45 @@ std::vector<std::shared_ptr<RenderModel>> RenderSystem::importObj(const std::str
 	return models;
 }
 
-void RenderSystem::closeModel(std::shared_ptr<RenderModel> model) {
-	model->close(system->device);
-}
-
 AssetLoader& RenderSystem::getAssetLoader() {
 	return assets;
 }
 
 ImmediateRenderer& RenderSystem::getImmediateRenderer() {
 	return immediate;
+}
+
+RenderParameters& RenderSystem::getParameters() {
+	return this->parameters;
+}
+
+int RenderSystem::getFrameRate() const {
+	return frame_rate;
+}
+
+void RenderSystem::draw() {
+
+	SceneUniform& scene = getFrame().uniforms;
+
+	scene.time = glfwGetTime();
+
+	parameters.updateSceneUniform(scene);
+
+	auto current = std::chrono::steady_clock::now();
+
+	Renderer::draw();
+
+	if (current - previous > std::chrono::milliseconds(1000)) {
+		frame_rate = frame_count;
+		previous = current;
+		frame_count = 1;
+	} else {
+		frame_count ++;
+	}
+
+	scene.prev_projection = scene.projection;
+	scene.prev_projection_inv = scene.projection_inv;
+
+	scene.prev_view = scene.view;
+	scene.prev_view_inv = scene.view_inv;
 }

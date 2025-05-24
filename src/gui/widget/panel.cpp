@@ -3,22 +3,18 @@
 
 #include <render/immediate.hpp>
 
-PanelWidget::PanelWidget() {
+PanelWidget::PanelWidget() {}
 
-}
-
-void PanelWidget::draw(ImmediateRenderer& immediate) {
-	immediate.setRectRadius(10);
-	immediate.setColor(r, g, b);
-	immediate.drawRect2D(padded);
+void PanelWidget::draw(ImmediateRenderer& immediate, ElementState state) {
+	drawBasicPanel(immediate, state);
 
 	for (auto& widget : children) {
-		widget->draw(immediate);
+		widget->draw(immediate, state);
 	}
 }
 
 bool PanelWidget::event(WidgetContext& context, const InputEvent& event) {
-	bool used = false;
+	bool used = Widget::event(context, event);
 
 	for (auto& widget : children) {
 		used |= widget->event(context, event);
@@ -28,7 +24,7 @@ bool PanelWidget::event(WidgetContext& context, const InputEvent& event) {
 }
 
 void PanelWidget::addWidget(const std::shared_ptr<Widget>& widget) {
-	children.emplace_back(widget);
+	add(widget);
 }
 
 

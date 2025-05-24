@@ -12,8 +12,5 @@ std::shared_ptr<RenderModel> Models::getShape(Shape s){
 }
 
 void Models::terminate() {
-	for(const auto& m : models){
-		RenderSystem::system->closeModel(m); //this should be in destructor >:(
-	}
-	models.clear(); //:)
+	models.clear();
 }

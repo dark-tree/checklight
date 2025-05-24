@@ -1,5 +1,8 @@
 
 #include "factory.hpp"
+
+#include <shared/math.hpp>
+
 #include "render/vulkan/command/recorder.hpp"
 #include "render/vulkan/buffer/query.hpp"
 #include "render/api/model.hpp"
@@ -70,10 +73,12 @@ void AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator,
 	std::vector<AccelStructBakedConfig*> linkages;
 	linkages.reserve(elements.size());
 
+	int alignment = RenderSystem::system->physical->getScratchBufferAlignment();
+
 	// prepare scratch buffer
-	reserveScratchSpace(allocator, batch_scratch);
+	reserveScratchSpace(allocator, batch_scratch + alignment);
 	reserveQueryPool(device, elements.size());
-	VkDeviceAddress address = device.getAddress(scratch);
+	VkDeviceAddress address = math::alignUp(device.getAddress(scratch), alignment);
 
 	// prepare all acceleration structures for building
 	for (auto& baked : elements) {
@@ -127,7 +132,7 @@ void AccelStructFactory::bake(const LogicalDevice& device, Allocator& allocator,
 
 		// close all previous structures
 		for (auto& previous : previouses) {
-			previous.close(device);
+			previous.close(device.getHandle());
 		}
 	}
 

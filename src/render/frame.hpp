@@ -8,9 +8,31 @@
 
 class Renderer;
 
+using bool32 = uint32_t;
+
 struct SceneUniform {
 	glm::mat4 view;
+	glm::mat4 view_inv;
 	glm::mat4 projection;
+	glm::mat4 projection_inv;
+	glm::mat4 prev_view;
+	glm::mat4 prev_view_inv;
+	glm::mat4 prev_projection;
+	glm::mat4 prev_projection_inv;
+	float time;
+	float near;
+	float far;
+	glm::vec3 ambient_color;
+	int gi_samples;
+	float gi_brightness;
+	bool32 denoise;
+	bool32 shadows;
+	glm::vec3 portal_tint;
+	int portal_jumps;
+	bool32 portal_gi;
+	glm::vec3 sky_color;
+	float sky_emission;
+	int gi_max_sample_age;
 };
 
 class RenderFrame {
@@ -49,6 +71,8 @@ class RenderFrame {
 		DescriptorSet set_immediate;
 		DescriptorSet set_compose;
 		DescriptorSet set_raytrace;
+		DescriptorSet set_denoise;
+		DescriptorSet set_denoise2;
 
 	public:
 

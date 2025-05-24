@@ -6,7 +6,16 @@
 #include "render/immediate.hpp"
 
 SliderWidget::SliderWidget()
-: InputWidget(), callback({}) {}
+: SliderWidget(0) {}
+
+SliderWidget::SliderWidget(float value)
+: SliderWidget(value, 0) {}
+
+SliderWidget::SliderWidget(float value, float step)
+: InputWidget() {
+	setValue(value);
+	setStep(step);
+}
 
 void SliderWidget::updateValue() {
 	if (value > 1.0) value = 1.0;
@@ -16,36 +25,67 @@ void SliderWidget::updateValue() {
 		const int count = round(value / step);
 		value = count * step;
 	}
+
+	if (value == previous) {
+		return;
+	}
+
+	if (callback) {
+		callback(value);
+	}
+
+	previous = value;
 }
 
 glm::vec2 SliderWidget::getKnobPosition(float value) {
-	return {content.x + value * content.w, content.y + content.h / 2};
+	return {content.x + knob_inset + value * (content.w - 2 * knob_inset), content.y + content.h / 2};
 }
 
-void SliderWidget::draw(ImmediateRenderer& immediate) {
+void SliderWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
-	if (isFocused()) {
-		immediate.setRectRadius(5);
-		immediate.setColor(255, 255, 0);
-		immediate.drawRect2D(padded.expand(8, 8, 8, 8));
-	}
+	state = computeWidgetState();
+	glm::vec2 knob = getKnobPosition(value);
 
-	render = render * 0.95f + value * 0.05f;
+	drawBasicPanel(immediate, state);
 
-	glm::vec2 knob = getKnobPosition(render);
-
-	// background
-	immediate.setColor(255, 0, 0);
-	immediate.setRectRadius(10);
-	immediate.drawRect2D(padded);
+	const int rail = rail_size.fetch(state).pixels();
 
 	// slider rail
-	immediate.setColor(0, 255, 0);
-	immediate.drawRect2D(content.x, knob.y - rail_size / 2, content.w, rail_size);
+	if (rail) {
+
+		int divots = 1.0f / step;
+		float length = content.w;
+		float interval = (length - knob_inset * 2) / divots;
+		float sy = knob.y - rail / 2;
+
+		immediate.setFill(rail_color.fetch(state));
+		immediate.setStroke(OFF);
+		immediate.drawRect2D(content.x, sy, length, rail);
+
+		// only draw divots if we have good enough spacing
+		if (interval >= 8) {
+			float offset = content.x + knob_inset;
+
+			immediate.setFill(divot_color.fetch(state));
+			immediate.setLineWidth(1);
+
+			int extend = divot_extend.fetch(state).pixels();
+
+			for (int i = 0; i < divots; i++) {
+				immediate.drawLine2D(offset, sy - extend, offset, sy + rail + extend);
+				offset += interval;
+			}
+
+			immediate.drawLine2D(offset, sy - extend, offset, sy + rail + extend);
+		}
+
+	}
 
 	// slider knob
-	immediate.setColor(0, 0, 255);
-	immediate.drawCircle2D(knob.x, knob.y, knob_size);
+	immediate.setStrokeWidth(knob_border.fetch(state).pixels());
+	immediate.setStroke(knob_border_color.fetch(state));
+	immediate.setFill(knob_color.fetch(state));
+	immediate.drawCircle2D(knob.x, knob.y, knob_size.fetch(state).pixels());
 }
 
 bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
@@ -73,7 +113,7 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 
 	if (auto* positioned = any.as<PositionedEvent>()) {
 
-		const float range = knob_size + 6; // interaction margin
+		const float range = knob_size.fetch(computeWidgetState()).pixels() + 6; // interaction margin
 		const float half = range / 2;
 		hovered = positioned->isWithinBox(knob.x - half, knob.y - half, range, range);
 		bool used = false;
@@ -123,4 +163,20 @@ bool SliderWidget::event(WidgetContext& context, const InputEvent& any) {
 	}
 
 	return false;
+}
+
+void SliderWidget::onChange(const std::function <void(float)>& callback) {
+	this->callback = callback;
+}
+
+float SliderWidget::getValue() const {
+	return value;
+}
+
+void SliderWidget::setStep(float step) {
+	this->step = step;
+}
+
+void SliderWidget::setValue(float value) {
+	this->value = value;
 }

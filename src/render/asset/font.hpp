@@ -57,6 +57,8 @@ class Font {
 
 		GlyphQuad getOrLoad(float* x, float* y, float scale, uint32_t unicode, int prev);
 
+		void preloadAscii(const std::string& ascii);
+
 };
 
 class DynamicFontAtlas {

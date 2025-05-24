@@ -7,18 +7,6 @@
 #include "layout/channel.hpp"
 
 /*
- * Spacing
- */
-
-int Spacing::getTotal(Channel channel) {
-	if (channel == Channel::WIDTH) {
-		return left.toPixels() + right.toPixels();
-	}
-
-	return top.toPixels() + bottom.toPixels();
-}
-
-/*
  * Widget
  */
 
@@ -33,20 +21,55 @@ void Widget::rebuild(int x, int y) {
 
 }
 
-Box2D Widget::getContentBox() const {
-	return content;
+void Widget::add(const std::shared_ptr<Widget>& child) {
+	child->parent = weak_from_this();
+	children.push_back(child);
 }
 
-Box2D Widget::getPaddingBox() const {
-	return padded;
+void Widget::remove(const std::shared_ptr<Widget>& child) {
+	auto it = std::find(children.begin(), children.end(), child);
+
+	if (it != children.end()) {
+		children.erase(it);
+	}
 }
 
-float Widget::getAlignmentFactor(Channel channel) {
-	return channel == Channel::WIDTH ? toAlignmentFactor(horizontal) : toAlignmentFactor(vertical);
+float Widget::getAlignmentFactor(const ElementState& state, Channel channel) {
+	return channel == Channel::WIDTH ? toAlignmentFactor(horizontal.fetch(state)) : toAlignmentFactor(vertical.fetch(state));
 }
 
-int Widget::getOuterSizing(Channel channel) {
-	return sizing.get(channel) + padding.getTotal(channel) + margin.getTotal(channel);
+int Widget::getOuterSizing(const ElementState& state, Channel channel) {
+	return sizing.get(channel) + padding.fetch(state).along(channel) + margin.fetch(state).along(channel);
+}
+
+void Widget::drawBasicPanel(ImmediateRenderer& immediate, const ElementState& state) {
+
+	const RadiusUnit corners = radius.fetch(state);
+	const Color color = background.fetch(state);
+	const Color border = border_color.fetch(state);
+
+	// reset state
+	immediate.setSprite(OFF);
+
+	// configure border and background radius
+	immediate.setRectRadius(
+		corners.top_left.pixels(),
+		corners.top_right.pixels(),
+		corners.bottom_left.pixels(),
+		corners.bottom_right.pixels()
+	);
+
+	// border width
+	const int width = this->border.fetch(state).pixels();
+	immediate.setStrokeWidth(width);
+
+	// set colors
+	immediate.setStroke(border);
+	immediate.setFill(color);
+
+	// draw panel with border
+	immediate.drawRect2D(padded);
+
 }
 
 void Widget::applyWrapSizing() {
@@ -63,51 +86,54 @@ void Widget::applyFitSizing(Channel channel) {
 		widget->applyFitSizing(channel);
 	}
 
-	Unit sizing_unit = (channel == Channel::WIDTH) ? width : height;
-	Unit minimal_unit = (channel == Channel::WIDTH) ? min_width : min_height;
+	const ElementState state = ElementState::ofLayout();
+	const Unit sizing_unit = (channel == Channel::WIDTH) ? width.fetch(state) : height.fetch(state);
+	const Unit minimal_unit = (channel == Channel::WIDTH) ? min_width.fetch(state) : min_height.fetch(state);
 
 	int preferred = 0;
-	int low_bound = minimal_unit.toPixels();
+	int low_bound = minimal_unit.pixels();
 
 	// handle the simple case - size is specified explicitly
-	if (sizing_unit.isAbsolute()) {
-		preferred = std::max(sizing_unit.toPixels(), low_bound);
+	if (sizing_unit.isResolvable()) {
+		preferred = std::max(sizing_unit.pixels(), low_bound);
 	}
 
 	// try to fit children along channel
 	if (sizing_unit.metric == Metric::FIT) {
-		int value = 0;
+		int high_value = 0;
+		int low_value = 0;
 
-		const bool along = WidgetFlow::isAligned(flow, channel);
-		const int spacing = gap.toPixels(); /* TODO ensure that gap is absolute */
+		const bool along = WidgetFlow::isAligned(flow.fetch(state), channel);
+		const int spacing = gap.fetch(state).pixels();
 
 		// get widths of all children
 		for (const std::shared_ptr<Widget>& widget : children) {
-			int inherent = widget->getOuterSizing(channel);
+			int inherent = widget->getOuterSizing(state, channel);
+			int min = widget->minimal.get(channel);
 
-			value = along
-				? value + inherent + spacing     // along flow direction
-				: std::max(value, inherent); // acros flow direction
+			high_value = along
+				? high_value + inherent + spacing     // along flow direction
+				: std::max(high_value, inherent); // acros flow direction
+
+			low_value = along
+				? low_value + min + spacing     // along flow direction
+				: std::max(low_value, min); // acros flow direction
 		}
 
 		// remove trailing element gap
 		if (along) {
-			value -= gap.toPixels();
+			high_value -= spacing;
+			low_value -= spacing;
 		}
 
-		preferred = std::max(value, low_bound);
+		if (low_bound < low_value) {
+			low_bound = low_value;
+		}
+
+		preferred = std::max(high_value, low_bound);
 	}
 
 	// ignore GROW sizing, that is handled in applyGrowSizing()
-
-	// get the highest minimal size
-	for (const std::shared_ptr<Widget>& widget : children) {
-		int min = widget->minimal.get(channel);
-
-		if (min > low_bound) {
-			low_bound = min;
-		}
-	}
 
 	// apply calculated size
 	sizing.get(channel) = preferred;
@@ -117,8 +143,9 @@ void Widget::applyFitSizing(Channel channel) {
 
 void Widget::applyGrowSizing(Channel channel) {
 
-	const bool along = WidgetFlow::isAligned(flow, channel);
-	const int spacing = gap.toPixels(); /* TODO ensure that gap is absolute */
+	const ElementState state = ElementState::ofLayout();
+	const bool along = WidgetFlow::isAligned(flow.fetch(state), channel);
+	const int spacing = gap.fetch(state).pixels();
 
 	int remaining = sizing.get(channel);
 
@@ -127,8 +154,8 @@ void Widget::applyGrowSizing(Channel channel) {
 	std::vector<std::pair<int, std::shared_ptr<Widget>>> growable;
 
 	for (const std::shared_ptr<Widget>& widget : children) {
-		Unit unit = (channel == Channel::WIDTH) ? widget->width : widget->height;
-		const int outer = widget->getOuterSizing(channel);
+		Unit unit = (channel == Channel::WIDTH) ? widget->width.fetch(state) : widget->height.fetch(state);
+		const int outer = widget->getOuterSizing(state, channel);
 
 		// subtract elements from out total size
 		// to get at the still unused space
@@ -177,7 +204,7 @@ void Widget::applyGrowSizing(Channel channel) {
 			}
 
 			// subtract old size and do it as an addition so we don't have to worry about padding
-			widget->sizing.get(channel) += extension - widget->getOuterSizing(channel);
+			widget->sizing.get(channel) += extension - widget->getOuterSizing(state, channel);
 		}
 	}
 
@@ -286,27 +313,29 @@ void Widget::applyPositioning(int x, int y) {
 
 	content = Box2D {x, y, sizing.width(), sizing.height()};
 
+	const ElementState state = ElementState::ofLayout();
+	const BoxUnit pad = padding.fetch(state);
+
 	// TODO
-	int pl = padding.left.toPixels();
-	int pt = padding.top.toPixels();
-	int pw = pl + padding.right.toPixels();
-	int ph = pt + padding.bottom.toPixels();
+	int pl = pad.left.pixels();
+	int pt = pad.top.pixels();
+	int pw = pl + pad.right.pixels();
+	int ph = pt + pad.bottom.pixels();
 
 	padded = Box2D {x - pl, y - pt, sizing.width() + pw, sizing.height() + ph};
 
-	// this is used to effectively change the iteration direction
-	const int facing = WidgetFlow::asDirection(flow);
-	const bool invert = facing == -1;
-	const Channel channel = WidgetFlow::asChannel(flow);
+	Flow flow_value = flow.fetch(state);
 
-	// Please ignore CLion being stupid here, it does, in fact, compile
+	// this is used to effectively change the iteration direction
+	const int facing = WidgetFlow::asDirection(flow_value);
+	const bool invert = facing == -1;
+
+	const Channel channel = WidgetFlow::asChannel(flow_value);
 	const Channel opposite = WidgetChannel::getOpposite(channel);
 
 	int remaining_along = sizing.get(channel);
-	int spacing = gap.toPixels();
+	int spacing = gap.fetch(state).pixels();
 
-	int total = 0;
-	int fractions = 0;
 	std::vector<std::pair<int, std::shared_ptr<Widget>>> growable;
 
 	// calculate along-axis space left
@@ -314,7 +343,7 @@ void Widget::applyPositioning(int x, int y) {
 
 		// subtract elements from out total size
 		// to get at the still unused space
-		remaining_along -= widget->getOuterSizing(channel) + spacing;
+		remaining_along -= widget->getOuterSizing(state, channel) + spacing;
 	}
 
 	// remove trailing element gap
@@ -326,23 +355,26 @@ void Widget::applyPositioning(int x, int y) {
 		const std::shared_ptr<Widget>& widget = children[invert ? (children.size() - i - 1) : i];
 
 		// number of pixels left across the flow
-		const int remaining_across = sizing.get(opposite) - widget->getOuterSizing(opposite);
+		const int remaining_across = sizing.get(opposite) - widget->getOuterSizing(state, opposite);
 
 		// alignment factors
-		int align_x = remaining_along * getAlignmentFactor(channel) ;
-		int align_y = remaining_across * getAlignmentFactor(opposite);
+		int align_x = remaining_along * getAlignmentFactor(state, channel) ;
+		int align_y = remaining_across * getAlignmentFactor(state, opposite);
 
 		// align_x is actually align_along, this effectively converts from local coordinates
 		if (channel != Channel::WIDTH) {
 			std::swap(align_x, align_y);
 		}
 
+		const BoxUnit wp = widget->padding.fetch(state);
+		const BoxUnit wm = widget->margin.fetch(state);
+
 		// when positioning we take into account only the upper-left offsets
-		const int ox = align_x + widget->padding.left.toPixels() + widget->margin.left.toPixels();
-		const int oy = align_y + widget->padding.top.toPixels() + widget->margin.top.toPixels();
+		const int ox = align_x + wp.left.pixels() + wm.left.pixels();
+		const int oy = align_y + wp.top.pixels() + wm.top.pixels();
 
 		widget->applyPositioning(ox + position.width() /* x */, oy + position.height() /* y */);
-		position.get(channel) += widget->getOuterSizing(channel) + spacing;
+		position.get(channel) += widget->getOuterSizing(state, channel) + spacing;
 
 	}
 
@@ -353,6 +385,12 @@ Widget::~Widget() {
 }
 
 bool Widget::event(WidgetContext& context, const InputEvent& any) {
+	if (const auto* event = any.as<ButtonEvent>()) {
+		if (event->isWithinBox(padded)) {
+			return true;
+		}
+	}
+
 	return false;
 }
 
@@ -360,6 +398,24 @@ void Widget::scan(Navigator& navigator) {
 	for (auto& widget : children) {
 		widget->scan(navigator);
 	}
+}
+
+void Widget::update() {
+	if (auto locked = parent.lock()) {
+		locked->update();
+		return;
+	}
+
+	out::error("UI update was lost during propagation! Is the RootWidget missing?");
+}
+
+void Widget::overlay(const std::shared_ptr<Overlay>& overlay) {
+	if (auto locked = parent.lock()) {
+		locked->overlay(overlay);
+		return;
+	}
+
+	out::error("UI overlay was lost during propagation! Is the RootWidget missing?");
 }
 
 /*
@@ -373,6 +429,27 @@ bool InputWidget::isFocused() const {
 void InputWidget::setFocus(WidgetContext& context) {
 	context.setSelected(std::dynamic_pointer_cast<InputWidget>(shared_from_this()));
 }
+
+ElementState InputWidget::computeWidgetState() const {
+	ElementState::Interaction interaction;
+
+	if (enabled) {
+		if (hovered || pressed) {
+			if (pressed) {
+				interaction = ElementState::PRESSED;
+			} else {
+				interaction = ElementState::HOVER;
+			}
+		} else {
+			interaction = ElementState::DEFAULT;
+		}
+	} else {
+		interaction = ElementState::DISABLED;
+	}
+
+	return ElementState::ofDraw(interaction, isFocused());
+}
+
 
 void InputWidget::setSelected(bool selected) {
 	this->selected = selected;

@@ -2,7 +2,7 @@
 
 #include "input/event.hpp"
 
-class Box2D;
+struct Box2D;
 
 /**
  * Base class shared by all events that contain mouse position information

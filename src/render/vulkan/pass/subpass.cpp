@@ -6,11 +6,19 @@
  * Subpass
  */
 
-Subpass::Subpass(uint32_t attachments) noexcept
-: attachments(attachments) {}
+Subpass::Subpass(uint32_t attachments, VkSampleCountFlagBits depth_samples, std::vector<VkSampleCountFlagBits>& samplings) noexcept
+: attachments(attachments), depth_samples(depth_samples), samplings(samplings) {}
 
 uint32_t Subpass::getAttachmentCount() const {
 	return attachments;
+}
+
+VkSampleCountFlagBits Subpass::getDepthSamples() const {
+	return depth_samples;
+}
+
+const std::vector<VkSampleCountFlagBits>& Subpass::getSampleArray() const {
+	return samplings;
 }
 
 /*
@@ -59,10 +67,14 @@ VkSubpassDescription SubpassBuilder::finalize(const std::vector<uint32_t>& prese
 	// this is here so that the renderpass can retain the information about
 	// how many attachments were there for each subpass - this is then used during pipeline
 	// creation to setup blending for each attachment
-	subpass_attachments.emplace_back(color_count);
+	subpass_attachments.emplace_back(color_count, depth_samples, samplings);
 
 	return description;
 
+}
+
+void SubpassBuilder::addAttachment(Attachment::Ref attachment) {
+	references.insert(attachment.index);
 }
 
 SubpassBuilder::SubpassBuilder(RenderPassBuilder& builder, VkPipelineBindPoint bind_point, uint32_t attachment_count, Pyramid<uint32_t>& preserve)
@@ -73,25 +85,27 @@ SubpassBuilder::SubpassBuilder(RenderPassBuilder& builder, VkPipelineBindPoint b
 }
 
 SubpassBuilder& SubpassBuilder::addInput(Attachment::Ref attachment, VkImageLayout target_layout) {
-	references.insert(attachment.index);
+	addAttachment(attachment);
 	inputs.push_back(getReference(attachment.index, target_layout));
 	return *this;
 }
 
 SubpassBuilder& SubpassBuilder::addOutput(Attachment::Ref attachment, VkImageLayout target_layout) {
-	references.insert(attachment.index);
+	addAttachment(attachment);
+	samplings.push_back(attachment.samples);
 	colors.push_back(getReference(attachment.index, target_layout));
 	return *this;
 }
 
 SubpassBuilder& SubpassBuilder::addDepth(Attachment::Ref attachment, VkImageLayout target_layout) {
-	references.insert(attachment.index);
+	addAttachment(attachment);
 	depth = getReference(attachment.index, target_layout);
+	depth_samples = attachment.samples;
 	return *this;
 }
 
 SubpassBuilder& SubpassBuilder::addResolve(Attachment::Ref attachment, VkImageLayout target_layout) {
-	references.insert(attachment.index);
+	addAttachment(attachment);
 	resolves.push_back(getReference(attachment.index, target_layout));
 	return *this;
 }

@@ -8,6 +8,7 @@
 
 VertexChannel::VertexChannel(const std::string& string) {
 	buffer.setDebugName("Immediate " + string + " Vertex Channel");
+	clear();
 }
 
 void VertexChannel::close() {
@@ -28,30 +29,43 @@ bool VertexChannel::empty() const {
 }
 
 void VertexChannel::clear() {
+	command_index = 0;
 	vertices.clear();
 	commands.clear();
+
+	commands.emplace_back(MeshConstant {glm::identity<glm::mat4>()}, 0, 0);
 }
 
 void VertexChannel::pushTransform(glm::mat4 matrix) {
-	if (!commands.empty()) {
-		Command& command = commands.back();
+	Command& command = commands.back();
 
-		if (command.count == 0) {
-			command.constant.matrix = matrix;
-			return;
-		}
+	if (command.count == 0) {
+		command.constant.matrix = matrix;
+	} else {
+		commands.emplace_back(MeshConstant {glm::identity<glm::mat4>()}, vertices.size(), 0);
 	}
-
-	commands.emplace_back(MeshConstant {matrix}, 0);
 }
 
-void VertexChannel::draw(PushConstant& push, CommandRecorder& recorder) {
-	if (!buffer.isEmpty()) {
-		int offset = 0;
+void VertexChannel::pushSync() {
+	commands.back().sync = true;
+	commands.emplace_back(MeshConstant {glm::identity<glm::mat4>()}, vertices.size(), 0);
+}
 
-		for (const auto& command : commands) {
-			recorder.writePushConstant(push, &command.constant).bindVertexBuffer(buffer.getBuffer()).draw(command.count, 1, offset, 0);
-			offset += command.count;
+bool VertexChannel::draw(PushConstant& push, CommandRecorder& recorder) {
+	if (!buffer.isEmpty()) {
+		for (; command_index < (int) commands.size(); command_index ++) {
+			Command& command = commands[command_index];
+
+			if (command.count != 0) {
+				recorder.writePushConstant(push, &command.constant).bindVertexBuffer(buffer.getBuffer()).draw(command.count, 1, command.offset, 0);
+			}
+
+			if (command.sync) {
+				// only tell the renderer to retry if we actually have something to do
+				return static_cast<size_t>(++ command_index) != commands.size();
+			}
 		}
 	}
+
+	return false;
 }

@@ -3,13 +3,17 @@
 #include "external.hpp"
 #include "shared/box.hpp"
 
+struct StyleContext;
+
 enum struct Metric : uint64_t {
 	FIT,
 	GROW,
-	PX
+	PIXELS,
+	VIEWPORT_WIDTH,
+	VIEWPORT_HEIGHT,
 };
 
-class Unit {
+struct Unit {
 
 	public:
 
@@ -17,18 +21,24 @@ class Unit {
 		Metric metric;
 
 		constexpr Unit()
-		: value(0), metric(Metric::PX) {}
+		: value(0), metric(Metric::PIXELS) {}
 
 		constexpr Unit(double value, Metric metric)
 		: value(value), metric(metric) {}
 
-		bool isAbsolute() const;
-		int toPixels() const;
+		/// Check if pixels() can be called on this unit
+		bool isResolvable() const;
+
+		/// Convert the unit to raw pixels
+		int pixels() const;
 
 	public:
 
+		// hook for StyleProperty
+		static constexpr auto unwrapper = &Unit::pixels;
+
 		static constexpr Unit zero() {
-			return {0, Metric::PX};
+			return {0, Metric::PIXELS};
 		}
 
 		static constexpr Unit fit() {
@@ -40,7 +50,15 @@ class Unit {
 		}
 
 		static constexpr Unit px(double value) {
-			return {value, Metric::PX};
+			return {value, Metric::PIXELS};
+		}
+
+		static constexpr Unit vh(double value) {
+			return {value, Metric::VIEWPORT_HEIGHT};
+		}
+
+		static constexpr Unit vw(double value) {
+			return {value, Metric::VIEWPORT_WIDTH};
 		}
 
 };
@@ -53,21 +71,10 @@ constexpr Unit operator - (const Unit& unit) {
 	return {- unit.value, unit.metric};
 }
 
-/*
- * Unit Literals
- */
-
-constexpr Unit operator ""_px(long double value) {
-	return Unit::px(static_cast<double>(value));
+constexpr bool operator == (const Unit& lhs, const Unit& rhs) {
+	return lhs.value == rhs.value && lhs.metric == rhs.metric;
 }
 
-constexpr Unit operator ""_px(unsigned long long int value) {
-	return Unit::px(static_cast<double>(value));
+constexpr bool operator != (const Unit& lhs, const Unit& rhs) {
+	return lhs.value != rhs.value || lhs.metric != rhs.metric;
 }
-
-/*
- * Assertions
- */
-
-static_assert(std::is_same<decltype(1_px), Unit>::value);
-static_assert(std::is_same<decltype(1.0_px), Unit>::value);

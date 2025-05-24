@@ -7,6 +7,16 @@
 
 class Window;
 
+struct Viewport {
+
+	int width = 0;
+	int height = 0;
+
+	static void setCurrent(int width, int height);
+	static Viewport getCurrent();
+
+};
+
 class WindowSystem {
 
 	public:

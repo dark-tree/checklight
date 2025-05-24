@@ -6,42 +6,56 @@
 void TextWidget::applyWrapSizing() {
 	Widget::applyWrapSizing();
 
-	TextBakery bakery = getBakery(sizing.width(), 0);
+	TextBakery bakery = getBakery(sizing.width(), 0, ElementState::ofLayout());
 	BakedText wrapped = bakery.bakeString(0, 0, text);
 
 	min_height = Unit::px(wrapped.getMetrics().height);
 }
 
-TextBakery TextWidget::getBakery(int width, int height) const {
+void TextWidget::updateWidgetText(const std::string& text) {
+	this->text = text;
+	TextBakery bakery = getBakery(0, 0, ElementState::ofLayout());
+
+	bakery.setWrapping(true);
+	BakedText::Metrics wrapped = bakery.bakeString(0, 0, text).getMetrics();
+
+	bakery.setWrapping(false);
+	BakedText::Metrics unwrapped = bakery.bakeString(0, 0, text).getMetrics();
+
+	// this is a sub-optimal solution
+	min_width = Unit::px(wrapped.width);
+	width = Unit::px(unwrapped.width);
+	height = Unit::px(unwrapped.height);
+}
+
+TextBakery TextWidget::getBakery(int width, int height, const ElementState& state) const {
 
 	TextBakery bakery;
 
-	bakery.setFont("assets/font/OpenSans-Variable.ttf");
-	bakery.setAlignment(VerticalAlignment::TOP);
-	bakery.setAlignment(HorizontalAlignment::LEFT);
-	bakery.setSize(20);
+	bakery.setFont(font.fetch(state));
+	bakery.setAlignment(vertical.fetch(state));
+	bakery.setAlignment(horizontal.fetch(state));
+	bakery.setSize(size.fetch(state));
 	bakery.setBounds(width, height);
-	bakery.setWrapping(true);
+	bakery.setWrapping(wrap.fetch(state));
 
 	return bakery;
 
 }
 
+TextWidget::TextWidget()
+: TextWidget("") {}
+
+
 TextWidget::TextWidget(const std::string& text) {
-	setText(text);
+	updateWidgetText(text);
 }
 
-void TextWidget::draw(ImmediateRenderer& immediate) {
+void TextWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
-	// immediate.setRectRadius(0);
-	// immediate.setColor(0, 0, 0);
-	// immediate.drawRect2D(content.x, content.y, content.w, content.h);
-	// immediate.setColor(255, 255, 255);
-	// immediate.drawRect2D(content.x + 2, content.y + 2, content.w - 4, content.h - 4);
+	TextBakery bakery = getBakery(content.w, content.h, state);
 
-	TextBakery bakery = getBakery(content.w, content.h);
-
-	immediate.setColor(0, 0, 0);
+	immediate.setFill(color.fetch(state));
 	immediate.drawText2D(content.x, content.y, bakery.bakeString(0, 0, text.c_str()));
 
 }
@@ -50,20 +64,12 @@ bool TextWidget::event(WidgetContext& context, const InputEvent& event) {
 	return false;
 }
 
-void TextWidget::setText(const std::string& text) {
-	this->text = text;
-	TextBakery bakery = getBakery(0, 0);
+void TextWidget::setText(const std::string& text, bool update_widget) {
+	updateWidgetText(text);
 
-	bakery.setWrapping(true);
-	BakedText::Metrics wrapped = bakery.bakeString(0, 0, text).getMetrics();
-
-	bakery.setWrapping(false);
-	BakedText::Metrics unwrapped = bakery.bakeString(0, 0, text).getMetrics();
-
-	min_width = Unit::px(wrapped.width);
-
-	width = Unit::px(unwrapped.width);
-	height = Unit::px(unwrapped.height);
+	if (update_widget) {
+		update();
+	}
 }
 
 

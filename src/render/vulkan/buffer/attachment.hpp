@@ -16,6 +16,7 @@ class Attachment {
 		 */
 		bool magicity;
 
+		VkExtent2D extent;
 		TextureDelegate settings;
 		Texture texture;
 
@@ -28,11 +29,15 @@ class Attachment {
 		struct Ref {
 
 			private:
-				explicit Ref(int index);
+
+				explicit Ref(int index, VkSampleCountFlagBits samples);
 
 			public:
+
 				const uint32_t index;
-				static Ref of(int index);
+				const VkSampleCountFlagBits samples;
+
+				static Ref of(int index, VkSampleCountFlagBits samples);
 
 		};
 
@@ -70,4 +75,7 @@ class Attachment {
 
 		/// Close the underlying texture
 		void close(LogicalDevice device);
+
+		/// Get attachment size (if it has been allcoated)
+		VkExtent2D getExtent() const;
 };

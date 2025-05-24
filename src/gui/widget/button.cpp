@@ -1,45 +1,44 @@
 
 #include "button.hpp"
 
+#include "text.hpp"
 #include "input/input.hpp"
 #include "render/immediate.hpp"
 #include "gui/context.hpp"
 
 
-ButtonWidget::ButtonWidget(const std::string &label)
-: InputWidget(), callback([] () noexcept -> void {}), label(label) {}
+ButtonWidget::ButtonWidget()
+: InputWidget() {}
 
-void ButtonWidget::draw(ImmediateRenderer& immediate) {
+ButtonWidget::ButtonWidget(const std::string& label)
+: ButtonWidget() {
+	addWidget(std::make_shared<TextWidget>(label));
+}
 
-	if (isFocused()) {
-		immediate.setRectRadius(5);
-		immediate.setColor(255, 255, 0);
-		immediate.drawRect2D(padded.expand(8, 8, 8, 8));
-	} else {
+ButtonWidget::ButtonWidget(const Callback& callback)
+: ButtonWidget() {
+	onClick(callback);
+}
+
+ButtonWidget::ButtonWidget(const std::string& label, const Callback& callback)
+: ButtonWidget() {
+	addWidget(std::make_shared<TextWidget>(label));
+	onClick(callback);
+}
+
+void ButtonWidget::draw(ImmediateRenderer& immediate, ElementState state) {
+
+	if (!isFocused()) {
 		pressed = false;
 	}
 
-	if (enabled) {
-		if (hovered || pressed) {
-			if (pressed) {
-				immediate.setColor(255, 100, 100);
-			} else {
-				immediate.setColor(255, 80, 80);
-			}
-		} else {
-			immediate.setColor(255, 0, 0);
-		}
-	} else {
-		immediate.setColor(70, 70, 70);
+	state = computeWidgetState();
+	drawBasicPanel(immediate, state);
+
+	for (auto& widget : children) {
+		widget->draw(immediate, state);
 	}
 
-	immediate.setRectRadius(10);
-	immediate.drawRect2D(padded);
-
-	immediate.setFont("assets/font/OpenSans-Variable.ttf");
-	immediate.setColor(0, 0, 0);
-	immediate.setTextBox(content.w, content.h);
-	immediate.drawString2D(content.x, content.y, label);
 }
 
 bool ButtonWidget::event(WidgetContext& context, const InputEvent& any) {
@@ -84,4 +83,12 @@ bool ButtonWidget::event(WidgetContext& context, const InputEvent& any) {
 	}
 
 	return used;
+}
+
+void ButtonWidget::addWidget(const std::shared_ptr<Widget>& widget) {
+	add(widget);
+}
+
+void ButtonWidget::onClick(const std::function<void()>& callback) {
+	this->callback = callback;
 }

@@ -5,6 +5,7 @@
 #include "application.hpp"
 #include "window.hpp"
 #include "asset/obj.hpp"
+#include "shared/singleton.hpp"
 
 class RenderCommander;
 class RenderMesh;
@@ -18,10 +19,13 @@ class RenderSystem : public Renderer {
 		/// Import materials for an OBJ file specified by the path
 		static std::map<std::string, std::shared_ptr<ObjMaterial>> importMaterials(const std::string& path);
 
+		int frame_count = 0, frame_rate = 0;
+		std::chrono::steady_clock::time_point previous = std::chrono::steady_clock::now();
+
 	public:
 
-		static std::unique_ptr<RenderSystem> system;
-		static void init(ApplicationParameters& parameters);
+		static inline Singleton<RenderSystem> system;
+		static SingletonGuard<RenderSystem> init(ApplicationParameters& parameters);
 
 	public:
 
@@ -52,6 +56,8 @@ class RenderSystem : public Renderer {
 		 * Specifies the perspective used, this should most likely stay constant
 		 * but needs to be called AT LEAST when window size changes to account for the aspect ratio
 		 *
+		 * @note This call also updates the previous projection matrix to the current projection matrix
+		 *
 		 * @param fov  Camera field of view
 		 * @param near The closest anything can be to the camera and render
 		 * @param far  The furthest anything can be from the camera and render
@@ -61,6 +67,8 @@ class RenderSystem : public Renderer {
 		/**
 		 * Specifies the view used, this should be called ever frame
 		 * to account for the camera movement.
+		 *
+		 * @note This call also updates the previous view matrix to the current view matrix
 		 *
 		 * @param eye     The position of the "eye" in 3D world space
 		 * @param facing  Directional vector that specific in which way the camera looks.
@@ -81,11 +89,6 @@ class RenderSystem : public Renderer {
 		std::vector<std::shared_ptr<RenderModel>> importObj(const std::string& path);
 
 		/**
-		 * Close RenderModel, the resources used by the model will be released.
-		 */
-		void closeModel(std::shared_ptr<RenderModel> model);
-
-		/**
 		 * Get asset manager, this class can be used to request many resources
 		 * used during rendering (sprites, fonts)
 		 */
@@ -97,4 +100,19 @@ class RenderSystem : public Renderer {
 		 */
 		ImmediateRenderer& getImmediateRenderer();
 
+		/**
+		 * Get the current render parameters
+		 */
+		RenderParameters& getParameters();
+
+		/**
+		 * Returns current approximate framerate
+		 * as the number of frames emitted per seconds
+		 */
+		int getFrameRate() const;
+
+		/**
+		 * Render the next frame, all rendering should happen inside this call
+		 */
+		void draw() override;
 };

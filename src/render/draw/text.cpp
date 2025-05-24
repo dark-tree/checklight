@@ -74,6 +74,11 @@ int TextBakery::getWrappingBound() const {
 
 
 TextBakery& TextBakery::setFont(const std::string& path) {
+
+	if (!RenderSystem::system) {
+		FAULT("Can't request font '", path, "', the renderer has net been initialized yet!");
+	}
+
 	return setFont(RenderSystem::system->getAssetLoader().getFont(path));
 }
 
@@ -145,9 +150,9 @@ BakedText TextBakery::bakeUnicode(float x, float y, const utf8::UnicodeVector& u
 	y += size / 2;
 
 	const auto submit = [&] {
-		int start = lines.empty() ? 0 : lines.back().end;
+		const int start = lines.empty() ? 0 : lines.back().end;
 
-		if (start == adjusted.size() - 1) {
+		if (adjusted.empty()) {
 			return;
 		}
 

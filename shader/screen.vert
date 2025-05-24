@@ -9,11 +9,11 @@ layout(location = 0) out vec4 vColor;
 layout(location = 1) out vec2 vTexture;
 
 layout(push_constant) uniform MeshConstant {
-    mat4 matrix;
+	mat4 matrix;
 } uMeshObject;
 
 void main() {
-    gl_Position = uMeshObject.matrix * vec4(iPosition, 1.0);
-    vColor = iColor;
-    vTexture = iTexture;
+	gl_Position = uMeshObject.matrix * vec4(iPosition, 1.0);
+	vColor = iColor;
+	vTexture = iTexture;
 }

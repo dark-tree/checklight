@@ -1,33 +1,112 @@
 #version 460
 #extension GL_EXT_ray_tracing : require
+#extension GL_GOOGLE_include_directive : enable
+#extension GL_EXT_scalar_block_layout : enable
 
-struct HitPayload {
-	// posX, posY, posZ, hit
-	vec4 hit;
-	// colorR, colorG, colorB
-	vec4 value;
-	// normalX, normalY, normalZ
-	vec4 normal;
-};
+#include "denoisecommon.glsl"
+#include "raycommon.glsl"
+#include "scene.glsl"
 
-layout(location = 0) rayPayloadEXT HitPayload rPrimaryPayload;
-layout(location = 1) rayPayloadEXT bool rShadowPayload;
+layout(location = 0) rayPayloadEXT HitPayload rPayload;
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT TLAS;
-layout(binding = 1, set = 0, rgba32f) uniform image2D image;
+layout(binding = 1, set = 0, rgba32f) uniform image2D colorImage;              // W
+layout(binding = 6, set = 0, rgba16f) uniform image2D illuminationImage;       // W
+layout(binding = 7, set = 0, rgba16f) uniform image2D prevIlluminationImage;   // R
+layout(binding = 8, set = 0, rgba16f) uniform image2D normalImage;             // W
+layout(binding = 9, set = 0, rgba16f) uniform image2D prevNormalImage;         // R
+layout(binding = 10, set = 0, rgba16f) uniform image2D solidIlluminationImage; // W
+layout(binding = 11, set = 0, rgba32f) uniform image2D worldPosImage;          // W
+layout(binding = 12, set = 0, rgba32f) uniform image2D prevWorldPosImage;      // R
 
-layout(binding = 2, set = 0) uniform SceneUniform {
-	mat4 view;
-	mat4 projection;
-} uSceneObject;
+layout(binding = 2, set = 0, scalar) uniform _SceneUniform { SceneUniform uSceneObject; };
+
+vec2 reproject(vec3 worldPosition, mat4 view, mat4 projection) {
+	vec4 clipSpace = projection * view * vec4(worldPosition, 1.0);
+	vec2 ndc = clipSpace.xy / clipSpace.w;
+	return (ndc + 1.0) / 2.0;
+}
+
+bool inRange(ivec2 uv, ivec2 minv, ivec2 maxv) {
+	return all(greaterThanEqual(uv, minv)) && all(lessThanEqual(uv, maxv));
+}
+
+vec4 samplePrevIllumination(vec2 uv, HitPayload primaryPayload) {
+
+	const float DEPTH_THRESHOLD = 0.95;
+	const float NORMAL_THRESHOLD = 0.0;
+
+	ivec2 texSize = imageSize(prevIlluminationImage);
+
+	vec2 pos = uv * vec2(texSize) - 0.5;
+
+	ivec2 pos0 = ivec2(floor(pos));
+	vec2 frac = pos - floor(pos);
+
+	ivec2 pos1 = pos0 + ivec2(1, 0);
+	ivec2 pos2 = pos0 + ivec2(0, 1);
+	ivec2 pos3 = pos0 + ivec2(1, 1);
+
+	vec3 normal0 = imageLoad(prevNormalImage, pos0).xyz;
+	vec3 normal1 = imageLoad(prevNormalImage, pos1).xyz;
+	vec3 normal2 = imageLoad(prevNormalImage, pos2).xyz;
+	vec3 normal3 = imageLoad(prevNormalImage, pos3).xyz;
+
+	vec3 posWS0 = imageLoad(prevWorldPosImage, pos0).xyz;
+	vec3 posWS1 = imageLoad(prevWorldPosImage, pos1).xyz;
+	vec3 posWS2 = imageLoad(prevWorldPosImage, pos2).xyz;
+	vec3 posWS3 = imageLoad(prevWorldPosImage, pos3).xyz;
+
+	bool range0 = inRange(pos0, ivec2(0), texSize - ivec2(1))
+		&& planeDistanceWeight(primaryPayload.hit.xyz, posWS0, primaryPayload.normal.xyz) > DEPTH_THRESHOLD
+		&& normalEdgeStoppingWeight(primaryPayload.normal.xyz, normal0, 128.0) > NORMAL_THRESHOLD;
+
+	bool range1 = inRange(pos1, ivec2(0), texSize - ivec2(1))
+		&& planeDistanceWeight(primaryPayload.hit.xyz, posWS1, primaryPayload.normal.xyz) > DEPTH_THRESHOLD
+		&& normalEdgeStoppingWeight(primaryPayload.normal.xyz, normal1, 128.0) > NORMAL_THRESHOLD;
+
+	bool range2 = inRange(pos2, ivec2(0), texSize - ivec2(1))
+		&& planeDistanceWeight(primaryPayload.hit.xyz, posWS2, primaryPayload.normal.xyz) > DEPTH_THRESHOLD
+		&& normalEdgeStoppingWeight(primaryPayload.normal.xyz, normal2, 128.0) > NORMAL_THRESHOLD;
+
+	bool range3 = inRange(pos3, ivec2(0), texSize - ivec2(1))
+		&& planeDistanceWeight(primaryPayload.hit.xyz, posWS3, primaryPayload.normal.xyz) > DEPTH_THRESHOLD
+		&& normalEdgeStoppingWeight(primaryPayload.normal.xyz, normal3, 128.0) > NORMAL_THRESHOLD;
+
+	vec4 tex0 = range0 ? imageLoad(prevIlluminationImage, pos0) : vec4(0.0);
+	vec4 tex1 = range1 ? imageLoad(prevIlluminationImage, pos1) : vec4(0.0);
+	vec4 tex2 = range2 ? imageLoad(prevIlluminationImage, pos2) : vec4(0.0);
+	vec4 tex3 = range3 ? imageLoad(prevIlluminationImage, pos3) : vec4(0.0);
+
+	tex0 = range0 ? tex0 : tex1;
+	tex1 = range1 ? tex1 : tex0;
+
+	tex2 = range2 ? tex2 : tex3;
+	tex3 = range3 ? tex3 : tex2;
+
+	vec4 interpX0 = mix(tex0, tex1, frac.x);
+	vec4 interpX1 = mix(tex2, tex3, frac.x);
+
+	bool range01 = range0 || range1;
+	bool range23 = range2 || range3;
+
+	interpX0 = range01 ? interpX0 : interpX1;
+	interpX1 = range23 ? interpX1 : interpX0;
+
+	if (!range01 && !range23) {
+		return vec4(0.0);
+	}
+
+	return mix(interpX0, interpX1, frac.y);
+}
 
 void main() {
 	const vec2 pixelCenter = vec2(gl_LaunchIDEXT.xy) + vec2(0.5);
-	const vec2 inUV = pixelCenter/vec2(gl_LaunchSizeEXT.xy);
+	const vec2 inUV = pixelCenter / vec2(gl_LaunchSizeEXT.xy);
 	vec2 d = inUV * 2.0 - 1.0;
 
-	mat4 viewInverse = inverse(uSceneObject.view);
-	mat4 projInverse = inverse(uSceneObject.projection);
+	mat4 viewInverse = uSceneObject.viewInv;
+	mat4 projInverse = uSceneObject.projectionInv;
 	
 	/**
 	 * Primary ray
@@ -37,65 +116,139 @@ void main() {
 	vec4 target = projInverse * vec4(d.x, d.y, 1, 1);
 	vec4 direction = viewInverse * vec4(normalize(target.xyz), 0);
 
-	float tMin = 0.001;
-	float tMax = 10000.0;
+	float tMin = uSceneObject.near;
+	float tMax = uSceneObject.far;
 	uint primaryRayFlags = gl_RayFlagsOpaqueEXT;
 
-	traceRayEXT(TLAS,          // acceleration structure
-		primaryRayFlags,       // rayFlags
-		0xFF,                  // cullMask
-		0,                     // sbtRecordOffset
-		0,                     // sbtRecordStride
-		0,                     // missIndex
-		origin.xyz,            // ray origin
-		tMin,                  // ray min range
-		direction.xyz,         // ray direction
-		tMax,                  // ray max range
-		0                      // payload location
-	);
+	int jump = 0;
+	// The primary ray is also considered a jump
+	const int MAX_JUMPS = uSceneObject.portalJumps + 1;
 
-	vec3 primaryColor = rPrimaryPayload.value.xyz;
-	float depthValue = tMax;
+	// firstPrimary is an actual primary ray payload, while primaryPayload is a primary ray that went through the portal
+	HitPayload firstPrimary;
 
-	/**
-	 * Directional light shadow ray
-	 */
-
-	if (rPrimaryPayload.hit.w > 0) {
-
-		// Calculate depth value
-		depthValue = length(rPrimaryPayload.hit.xyz - origin.xyz);
-
-		// Shadow ray
-		vec3 shadowRayDirection = normalize(vec3(0.0, 0.5, -1));
-		vec3 shadowRayOrigin = rPrimaryPayload.hit.xyz + rPrimaryPayload.normal.xyz * 0.001;
-
-		uint shadowRayFlags = gl_RayFlagsOpaqueEXT | gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsSkipClosestHitShaderEXT;
-
-		rShadowPayload = false;
+	while (jump < MAX_JUMPS) {
+		jump++;
 
 		traceRayEXT(TLAS,          // acceleration structure
-			shadowRayFlags,        // rayFlags
+			primaryRayFlags,       // rayFlags
 			0xFF,                  // cullMask
 			0,                     // sbtRecordOffset
 			0,                     // sbtRecordStride
-			1,                     // missIndex
-			shadowRayOrigin,       // ray origin
-			0.001,                 // ray min range
-			shadowRayDirection,    // ray direction
-			10000.0,               // ray max range
-			1                      // payload location
+			0,                     // missIndex
+			origin.xyz,            // ray origin
+			tMin,                  // ray min range
+			direction.xyz,         // ray direction
+			tMax,                  // ray max range
+			0                      // payload location
 		);
 
-		if (!rShadowPayload) {
-			primaryColor *= 0.3;
+		if (jump == 1) {
+			firstPrimary = rPayload;
 		}
+
+		if (rPayload.hit.w == 0 || rPayload.portal[0][0] == 0 || jump == MAX_JUMPS) {
+			break;
+		}
+
+		// Apply portal transformation
+		origin = rPayload.portal * vec4(rPayload.hit.xyz, 1);
+		direction = normalize(rPayload.portal * vec4(rPayload.hit.xyz + direction.xyz, 1) - origin);
+	}
+
+	HitPayload primaryPayload = rPayload;
+
+	vec3 portalTint = uSceneObject.portalTint * (jump - 1);
+	vec3 outColor = primaryPayload.color.xyz + portalTint;
+
+	float depthValue = tMax;
+
+	if (firstPrimary.hit.w > 0) {
+		vec4 hitView = uSceneObject.view * vec4(firstPrimary.hit.xyz, 1.0);
+		vec4 hitClip = uSceneObject.projection * hitView;
+		depthValue = hitClip.z / hitClip.w;
+	}
+
+	/**
+	 * Global illumination and reflections
+	 */
+
+	if (primaryPayload.hit.w > 0){
+
+		const int samples = (uSceneObject.portalGI || jump <= 1) ? uSceneObject.giSamples : 0;
+
+		vec3 giLight = vec3(0.0);
+		float seed = gl_LaunchIDEXT.x + gl_LaunchIDEXT.y * 3.43121412313 + fract(1.12345314312 * uSceneObject.time);
+
+		for (int i = 0; i < samples; i++) {
+
+			vec3 reflectionDirection = reflect(direction.xyz, primaryPayload.normal.xyz);		
+			vec3 diffuseDirection = cosWeightedRandomHemisphereDirection(primaryPayload.normal.xyz, seed);
+
+			bool isSpecular = hash1(seed) < primaryPayload.specular.x;
+			vec3 secondaryDirection = normalize(mix(diffuseDirection, reflectionDirection, float(isSpecular) * (primaryPayload.specular.w / 1000.0)));
+		
+			vec3 secondaryOrigin = primaryPayload.hit.xyz + primaryPayload.normal.xyz * 0.001;
+
+			traceRayEXT(TLAS,          // acceleration structure
+				primaryRayFlags,       // rayFlags
+				0xFF,                  // cullMask
+				0,                     // sbtRecordOffset
+				0,                     // sbtRecordStride
+				0,                     // missIndex
+				secondaryOrigin,       // ray origin
+				0.001,                 // ray min range
+				secondaryDirection,    // ray direction
+				tMax,                  // ray max range
+				0                      // payload location
+			);
+
+			giLight += rPayload.light.xyz * rPayload.color.xyz * uSceneObject.giBrightness;
+		}
+
+		vec3 solidLight = primaryPayload.light.rgb;
+		vec3 noisyLight = ((samples > 0) ? (giLight / float(samples)) : vec3(0));
+		
+		float sampleAge = 0.0;
+		vec3 mixedLight = noisyLight;
+
+		if (uSceneObject.denoise) {
+			vec2 prevPixelCoord = reproject(firstPrimary.hit.xyz, uSceneObject.prevView, uSceneObject.prevProjection);
+
+			vec4 prevFrameLight = vec4(0.0);
+			
+
+			if (prevPixelCoord.x >= 0 && prevPixelCoord.x < 1 && prevPixelCoord.y >= 0 && prevPixelCoord.y < 1) {
+
+				// While reprojecting image from the portal, use hit position and
+				// a normal from a ray that went through the portal
+				HitPayload reprojectionPayload = firstPrimary;
+				reprojectionPayload.hit = primaryPayload.hit;
+				reprojectionPayload.normal = primaryPayload.normal;
+
+				prevFrameLight = samplePrevIllumination(prevPixelCoord, reprojectionPayload);
+				sampleAge = floor(prevFrameLight.a);
+			}
+		
+			mixedLight = mix(prevFrameLight.rgb, noisyLight, 1.0 / (sampleAge + 1.0));
+			sampleAge = min(sampleAge + 1.0, float(uSceneObject.maxSampleAge));
+		}
+
+		imageStore(illuminationImage, ivec2(gl_LaunchIDEXT.xy), vec4(mixedLight, sampleAge));
+		imageStore(normalImage, ivec2(gl_LaunchIDEXT.xy), vec4(primaryPayload.normal.xyz, depthValue));
+		imageStore(solidIlluminationImage, ivec2(gl_LaunchIDEXT.xy), vec4(solidLight, 1.0));
+		imageStore(worldPosImage, ivec2(gl_LaunchIDEXT.xy), vec4(primaryPayload.hit.xyz, depthValue));
+	}
+	else {
+		imageStore(illuminationImage, ivec2(gl_LaunchIDEXT.xy), vec4(1.0));
+		imageStore(normalImage, ivec2(gl_LaunchIDEXT.xy), vec4(0.0));
+		imageStore(solidIlluminationImage, ivec2(gl_LaunchIDEXT.xy), vec4(0.0));
+		imageStore(worldPosImage, ivec2(gl_LaunchIDEXT.xy), vec4(0.0));
 	}
 
 	/**
 	 * Write to the output image
-	 */
+	 */	
 
-	float delinearized = ((1.0 / depthValue) - 1 / tMin) / ((1 / tMax) - (1 / tMin));
-	imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(primaryColor, delinearized));
+	 imageStore(colorImage, ivec2(gl_LaunchIDEXT.xy), vec4(outColor, depthValue));
 }

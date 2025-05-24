@@ -125,14 +125,14 @@ void FieldWidget::drawCursorSelection(ImmediateRenderer& immediate) {
 	bool show = shouldDrawCursor();
 
 	if (show) {
-		immediate.setColor(0, 0, 100);
+		immediate.setFill(0, 0, 100);
 		immediate.drawLine2D(start, baseline, start, baseline + height);
 	}
 
 	if (cursor.hasSelection()) {
 		immediate.drawLine2D(end, baseline, end, baseline + height);
 
-		immediate.setColor(100, 100, 200, 150);
+		immediate.setFill(100, 100, 200, 150);
 		immediate.setRectRadius(0);
 		immediate.drawRect2D(start, baseline, end - start, height);
 	}
@@ -148,6 +148,10 @@ utf8::UnicodeVector FieldWidget::getDisplayUnicodes() {
 		}
 
 		return result;
+	}
+
+	if (text.empty()) {
+		return utf8::toCodePoints(placeholder.c_str());
 	}
 
 	return text;
@@ -184,45 +188,27 @@ bool FieldWidget::applyCursorSelection(const PositionedEvent* event, bool drag) 
 }
 
 
-void FieldWidget::draw(ImmediateRenderer& immediate) {
+void FieldWidget::draw(ImmediateRenderer& immediate, ElementState state) {
 
-	const Box2D padded = getPaddingBox();
+	state = computeWidgetState();
+	drawBasicPanel(immediate, state);
 
-	if (isFocused()) {
-		immediate.setRectRadius(5);
-		immediate.setColor(255, 255, 0);
-		immediate.drawRect2D(padded.expand(8, 8, 8, 8));
-	}
-
-	if (enabled) {
-		if (hovered) {
-			if (pressed) {
-				immediate.setColor(255, 100, 100);
-			} else {
-				immediate.setColor(255, 80, 80);
-			}
-		} else {
-			immediate.setColor(255, 0, 0);
-		}
-	} else {
-		immediate.setColor(70, 70, 70);
-	}
-
-	immediate.setRectRadius(10);
-	immediate.drawRect2D(padded);
-
-	immediate.setTextAlignment(HorizontalAlignment::LEFT);
-	immediate.setFont("assets/font/OpenSans-Variable.ttf");
+	immediate.setStroke(OFF);
+	immediate.setWrapping(false);
+	immediate.setTextAlignment(vertical.fetch(state));
+	immediate.setTextAlignment(horizontal.fetch(state));
+	immediate.setFont(font.fetch(state));
+	immediate.setFontSize(size.fetch(state));
 	immediate.setTextBox(content.w, content.h);
-	baked = immediate.bakeUnicode(content.x, content.y, getDisplayUnicodes());
 
 	if (text.empty()) {
-		immediate.setColor(50, 50, 50, 200);
-		immediate.drawString2D(content.x, content.y, placeholder);
+		immediate.setFill(placeholder_color.fetch(state));
 	} else {
-		immediate.setColor(0, 0, 0);
-		immediate.drawText2D(0, 0, *baked);
+		immediate.setFill(color.fetch(state));
 	}
+
+	baked = immediate.bakeUnicode(content.x, content.y, getDisplayUnicodes());
+	immediate.drawText2D(0, 0, *baked);
 
 	if (isFocused()) {
 		immediate.setLineWidth(1);
@@ -268,13 +254,17 @@ bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 		uint32_t codepoint = unicode->unicode;
 
 		if (kind == INTEGER) {
-			if (codepoint < '0') return false;
-			if (codepoint > '9') return false;
+			if (codepoint < '0') return true;
+			if (codepoint > '9') return true;
 		}
 
 		cursor.insert(text, codepoint);
 		cursor.move(text, +1, false);
 		cooldown = glfwGetTime();
+
+		if (callback) {
+			callback(text);
+		}
 		return true;
 	}
 
@@ -288,12 +278,20 @@ bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 			if (keyboard->keycode == GLFW_KEY_BACKSPACE) {
 				cursor.eraseBackward(text);
 				cooldown = glfwGetTime();
+
+				if (callback) {
+					callback(text);
+				}
 				return true;
 			}
 
 			if (keyboard->keycode == GLFW_KEY_DELETE) {
 				cursor.eraseForward(text);
 				cooldown = glfwGetTime();
+
+				if (callback) {
+					callback(text);
+				}
 				return true;
 			}
 
@@ -312,4 +310,20 @@ bool FieldWidget::event(WidgetContext& context, const InputEvent& any) {
 	}
 
 	return used;
+}
+
+const utf8::UnicodeVector& FieldWidget::getUnicodeValue() const {
+	return text;
+}
+
+void FieldWidget::setValue(const std::string& value) {
+	text = utf8::toCodePoints(value.c_str());
+
+	if (callback) {
+		callback(text);
+	}
+}
+
+void FieldWidget::onChange(const Callback& callback) {
+	this->callback = callback;
 }

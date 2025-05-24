@@ -1,69 +1,60 @@
 #pragma once
 
 #include "external.hpp"
+#include "overlay.hpp"
 #include "input/input.hpp"
 #include "shared/box.hpp"
 #include "layout/flow.hpp"
 #include "layout/sizing.hpp"
 #include "layout/unit.hpp"
 #include "render/immediate.hpp"
+#include "layout/state.hpp"
+#include "layout/property.hpp"
+#include "layout/sided.hpp"
+#include "layout/radius.hpp"
 
 class WidgetContext;
 class ImmediateRenderer;
 class Navigator;
 class InputWidget;
 
-struct Spacing {
-	Unit top, bottom, left, right;
-
-	public:
-
-		Spacing()
-		: top(Unit::zero()), bottom(Unit::zero()), left(Unit::zero()), right(Unit::zero()) {}
-
-		Spacing(Unit unit)
-		: top(unit), bottom(unit), left(unit), right(unit) {}
-
-		Spacing(Unit vertical, Unit horizontal)
-		: top(vertical), bottom(vertical), left(horizontal), right(horizontal) {}
-
-		Spacing(Unit top, Unit bottom, Unit left, Unit right)
-		: top(top), bottom(bottom), left(left), right(right) {}
-
-	public:
-
-		int getTotal(Channel channel);
-
-};
-
 class Widget : public std::enable_shared_from_this<Widget> {
 
-	public: // FIXME
+	public:
 
-		std::vector<std::shared_ptr<Widget>> children;
+		// this probably should be made protected but we need those
+		// in tests so for now let it be, just pleeease don't modify those
+		// fields, especially outside the tests
+
+		/// Widget dimensions in pixels
 		Sizing sizing;
+
+		/// Widget content box with added padding
+		Box2D padded { {},{},{},{} };
+
+		/// Widget content box
+		Box2D content { {},{},{},{} };
+
+	protected:
+
+		std::weak_ptr<Widget> parent;
+		std::vector<std::shared_ptr<Widget>> children;
+
 		Sizing minimal;
 
-		Flow flow = Flow::LEFT_TO_RIGHT;
-		Unit width, height, gap, min_width, min_height;
-		Spacing margin, padding;
-
-		VerticalAlignment vertical = VerticalAlignment::TOP;
-		HorizontalAlignment horizontal = HorizontalAlignment::LEFT;
-
-		Box2D padded { {},{},{},{} };   // content box with padding added
-		Box2D content { {},{},{},{} };  // content box
-
-		Box2D getContentBox() const;
-		Box2D getPaddingBox() const;
-
-		float getAlignmentFactor(Channel channel);
+		/// Returns the 0.0/0.5/1.0 multiplier of the channel alignment
+		float getAlignmentFactor(const ElementState& state, Channel channel);
 
 		/// Can be called after the given channel was already computed with applyFitSizing()
-		int getOuterSizing(Channel channel);
+		int getOuterSizing(const ElementState& state, Channel channel);
 
 		/// Called after the on-flow dimension has ben computed, can be used to adjust content the acros-flow dimension
 		virtual void applyWrapSizing();
+
+		/// Draws the a basic panel with correct styling and sizing
+		void drawBasicPanel(ImmediateRenderer& immediate, const ElementState& state);
+
+	private:
 
 		/// Compute element size based on its children (absolute & fit content)
 		void applyFitSizing(Channel channel);
@@ -74,16 +65,68 @@ class Widget : public std::enable_shared_from_this<Widget> {
 		/// Create final binding boxes based on sizing information
 		void applyPositioning(int x, int y);
 
+	protected:
+
+		void rebuild(int x, int y);
+		void add(const std::shared_ptr<Widget>& child);
+		void remove(const std::shared_ptr<Widget>& child);
+
+		/// Register a root UI overlay object
+		virtual void overlay(const std::shared_ptr<Overlay>& overlay);
+
+	public:
+
+		/// Child elements flow direction
+		StyleProperty<Flow> flow = Flow::LEFT_TO_RIGHT;
+
+		/// Vertical alignment of children elements
+		StyleProperty<VerticalAlignment> vertical = VerticalAlignment::TOP;
+
+		/// Horizontal alignment of children elements
+		StyleProperty<HorizontalAlignment> horizontal = HorizontalAlignment::LEFT;
+
+		/// Element width, can be overwritten by the layout algorithm to make the UI fit
+		StyleProperty<Unit> width = Unit::fit();
+
+		/// Element height, can be overwritten by the layout algorithm to make the UI fit
+		StyleProperty<Unit> height = Unit::fit();
+
+		/// Gap between children of this element
+		StyleProperty<Unit> gap = Unit::zero();
+
+		/// Minimal element width, layout algorithm is forced to follow this value
+		StyleProperty<Unit> min_width = Unit::zero();
+
+		/// Minimal element height, layout algorithm is forced to follow this value
+		StyleProperty<Unit> min_height = Unit::zero();
+
+		/// Margin around the element
+		StyleProperty<BoxUnit> margin = BoxUnit {};
+
+		/// Padding inside the element
+		StyleProperty<BoxUnit> padding = BoxUnit {};
+
+		/// Border width around the element
+		StyleProperty<Unit> border = Unit::zero();
+
+		/// Radius of the widget border
+		StyleProperty<RadiusUnit> radius = RadiusUnit {};
+
+		/// Widget background color
+		StyleProperty<Color> background = Color {};
+
+		/// Widget border color
+		StyleProperty<Color> border_color = Color {};
+
 	public:
 
 		virtual ~Widget();
-		virtual void draw(ImmediateRenderer& immediate) = 0;
+		virtual void draw(ImmediateRenderer& immediate, ElementState state) = 0;
 		virtual bool event(WidgetContext& context, const InputEvent& event);
 		virtual void scan(Navigator& navigator);
 
-	public:
-
-		void rebuild(int x, int y);
+		/// Mark the layout for update before next frame
+		virtual void update();
 
 };
 
@@ -98,6 +141,8 @@ class InputWidget : public Widget {
 
 		bool isFocused() const;
 		void setFocus(WidgetContext& context);
+
+		ElementState computeWidgetState() const;
 
 	private:
 

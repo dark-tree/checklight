@@ -18,16 +18,23 @@ class RenderPass {
 		VkRenderPass vk_pass;
 		std::vector<VkClearValue> values;
 		std::vector<Subpass> subpasses;
-		VkSampleCountFlagBits samples;
+		std::vector<VkSampleCountFlagBits> samples;
+		VkSampleCountFlagBits depth_samples = VK_SAMPLE_COUNT_1_BIT;
 
 	public:
 
 		RenderPass() = default;
-		RenderPass(VkDevice vk_device, VkRenderPass vk_pass, std::vector<VkClearValue>& values, std::vector<Subpass>& subpass_info, FramebufferSet& framebuffer, VkSampleCountFlagBits count);
+		RenderPass(VkDevice vk_device, VkRenderPass vk_pass, std::vector<VkClearValue>& values, std::vector<Subpass>& subpass_info, FramebufferSet& framebuffer, const std::vector<VkSampleCountFlagBits>& samples);
 
 		void close();
 		const Subpass& getSubpass(int subpass) const;
 		int getSubpassCount() const;
+
+		/**
+		 * Get the per-attachment sample counts, this is need to construct pipelines
+		 * with varying per-color-attachment sample counts
+		 */
+		std::vector<VkSampleCountFlagBits> getSampleArray() const;
 
 		/**
 		 * Allocate (or reallocate if already present) the underlying framebuffers
@@ -46,7 +53,6 @@ class RenderPassBuilder {
 	private:
 
 		FramebufferSet framebuffer;
-		VkSampleCountFlagBits count = VK_SAMPLE_COUNT_1_BIT;
 
 		std::vector<VkClearValue> values;
 		std::vector<AttachmentBuilder> attachments;
@@ -54,8 +60,6 @@ class RenderPassBuilder {
 		std::vector<DependencyBuilder> dependencies;
 
 		Pyramid<uint32_t> preserve;
-
-		void setSampleCount(VkSampleCountFlagBits samples);
 
 	public:
 

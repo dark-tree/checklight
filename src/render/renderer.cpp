@@ -68,6 +68,7 @@ void Renderer::createInstance(ApplicationParameters& parameters) {
 	// information required for creating an instance
 	VkInstanceCreateInfo create_info {};
 	create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+	create_info.pNext = &messenger_info;
 	create_info.pApplicationInfo = &app_info;
 	create_info.enabledExtensionCount = extension.size();
 	create_info.ppEnabledExtensionNames = extension.data();
@@ -113,9 +114,7 @@ void Renderer::pickDevice() {
 		VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
 		VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
 		VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
-	};
-
-	std::vector<const char*> optional_extensions = {
+		VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME
 	};
 
 	std::vector<std::string> debug;
@@ -124,6 +123,7 @@ void Renderer::pickDevice() {
 
 		out::info("Checking device '%s'...", device->getName());
 		bool fail = false;
+		bool multisampling = false;
 
 		// we need the device to be able to render to our window
 		if (!device->canUseSurface(surface)) {
@@ -145,48 +145,56 @@ void Renderer::pickDevice() {
 		auto* features_accel = (const VkPhysicalDeviceAccelerationStructureFeaturesKHR*) device->getFeatures(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR);
 
 		if (!features_vk12->bufferDeviceAddress) {
-			out::logger.print(" * Feature 'buffer device address' unsupported!\n");
+			out::logger.print(" * Feature 'bufferDeviceAddress' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_ray->rayTracingPipeline) {
-			out::logger.print(" * Feature 'ray tracing pipeline' unsupported!\n");
+			out::logger.print(" * Feature 'rayTracingPipeline' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_accel->accelerationStructure) {
-			out::logger.print(" * Feature 'acceleration structure' unsupported!\n");
+			out::logger.print(" * Feature 'accelerationStructure' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_vk12->scalarBlockLayout) {
-			out::logger.print(" * Feature 'scalar block layout' unsupported!\n");
+			out::logger.print(" * Feature 'scalarBlockLayout' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_vk12->storageBuffer8BitAccess) {
-			out::logger.print(" * Feature 'storage buffer 8bit access' unsupported!\n");
+			out::logger.print(" * Feature 'storageBuffer8BitAccess' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_vk12->shaderInt8) {
-			out::logger.print(" * Feature 'shader int8_t' unsupported!\n");
+			out::logger.print(" * Feature 'shaderInt8' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_vk12->runtimeDescriptorArray) {
-			out::logger.print(" * Feature 'runtime descriptor array' unsupported!\n");
+			out::logger.print(" * Feature 'runtimeDescriptorArray' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_vk12->shaderSampledImageArrayNonUniformIndexing) {
-			out::logger.print(" * Feature 'shader sampled image array non uniform indexing' unsupported!\n");
+			out::logger.print(" * Feature 'shaderSampledImageArrayNonUniformIndexing' unsupported!\n");
 			fail = true;
 		}
 
 		if (!features_base->features.shaderInt64) {
-			out::logger.print(" * Feature 'shader int64_t' unsupported!\n");
+			out::logger.print(" * Feature 'shaderInt64' unsupported!\n");
 			fail = true;
+		}
+
+		// AMD
+		if (device->hasExtension(VK_AMD_MIXED_ATTACHMENT_SAMPLES_EXTENSION_NAME)) {
+			if (features_base->features.shaderStorageImageMultisample) {
+				required_extensions.push_back(VK_AMD_MIXED_ATTACHMENT_SAMPLES_EXTENSION_NAME);
+				multisampling = true;
+			}
 		}
 
 		if (fail) {
@@ -207,7 +215,7 @@ void Renderer::pickDevice() {
 			}
 
 			// we found the one, continue with this device and family
-			createDevice(std::move(device), queue_family, required_extensions, optional_extensions);
+			createDevice(std::move(device), queue_family, required_extensions, multisampling);
 			return;
 		}
 
@@ -217,18 +225,8 @@ void Renderer::pickDevice() {
 	FAULT("No device could have been selected!");
 }
 
-void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family queue_family, std::vector<const char*>& extensions, std::vector<const char*>& optionals) {
+void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family queue_family, std::vector<const char*>& extensions, bool multisampling) {
 	out::info("Selected '%s' (queue #%d)", physical->getName(), queue_family.getIndex());
-
-	// enable supported optional extensions
-	for (auto name : optionals) {
-		if (!physical->hasExtension(name)) {
-			out::warn("Missing optional extension '%s'!", name);
-			continue;
-		}
-
-		extensions.emplace_back(name);
-	}
 
 	// we use only one queue at this time
 	const float priority = 1.0f;
@@ -267,6 +265,7 @@ void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family que
 	features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 	features.pNext = &features_vk12;
 	features.features.shaderInt64 = true; // needed for the shader
+	features.features.shaderStorageImageMultisample = multisampling; // needed for non-multisampled raytracing
 
 	// we will now connect with the selected driver
 	VkDeviceCreateInfo create_info {};
@@ -291,6 +290,16 @@ void Renderer::createDevice(std::shared_ptr<PhysicalDevice> physical, Family que
 	this->device = {vk_device, physical};
 	this->family = queue_family;
 	this->physical = std::move(physical);
+
+	// msaa is what will be really used for rendering
+	// change the getSampleCount argument to control intend
+	msaa = multisampling ? this->physical->getSampleCount(VK_SAMPLE_COUNT_8_BIT) : VK_SAMPLE_COUNT_1_BIT;
+
+	if (msaa > VK_SAMPLE_COUNT_1_BIT) {
+		out::info("Multisampling supported, using %d samples!", msaa);
+	} else {
+		out::error("Multisampling is not supported!");
+	}
 
 	#if ENGINE_DEBUG
 		Proxy::loadDebugDeviceFunctions(this->device);
@@ -321,14 +330,23 @@ void Renderer::createSwapchain() {
 	this->immediate.setResolution(width(), height());
 
 	// allocate all attachments (except for color)
-	attachment_depth.allocate(device, extent, allocator);
 	attachment_albedo.allocate(device, extent, allocator);
 	attachment_color_msaa.allocate(device, extent, allocator);
 	attachment_depth_msaa.allocate(device, extent, allocator);
+	attachment_illumination.allocate(device, extent, allocator);
+	attachment_prev_illumination.allocate(device, extent, allocator);
+	attachment_normal.allocate(device, extent, allocator);
+	attachment_prev_normal.allocate(device, extent, allocator);
+	attachment_illum_transport.allocate(device, extent, allocator);
+	attachment_soild_illumination.allocate(device, extent, allocator);
+	attachment_world_position.allocate(device, extent, allocator);
+	attachment_prev_world_position.allocate(device, extent, allocator);
 
 	// create framebuffers
 	pass_immediate.prepareFramebuffers(swapchain);
 	pass_compose.prepareFramebuffers(swapchain);
+	pass_denoise.prepareFramebuffers(swapchain);
+	pass_denoise2.prepareFramebuffers(swapchain);
 
 	out::info("Swapchain ready!");
 
@@ -345,7 +363,9 @@ void Renderer::createShaders() {
 	shader_trace_shadow_miss = Shader::loadFromFile(device, "shadow.rmiss", VK_SHADER_STAGE_MISS_BIT_KHR);
 	shader_trace_hit = Shader::loadFromFile(device, "trace.rchit", VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
 	shader_blit_vertex = Shader::loadFromFile(device, "blit.vert", VK_SHADER_STAGE_VERTEX_BIT);
-	shader_blit_fragment = Shader::loadFromFile(device, "blit.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+	shader_blur_fragment = Shader::loadFromFile(device, "blur.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+	shader_denoise_fragment = Shader::loadFromFile(device, "denoise.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+	shader_denoise2_fragment = Shader::loadFromFile(device, "denoise2.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 
 }
 
@@ -363,14 +383,6 @@ void Renderer::createAttachments() {
 		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 		.setClearColor(0.0f, 0.0f, 0.0f, 1.0f)
 		.setDebugName("Screen")
-		.createAttachment();
-
-	attachment_depth = TextureBuilder::begin()
-		.setFormat(VK_FORMAT_D32_SFLOAT)
-		.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT)
-		.setClearDepth(1.0f)
-		.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-		.setDebugName("Depth")
 		.createAttachment();
 
 	attachment_color_msaa = TextureBuilder::begin()
@@ -398,6 +410,62 @@ void Renderer::createAttachments() {
 		.setDebugName("Albedo")
 		.createAttachment();
 
+	attachment_illumination = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_R16G16B16A16_SFLOAT)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+		.setDebugName("Illumination")
+		.createAttachment();
+
+	attachment_prev_illumination = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_R16G16B16A16_SFLOAT)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+		.setDebugName("Prev Illumination")
+		.createAttachment();
+
+	attachment_normal = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_R16G16B16A16_SFLOAT)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
+		.setDebugName("Normal")
+		.createAttachment();
+
+	attachment_prev_normal = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_R16G16B16A16_SFLOAT)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+		.setDebugName("Prev Normal")
+		.createAttachment();
+
+	attachment_illum_transport = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_R16G16B16A16_SFLOAT)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+		.setDebugName("Illumination Transport")
+		.createAttachment();
+
+	attachment_soild_illumination = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_R16G16B16A16_SFLOAT)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
+		.setDebugName("Illumination Solid")
+		.createAttachment();
+
+	attachment_world_position = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
+		.setDebugName("World Position")
+		.createAttachment();
+
+	attachment_prev_world_position = TextureBuilder::begin()
+		.setFormat(VK_FORMAT_R32G32B32A32_SFLOAT)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+		.setDebugName("Prev World Position")
+		.createAttachment();
+
 	// very important UwU
 	attachment_screen.markSwapchainBacked();
 
@@ -414,19 +482,9 @@ void Renderer::createRenderPasses() {
 
 		RenderPassBuilder builder;
 
-		Attachment::Ref color = builder.addAttachment(attachment_color_msaa)
-			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.next();
-
 		Attachment::Ref depth = builder.addAttachment(attachment_depth_msaa)
 			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-			.next();
-
-		Attachment::Ref screen = builder.addAttachment(attachment_screen)
-			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
-			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
 			.next();
 
 		builder.addDependency()
@@ -439,11 +497,36 @@ void Renderer::createRenderPasses() {
 			.then(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_MEMORY_READ_BIT)
 			.next();
 
-		builder.addSubpass()
-			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-			.addResolve(screen, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.next();
+		if (msaa > VK_SAMPLE_COUNT_1_BIT) {
+
+			Attachment::Ref color = builder.addAttachment(attachment_color_msaa)
+				.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.next();
+
+			Attachment::Ref screen = builder.addAttachment(attachment_screen)
+				.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+				.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+				.next();
+
+			builder.addSubpass()
+				.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+				.addResolve(screen, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.next();
+
+		} else {
+
+			Attachment::Ref screen = builder.addAttachment(attachment_screen)
+				.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.end(ColorOp::STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+				.next();
+
+			builder.addSubpass()
+				.addOutput(screen, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+				.next();
+		}
 
 		pass_immediate = builder.build(device, "Immediate");
 
@@ -453,14 +536,76 @@ void Renderer::createRenderPasses() {
 
 		RenderPassBuilder builder;
 
-		Attachment::Ref color = builder.addAttachment(attachment_color_msaa)
-			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
-			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.next();
-
 		Attachment::Ref depth = builder.addAttachment(attachment_depth_msaa)
 			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
 			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+			.next();
+
+		Attachment::Ref prev_normal = builder.addAttachment(attachment_prev_normal)
+			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_GENERAL)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_GENERAL)
+			.next();
+
+		Attachment::Ref prev_pos = builder.addAttachment(attachment_prev_world_position)
+			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_GENERAL)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_GENERAL)
+			.next();
+
+		builder.addDependency()
+			.first(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0)
+			.then(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+			.next();
+
+		builder.addDependency(VK_DEPENDENCY_BY_REGION_BIT)
+			.first(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+			.then(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_MEMORY_READ_BIT)
+			.next();
+
+		if (msaa > VK_SAMPLE_COUNT_1_BIT) {
+
+			Attachment::Ref color = builder.addAttachment(attachment_color_msaa)
+				.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+				.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.next();
+
+			builder.addSubpass()
+				.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.addOutput(prev_normal, VK_IMAGE_LAYOUT_GENERAL)
+				.addOutput(prev_pos, VK_IMAGE_LAYOUT_GENERAL)
+				.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+				.next();
+
+		} else {
+
+			Attachment::Ref screen = builder.addAttachment(attachment_screen)
+				.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_UNDEFINED)
+				.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.next();
+
+			builder.addSubpass()
+				.addOutput(screen, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.addOutput(prev_normal, VK_IMAGE_LAYOUT_GENERAL)
+				.addOutput(prev_pos, VK_IMAGE_LAYOUT_GENERAL)
+				.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+				.next();
+		}
+
+		pass_compose = builder.build(device, "Compose");
+
+	}
+
+	{ // denoise 2d pass
+
+		RenderPassBuilder builder;
+
+		Attachment::Ref illum = builder.addAttachment(attachment_illum_transport)
+			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_GENERAL)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_GENERAL)
+			.next();
+
+		Attachment::Ref illum_prev = builder.addAttachment(attachment_prev_illumination)
+			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_GENERAL)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_GENERAL)
 			.next();
 
 		builder.addDependency()
@@ -474,20 +619,48 @@ void Renderer::createRenderPasses() {
 			.next();
 
 		builder.addSubpass()
-			.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+			.addOutput(illum, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+			.addOutput(illum_prev, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 			.next();
 
-		pass_compose = builder.build(device, "Compose");
+		pass_denoise = builder.build(device, "Denoise");
 
 	}
 
+	{ // denoise2 2d pass
+
+		RenderPassBuilder builder;
+
+		Attachment::Ref illum = builder.addAttachment(attachment_illumination)
+			.begin(ColorOp::CLEAR, VK_IMAGE_LAYOUT_GENERAL)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_GENERAL)
+			.next();
+
+		builder.addDependency()
+			.first(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0)
+			.then(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+			.next();
+
+		builder.addDependency(VK_DEPENDENCY_BY_REGION_BIT)
+			.first(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+			.then(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_MEMORY_READ_BIT)
+			.next();
+
+		builder.addSubpass()
+			.addOutput(illum, VK_IMAGE_LAYOUT_GENERAL)
+			.next();
+
+		pass_denoise2 = builder.build(device, "Denoise2");
+
+	}
 
 }
 
 void Renderer::closeRenderPasses() {
 	pass_immediate.close();
 	pass_compose.close();
+	pass_denoise.close();
+	pass_denoise2.close();
 }
 
 void Renderer::createPipelines() {
@@ -544,9 +717,29 @@ void Renderer::createPipelines() {
 		.withScissors(0, 0, extent.width, extent.height)
 		.withCulling(false)
 		.withRenderPass(pass_compose, 0)
-		.withShaders(shader_blit_vertex, shader_blit_fragment)
+		.withShaders(shader_blit_vertex, shader_blur_fragment)
 		.withDescriptorSetLayout(layout_compose)
 		.withDepthTest(VK_COMPARE_OP_ALWAYS, true, true)
+		.build();
+
+	pipeline_denoise_2d = GraphicsPipelineBuilder::of(device)
+		.withViewport(0, 0, extent.width, extent.height)
+		.withScissors(0, 0, extent.width, extent.height)
+		.withCulling(false)
+		.withRenderPass(pass_denoise, 0)
+		.withShaders(shader_blit_vertex, shader_denoise_fragment)
+		.withDescriptorSetLayout(layout_denoise)
+		.withDepthTest(VK_COMPARE_OP_ALWAYS, true, false)
+		.build();
+
+	pipeline_denoise2_2d = GraphicsPipelineBuilder::of(device)
+		.withViewport(0, 0, extent.width, extent.height)
+		.withScissors(0, 0, extent.width, extent.height)
+		.withCulling(false)
+		.withRenderPass(pass_denoise2, 0)
+		.withShaders(shader_blit_vertex, shader_denoise2_fragment)
+		.withDescriptorSetLayout(layout_denoise2)
+		.withDepthTest(VK_COMPARE_OP_ALWAYS, true, false)
 		.build();
 
 	ShaderTableBuilder builder;
@@ -574,6 +767,8 @@ void Renderer::closePipelines() {
 	pipeline_text_2d.close();
 	pipeline_trace_3d.close();
 	pipeline_compose_2d.close();
+	pipeline_denoise_2d.close();
+	pipeline_denoise2_2d.close();
 }
 
 void Renderer::closeFrames() {
@@ -600,10 +795,17 @@ void Renderer::createFrames() {
 void Renderer::lateClose() {
 
 	// close all attachments
-	attachment_depth.close(device);
 	attachment_albedo.close(device);
 	attachment_color_msaa.close(device);
 	attachment_depth_msaa.close(device);
+	attachment_illumination.close(device);
+	attachment_prev_illumination.close(device);
+	attachment_normal.close(device);
+	attachment_prev_normal.close(device);
+	attachment_illum_transport.close(device);
+	attachment_soild_illumination.close(device);
+	attachment_world_position.close(device);
+	attachment_prev_world_position.close(device);
 
 	swapchain.close();
 	closeFrames();
@@ -630,6 +832,14 @@ void Renderer::lateInit() {
 
 void Renderer::prepareForRendering(CommandRecorder& recorder) {
 	recorder.transitionLayout(attachment_albedo, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+	recorder.transitionLayout(attachment_illumination, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+	recorder.transitionLayout(attachment_prev_illumination, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+	recorder.transitionLayout(attachment_normal, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+	recorder.transitionLayout(attachment_prev_normal, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+	recorder.transitionLayout(attachment_illum_transport, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+	recorder.transitionLayout(attachment_soild_illumination, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+	recorder.transitionLayout(attachment_world_position, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
+	recorder.transitionLayout(attachment_prev_world_position, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
 }
 
 RenderFrame& Renderer::getFrame() {
@@ -660,9 +870,8 @@ void Renderer::rebuildTopLevel(CommandRecorder& recorder) {
 	instances->flush(recorder);
 
 	// Recreate TLAS and update descriptors
-	tlas.close(device);
-	tlas = bakery.submit(device, allocator, config)->getStructure();
-	getFrame().set_raytrace.structure(0, tlas);
+	tlas = bakery.submit(device, allocator, config);
+	getFrame().set_raytrace.structure(0, tlas->getStructure());
 
 	bakery.bake(device, allocator, recorder);
 
@@ -740,15 +949,40 @@ Renderer::Renderer(ApplicationParameters& parameters)
 
 	layout_compose = DescriptorSetLayoutBuilder::begin()
 		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(4, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.done(device);
+
+	layout_denoise2 = DescriptorSetLayoutBuilder::begin()
+		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.done(device);
+
+	layout_denoise = DescriptorSetLayoutBuilder::begin()
+		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.done(device);
 
 	layout_raytrace = DescriptorSetLayoutBuilder::begin()
-		.descriptor(0, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(0, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
 		.descriptor(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
-		.descriptor(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR)
 		.descriptor(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
 		.descriptor(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, TextureManager::MAX_TEXTURES)
 		.descriptor(5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
+		.descriptor(6, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(7, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(8, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(9, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(10, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(11, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(12, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+		.descriptor(13, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
 		.done(device);
 
 	// add layouts to the pool so that they can be allocated
@@ -756,14 +990,12 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.addDynamic(layout_immediate, 1)
 		.addDynamic(layout_raytrace, 1)
 		.addDynamic(layout_compose, 1)
+		.addDynamic(layout_denoise2, 1)
+		.addDynamic(layout_denoise, 1)
 		.done(device, concurrent);
 
 	// render pass used during mesh rendering
 	mesh_constant = createPushConstant(VK_SHADER_STAGE_VERTEX_BIT, sizeof(MeshConstant));
-
-	// msaa is what will be really used for rendering
-	// change the getSampleCount argument to control intend
-	msaa = physical->getSampleCount(VK_SAMPLE_COUNT_8_BIT);
 
 	createAttachments();
 	createRenderPasses();
@@ -785,6 +1017,8 @@ Renderer::~Renderer() {
 	layout_immediate.close();
 	layout_raytrace.close();
 	layout_compose.close();
+	layout_denoise.close();
+	layout_denoise2.close();
 
 	descriptor_pool.close();
 	transient_pool.close();
@@ -799,11 +1033,12 @@ Renderer::~Renderer() {
 	instances.reset();
 	immediate.close(device);
 	materials.close(device);
+	lights.close();
 
 	// It's important to maintain the correct order
 	closeRenderPasses();
 	bakery.close();
-	tlas.close(device);
+	tlas.reset();
 	shader_table.close();
 
 	shader_world_vertex.close();
@@ -815,7 +1050,9 @@ Renderer::~Renderer() {
 	shader_trace_shadow_miss.close();
 	shader_trace_hit.close();
 	shader_blit_vertex.close();
-	shader_blit_fragment.close();
+	shader_blur_fragment.close();
+	shader_denoise_fragment.close();
+	shader_denoise2_fragment.close();
 
 	VulkanDebug::assertAllDead();
 	allocator.close();
@@ -866,6 +1103,10 @@ void Renderer::draw() {
 	auto& material_buffer = materials.getMaterialBuffer();
 	frame.set_raytrace.buffer(5, material_buffer.getBuffer(), material_buffer.getBuffer().size());
 
+	lights.flush(recorder);
+	auto& light_buffer = lights.getBuffer();
+	frame.set_raytrace.buffer(13, light_buffer.getBuffer(), light_buffer.getBuffer().size());
+
 	materials.getTextureManager().updateDescriptorSet(device, frame.set_raytrace, 4);
 
 	// wait for uniform transfer before raytracing or rasterization starts
@@ -874,12 +1115,26 @@ void Renderer::draw() {
 		.then(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_ACCESS_UNIFORM_READ_BIT)
 		.done();
 
-	recorder.transitionLayout(attachment_depth, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_UNDEFINED);
-
 	// ray trace
 	recorder.bindPipeline(pipeline_trace_3d)
 		.bindDescriptorSet(frame.set_raytrace)
 		.traceRays(shader_table, width(), height());
+
+	if (parameters.getDenoise()) {
+		// denoise
+		recorder.beginRenderPass(pass_denoise, current_image, swapchain.getExtend())
+			.bindPipeline(pipeline_denoise_2d)
+			.bindDescriptorSet(frame.set_denoise)
+			.draw(3)
+			.endRenderPass();
+
+		// second denoise pass
+		recorder.beginRenderPass(pass_denoise2, current_image, swapchain.getExtend())
+			.bindPipeline(pipeline_denoise2_2d)
+			.bindDescriptorSet(frame.set_denoise2)
+			.draw(3)
+			.endRenderPass();
+	}
 
 	// compose final image
 	recorder.beginRenderPass(pass_compose, current_image, swapchain.getExtend())
@@ -898,11 +1153,18 @@ void Renderer::draw() {
 	recorder.bindDescriptorSet(frame.set_immediate);
 	immediate.basic_3d.draw(mesh_constant, recorder);
 
-	recorder.bindPipeline(pipeline_immediate_2d);
-	immediate.basic.draw(mesh_constant, recorder);
+	bool render = true;
 
-	recorder.bindPipeline(pipeline_text_2d);
-	immediate.text.draw(mesh_constant, recorder);
+	while (render) {
+		render = false;
+
+		recorder.bindPipeline(pipeline_immediate_2d);
+		render |= immediate.basic.draw(mesh_constant, recorder);
+
+		recorder.bindPipeline(pipeline_text_2d);
+		render |= immediate.text.draw(mesh_constant, recorder);
+
+	}
 
 	recorder.endRenderPass();
 
@@ -936,4 +1198,8 @@ int Renderer::height() {
 
 MaterialManager& Renderer::getMaterialManager() {
 	return materials;
+}
+
+LightManager& Renderer::getLightManager() {
+	return lights;
 }

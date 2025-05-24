@@ -5,11 +5,11 @@
  * Attachment::Ref
  */
 
-Attachment::Ref::Ref(int index)
-: index(index) {}
+Attachment::Ref::Ref(int index, VkSampleCountFlagBits samples)
+: index(index), samples(samples) {}
 
-Attachment::Ref Attachment::Ref::of(int index) {
-	return Ref {index};
+Attachment::Ref Attachment::Ref::of(int index, VkSampleCountFlagBits samples) {
+	return Ref {index, samples};
 }
 
 /*
@@ -59,9 +59,14 @@ void Attachment::markSwapchainBacked(){
 
 void Attachment::allocate(LogicalDevice& device, VkExtent2D extent, Allocator& allocator) {
 	Image image = allocator.allocateImage(Memory::DEVICE, extent.width, extent.height, getFormat(), settings.vk_usage, 1, 1, settings.vk_samples, settings.debug_name.c_str());
-	texture = settings.buildTexture(device, image);
+	this->texture = settings.buildTexture(device, image);
+	this->extent = extent;
 }
 
 void Attachment::close(LogicalDevice device) {
 	texture.closeImageViewSampler(device.getHandle());
+}
+
+VkExtent2D Attachment::getExtent() const {
+	return extent;
 }

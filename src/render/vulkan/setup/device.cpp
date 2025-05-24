@@ -15,7 +15,10 @@ PhysicalDevice::PhysicalDevice(VkPhysicalDevice device)  {
 	properties.pNext = &ray_properties;
 
 	ray_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
-	ray_properties.pNext = nullptr;
+	ray_properties.pNext = &accel_properties;
+
+	accel_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR;
+	accel_properties.pNext = nullptr;
 
 	Proxy::vkGetPhysicalDeviceProperties2(device, &properties);
 
@@ -176,6 +179,10 @@ VkSampleCountFlagBits PhysicalDevice::getSampleCount(VkSampleCountFlagBits prefe
 
 	out::warn("Multisampling not supported on selected device!");
 	return VK_SAMPLE_COUNT_1_BIT;
+}
+
+int PhysicalDevice::getScratchBufferAlignment() const {
+	return accel_properties.minAccelerationStructureScratchOffsetAlignment;
 }
 
 

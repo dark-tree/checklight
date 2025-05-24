@@ -49,7 +49,7 @@ void ImmediateRenderer::clear() {
 	basic_3d.clear();
 }
 
-void ImmediateRenderer::drawVertex2D(float x, float y) {
+void ImmediateRenderer::drawVertex2D(const Color& color, float x, float y) {
 	if (!mapping) {
 		FAULT("No texture mapped!");
 	}
@@ -60,7 +60,7 @@ void ImmediateRenderer::drawVertex2D(float x, float y) {
 	float u = sprite.u1 + (x - tx) / tw * du;
 	float v = sprite.v1 + (y - ty) / th * dv;
 
-	drawVertex2D(x, y, u, v);
+	drawVertex2D(color, x, y, u, v);
 }
 
 float ImmediateRenderer::getBezierPoint(float a, float b, float c, float d, float t) {
@@ -99,6 +99,30 @@ void ImmediateRenderer::popTextureMap() {
 	mapping --;
 }
 
+void ImmediateRenderer::drawColoredQuad2D(const Color& color, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
+
+	if (mapping) {
+		drawVertex2D(color, x1, y1);
+		drawVertex2D(color, x2, y2);
+		drawVertex2D(color, x3, y3);
+
+		drawVertex2D(color, x1, y1);
+		drawVertex2D(color, x3, y3);
+		drawVertex2D(color, x4, y4);
+		return;
+	}
+
+	drawVertex2D(color, x1, y1, sprite.u1, sprite.v1);
+	drawVertex2D(color, x2, y2, sprite.u2, sprite.v1);
+	drawVertex2D(color, x3, y3, sprite.u2, sprite.v2);
+
+	drawVertex2D(color, x1, y1, sprite.u1, sprite.v1);
+	drawVertex2D(color, x3, y3, sprite.u2, sprite.v2);
+	drawVertex2D(color, x4, y4, sprite.u1, sprite.v2);
+
+}
+
+
 float ImmediateRenderer::getMaxPixelError() const {
 	return ((float) quality) / 100.0f;
 }
@@ -123,18 +147,15 @@ glm::quat ImmediateRenderer::getBillboardRotation(glm::vec3 center) const {
 	return ry;
 }
 
-void ImmediateRenderer::usePrimaryColor() {
-	active = primary;
-}
-
-void ImmediateRenderer::useSecondaryColor() {
-	active = secondary;
+void ImmediateRenderer::useColor(const Color& color) {
+	this->active = color;
 }
 
 ImmediateRenderer::ImmediateRenderer(AssetLoader& loader)
 : loader(loader), blank(loader.getBlankSprite()) {
 	setSprite(OFF);
-	setColor(255, 255, 255);
+	setFill(255, 255, 255);
+	setStroke(OFF);
 	setResolution(1, 1);
 	setLineWidth(4);
 	setRectRadius(0);
@@ -144,33 +165,43 @@ ImmediateRenderer::ImmediateRenderer(AssetLoader& loader)
 	setBillboardTarget({0, 0, 0});
 	setTextAlignment(VerticalAlignment::BOTTOM);
 	setTextAlignment(HorizontalAlignment::LEFT);
-	usePrimaryColor();
 	setWrapping(true);
+	setStrokeWidth(2);
 }
 
 Sprite ImmediateRenderer::getSprite(const std::string& path) {
 	return loader.getSprite(path);
 }
 
-void ImmediateRenderer::setPrimaryColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-	primary.r = r;
-	primary.g = g;
-	primary.b = b;
-	primary.a = a;
-	usePrimaryColor();
+void ImmediateRenderer::synchronize() {
+	text.pushSync();
+	basic.pushSync();
 }
 
-void ImmediateRenderer::setSecondaryColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-	secondary.r = r;
-	secondary.g = g;
-	secondary.b = b;
-	secondary.a = a;
-	useSecondaryColor();
+void ImmediateRenderer::setFill(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+	setFill({r, g, b, a});
 }
 
-void ImmediateRenderer::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-	setPrimaryColor(r, g, b, a);
-	setSecondaryColor(r, g, b, a);
+void ImmediateRenderer::setFill(const Color& color) {
+	fill_enabled = (color.a != 0);
+	this->fill = color;
+}
+
+void ImmediateRenderer::setFill(Disabled disabled) {
+	fill_enabled = false;
+}
+
+void ImmediateRenderer::setStroke(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+	setStroke({r, g, b, a});
+}
+
+void ImmediateRenderer::setStroke(const Color& color) {
+	stroke_enabled = (color.a != 0);
+	this->stroke = color;
+}
+
+void ImmediateRenderer::setStroke(Disabled disabled) {
+	stroke_enabled = false;
 }
 
 void ImmediateRenderer::setResolution(uint32_t width, uint32_t height) {
@@ -263,6 +294,10 @@ void ImmediateRenderer::setWrapping(bool wrap) {
 	bakery.setWrapping(wrap);
 }
 
+void ImmediateRenderer::setStrokeWidth(float stroke) {
+	this->stroke_width = stroke;
+}
+
 BakedText ImmediateRenderer::bakeString(float x, float y, const std::string& text) {
 	return bakeUnicode(x, y, utf8::toCodePoints(text.c_str()));
 }
@@ -276,12 +311,12 @@ void ImmediateRenderer::setFont(const std::string& path, int size) {
 	setFontSize(size);
 }
 
-void ImmediateRenderer::drawVertex2D(float x, float y, float u, float v) {
-	basic.write(x * iw - 1, y * ih - 1, 0, active.r, active.g, active.b, active.a, u, v);
+void ImmediateRenderer::drawVertex2D(const Color& color, float x, float y, float u, float v) {
+	basic.write(x * iw - 1, y * ih - 1, 0, color.r, color.g, color.b, color.a, u, v);
 }
 
-void ImmediateRenderer::drawVertex2D(glm::vec2 pos, float u, float v) {
-	drawVertex2D(pos.x, pos.y, u, v);
+void ImmediateRenderer::drawVertex2D(const Color& color, glm::vec2 pos, float u, float v) {
+	drawVertex2D(color, pos.x, pos.y, u, v);
 }
 
 void ImmediateRenderer::drawRect2D(float x, float y, float w, float h) {
@@ -298,15 +333,34 @@ void ImmediateRenderer::drawRect2D(float x, float y, float w, float h) {
 	drawArc2D(pcr.x, pcr.y, rtr, rtr, glm::radians(0.0f), -M_PI_2);
 	drawArc2D(pdr.x, pdr.y, rtl, rtl, glm::radians(270.0f), -M_PI_2);
 
-	// main rect body
-	useSecondaryColor();
-	drawQuad2D(par.x, par.y, pbr.x, pbr.y, pcr.x, pcr.y, pdr.x, pdr.y);
+	if (fill_enabled) {
 
-	// beveled walls
-	drawQuad2D(par.x, par.y, pdr.x, pdr.y, pdr.x - rtl, pdr.y, par.x - rbl, par.y);
-	drawQuad2D(pbr.x, pbr.y, pcr.x, pcr.y, pcr.x + rtr, pcr.y, pbr.x + rbr, pbr.y);
-	drawQuad2D(pcr.x, pcr.y, pdr.x, pdr.y, pdr.x, pdr.y - rtl, pcr.x, pcr.y - rtr);
-	drawQuad2D(par.x, par.y, pbr.x, pbr.y, pbr.x, pbr.y + rbr, par.x, par.y + rbl);
+		// main rect body
+		useColor(fill);
+		drawQuad2D(par.x, par.y, pbr.x, pbr.y, pcr.x, pcr.y, pdr.x, pdr.y);
+
+		// beveled walls
+		drawQuad2D(par.x, par.y, pdr.x, pdr.y, pdr.x - rtl, pdr.y, par.x - rbl, par.y);
+		drawQuad2D(pbr.x, pbr.y, pcr.x, pcr.y, pcr.x + rtr, pcr.y, pbr.x + rbr, pbr.y);
+		drawQuad2D(pcr.x, pcr.y, pdr.x, pdr.y, pdr.x, pdr.y - rtl, pcr.x, pcr.y - rtr);
+		drawQuad2D(par.x, par.y, pbr.x, pbr.y, pbr.x, pbr.y + rbr, par.x, par.y + rbl);
+	}
+
+	if (stroke_enabled) {
+
+		// extended radii
+		const float erbl = rbl + stroke_width;
+		const float erbr = rbr + stroke_width;
+		const float ertr = rtr + stroke_width;
+		const float ertl = rtl + stroke_width;
+
+		// beveled stroke
+		drawColoredQuad2D(stroke, pdr.x - rtl, pdr.y, par.x - rbl, par.y, par.x - erbl, par.y, pdr.x - ertl, pdr.y);
+		drawColoredQuad2D(stroke, pcr.x + rtr, pcr.y, pbr.x + rbr, pbr.y, pbr.x + erbr, pbr.y, pcr.x + ertr, pcr.y);
+		drawColoredQuad2D(stroke, pdr.x, pdr.y - rtl, pcr.x, pcr.y - rtr, pcr.x, pcr.y - ertr, pdr.x, pdr.y - ertl);
+		drawColoredQuad2D(stroke, pbr.x, pbr.y + rbr, par.x, par.y + rbl, par.x, par.y + erbl, pbr.x, pbr.y + erbr);
+
+	}
 
 	popTextureMap();
 
@@ -314,6 +368,22 @@ void ImmediateRenderer::drawRect2D(float x, float y, float w, float h) {
 
 void ImmediateRenderer::drawRect2D(const Box2D& box) {
 	drawRect2D(box.x, box.y, box.w, box.h);
+}
+
+void ImmediateRenderer::drawTrig2D(float x1, float y1, float x2, float y2, float x3, float y3) {
+
+	float min_x = std::min(std::min(x1, x2), x3);
+	float min_y = std::min(std::min(y1, y2), y3);
+
+	float max_x = std::max(std::max(x1, x2), x3);
+	float max_y = std::max(std::max(y1, y2), y3);
+
+	pushTextureMap(min_x, min_y, max_x - min_x, max_y - min_y);
+	drawVertex2D(fill, x1, y1);
+	drawVertex2D(fill, x2, y2);
+	drawVertex2D(fill, x3, y3);
+	popTextureMap();
+
 }
 
 void ImmediateRenderer::drawLine2D(float x1, float y1, float x2, float y2) {
@@ -324,13 +394,13 @@ void ImmediateRenderer::drawLine2D(float x1, float y1, float x2, float y2) {
 	glm::vec2 ab = pb - pa;
 	glm::vec2 pp = glm::normalize(glm::vec2 {-ab.y, ab.x}) * width;
 
-	drawVertex2D(pa + pp, sprite.u1, sprite.v1);
-	drawVertex2D(pb - pp, sprite.u2, sprite.v2);
-	drawVertex2D(pb + pp, sprite.u1, sprite.v2);
+	drawVertex2D(fill, pa + pp, sprite.u1, sprite.v1);
+	drawVertex2D(fill, pb - pp, sprite.u2, sprite.v2);
+	drawVertex2D(fill, pb + pp, sprite.u1, sprite.v2);
 
-	drawVertex2D(pa + pp, sprite.u1, sprite.v1);
-	drawVertex2D(pa - pp, sprite.u2, sprite.v1);
-	drawVertex2D(pb - pp, sprite.u2, sprite.v2);
+	drawVertex2D(fill, pa + pp, sprite.u1, sprite.v1);
+	drawVertex2D(fill, pa - pp, sprite.u2, sprite.v1);
+	drawVertex2D(fill, pb - pp, sprite.u2, sprite.v2);
 
 }
 
@@ -349,20 +419,22 @@ void ImmediateRenderer::drawSlantedLine2D(glm::vec2 p1, glm::vec2 d1, glm::vec2 
 	glm::vec2 b1 = p2 + s2;
 	glm::vec2 b2 = p2 - s2;
 
-	drawVertex2D(a1.x, a1.y, sprite.u1, sprite.v1);
-	drawVertex2D(a2.x, a2.y, sprite.u2, sprite.v1);
-	drawVertex2D(b1.x, b1.y, sprite.u1, sprite.v2);
+	drawVertex2D(fill, a1.x, a1.y, sprite.u1, sprite.v1);
+	drawVertex2D(fill, a2.x, a2.y, sprite.u2, sprite.v1);
+	drawVertex2D(fill, b1.x, b1.y, sprite.u1, sprite.v2);
 
-	drawVertex2D(b1.x, b1.y, sprite.u1, sprite.v2);
-	drawVertex2D(a2.x, a2.y, sprite.u2, sprite.v1);
-	drawVertex2D(b2.x, b2.y, sprite.u2, sprite.v2);
+	drawVertex2D(fill, b1.x, b1.y, sprite.u1, sprite.v2);
+	drawVertex2D(fill, a2.x, a2.y, sprite.u2, sprite.v1);
+	drawVertex2D(fill, b2.x, b2.y, sprite.u2, sprite.v2);
 }
 
 void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, float start, float angle, ArcMode mode) {
 
 	pushTextureMap(x - hrad, y - vrad, hrad * 2, vrad * 2);
 
-	float extent = std::max(hrad, vrad);
+	float herad = hrad + stroke_width;
+	float verad = vrad + stroke_width;
+	float extent = std::max(herad, verad);
 
 	float theta = 2 * acos(1 - getMaxPixelError() / extent);
 	int sides = (int) std::max(2.0f, (abs(angle) / theta));
@@ -375,12 +447,27 @@ void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, floa
 		float bx = x + hrad * cos(start + step * (i + 1));
 		float by = y + vrad * sin(start + step * (i + 1));
 
-		usePrimaryColor();
-		drawVertex2D(x, y);
+		if (fill_enabled) {
+			drawVertex2D(fill, x, y);
+			drawVertex2D(fill, ax, ay);
+			drawVertex2D(fill, bx, by);
+		}
 
-		useSecondaryColor();
-		drawVertex2D(ax, ay);
-		drawVertex2D(bx, by);
+		if (stroke_enabled) {
+			float cx = x + herad * cos(start + step * i);
+			float cy = y + verad * sin(start + step * i);
+
+			float dx = x + herad * cos(start + step * (i + 1));
+			float dy = y + verad * sin(start + step * (i + 1));
+
+			drawVertex2D(stroke, ax, ay);
+			drawVertex2D(stroke, cx, cy);
+			drawVertex2D(stroke, dx, dy);
+
+			drawVertex2D(stroke, ax, ay);
+			drawVertex2D(stroke, dx, dy);
+			drawVertex2D(stroke, bx, by);
+		}
 	}
 
 	if (angle > M_PI && mode == ArcMode::OPEN_CHORD) {
@@ -390,12 +477,11 @@ void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, floa
 		float bx = x + hrad * cos(start + angle);
 		float by = y + vrad * sin(start + angle);
 
-		usePrimaryColor();
-		drawVertex2D(x, y);
-
-		useSecondaryColor();
-		drawVertex2D(ax, ay);
-		drawVertex2D(bx, by);
+		if (fill_enabled) {
+			drawVertex2D(fill, x, y);
+			drawVertex2D(fill, ax, ay);
+			drawVertex2D(fill, bx, by);
+		}
 	}
 
 	popTextureMap();
@@ -411,32 +497,7 @@ void ImmediateRenderer::drawCircle2D(float x, float y, float radius) {
 }
 
 void ImmediateRenderer::drawQuad2D(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
-
-	if (mapping) {
-		usePrimaryColor();
-		drawVertex2D(x1, y1);
-		drawVertex2D(x2, y2);
-
-		useSecondaryColor();
-		drawVertex2D(x3, y3);
-
-		usePrimaryColor();
-		drawVertex2D(x1, y1);
-
-		useSecondaryColor();
-		drawVertex2D(x3, y3);
-		drawVertex2D(x4, y4);
-		return;
-	}
-
-	drawVertex2D(x1, y1, sprite.u1, sprite.v1);
-	drawVertex2D(x2, y2, sprite.u2, sprite.v1);
-	drawVertex2D(x3, y3, sprite.u2, sprite.v2);
-
-	drawVertex2D(x1, y1, sprite.u1, sprite.v1);
-	drawVertex2D(x3, y3, sprite.u2, sprite.v2);
-	drawVertex2D(x4, y4, sprite.u1, sprite.v2);
-
+	drawColoredQuad2D(fill, x1, y1, x2, y2, x3, y3, x4, y4);
 }
 
 void ImmediateRenderer::drawBezier2D(float ax, float ay, float bx, float by, float cx, float cy, float dx, float dy) {
@@ -507,19 +568,19 @@ void ImmediateRenderer::drawText2D(float x, float y, const BakedText& baked) {
 			const float y0 = (quad.y0 + y) * ih - 1;
 			const float y1 = (quad.y1 + y) * ih - 1;
 
-			text.write(x0, y1, 0, active.r, active.g, active.b, active.a, quad.s0, quad.t1);
-			text.write(x0, y0, 0, active.r, active.g, active.b, active.a, quad.s0, quad.t0);
-			text.write(x1, y0, 0, active.r, active.g, active.b, active.a, quad.s1, quad.t0);
+			text.write(x0, y1, 0, fill.r, fill.g, fill.b, fill.a, quad.s0, quad.t1);
+			text.write(x0, y0, 0, fill.r, fill.g, fill.b, fill.a, quad.s0, quad.t0);
+			text.write(x1, y0, 0, fill.r, fill.g, fill.b, fill.a, quad.s1, quad.t0);
 
-			text.write(x0, y1, 0, active.r, active.g, active.b, active.a, quad.s0, quad.t1);
-			text.write(x1, y0, 0, active.r, active.g, active.b, active.a, quad.s1, quad.t0);
-			text.write(x1, y1, 0, active.r, active.g, active.b, active.a, quad.s1, quad.t1);
+			text.write(x0, y1, 0, fill.r, fill.g, fill.b, fill.a, quad.s0, quad.t1);
+			text.write(x1, y0, 0, fill.r, fill.g, fill.b, fill.a, quad.s1, quad.t0);
+			text.write(x1, y1, 0, fill.r, fill.g, fill.b, fill.a, quad.s1, quad.t1);
 		}
 	}
 }
 
 void ImmediateRenderer::drawVertex3D(float x, float y, float z, float u, float v) {
-	basic_3d.write(x, y, z, active.r, active.g, active.b, active.a, u, v);
+	basic_3d.write(x, y, z, fill.r, fill.g, fill.b, fill.a, u, v);
 }
 
 void ImmediateRenderer::drawVertex3D(glm::vec3 pos, float u, float v) {

@@ -18,11 +18,14 @@ struct VertexChannel {
 
 	struct Command {
 		MeshConstant constant;
+		int offset;
 		int count;
+		bool sync = false;
 	};
 
 	using element = Vertex3D;
 
+	int command_index = 0;
 	std::vector<element> vertices;
 	std::vector<Command> commands;
 	ReusableBuffer buffer {VK_BUFFER_USAGE_VERTEX_BUFFER_BIT};
@@ -44,16 +47,15 @@ struct VertexChannel {
 	/// Make future write with this matrix
 	void pushTransform(glm::mat4 matrix);
 
+	/// Push a synchronization point
+	void pushSync();
+
 	/// Issue the 'bind' and 'draw' commands
-	void draw(PushConstant& push, CommandRecorder& recorder);
+	bool draw(PushConstant& push, CommandRecorder& recorder);
 
 	/// Write one element into the local buffer
 	template <typename... Args>
 	void write(Args... values) {
-		if (commands.empty()) {
-			pushTransform(glm::identity<glm::mat4>());
-		}
-
 		commands.back().count ++;
 		vertices.emplace_back(values...);
 	}
