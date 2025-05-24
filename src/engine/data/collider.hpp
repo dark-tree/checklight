@@ -8,8 +8,8 @@ protected:
     std::vector<glm::ivec3> triangles;
     glm::vec3 center_of_mass;
 
-    float sphere_collider_radious;
-    glm::vec3 inertia_tensor;
+    float sphere_collider_radius;
+    glm::mat3x3 inertia_tensor;
 
     float volume;
 
@@ -19,83 +19,47 @@ protected:
     /// Used to calculate center of mass of an object. Assumes uniform mass distribution
     glm::vec3 findCenterOfMass();
 
+    void calculateSphereColliderRadius();
+
+    glm::mat3x3 findInertiaTensor();
+
 public:
-    Collider(){
-        vertices = std::vector<glm::vec3>();
-        triangles = std::vector<glm::ivec3>();
-    }
+    Collider();
 
-    static Collider getCube(){
-        Collider cube;
-        cube.vertices = {
-                {-1.f, -1.f, 1.f},
-                {1.f, -1.f, 1.f},
-                {1.f, 1.f, 1.f},
-                {-1.f, 1.f, 1.f},
-                {1.f, -1.f, -1.f},
-                {-1.f, -1.f, -1.f},
-                {-1.f, 1.f, -1.f},
-                {1.f, 1.f, -1.f}
-        };
-        cube.triangles = {
-                {0, 1, 2},
-                {0, 2, 3},
-                {1, 4, 7},
-                {1, 7, 2},
-                {3, 2, 7},
-                {3, 7, 6},
-                {4, 5, 6},
-                {4, 6, 7},
-                {5, 0, 3},
-                {5, 3, 6},
-                {0, 5, 4},
-                {0, 4, 1}
-        };
-        return cube;
-    }
+    static Collider getCube();
 
-    std::vector<glm::vec3> getVertices(){
-        return vertices;
-    }
+    std::vector<glm::vec3> getVertices();
 
-    void setVertices(std::vector<glm::vec3> vertices){
-        this->vertices = vertices;
-    }
+    void setVertices(std::vector<glm::vec3> vertices);
 
-    std::vector<glm::ivec3> getTriangles(){
-        return triangles;
-    }
+    std::vector<glm::ivec3> getTriangles();
 
-    void setTriangles(std::vector<glm::ivec3> triangles){
-        this->triangles = triangles;
-    }
+    void setTriangles(std::vector<glm::ivec3> triangles);
 
-    void LoadFromModel(std::shared_ptr<RenderMesh>){
-      //TODO replace this with actual code
-      this->vertices = Collider::getCube().getVertices();
-      this->triangles = Collider::getCube().getTriangles();
-    }
-
-    void calculateSphereColliderRadious(){
-      //TODO
-    }
+    void LoadFromModel(std::shared_ptr<RenderMesh>);
 
     void setAutoCenter();
 
-    /// Sets the center of mass of the object
+    /** Sets the center of mass of the object
+     * @warning Incorrectly setting the center of mass can result in horrible force application miscalculations
+     */
     void setCenterOfMass(glm::vec3 center_of_mass);
 
-    /// Sets the radius of the sphere collider
-    void setSphereColliderRadious(float sphere_collider_radious);
+    /** Sets the center of mass of the object
+     * @warning Incorrectly setting the center of mass can result in horrible force application miscalculations
+     */
+    void setCenterOfMass(float x, float y, float z);
 
-    /// Sets the inertia tensor of the object
-    void setInertiaTensor(glm::vec3 inertia_tensor);
+    /** Sets the inertia tensor of the object
+     * @warning Incorrectly setting the inertia tensor can result in horrible force application miscalculations
+     */
+    void setInertiaTensor(glm::mat3x3 inertia_tensor);
 
     /// Gets the center of mass of the object
     glm::vec3 getCenterOfMass();
 
     /// Gets the inertia tensor of the object
-    glm::vec3 getInertiaTensor();
+    glm::mat3x3 getInertiaTensor();
 
     /// Gets the radius of the sphere collider
     float getSphereColliderRadious();
