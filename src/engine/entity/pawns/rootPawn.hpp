@@ -18,6 +18,8 @@ protected:
 public:
 	RootPawn();
 
+	COMPONENT_BIND_POINT
+
 	/**
 	 * Returns true!
 	 */

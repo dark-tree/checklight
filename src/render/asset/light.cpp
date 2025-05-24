@@ -19,19 +19,25 @@ void LightManager::flush() {
 	dirty = true;
 }
 
-std::shared_ptr<Light> LightManager::addLight(Light light) {
-	auto ptr = std::make_shared<Light>(light);
+std::shared_ptr <Light> LightManager::createPointLight(glm::vec3 position, glm::vec3 color, float intensity, bool shadow) {
+	auto ptr = std::make_shared<Light>(Light::POINT, position, color, intensity, shadow);
 	addLight(ptr);
 	return ptr;
 }
 
-void LightManager::addLight(std::shared_ptr<Light> light) {
+std::shared_ptr <Light> LightManager::createDirectionalLight(glm::vec3 direction, glm::vec3 color, float intensity, bool shadow) {
+	auto ptr = std::make_shared<Light>(Light::DIRECTIONAL, direction, color, intensity, shadow);
+	addLight(ptr);
+	return ptr;
+}
+
+void LightManager::addLight(const std::shared_ptr<Light>& light) {
 	// new light is always added at the front
 	lights.push_back(light);
 	flush();
 }
 
-void LightManager::removeLight(std::shared_ptr<Light> light) {
+void LightManager::removeLight(const std::shared_ptr<Light>& light) {
 	auto it = std::find(lights.begin(), lights.end(), light);
 
 	if (it != lights.end()) {

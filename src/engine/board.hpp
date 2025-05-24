@@ -4,17 +4,38 @@
 class SpatialPawn;
 
 //Its a Scene dumbass
-class Board {
+class Board : public std::enable_shared_from_this<Board> {
 private:
+	friend class BoardManager;
+	friend class Pawn;
 	PawnTree pawns;
 	std::weak_ptr<SpatialPawn> cameraPawn;
 	std::string name;
+	std::queue<std::shared_ptr<Pawn>>* pawns_to_remove;
+	std::queue<std::shared_ptr<Pawn>>* pawns_to_remove_from_hashmap;
+	std::queue<std::shared_ptr<Component>>* components_to_remove;
+
+	/**
+	 * queue remove a pawn
+	 */
+	 void queueRemove(const std::shared_ptr<Pawn>& pToRemove);
+
+	/**
+	 * queue remove a component
+	 */
+	 void queueRemove(const std::shared_ptr<Component>& pToRemove);
+
+	 void dequeueRemove(size_t amount);
+
 public:
+	Board();
+
+	~Board();
 
 	/**
 	 * performs standard update on a pawn tree
 	 */
-	void updateBoard();
+	void updateBoard(double delta);
 
 	/**
 	 * performs fixed update on a pawn tree
@@ -24,7 +45,7 @@ public:
 	/**
 	 * adds a pawn as a child of pawn tree
 	 */
-	void addPawnToRoot(std::shared_ptr<Pawn>& pawn);
+	void addPawnToRoot(const std::shared_ptr<Pawn>& pawn);
 
 	/**
 	 * returns first pawn by its id
@@ -69,8 +90,13 @@ public:
 	/**
 	 * DEBUG ONLY - prints whole pawn tree (DONT USE IN RELEASE VERSION) 
 	 */
-	std::string printBoardTree();
-	
+	void printBoardTree();
+
+	/**
+	 * DEBUG ONLY - prints whole pawn tree with great detail (DONT USE IN RELEASE VERSION)
+	 */
+	void printBoardTreeVerbose();
+
 	/**
 	 * set name of a board
 	 */
@@ -86,4 +112,10 @@ public:
 	glm::vec3 getCamPos();
 
 	glm::vec3 getCamForward();
+
+	//TODO temporary funciton for testing
+public:
+	PawnTree& getTree() {
+		return pawns;
+	}
 };

@@ -4,6 +4,12 @@
  * SurfacePawn
  */
 
+SurfacePawn::SurfacePawn() {
+	position = {0,0};
+	rotation = 0;
+	scale = {1,1};
+}
+
 void SurfacePawn::addPosition(glm::vec2 new_position) {
 	position = position + new_position;
 }

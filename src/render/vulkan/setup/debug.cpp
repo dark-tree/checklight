@@ -1,5 +1,8 @@
 
 #include "debug.hpp"
+
+#include <shared/logger.hpp>
+
 #include "proxy.hpp"
 
 static std::unordered_map<void*, std::string>* objects = new std::unordered_map<void*, std::string> {};
@@ -63,7 +66,7 @@ std::string VulkanDebug::getObjectFullname(VkObjectType type, const char* name) 
 void VulkanDebug::beginLifetime(VkObjectType type, void* object, const char* debug_name) {
 	#if ENGINE_DEBUG
 	if (objects->contains(object)) {
-		throw std::runtime_error {"Can't begin lifetime, object already alive!"};
+		FAULT("Can't begin lifetime, object already alive!");
 	}
 
 	(*objects)[object] = getObjectFullname(type, debug_name);
@@ -73,7 +76,7 @@ void VulkanDebug::beginLifetime(VkObjectType type, void* object, const char* deb
 void VulkanDebug::endLifetime(void* object) {
 	#if ENGINE_DEBUG
 	if (!objects->contains(object)) {
-		throw std::runtime_error {"Can't end lifetime, object already dead!"};
+		FAULT("Can't end lifetime, object already dead!");
 	}
 
 	objects->erase(object);
@@ -83,7 +86,7 @@ void VulkanDebug::endLifetime(void* object) {
 void VulkanDebug::assertAlive(void* object) {
 	#if ENGINE_DEBUG
 	if (!objects->contains(object)) {
-		throw std::runtime_error {"Object lifetime assertion failed, object is dead!"};
+		FAULT("Object lifetime assertion failed, object is dead!");
 	}
 	#endif
 }
@@ -91,13 +94,13 @@ void VulkanDebug::assertAlive(void* object) {
 void VulkanDebug::assertAllDead() {
 	#if ENGINE_DEBUG
 	if (!objects->empty()) {
-		printf("ERROR: An 'All Dead' assertion reached but:\n");
+		out::error("An 'All Dead' assertion reached but:");
 
 		for (auto& pair : *objects) {
-			printf(" * 0x%016lx: %s is still alive!\n", (std::intptr_t) pair.first, pair.second.c_str());
+			out::logger.print(" * 0x%016lx: %s is still alive!\n", (std::intptr_t) pair.first, pair.second.c_str());
 		}
 
-		throw std::runtime_error {"Some object still live!"};
+		FAULT("Some object still live!");
 	}
 	#endif
 }

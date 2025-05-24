@@ -1,5 +1,5 @@
 #pragma once
-#include "gameComponent.hpp"
+#include "game.hpp"
 #include "../pawns/spatialPawn.hpp"
 
 class Camera : public GameComponent {
@@ -9,6 +9,12 @@ protected:
 
 	glm::vec2 mouse_position{};
 	glm::vec2 mouse_position_old{};
+
+	glm::vec2 virtual_mouse_position{};
+
+	double speed;
+	double speed_modifier;
+
 	bool mouse_init;
 	bool mouse_captured;
 
@@ -24,12 +30,18 @@ protected:
 
 	void onFixedUpdate(FixedContext c) override;
 
+	void onConnected() override;
+
 	InputResult onEvent(const InputEvent& event) override;
 
 public:
+	Camera(SpatialPawn* s);
+
 	glm::vec3 getCamPosition();
 
 	glm::vec3 getCamFacing();
 
-	Camera();
+	double getSpeed();
+
+	void setSpeed(double speed);
 };

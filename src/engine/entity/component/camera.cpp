@@ -4,7 +4,9 @@
  * Camera
  */
 
-Camera::Camera() : GameComponent() {
+
+
+Camera::Camera(SpatialPawn* s) : GameComponent(s) {
 	position = { 0,0,0 };
 	direction = { 1,0,0 };
 	pressed_right = false;
@@ -16,45 +18,56 @@ Camera::Camera() : GameComponent() {
 	mouse_move = false;
 	mouse_captured = true;
 
+	speed = 10.0;
+	speed_modifier = 1.0;
 	mouse_position = {0, 0};
 	mouse_position_old = {0, 0};
 	mouse_init = false;
 }
 
 void Camera::onUpdate(Context c) {
-	float DELTA = 0.01f; //temporary
+	float distance_multiplier = c.deltaTime * speed * speed_modifier;
 
 	glm::vec3 pos = getPosition();
 	glm::quat rot = getRotation();
 	glm::vec3 forward = getForwardVector();
 
 	if(pressed_forward){
-		pos += forward * DELTA;
+		pos += forward * distance_multiplier;
 	}
 	if(pressed_backwards){
-		pos -= forward * DELTA;
+		pos -= forward * distance_multiplier;
 	}
 	if(pressed_down){
-		pos += glm::vec3 {0.0f,-1.0f,0.0f} * DELTA;
+		pos += glm::vec3 {0.0f,-1.0f,0.0f} * distance_multiplier;
 	}
 	if(pressed_up){
-		pos += glm::vec3 {0.0f,1.0f,0.0f} * DELTA;
+		pos += glm::vec3 {0.0f,1.0f,0.0f} * distance_multiplier;
 	}
 	if(pressed_left){
-		pos -= glm::cross(forward, math::UP) * DELTA;
+		pos -= glm::cross(forward, math::UP) * distance_multiplier;
 	}
 	if(pressed_right){
-		pos += glm::cross(forward, math::UP) * DELTA;
+		pos += glm::cross(forward, math::UP) * distance_multiplier;
 	}
 	if(mouse_move){
 		glm::vec2 mouse_difference = mouse_position - mouse_position_old;
 		mouse_position_old = mouse_position;
 
-		float moveX = mouse_difference.x/400.0f;
-		float moveY = mouse_difference.y/400.0f;
+		virtual_mouse_position += mouse_difference/400.0f;
 
-		rot = glm::rotate(rot,moveX,{0,-1.0,0});
-		rot = glm::rotate(rot,moveY,{0.0,0,-1.0});
+		virtual_mouse_position.y = std::clamp(virtual_mouse_position.y, glm::radians(-89.0f), glm::radians(89.0f));
+
+		float moveX = virtual_mouse_position.x;
+		float moveY = virtual_mouse_position.y;
+
+		glm::quat rotX;
+		glm::quat rotY;
+
+		rotX = glm::rotate(glm::identity<glm::quat>(),moveX,{0,-1.0,0});
+		rotY = glm::rotate(glm::identity<glm::quat>(),moveY,{0.0,0,-1.0});
+
+		rot = rotX * rotY;
 
 		mouse_move = false;
 	}
@@ -77,6 +90,14 @@ glm::fvec3 Camera::getCamPosition() {
 
 glm::fvec3 Camera::getCamFacing() {
 	return direction;
+}
+
+double Camera::getSpeed() {
+	return speed;
+}
+
+void Camera::setSpeed(double speed) {
+	this->speed = speed;
 }
 
 InputResult Camera::onEvent(const InputEvent &event) {
@@ -103,6 +124,12 @@ InputResult Camera::onEvent(const InputEvent &event) {
 		    pressed_up = true;
 		else if(key_event->wasReleased(GLFW_KEY_E) || key_event->wasReleased(GLFW_KEY_SPACE))
 		    pressed_up = false;
+		//change speed
+		else if(key_event->wasPressed(GLFW_KEY_1)) speed_modifier = 0.04;
+		else if(key_event->wasPressed(GLFW_KEY_2)) speed_modifier = 0.2;
+		else if(key_event->wasPressed(GLFW_KEY_3)) speed_modifier = 1.0;
+		else if(key_event->wasPressed(GLFW_KEY_4)) speed_modifier = 5.0;
+		else if(key_event->wasPressed(GLFW_KEY_5)) speed_modifier = 25.0;
 		//uncapture
 		else if(key_event->wasReleased(GLFW_KEY_ESCAPE)){
 			mouse_captured = false;
@@ -132,4 +159,8 @@ InputResult Camera::onEvent(const InputEvent &event) {
 		if(mouse_captured) frame_event->capture();
 	}
 	return InputResult::PASS;
+}
+
+void Camera::onConnected() {
+
 }

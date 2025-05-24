@@ -8,6 +8,7 @@ Entity::Entity() {
 	id = id_number++;
 	active = true;
 	to_remove = false;
+
 }
 
 Entity::~Entity() {
@@ -21,9 +22,4 @@ uint32_t Entity::getEntityID() const {
 void Entity::setActive(bool value) {
 	active = value;
 }
-
-void Entity::queueRemove(bool value) {
-	to_remove = value;
-}
-
 

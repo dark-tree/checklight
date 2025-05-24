@@ -12,7 +12,7 @@ Shader::Shader(LogicalDevice& device, const uint32_t* data, uint32_t size, VkSha
 	create_info.pCode = data;
 
 	if (vkCreateShaderModule(vk_device, &create_info, nullptr, &vk_module) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create shader module!"};
+		FAULT("Failed to create shader module!");
 	}
 
 	VulkanDebug::setDebugName(device.getHandle(), VK_OBJECT_TYPE_SHADER_MODULE, vk_module, unit.c_str());
@@ -43,7 +43,7 @@ Shader Shader::loadFromFile(LogicalDevice& device, const std::string& path, VkSh
 	std::ifstream file(blob, std::ios::binary | std::ios::ate);
 
 	if (!file) {
-		throw std::runtime_error("Failed to open compiled shader: '" + blob + "'");
+		FAULT("Failed to open compiled shader: '", blob, "'");
 	}
 
 	uint32_t size = file.tellg();
@@ -51,7 +51,7 @@ Shader Shader::loadFromFile(LogicalDevice& device, const std::string& path, VkSh
 
 	std::vector<uint8_t> buffer(size);
 	if (!file.read(reinterpret_cast<char*>(buffer.data()), size)) {
-		throw std::runtime_error("Failed to read compiled shader: '" + blob + "'");
+		FAULT("Failed to read compiled shader: '", blob, "'");
 	}
 
 	return {device, reinterpret_cast<const uint32_t*>(buffer.data()), size, stage, path};

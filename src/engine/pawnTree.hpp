@@ -2,9 +2,9 @@
 #include "entity/pawns/rootPawn.hpp"
 
 class PawnTree {
+	friend Board;
 protected:
-
-	RootPawn root;
+	std::shared_ptr<RootPawn> root;
 
 	std::unordered_multimap<std::string, std::shared_ptr<Pawn>> nameMap;
 	std::unordered_multimap<uint32_t, std::shared_ptr<Pawn>> idMap;
@@ -12,7 +12,7 @@ protected:
 	/**
 	 * performs standard game update on all the tree elements, triggered by updateTree() function
 	 */
-	void updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update);
+	void updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update, double delta);
 
 	/**
 	 * performs standard game update on all the tree elements, triggered by fixedUpdateTree() function
@@ -22,9 +22,23 @@ protected:
 	/**
 	 * returns part of a pawn tree in a string format, triggered by print() function
 	 */
-	std::string recursivePrint(std::shared_ptr<Pawn> p, int depth);
+	std::string recursiveString(std::shared_ptr<Pawn> p, int depth, bool verbose);
+
+	/**
+	 * manages verbose/non-verbose printing
+	 */
+	std::string printStart(bool verbose);
+
+	/**
+	 * removes a pawn from hashmaps, returns true if operation was successful
+	 */
+	bool removeFromMaps(const std::string &name, uint32_t id);
+
+	void addPawnToHash(const std::string& p_name, uint32_t p_id, std::shared_ptr<Pawn> p);
 
 public:
+
+	PawnTree();
 
 	/**
 	 * finds a pawn by name
@@ -74,12 +88,12 @@ public:
 	/**
 	 * returns a RootPawn of given tree
 	 */
-	RootPawn getRoot();
+	std::shared_ptr<RootPawn> getRoot();
 
 	/**
 	 * performs standard game update on all the tree elements
 	 */
-	void updateTree();
+	void updateTree(double delta);
 
 	/**
 	 * performs fixed game update on all the tree elements
@@ -89,5 +103,10 @@ public:
 	/**
 	 * returns whole pawn tree in string format
 	 */
-	std::string print();
+	std::string toString();
+
+	/**
+	 * returns whole pawn tree in string format
+	 */
+	std::string toStringVerbose();
 };

@@ -7,7 +7,6 @@
 #include <cstdint>
 
 // C++ libs
-#include <iostream>
 #include <vector>
 #include <functional>
 #include <list>
@@ -24,6 +23,10 @@
 #include <filesystem>
 #include <utility>
 #include <thread>
+#include <sstream>
+#include <variant>
+#include <array>
+#include <regex>
 
 // GLFW
 #define GLFW_INCLUDE_VULKAN
@@ -54,6 +57,12 @@
 #include <glm/gtx/hash.hpp>
 #include <glm/gtx/norm.hpp>
 
+
+// OpenAL
+#include <AL/al.h>
+#include <AL/alc.h>
+
+
 // Vulkan Format Database
 #include "vk_format_info.hpp"
 
@@ -74,3 +83,6 @@
  * Can be used to mark pointer function parameters that can be set to nullptr
  */
 #define NULLABLE
+
+// allows us to use time literals
+using namespace std::chrono_literals;

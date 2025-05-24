@@ -1,5 +1,6 @@
 
 #include "fence.hpp"
+#include "shared/logger.hpp"
 
 Fence::Fence(VkDevice vk_device, bool signaled)
 : vk_device(vk_device) {
@@ -12,7 +13,7 @@ Fence::Fence(VkDevice vk_device, bool signaled)
 	}
 
 	if (vkCreateFence(vk_device, &create_info, nullptr, &vk_fence) != VK_SUCCESS) {
-		throw std::runtime_error {"Failed to create a fence!"};
+		FAULT("Failed to create a fence!");
 	}
 }
 
