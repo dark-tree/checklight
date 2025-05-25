@@ -129,6 +129,7 @@ void BoardManager::fixedUpdateCycle() {
 			physics_mutex.lock();
 
 			current_board.lock()->fixedUpdateBoard();
+
 			physics_engine.physicsUpdate();
 
 			physics_mutex.unlock();

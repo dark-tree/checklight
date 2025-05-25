@@ -24,7 +24,8 @@ protected:
 	float calculateMass();
 
 public:
-	PhysicsComponent(SpatialPawn *sp, Models::Shape s);
+	//PhysicsComponent(SpatialPawn *sp, Collider collider, bool is_static, Material material, glm::vec3 gravity_scale);
+	PhysicsComponent(SpatialPawn *sp);
 
 	void onFixedUpdate(FixedContext c) override;
 
@@ -79,6 +80,14 @@ public:
 
 	/// Returns the mass of an object
 	float getMass(); //TODO use mass inside of engine
+
+	void onUpdate(Context c) override;
+
+	void onConnected() override;
+
+	InputResult onEvent(const InputEvent &event) override;
+
+	void remove() override;
 
 	~PhysicsComponent() override;
 };

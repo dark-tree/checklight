@@ -1,10 +1,24 @@
 #include "physics.hpp"
 
 
-PhysicsComponent::PhysicsComponent(SpatialPawn* sp, Models::Shape s)  : GameComponent(sp){
-	is_static = false;
-	gravity_scale = {0,-1.0,0};
+// PhysicsComponent::PhysicsComponent(SpatialPawn *sp, Collider collider, bool is_static, Material material, glm::vec3 gravity_scale)  : GameComponent(sp){
+// 	this->is_static = is_static;
+// 	this->gravity_scale = gravity_scale;
+// 	this->material = material;
+// 	this->collider = collider;
+// 	this->mass = calculateMass();
+// 	this->initMass = true;
+// }
+
+PhysicsComponent::PhysicsComponent(SpatialPawn *sp): GameComponent(sp) {
+	this->is_static = false;
+	this->gravity_scale = glm::vec3(0, 0, 0);
+	this->material = Material(1, 0.3, 1);
+	this->collider = Collider::getCube();
+	this->mass = calculateMass();
+	this->initMass = true;
 }
+
 
 void PhysicsComponent::onFixedUpdate(FixedContext c) {
 	glm::vec3 position = getPosition();
@@ -111,6 +125,16 @@ float PhysicsComponent::calculateMass() {
 float PhysicsComponent::getMass() {
 	if (!initMass) mass = calculateMass();
 	return mass;
+}
+
+void PhysicsComponent::onUpdate(Context c) {}
+
+void PhysicsComponent::onConnected() {}
+
+InputResult PhysicsComponent::onEvent(const InputEvent &event) {return InputResult::PASS;}
+
+void PhysicsComponent::remove() {
+	GameComponent::remove();
 }
 
 PhysicsComponent::~PhysicsComponent() {}
