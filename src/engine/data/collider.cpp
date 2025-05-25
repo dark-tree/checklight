@@ -3,10 +3,10 @@
 Collider::Collider() {
     vertices = std::vector<glm::vec3>();
     triangles = std::vector<glm::ivec3>();
-    volume = findVolume();
-    center_of_mass = findCenterOfMass();
-    inertia_tensor = findInertiaTensor();
-    calculateSphereColliderRadius();
+//    volume = findVolume();
+//    center_of_mass = findCenterOfMass();
+//    inertia_tensor = findInertiaTensor();
+//    calculateSphereColliderRadius();
 }
 
 Collider Collider::getCube()
@@ -36,6 +36,10 @@ Collider Collider::getCube()
             {0, 5, 4},
             {0, 4, 1}
     };
+    cube.volume = cube.findVolume();
+    cube.center_of_mass = cube.findCenterOfMass();
+    cube.inertia_tensor = cube.findInertiaTensor();
+    cube.calculateSphereColliderRadius();
     return cube;
 }
 

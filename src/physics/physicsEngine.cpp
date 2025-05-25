@@ -519,10 +519,10 @@ void PhysicsEngine::applyForces(PhysicsElement &a, PhysicsElement &b, float coll
 	b.velocity = (b.velocity + impulse_vector * inverse_mass_b);
 
 	//applying friction
-	glm::vec3 tangent_velocity = (b.velocity - a.velocity) - collision_normal * relative_velocity;
-	glm::vec3 friction_impulse_vector = -tangent_velocity * (impulse_scalar * a.coefficient_of_friction * b.coefficient_of_friction);
-	a.velocity = (a.velocity - friction_impulse_vector * inverse_mass_a);
-	b.velocity = (b.velocity + friction_impulse_vector * inverse_mass_b);
+//	glm::vec3 tangent_velocity = (b.velocity - a.velocity) - collision_normal * relative_velocity;
+//	glm::vec3 friction_impulse_vector = -tangent_velocity * (impulse_scalar * a.coefficient_of_friction * b.coefficient_of_friction);
+//	a.velocity = (a.velocity - friction_impulse_vector * inverse_mass_a);
+//	b.velocity = (b.velocity + friction_impulse_vector * inverse_mass_b);
 
 	//applying rotational forces
 	glm::vec3 ra = collision_point - a.position;
@@ -563,13 +563,24 @@ double PhysicsEngine::physicsUpdate() {
 						applyForces((*elements)[j], (*elements)[i], collision_depth, collision_normal, collision_point);
 					}
 
-
 					//TODO on collision function in pawn
 				}
 			}
 		}
 	}
 	//timer end
+
+    auto objects_to_copy = boardManager->getCurrentBoard().lock()->getTree().getPhysicsComponents();
+    int j = 0;
+    for (auto it = objects_to_copy.begin(); it != objects_to_copy.end(); it++)
+    {
+        it->get()->setPosition((*elements)[j].position);
+        it->get()->setVelocity((*elements)[j].velocity);
+        it->get()->setAngularVelocity((*elements)[j].angular_velocity);
+        it->get()->setRotation((*elements)[j].rotation);
+        j++;
+    }
+
 	auto end = std::chrono::system_clock::now();
 	std::chrono::duration<double> elapsed_time = end - start;
 	return TICK_DURATION - elapsed_time.count();

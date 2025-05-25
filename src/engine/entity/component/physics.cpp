@@ -13,7 +13,7 @@
 PhysicsComponent::PhysicsComponent(SpatialPawn *sp): GameComponent(sp) {
 	this->is_static = false;
 	this->gravity_scale = glm::vec3(0, 0, 0);
-	this->material = Material(1, 0.3, 1);
+	this->material = Material(1, 1, 1);
 	this->collider = Collider::getCube();
 	this->mass = calculateMass();
 	this->initMass = true;

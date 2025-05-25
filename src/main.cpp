@@ -60,9 +60,9 @@ static void entry(Args& args) {
 
 	pawnThatRendersTheSphere->setPosition({2,1,2});
 
-	pawnThatRendersTheSphere->setPosition({15,5,15});
+	pawnThatPhysicsTheCube->setPosition({50,5,15});
 
-	pawnThatRendersTheSphere->setPosition({5,5,15.1});
+    pawnThatPhysicsTheCube1->setPosition({0,5,15.1});
 
 	pawnThatRendersTheSphere->createComponent<RenderComponent>(Models::SPHERE);
 	pawnThatRendersTheSphere->createComponent<MatrixAnimation>(MatrixAnimation::TRANSLATE);
@@ -70,11 +70,11 @@ static void entry(Args& args) {
 	pawnThatRendersTheCube->createComponent<RenderComponent>(Models::CUBE);
 	pawnThatRendersTheCube->createComponent<MatrixAnimation>(MatrixAnimation::ROTATE);
 
-	// pawnThatPhysicsTheCube->createComponent<RenderComponent>(Models::CUBE);
-	// pawnThatPhysicsTheCube->createComponent<PhysicsComponent>();
-	// pawnThatPhysicsTheCube1->createComponent<RenderComponent>(Models::CUBE);
-	// pawnThatPhysicsTheCube1->createComponent<PhysicsComponent>();
-	//std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[1])->setVelocity(glm::vec3(3, 0, 0));
+	pawnThatPhysicsTheCube->createComponent<RenderComponent>(Models::CUBE);
+	pawnThatPhysicsTheCube->createComponent<PhysicsComponent>();
+	pawnThatPhysicsTheCube1->createComponent<RenderComponent>(Models::CUBE);
+	pawnThatPhysicsTheCube1->createComponent<PhysicsComponent>();
+	std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[1])->setVelocity(glm::vec3(-5, 0, 0));
 
 	pawn->setName("Test");
 
@@ -86,8 +86,8 @@ static void entry(Args& args) {
     std::shared_ptr<SpatialPawn> camera_pawn = static_pointer_cast<SpatialPawn>(sp->getTree().findByName("Main Camera"));
     camera_pawn->setPosition({10, 5, 10});
     std::shared_ptr<Camera> camrera = static_pointer_cast<Camera>(camera_pawn->getComponents()[0]);
-	// sp->addPawnToRoot(pawnThatPhysicsTheCube);
-	// sp->addPawnToRoot(pawnThatPhysicsTheCube1);
+	sp->addPawnToRoot(pawnThatPhysicsTheCube);
+	sp->addPawnToRoot(pawnThatPhysicsTheCube1);
 
 	std::vector<std::shared_ptr<RenderObject>> objects;
 
