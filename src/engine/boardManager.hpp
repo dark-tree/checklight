@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include <physics/PhysicsEngine.hpp>
+#include <physics/physicsEngine.hpp>
 
 #include "external.hpp"
 #include "render/window.hpp"
