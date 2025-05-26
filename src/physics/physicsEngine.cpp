@@ -388,6 +388,11 @@ std::pair<std::pair<float, glm::vec3>, glm::vec3> PhysicsEngine::expandingPolyto
 			//find normals for the new faces
 			auto [new_normal_list, new_closest_face] = getFaceNormals(polytope, new_faces);
 
+			// TODO write an actual fix, avoid crashing for now
+			if (new_normal_list.empty()) {
+				break;
+			}
+
 			//find the new closest face by comparing the closest of the old and new faces
 			float old_min_distance = INFINITY;
 			for (int i = 0; i < normal_list.size(); i++) {
