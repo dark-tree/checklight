@@ -43,11 +43,13 @@ static void entry(Args& args) {
 	auto context = RenderSystemOverlay::create(theme);
 
 	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
-	window.getInputDispatcher().registerListener(std::dynamic_pointer_cast<InputListener>(context));
+	window.getInputDispatcher().registerListener(context);
 	auto models = system.importObj("assets/models/checklight.obj");
 	auto cube = system.importObj("assets/models/cube.obj");
 
-	BoardManager manager(std::shared_ptr<InputDispatcher>(&window.getInputDispatcher()));
+	auto dispacher = std::make_shared<InputDispatcher>();
+	window.getInputDispatcher().registerListener(dispacher);
+	BoardManager manager(dispacher);
 
 	std::shared_ptr<Pawn> pawn = std::make_shared<Pawn>();
 
