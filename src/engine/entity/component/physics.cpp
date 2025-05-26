@@ -104,7 +104,7 @@ glm::vec3 PhysicsComponent::furthestPointInDirection(glm::vec3 direction) {
 	const glm::quat rotation = getRotation();
 
 	double dot_result = -INFINITY;
-	glm::vec3 returnal;
+	glm::vec3 returnal {0, 0, 0};
 	for (glm::vec3 vertex : collider.getVertices())
 	{
 		glm::vec3 rotated = glm::rotate(rotation, vertex);

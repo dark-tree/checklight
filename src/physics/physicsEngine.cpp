@@ -356,7 +356,7 @@ std::pair<std::pair<float, glm::vec3>, glm::vec3> PhysicsEngine::expandingPolyto
 			//of their edges
 			std::vector<std::pair<int, int> > unique_edges;
 
-			for (int i = 0; i < normal_list.size(); i++) {
+			for (int i = 0; i < (int) normal_list.size(); i++) {
 				//check for direction
 				if (glm::dot(glm::vec3(normal_list[i][0], normal_list[i][1], normal_list[i][2]),
 				             support_point.point) > 0) {
@@ -395,7 +395,7 @@ std::pair<std::pair<float, glm::vec3>, glm::vec3> PhysicsEngine::expandingPolyto
 
 			//find the new closest face by comparing the closest of the old and new faces
 			float old_min_distance = INFINITY;
-			for (int i = 0; i < normal_list.size(); i++) {
+			for (int i = 0; i < (int) normal_list.size(); i++) {
 				if (normal_list[i][3] < old_min_distance) {
 					closest_face = i;
 					old_min_distance = normal_list[i][3];
@@ -451,7 +451,7 @@ std::pair<std::vector<glm::vec4>, int> PhysicsEngine::getFaceNormals(std::vector
 	float min_distance = INFINITY;
 
 	//check normal for each face
-	for (int i = 0; i < faces.size(); ++i) {
+	for (int i = 0; i < (int) faces.size(); ++i) {
 		//a, b and c are the points making up the face
 		glm::vec3 a = polytope[faces[i][0]].point;
 		glm::vec3 b = polytope[faces[i][1]].point;
@@ -550,8 +550,8 @@ double PhysicsEngine::physicsUpdate() {
 		element.update(TICK_DURATION, gravity_strength);
 	}
 	//check for collision between every object pair
-	for (int i = 0; i < elements->size() - 1; i++) {
-		for (int j = i + 1; j < elements->size(); j++) {
+	for (int i = 0; i < (int) elements->size() - 1; i++) {
+		for (int j = i + 1; j < (int) elements->size(); j++) {
 			//initial, time efficient, but inaccurate collision detection
 			if (initialCollisionCheck((*elements)[i], (*elements)[j])) {
 				//second, more time-consuming, but exact detection

@@ -38,7 +38,7 @@ public:
     glm::vec3 furthestPoint(glm::vec3 direction)
     {
         double dot_result = -INFINITY;
-        glm::vec3 returnal;
+        glm::vec3 returnal {0, 0, 0};
         for (glm::vec3 vertex : vertices)
         {
             glm::vec3 rotated = glm::rotate(rotation, vertex);
