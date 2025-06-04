@@ -49,6 +49,10 @@ std::vector<glm::vec3> Collider::getVertices(){
 
 void Collider::setVertices(std::vector<glm::vec3> vertices){
     this->vertices = vertices;
+    center_of_mass = findCenterOfMass();
+    volume = findVolume();
+    inertia_tensor = findInertiaTensor();
+    calculateSphereColliderRadius();
 }
 
 std::vector<glm::ivec3> Collider::getTriangles(){
@@ -186,5 +190,5 @@ float Collider::findVolume()
 
 glm::mat3x3 Collider::findInertiaTensor() {
     //TODO THIS MATHEMATICAL HELL
-    return glm::mat3x3(1.0);
+    return glm::mat3x3(volume);
 }

@@ -70,4 +70,6 @@ public:
 	 * returns currently used board
 	 */
 	std::weak_ptr<Board> getCurrentBoard();
+
+    void setGravityStrenght(glm::vec3 gravity_strngth);
 };

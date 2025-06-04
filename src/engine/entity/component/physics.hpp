@@ -53,6 +53,9 @@ public:
 	/// Sets whether the object is static (non-movable)
 	void setStatic(bool is_static);
 
+    /// Sets the collider of the object
+    void setCollider(Collider c);
+
 
 	/// Gets the current velocity
 	glm::vec3 getVelocity() const;
@@ -70,7 +73,7 @@ public:
 	bool isStatic() const;
 
 	/// Gets the collider
-	Collider getCollider();
+	Collider& getCollider();
 
 	/// Gets the associated render object
 	std::shared_ptr<RenderObject> getRenderObject();

@@ -50,6 +50,7 @@ static void entry(Args& args) {
 	auto dispacher = std::make_shared<InputDispatcher>();
 	window.getInputDispatcher().registerListener(dispacher);
 	BoardManager manager(dispacher);
+    manager.setGravityStrenght(glm::vec3(0, -1, 0));
 
 	std::shared_ptr<Pawn> pawn = std::make_shared<Pawn>();
 
@@ -57,6 +58,7 @@ static void entry(Args& args) {
 	auto pawnThatRendersTheSphere = std::make_shared<SpatialPawn>();
 	auto pawnThatPhysicsTheCube = std::make_shared<SpatialPawn>();
 	auto pawnThatPhysicsTheCube1 = std::make_shared<SpatialPawn>();
+    auto pawnThatFloor = std::make_shared<SpatialPawn>();
 
 	pawnThatRendersTheCube->setPosition({-2,1,-2});
 
@@ -65,6 +67,8 @@ static void entry(Args& args) {
 	pawnThatPhysicsTheCube->setPosition({50,5,15});
 
     pawnThatPhysicsTheCube1->setPosition({0,5,15.1});
+
+    pawnThatFloor->setPosition({0,-1000,0});
 
 	pawnThatRendersTheSphere->createComponent<RenderComponent>(Models::SPHERE);
 	pawnThatRendersTheSphere->createComponent<MatrixAnimation>(MatrixAnimation::TRANSLATE);
@@ -76,7 +80,26 @@ static void entry(Args& args) {
 	pawnThatPhysicsTheCube->createComponent<PhysicsComponent>();
 	pawnThatPhysicsTheCube1->createComponent<RenderComponent>(Models::CUBE);
 	pawnThatPhysicsTheCube1->createComponent<PhysicsComponent>();
-	std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[1])->setVelocity(glm::vec3(-5, 0, 0));
+	std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[1])->setVelocity(glm::vec3(-6, 0, 0));
+	std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[1])->setAngularVelocity(glm::vec3(0, 0, 0));
+    pawnThatPhysicsTheCube->setRotation(rotate(glm::quat(),glm::vec3(0, 0.75, 0)));
+    std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[0])->setGravityScale(glm::vec3 (0, 0, 0));
+
+    pawnThatFloor->createComponent<PhysicsComponent>();
+    std::static_pointer_cast<PhysicsComponent>(pawnThatFloor->getComponents()[0])->setGravityScale(glm::vec3 (0, 0, 0));
+    std::static_pointer_cast<PhysicsComponent>(pawnThatFloor->getComponents()[0])->setVelocity(glm::vec3(0, 0, 0));
+    std::static_pointer_cast<PhysicsComponent>(pawnThatFloor->getComponents()[0])->setAngularVelocity(glm::vec3(0, 0, 0));
+    std::static_pointer_cast<PhysicsComponent>(pawnThatFloor->getComponents()[0])->getCollider().setVertices({
+          {-1000.f, -1000.f, 1000.f},
+          {1000.f, -1000.f, 1000.f},
+          {1000.f, 1000.f, 1000.f},
+          {-1000.f, 1000.f, 1000.f},
+          {1000.f, -1000.f, -1000.f},
+          {-1000.f, -1000.f, -1000.f},
+          {-1000.f, 1000.f, -1000.f},
+          {1000.f, 1000.f, -1000.f}
+      });
+
 
 	pawn->setName("Test");
 
@@ -89,6 +112,7 @@ static void entry(Args& args) {
     camera_pawn->setPosition({10, 5, 10});
     std::shared_ptr<Camera> camrera = static_pointer_cast<Camera>(camera_pawn->getComponents()[0]);
 	sp->addPawnToRoot(pawnThatPhysicsTheCube);
+	sp->addPawnToRoot(pawnThatFloor);
 	sp->addPawnToRoot(pawnThatPhysicsTheCube1);
 
 	std::vector<std::shared_ptr<RenderObject>> objects;

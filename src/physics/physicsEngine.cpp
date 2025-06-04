@@ -7,13 +7,13 @@
 
 
 PhysicsEngine::PhysicsEngine(glm::vec3 gravity_strength, BoardManager *skibidi) {
-	elements = new std::vector<PhysicsElement>();
+	elements = std::vector<PhysicsElement>();
 	this->gravity_strength = gravity_strength;
 	boardManager = skibidi;
 }
 
 PhysicsEngine::~PhysicsEngine() {
-	delete elements;
+
 }
 
 
@@ -21,18 +21,19 @@ bool PhysicsEngine::initialCollisionCheck(PhysicsElement &a, PhysicsElement &b) 
 	return (glm::length(a.position - b.position) <= a.sphere_collider_radius + b.sphere_collider_radius);
 }
 
-std::pair<bool, std::vector<glm::vec3> > PhysicsEngine::gilbertJohnsonKeerthi(PhysicsElement &a, PhysicsElement &b) {
+std::pair<bool, std::vector<SupportPoint> > PhysicsEngine::gilbertJohnsonKeerthi(PhysicsElement &a, PhysicsElement &b) {
 	//get direction by comparing relative position of objects
 	glm::vec3 direction = glm::normalize(b.position - a.position);
 	//get the 0th point of the simplex by getting the support point of the Minkowski difference in the above direction
-	std::vector<glm::vec3> simplex = {calculateSupport(a, b, direction)};
+	std::vector<SupportPoint> simplex;
+    simplex.push_back(calculateSupportWithPoints(a, b, direction));
 	//get new direction as a vector pointing from 0th point of simplex to the origin
-	direction = glm::vec3(0, 0, 0) - simplex[0];
+	direction = glm::vec3(0, 0, 0) - simplex.at(0).point;
 	while (true) {
 		//get new support point
-		glm::vec3 point = calculateSupport(a, b, direction);
+        SupportPoint point = calculateSupportWithPoints(a, b, direction);
 		//if the new point does not pass the origin, the point is not valid, and so the collision didn't happen - return false
-		if (glm::dot(point, direction) < 0) {
+		if (glm::dot(point.point, direction) < 0) {
 			return {false, simplex};
 		}
 		//point valid - append it to simplex
@@ -50,7 +51,7 @@ glm::vec3 PhysicsEngine::calculateSupport(PhysicsElement &a, PhysicsElement &b, 
 	return a.furthestPoint(direction) - b.furthestPoint(-direction);
 }
 
-bool PhysicsEngine::manageSimplex(std::vector<glm::vec3> &simplex, glm::vec3 &direction) {
+bool PhysicsEngine::manageSimplex(std::vector<SupportPoint> &simplex, glm::vec3 &direction) {
 	if (simplex.size() > 4) {
 		throw std::runtime_error{"Simplex has more than 4 vertexes!"};
 	}
@@ -63,11 +64,11 @@ bool PhysicsEngine::manageSimplex(std::vector<glm::vec3> &simplex, glm::vec3 &di
 	return tetrahedronCase(simplex, direction);
 }
 
-bool PhysicsEngine::lineCase(std::vector<glm::vec3> &simplex, glm::vec3 &direction) {
+bool PhysicsEngine::lineCase(std::vector<SupportPoint> &simplex, glm::vec3 &direction) {
 	//vector pointing from the newest point to the origin
-	glm::vec3 ao = glm::vec3(0, 0, 0) - simplex[1];
+	glm::vec3 ao = glm::vec3(0, 0, 0) - simplex.at(1).point;
 	//vector pointing from the newest point to the oldest
-	glm::vec3 ab = simplex[0] - simplex[1];
+	glm::vec3 ab = simplex.at(0).point - simplex.at(1).point;
 
 	//find a perpendicular vector from AB that points in the direction of origin using the triple product operation
 	direction = math::tripleCrossProduct(ab, ao);
@@ -75,13 +76,13 @@ bool PhysicsEngine::lineCase(std::vector<glm::vec3> &simplex, glm::vec3 &directi
 	return false;
 }
 
-bool PhysicsEngine::planeCase(std::vector<glm::vec3> &simplex, glm::vec3 &direction) {
+bool PhysicsEngine::planeCase(std::vector<SupportPoint> &simplex, glm::vec3 &direction) {
 	//vector pointing from the newest point to the origin
-	glm::vec3 ao = glm::vec3(0, 0, 0) - simplex[2];
+	glm::vec3 ao = glm::vec3(0, 0, 0) - simplex.at(2).point;
 
 	//vectors AB & AC
-	glm::vec3 ab = simplex[1] - simplex[2];
-	glm::vec3 ac = simplex[0] - simplex[2];
+	glm::vec3 ab = simplex.at(1).point - simplex.at(2).point;
+	glm::vec3 ac = simplex.at(0).point - simplex.at(2).point;
 	//no need to test all cases of possible origin positions relative to the origin.
 	//the origin can only exist above/below the triangle itself or the Voronoi regions behind edges AB & AC for reason I won't explain here
 
@@ -121,13 +122,13 @@ bool PhysicsEngine::planeCase(std::vector<glm::vec3> &simplex, glm::vec3 &direct
 	return false;
 }
 
-bool PhysicsEngine::tetrahedronCase(std::vector<glm::vec3> &simplex, glm::vec3 &direction) {
+bool PhysicsEngine::tetrahedronCase(std::vector<SupportPoint> &simplex, glm::vec3 &direction) {
 	//as in the cases above we start with defining vectors
-	glm::vec3 ao = glm::vec3(0, 0, 0) - simplex[3];
+	glm::vec3 ao = glm::vec3(0, 0, 0) - simplex.at(3).point;
 
-	glm::vec3 ab = simplex[2] - simplex[3];
-	glm::vec3 ac = simplex[1] - simplex[3];
-	glm::vec3 ad = simplex[0] - simplex[3];
+	glm::vec3 ab = simplex.at(2).point - simplex.at(3).point;
+	glm::vec3 ac = simplex.at(1).point - simplex.at(3).point;
+	glm::vec3 ad = simplex.at(0).point - simplex.at(3).point;
 
 	glm::vec3 normal_abc = glm::cross(ab, ac);
 	glm::vec3 normal_acd = glm::cross(ac, ad);
@@ -148,8 +149,8 @@ bool PhysicsEngine::tetrahedronCase(std::vector<glm::vec3> &simplex, glm::vec3 &
 		//rotate ACD into ABC
 
 		//point c into b & point d into c
-		simplex[2] = simplex[1];
-		simplex[1] = simplex[0];
+		simplex.at(2) = simplex.at(1);
+		simplex.at(1) = simplex.at(0);
 
 		//rest is self-explanatory
 		ab = ac;
@@ -163,8 +164,8 @@ bool PhysicsEngine::tetrahedronCase(std::vector<glm::vec3> &simplex, glm::vec3 &
 		//rotate ADB into ABC
 
 		//point b into c & point d into c
-		simplex[1] = simplex[2];
-		simplex[2] = simplex[0];
+		simplex.at(1) = simplex.at(2);
+		simplex.at(2) = simplex.at(0);
 
 		//rest is self-explanatory
 		ac = ab;
@@ -179,19 +180,19 @@ bool PhysicsEngine::tetrahedronCase(std::vector<glm::vec3> &simplex, glm::vec3 &
 	} else if (!over_abc && over_acd && over_adb) {
 		//Rotate ACD into ABC and ADB into ACD
 		//b goes into tmp
-		glm::vec3 tmp = simplex[2];
+        SupportPoint tmp = simplex.at(2);
 		//c goes into b
-		simplex[2] = simplex[1];
+		simplex.at(2) = simplex.at(1);
 		//d goes into c
-		simplex[1] = simplex[0];
+		simplex.at(1) = simplex.at(0);
 		//b goes into d
-		simplex[0] = tmp;
+		simplex.at(0) = tmp;
 
 		//rest is self-explanatory
-		tmp = ab;
+		tmp.point = ab;
 		ab = ac;
 		ac = ad;
-		ad = tmp;
+		ad = tmp.point;
 
 		normal_abc = normal_acd;
 		normal_acd = normal_adb;
@@ -200,19 +201,19 @@ bool PhysicsEngine::tetrahedronCase(std::vector<glm::vec3> &simplex, glm::vec3 &
 	} else if (over_abc && !over_acd && over_adb) {
 		//Rotate ABD into ABC and ABC into ACD
 		//c goes into tmp
-		glm::vec3 tmp = simplex[1];
+        SupportPoint tmp = simplex.at(1);
 		//b into c
-		simplex[1] = simplex[2];
+		simplex.at(1) = simplex.at(2);
 		//d into b
-		simplex[2] = simplex[0];
+		simplex.at(2) = simplex.at(0);
 		//c into d
-		simplex[0] = tmp;
+		simplex.at(0) = tmp;
 
 		//rest is self-explanatory
-		tmp = ac;
+		tmp.point = ac;
 		ac = ab;
 		ab = ad;
-		ad = tmp;
+		ad = tmp.point;
 
 		normal_acd = normal_abc;
 		normal_abc = normal_adb;
@@ -276,8 +277,8 @@ double_face_check:
 		//rotate ACD into ABC
 
 		//point c into b & point d into c
-		simplex[2] = simplex[1];
-		simplex[1] = simplex[0];
+		simplex.at(2) = simplex.at(1);
+		simplex.at(1) = simplex.at(0);
 
 		//rest is self-explanatory
 		ab = ac;
@@ -296,12 +297,13 @@ double_face_check:
 }
 
 std::pair<std::pair<float, glm::vec3>, glm::vec3> PhysicsEngine::expandingPolytope(
-	std::vector<glm::vec3> &simplex, PhysicsElement &a, PhysicsElement &b) {
+	std::vector<SupportPoint> &simplex, PhysicsElement &a, PhysicsElement &b) {
 	//create a copy of end simplex to be turned into a polytope, it may differ slightly from the original simplex,
 	//but the algorithm will work properly regardless - this is just an arbitrary starting point
 	std::vector<SupportPoint> polytope;
 	for (auto p: simplex) {
-		polytope.push_back(calculateSupportWithPoints(a, b, p));
+		//polytope.push_back(calculateSupportWithPoints(a, b, p));
+        polytope.push_back(p);
 	}
 
 	std::vector<glm::ivec3> faces = {
@@ -320,10 +322,10 @@ std::pair<std::pair<float, glm::vec3>, glm::vec3> PhysicsEngine::expandingPolyto
 	//run loop until there are no more points beyond the closest face
 	while (min_distance == INFINITY) {
 		//assign the closes face to the min normal and min distance
-		min_normal[0] = normal_list[closest_face][0];
-		min_normal[1] = normal_list[closest_face][1];
-		min_normal[2] = normal_list[closest_face][2];
-		min_distance = normal_list[closest_face][3];
+		min_normal[0] = normal_list.at(closest_face)[0];
+		min_normal[1] = normal_list.at(closest_face)[1];
+		min_normal[2] = normal_list.at(closest_face)[2];
+		min_distance = normal_list.at(closest_face)[3];
 
 		SupportPoint support_point = calculateSupportWithPoints(a, b, min_normal);
 		float next_point_distance = glm::dot(min_normal, support_point.point);
@@ -358,7 +360,7 @@ std::pair<std::pair<float, glm::vec3>, glm::vec3> PhysicsEngine::expandingPolyto
 
 			for (int i = 0; i < (int) normal_list.size(); i++) {
 				//check for direction
-				if (glm::dot(glm::vec3(normal_list[i][0], normal_list[i][1], normal_list[i][2]),
+				if (glm::dot(glm::vec3(normal_list.at(i)[0], normal_list.at(i)[1], normal_list.at(i)[2]),
 				             support_point.point) > 0) {
 					//check whether the 3 faces of a given edge are unique and add them to the edge list.
 					addUniqueEdge(unique_edges, faces, i, 0, 1);
@@ -366,9 +368,9 @@ std::pair<std::pair<float, glm::vec3>, glm::vec3> PhysicsEngine::expandingPolyto
 					addUniqueEdge(unique_edges, faces, i, 2, 0);
 
 					//delete the face
-					faces[i] = faces.back();
+					faces.at(i) = faces.back();
 					faces.pop_back(); //sidenote: I have no idea why .pop_back() does not return the value.
-					normal_list[i] = normal_list.back();
+					normal_list.at(i) = normal_list.back();
 					normal_list.pop_back();
 					//We use pop-erasing and un-iterate i to not screw up the loop
 					i--;
@@ -383,25 +385,25 @@ std::pair<std::pair<float, glm::vec3>, glm::vec3> PhysicsEngine::expandingPolyto
 			}
 
 			//add the new support to the polytope
-			polytope.emplace_back(support_point);
+			polytope.push_back(support_point);
 
 			//find normals for the new faces
 			auto [new_normal_list, new_closest_face] = getFaceNormals(polytope, new_faces);
 
 			// TODO write an actual fix, avoid crashing for now
-			if (new_normal_list.empty()) {
-				break;
-			}
+//			if (new_normal_list.empty()) {
+//				break;
+//			}
 
 			//find the new closest face by comparing the closest of the old and new faces
 			float old_min_distance = INFINITY;
 			for (int i = 0; i < (int) normal_list.size(); i++) {
-				if (normal_list[i][3] < old_min_distance) {
+				if (normal_list.at(i)[3] < old_min_distance) {
 					closest_face = i;
-					old_min_distance = normal_list[i][3];
+					old_min_distance = normal_list.at(i)[3];
 				}
 			}
-			if (new_normal_list[new_closest_face][3] < old_min_distance) {
+			if (new_normal_list.at(new_closest_face)[3] < old_min_distance) {
 				closest_face = new_closest_face + normal_list.size();
 			}
 
@@ -414,9 +416,9 @@ std::pair<std::pair<float, glm::vec3>, glm::vec3> PhysicsEngine::expandingPolyto
 	//calculating the collision point via barycentric coordinates
 	//project the origin onto the closest face to get barycentric coordinates
 	glm::ivec3 face = faces[closest_face];
-	glm::vec3 p0 = polytope[face[0]].point;
-	glm::vec3 p1 = polytope[face[1]].point;
-	glm::vec3 p2 = polytope[face[2]].point;
+	glm::vec3 p0 = polytope.at(face[0]).point;
+	glm::vec3 p1 = polytope.at(face[1]).point;
+	glm::vec3 p2 = polytope.at(face[2]).point;
 	glm::vec3 normal = glm::cross(p1 - p0, p2 - p0);
 	//we can't use the normal from the normal list because it's normalized
 
@@ -426,15 +428,15 @@ std::pair<std::pair<float, glm::vec3>, glm::vec3> PhysicsEngine::expandingPolyto
 	float weight0 = 1 - weight1 - weight2;
 
 	// Interpolate the support points from A and B
-	glm::vec3 collision_a = weight0 * polytope[face[0]].point_a + weight1 * polytope[face[1]].point_a + weight2 *
-	                        polytope[face[2]].point_a;
-	glm::vec3 collision_b = weight0 * polytope[face[0]].point_b + weight1 * polytope[face[1]].point_b + weight2 *
-	                        polytope[face[2]].point_b;
+	glm::vec3 collision_a = weight0 * polytope.at(face[0]).point_a + weight1 * polytope.at(face[1]).point_a + weight2 *
+	                        polytope.at(face[2]).point_a;
+	glm::vec3 collision_b = weight0 * polytope.at(face[0]).point_b + weight1 * polytope.at(face[1]).point_b + weight2 *
+	                        polytope.at(face[2]).point_b;
 
 	glm::vec3 collision_point = (collision_a + collision_b) / 2.0f;
 
 	//better to overcompensate the correction distance than under compensate and cause this whole mess to run again
-	return {{min_distance * 1.01, min_normal}, collision_point};
+	return {{min_distance * 1.02, min_normal}, collision_point};
 }
 
 SupportPoint PhysicsEngine::calculateSupportWithPoints(PhysicsElement &a, PhysicsElement &b, glm::vec3 &direction) {
@@ -453,9 +455,9 @@ std::pair<std::vector<glm::vec4>, int> PhysicsEngine::getFaceNormals(std::vector
 	//check normal for each face
 	for (int i = 0; i < (int) faces.size(); ++i) {
 		//a, b and c are the points making up the face
-		glm::vec3 a = polytope[faces[i][0]].point;
-		glm::vec3 b = polytope[faces[i][1]].point;
-		glm::vec3 c = polytope[faces[i][2]].point;
+		glm::vec3 a = polytope.at(faces.at(i)[0]).point;
+		glm::vec3 b = polytope.at(faces.at(i)[1]).point;
+		glm::vec3 c = polytope.at(faces.at(i)[2]).point;
 
 		//find the normal of a given face from the cross product of vector AB and AC
 		glm::vec3 normal = glm::normalize(glm::cross(b - a, c - a));
@@ -484,8 +486,8 @@ std::pair<std::vector<glm::vec4>, int> PhysicsEngine::getFaceNormals(std::vector
 void PhysicsEngine::addUniqueEdge(std::vector<std::pair<int, int> > &edges, std::vector<glm::ivec3> faces, int face_num,
                                   int a, int b) {
 	//create edge from 2 vertices given as a and b
-	auto edge = std::find(edges.begin(), edges.end(), std::make_pair(faces[face_num][b], faces[face_num][a]));
-	auto edge2 = std::find(edges.begin(), edges.end(), std::make_pair(faces[face_num][a], faces[face_num][b]));
+	auto edge = std::find(edges.begin(), edges.end(), std::make_pair(faces.at(face_num)[b], faces.at(face_num)[a]));
+	auto edge2 = std::find(edges.begin(), edges.end(), std::make_pair(faces.at(face_num)[a], faces.at(face_num)[b]));
 
 	//check if the edge already exists, if it does, it means that the edge would lead to a duplicate face creation, and as such it must be destroyed.
 	if (edge != edges.end()) {
@@ -499,7 +501,7 @@ void PhysicsEngine::addUniqueEdge(std::vector<std::pair<int, int> > &edges, std:
 
 	//if face is unique add it to the unique edges
 	else {
-		edges.emplace_back(faces[face_num][a], faces[face_num][b]);
+		edges.emplace_back(faces.at(face_num)[a], faces.at(face_num)[b]);
 	}
 }
 
@@ -524,11 +526,16 @@ void PhysicsEngine::applyForces(PhysicsElement &a, PhysicsElement &b, float coll
 	b.velocity = (b.velocity + impulse_vector * inverse_mass_b);
 
 	//applying friction
-//	glm::vec3 tangent_velocity = (b.velocity - a.velocity) - collision_normal * relative_velocity;
-//	glm::vec3 friction_impulse_vector = -tangent_velocity * (impulse_scalar * a.coefficient_of_friction * b.coefficient_of_friction);
-//	a.velocity = (a.velocity - friction_impulse_vector * inverse_mass_a);
-//	b.velocity = (b.velocity + friction_impulse_vector * inverse_mass_b);
+//    if (!(gravity_strength == glm::vec3{0, 0, 0}))
+//    {
+//        glm::vec3 tangent_velocity = (b.velocity - a.velocity) - collision_normal * relative_velocity;
+//        glm::vec3 friction_impulse_vector =
+//                -tangent_velocity * (impulse_scalar * a.coefficient_of_friction * b.coefficient_of_friction);
+//        a.velocity = (a.velocity - friction_impulse_vector * inverse_mass_a);
+//        b.velocity = (b.velocity + friction_impulse_vector * inverse_mass_b);
+//    }
 
+    out::info("punkt kolizji: %f %f %f", collision_point.x, collision_point.y, collision_point.z);
 	//applying rotational forces
 	glm::vec3 ra = collision_point - a.position;
 	glm::vec3 rb = collision_point - b.position;
@@ -543,29 +550,31 @@ double PhysicsEngine::physicsUpdate() {
 	auto start = std::chrono::system_clock::now();
 
 	getElements();
-	if (elements->size() == 0) return 0.0f ;
+	if (elements.size() == 0) return 0.0f ;
 
 	//update all existing objects
-	for (PhysicsElement element: (*elements)) {
+	for (auto & element :elements) {
 		element.update(TICK_DURATION, gravity_strength);
 	}
+
+
 	//check for collision between every object pair
-	for (int i = 0; i < (int) elements->size() - 1; i++) {
-		for (int j = i + 1; j < (int) elements->size(); j++) {
+	for (int i = 0; i < (int) elements.size() - 1; i++) {
+		for (int j = i + 1; j < (int) elements.size(); j++) {
 			//initial, time efficient, but inaccurate collision detection
-			if (initialCollisionCheck((*elements)[i], (*elements)[j])) {
+			if (initialCollisionCheck(elements[i], elements[j])) {
 				//second, more time-consuming, but exact detection
-				auto [isColliding, simplex] = gilbertJohnsonKeerthi((*elements)[i], (*elements)[j]);
+				auto [isColliding, simplex] = gilbertJohnsonKeerthi(elements[i], elements[j]);
 				if (isColliding) {
-					auto [dn, collision_point] = expandingPolytope(simplex, (*elements)[i], (*elements)[j]);
+					auto [dn, collision_point] = expandingPolytope(simplex, elements[i], elements[j]);
 					auto [collision_depth, collision_normal] = dn;
 
 					//safeguard for objects going deeper into themselves instead of uncolliding
-					if (glm::dot(collision_normal, collision_point - (*elements)[i].position) >= glm::dot(
-						    collision_normal, collision_point - (*elements)[j].position)) {
-						applyForces((*elements)[i], (*elements)[j], collision_depth, collision_normal, collision_point);
+					if (glm::dot(collision_normal, collision_point - elements[i].position) >= glm::dot(
+						    collision_normal, collision_point - elements[j].position)) {
+						applyForces(elements[i], elements[j], collision_depth, collision_normal, collision_point);
 					} else {
-						applyForces((*elements)[j], (*elements)[i], collision_depth, collision_normal, collision_point);
+						applyForces(elements[j], elements[i], collision_depth, collision_normal, collision_point);
 					}
 
 					//TODO on collision function in pawn
@@ -577,12 +586,12 @@ double PhysicsEngine::physicsUpdate() {
 
     auto objects_to_copy = boardManager->getCurrentBoard().lock()->getTree().getPhysicsComponents();
     int j = 0;
-    for (auto it = objects_to_copy.begin(); it != objects_to_copy.end(); it++)
+    for (const auto & it : objects_to_copy)
     {
-        it->get()->setPosition((*elements)[j].position);
-        it->get()->setVelocity((*elements)[j].velocity);
-        it->get()->setAngularVelocity((*elements)[j].angular_velocity);
-        it->get()->setRotation((*elements)[j].rotation);
+        it.get()->setPosition(elements[j].position);
+        it.get()->setVelocity(elements[j].velocity);
+        it.get()->setAngularVelocity(elements[j].angular_velocity);
+        it.get()->setRotation(elements[j].rotation);
         j++;
     }
 
@@ -593,7 +602,7 @@ double PhysicsEngine::physicsUpdate() {
 
 
 void PhysicsEngine::getElements() {
-	elements->clear();
+	elements.clear();
 	if (boardManager->getCurrentBoard().expired()) {
 		FAULT("UPS");
 		return;
@@ -617,6 +626,12 @@ void PhysicsEngine::getElements() {
 			value->getMaterial().coefficient_of_friction,
 			value->getMaterial().coefficient_of_restitution
 		};
-		elements->push_back(element);
+		elements.push_back(element);
+        frame_num++;
+        out::info("%f, %f, %f, id: %d, frame: %d", element.position.x, element.position.y, element.position.z, value->getEntityID(), frame_num);
 	}
+}
+
+void PhysicsEngine::setGravityScale(glm::vec3 gravityScale) {
+    gravity_strength = gravityScale;
 }

@@ -184,3 +184,7 @@ std::weak_ptr<Board> BoardManager::getCurrentBoard() {
 	return current_board;
 }
 
+void BoardManager::setGravityStrenght(glm::vec3 gravity_strngth) {
+    physics_engine.setGravityScale(gravity_strngth);
+}
+

@@ -318,3 +318,5 @@ if (WIN32)
 			"${openal-soft_BINARY_DIR}/OpenAL32.dll"
 			"${CMAKE_BINARY_DIR}/OpenAL32.dll")
 endif()
+
+target_compile_options(checklight_common INTERFACE -fnon-call-exceptions)

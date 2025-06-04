@@ -26,9 +26,10 @@ public:
     void update(float time_step, glm::vec3 gravity)
     {
         //integrate position over time with respect to acceleration
-        velocity += gravity * (gravity_scale / 2.0f);
+        glm::vec3 grav{gravity.x * gravity_scale.x, gravity.y * gravity_scale.y, gravity.z * gravity_scale.z};
+        velocity += grav / 2.0f * time_step;
         position += velocity * time_step;
-        position += gravity * (gravity_scale / 2.0f);
+        velocity += grav / 2.0f * time_step;
 
         //apply angular velocity
         rotation += (0.5f * rotation * glm::quat(0.0, angular_velocity) * time_step);
@@ -37,12 +38,12 @@ public:
 
     glm::vec3 furthestPoint(glm::vec3 direction)
     {
-        double dot_result = -INFINITY;
+        float dot_result = -INFINITY;
         glm::vec3 returnal {0, 0, 0};
         for (glm::vec3 vertex : vertices)
         {
             glm::vec3 rotated = glm::rotate(rotation, vertex);
-            double dr = glm::dot(rotated, direction);
+            float dr = glm::dot(rotated, direction);
             if (dr > dot_result)
             {
                 dot_result = dr;
