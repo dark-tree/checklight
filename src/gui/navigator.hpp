@@ -2,6 +2,9 @@
 
 #include "widget.hpp"
 
+/**
+ * Manager for keyboard assisted widget navigation
+ */
 class Navigator {
 
 	private:

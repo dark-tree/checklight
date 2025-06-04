@@ -3,6 +3,11 @@
 #include "pipeline.hpp"
 #include "render/vulkan/shader/table.hpp"
 
+/**
+ * @section Raytrace
+ * - withRecursionDepth()
+ * - withShaderLayout()
+ */
 class RaytracePipelineBuilder : public AbstractPipelineBuilder<RaytracePipelineBuilder> {
 
 	private:
@@ -27,7 +32,7 @@ class RaytracePipelineBuilder : public AbstractPipelineBuilder<RaytracePipelineB
 		 * If you exceed either the recursion depth you reported in the raytrace pipeline create info,
 		 * or the physical device recursion limit, undefined behavior results.
 		 *
-		 * @section Raytrace
+		 * Section: Raytrace
 		 * @param[in] depth Maximum number of recursive ray invocations
 		 */
 		RaytracePipelineBuilder& withRecursionDepth(int depth);
@@ -38,7 +43,7 @@ class RaytracePipelineBuilder : public AbstractPipelineBuilder<RaytracePipelineB
 		 * this order). The hit group number to use is specified using
 		 * hit group offset in RenderObject's instance.
 		 *
-		 * @section Raytrace
+		 * Section: Raytrace
 		 * @param layout The layout, as created with ShaderArrayBuilder
 		 */
 		RaytracePipelineBuilder& withShaderLayout(const ShaderTableLayout& layout);

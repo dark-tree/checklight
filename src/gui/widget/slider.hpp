@@ -2,6 +2,9 @@
 
 #include "gui/widget.hpp"
 
+/**
+ * Slider widget with on-change callbacks
+ */
 class SliderWidget : public InputWidget {
 
 	private:

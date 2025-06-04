@@ -2,6 +2,10 @@
 
 #include "gui/widget.hpp"
 
+/**
+ * Clickable button widget, can be equipped with a
+ * on-click callback function
+ */
 class ButtonWidget : public InputWidget {
 
 	public:

@@ -10,6 +10,9 @@
 #include "widget/root.hpp"
 #include "widget/text.hpp"
 
+/**
+ * A base factory for creating GUI widgets in a specific style
+ */
 struct Theme {
 
 	protected:

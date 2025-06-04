@@ -50,6 +50,10 @@ class InputContext {
 
 };
 
+/**
+ * Represents the operating system window,
+ * has a root InputDispatcher that is feed directly with system provided events
+ */
 class Window {
 
 	private:

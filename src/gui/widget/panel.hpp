@@ -2,6 +2,9 @@
 
 #include "gui/widget.hpp"
 
+/**
+ * Panel that can contain other widgets, used for laying out of widgets
+ */
 class PanelWidget : public Widget {
 
 	public:
