@@ -1,19 +1,20 @@
 #include "physics.hpp"
 
 
-// PhysicsComponent::PhysicsComponent(SpatialPawn *sp, Collider collider, bool is_static, Material material, glm::vec3 gravity_scale)  : GameComponent(sp){
-// 	this->is_static = is_static;
-// 	this->gravity_scale = gravity_scale;
-// 	this->material = material;
-// 	this->collider = collider;
-// 	this->mass = calculateMass();
-// 	this->initMass = true;
-// }
+ PhysicsComponent::PhysicsComponent(SpatialPawn *sp, Collider collider, bool is_static, Material material, glm::vec3 gravity_scale)  : GameComponent(sp){
+ 	this->is_static = is_static;
+ 	this->gravity_scale = gravity_scale;
+ 	this->material = material;
+ 	this->collider = collider;
+ 	this->mass = calculateMass();
+ 	this->initMass = true;
+     this->collider.setInertiaTensor(glm::mat3x3(mass));
+ }
 
 PhysicsComponent::PhysicsComponent(SpatialPawn *sp): GameComponent(sp) {
 	this->is_static = false;
 	this->gravity_scale = glm::vec3(1, 1, 1);
-	this->material = Material(1, 0.5, 1);
+	this->material = Material(1, 1, 1);
 	this->collider = Collider::getCube();
 	this->mass = calculateMass();
 	this->initMass = true;

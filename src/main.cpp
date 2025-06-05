@@ -50,7 +50,7 @@ static void entry(Args& args) {
 	auto dispacher = std::make_shared<InputDispatcher>();
 	window.getInputDispatcher().registerListener(dispacher);
 	BoardManager manager(dispacher);
-    manager.setGravityStrenght(glm::vec3(0, -1, 0));
+    manager.setGravityStrenght(glm::vec3(0, -10, 0));
 
 	std::shared_ptr<Pawn> pawn = std::make_shared<Pawn>();
 
@@ -80,7 +80,7 @@ static void entry(Args& args) {
 	pawnThatPhysicsTheCube->createComponent<PhysicsComponent>();
 	pawnThatPhysicsTheCube1->createComponent<RenderComponent>(Models::CUBE);
 	pawnThatPhysicsTheCube1->createComponent<PhysicsComponent>();
-	std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[1])->setVelocity(glm::vec3(-6, 0, 0));
+	std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[1])->setVelocity(glm::vec3(-6, 15, 0));
 	std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[1])->setAngularVelocity(glm::vec3(0, 0, 0));
     pawnThatPhysicsTheCube->setRotation(rotate(glm::quat(),glm::vec3(0, 0.75, 0)));
     std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[0])->setGravityScale(glm::vec3 (0, 0, 0));

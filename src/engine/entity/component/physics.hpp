@@ -24,7 +24,7 @@ protected:
 	float calculateMass();
 
 public:
-	//PhysicsComponent(SpatialPawn *sp, Collider collider, bool is_static, Material material, glm::vec3 gravity_scale);
+	PhysicsComponent(SpatialPawn *sp, Collider collider, bool is_static, Material material, glm::vec3 gravity_scale);
 	PhysicsComponent(SpatialPawn *sp);
 
 	void onFixedUpdate(FixedContext c) override;

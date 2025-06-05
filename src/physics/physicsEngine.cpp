@@ -586,6 +586,7 @@ double PhysicsEngine::physicsUpdate() {
 
     auto objects_to_copy = boardManager->getCurrentBoard().lock()->getTree().getPhysicsComponents();
     int j = 0;
+    //something here is really broken TODO
     for (const auto & it : objects_to_copy)
     {
         it.get()->setPosition(elements[j].position);
