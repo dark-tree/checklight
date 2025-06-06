@@ -36,7 +36,7 @@ namespace PawnState {
 /**
  * Enables the component to bind to this enclosing pawn
  */
-#define COMPONENT_BIND_POINT template<DerivedTrait<Component> T, typename... Args> std::shared_ptr<Component> createComponent(Args... args) { return addComponent(std::make_shared<T>(this, args...)); }
+#define COMPONENT_BIND_POINT template<DerivedTrait<Component> T, typename... Args> std::shared_ptr<T> createComponent(Args... args) { return static_pointer_cast<T>(addComponent(std::make_shared<T>(this, args...))); }
 
 class Pawn : public Entity, public std::enable_shared_from_this<Pawn> {
 protected:

@@ -52,70 +52,66 @@ static void entry(Args& args) {
 	BoardManager manager(dispacher);
     manager.setGravityStrenght(glm::vec3(0, -10, 0));
 
-	std::shared_ptr<Pawn> pawn = std::make_shared<Pawn>();
-
-	auto pawnThatRendersTheCube = std::make_shared<SpatialPawn>();
-	auto pawnThatRendersTheSphere = std::make_shared<SpatialPawn>();
-	auto pawnThatPhysicsTheCube = std::make_shared<SpatialPawn>();
-	auto pawnThatPhysicsTheCube1 = std::make_shared<SpatialPawn>();
-    auto pawnThatFloor = std::make_shared<SpatialPawn>();
-
-	pawnThatRendersTheCube->setPosition({-2,1,-2});
-
-	pawnThatRendersTheSphere->setPosition({2,1,2});
-
-	pawnThatPhysicsTheCube->setPosition({50,1.1,15});
-
-    pawnThatPhysicsTheCube1->setPosition({0,5,15.1});
-
-    pawnThatFloor->setPosition({0,-1000,0});
-
-	pawnThatRendersTheSphere->createComponent<RenderComponent>(Models::SPHERE);
-	pawnThatRendersTheSphere->createComponent<MatrixAnimation>(MatrixAnimation::TRANSLATE);
-
-	pawnThatRendersTheCube->createComponent<RenderComponent>(Models::CUBE);
-	pawnThatRendersTheCube->createComponent<MatrixAnimation>(MatrixAnimation::ROTATE);
-
-	pawnThatPhysicsTheCube->createComponent<RenderComponent>(Models::CUBE);
-	pawnThatPhysicsTheCube->createComponent<PhysicsComponent>();
-	pawnThatPhysicsTheCube1->createComponent<RenderComponent>(Models::CUBE);
-	pawnThatPhysicsTheCube1->createComponent<PhysicsComponent>();
-	std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[1])->setVelocity(glm::vec3(-20, 12, 0));
-	std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube1->getComponents()[1])->setVelocity(glm::vec3(-1, 0, 0));
-
-	std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[1])->setAngularVelocity(glm::vec3(0, 0, 0));
-    pawnThatPhysicsTheCube->setRotation(rotate(glm::quat(),glm::vec3(0, 0.75, 0)));
-    std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[0])->setGravityScale(glm::vec3 (0, 0, 0));
-
-    pawnThatFloor->createComponent<PhysicsComponent>();
-    std::static_pointer_cast<PhysicsComponent>(pawnThatFloor->getComponents()[0])->setGravityScale(glm::vec3 (0, 0, 0));
-    std::static_pointer_cast<PhysicsComponent>(pawnThatFloor->getComponents()[0])->setVelocity(glm::vec3(0, 0, 0));
-    std::static_pointer_cast<PhysicsComponent>(pawnThatFloor->getComponents()[0])->setAngularVelocity(glm::vec3(0, 0, 0));
-    std::static_pointer_cast<PhysicsComponent>(pawnThatFloor->getComponents()[0])->getCollider().setVertices({
-          {-1000.f, -1000.f, 1000.f},
-          {1000.f, -1000.f, 1000.f},
-          {1000.f, 1000.f, 1000.f},
-          {-1000.f, 1000.f, 1000.f},
-          {1000.f, -1000.f, -1000.f},
-          {-1000.f, -1000.f, -1000.f},
-          {-1000.f, 1000.f, -1000.f},
-          {1000.f, 1000.f, -1000.f}
-      });
-
-
-	pawn->setName("Test");
-
 	std::shared_ptr<Board> sp = manager.getCurrentBoard().lock();
 
-	sp->addPawnToRoot(pawn);
-	sp->addPawnToRoot(pawnThatRendersTheCube);
-	sp->addPawnToRoot(pawnThatRendersTheSphere);
-    std::shared_ptr<SpatialPawn> camera_pawn = static_pointer_cast<SpatialPawn>(sp->getTree().findByName("Main Camera"));
+	auto cube_1 = std::make_shared<SpatialPawn>();
+	cube_1->setPosition({-2,1,-2});
+	cube_1->createComponent<RenderComponent>(Models::CUBE);
+	cube_1->createComponent<MatrixAnimation>(MatrixAnimation::ROTATE);
+	sp->addPawnToRoot(cube_1);
+
+	auto sphere = std::make_shared<SpatialPawn>();
+	sphere->setPosition({2,1,2});
+	sphere->createComponent<RenderComponent>(Models::SPHERE);
+	sphere->createComponent<MatrixAnimation>(MatrixAnimation::TRANSLATE);
+	sp->addPawnToRoot(sphere);
+
+	{
+		auto cube_2 = std::make_shared<SpatialPawn>();
+		cube_2->setPosition({50, 1.1, 15});
+		cube_2->createComponent<RenderComponent>(Models::CUBE);
+		cube_2->setRotation(rotate(glm::quat(), {0, 0.75, 0}));
+		auto pc = cube_2->createComponent<PhysicsComponent>();
+		pc->setVelocity({-20, 12, 0});
+		pc->setAngularVelocity({0, 0, 0});
+		pc->setGravityScale({0, 1, 0});
+		sp->addPawnToRoot(cube_2);
+	}
+
+	{
+		auto cube_3 = std::make_shared<SpatialPawn>();
+		cube_3->setPosition({0, 5, 15.1});
+		cube_3->createComponent<RenderComponent>(Models::CUBE);
+		auto pc = cube_3->createComponent<PhysicsComponent>();
+		pc->setVelocity({-1, 0, 0});
+		sp->addPawnToRoot(cube_3);
+	}
+
+	{
+		auto floor = std::make_shared<SpatialPawn>();
+		floor->setPosition({0, -1000, 0});
+		auto pc = floor->createComponent<PhysicsComponent>();
+		pc->setGravityScale({0, 0, 0});
+		pc->setVelocity({0, 0, 0});
+		pc->setAngularVelocity({0, 0, 0});
+		pc->getCollider().setVertices({
+			{-1000.f, -1000.f, 1000.f},
+			{1000.f, -1000.f, 1000.f},
+			{1000.f, 1000.f, 1000.f},
+			{-1000.f, 1000.f, 1000.f},
+			{1000.f, -1000.f, -1000.f},
+			{-1000.f, -1000.f, -1000.f},
+			{-1000.f, 1000.f, -1000.f},
+			{1000.f, 1000.f, -1000.f}
+		});
+		sp->addPawnToRoot(floor);
+	}
+
+	sp->addPawnToRoot(cube_1);
+	sp->addPawnToRoot(sphere);
+
+    auto camera_pawn = static_pointer_cast<SpatialPawn>(sp->getTree().findByName("Main Camera"));
     camera_pawn->setPosition({10, 5, 10});
-    std::shared_ptr<Camera> camrera = static_pointer_cast<Camera>(camera_pawn->getComponents()[0]);
-	sp->addPawnToRoot(pawnThatPhysicsTheCube);
-	sp->addPawnToRoot(pawnThatFloor);
-	sp->addPawnToRoot(pawnThatPhysicsTheCube1);
 
 	std::vector<std::shared_ptr<RenderObject>> objects;
 

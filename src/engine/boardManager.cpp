@@ -82,11 +82,6 @@ void BoardManager::updateCycle() {
 
 	//------hardcoded updates-------
 
-
-	if(globalTickNumber == 3000){
-		usingBoard->pawns.findByID(4)->remove();
-	}
-
 	/*
 	auto p = std::make_shared<Pawn>();
 	usingBoard->addPawnToRoot(p);*/
