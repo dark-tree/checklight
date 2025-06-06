@@ -64,7 +64,7 @@ static void entry(Args& args) {
 
 	pawnThatRendersTheSphere->setPosition({2,1,2});
 
-	pawnThatPhysicsTheCube->setPosition({50,5,15});
+	pawnThatPhysicsTheCube->setPosition({50,1.1,15});
 
     pawnThatPhysicsTheCube1->setPosition({0,5,15.1});
 
@@ -80,7 +80,9 @@ static void entry(Args& args) {
 	pawnThatPhysicsTheCube->createComponent<PhysicsComponent>();
 	pawnThatPhysicsTheCube1->createComponent<RenderComponent>(Models::CUBE);
 	pawnThatPhysicsTheCube1->createComponent<PhysicsComponent>();
-	std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[1])->setVelocity(glm::vec3(-6, 15, 0));
+	std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[1])->setVelocity(glm::vec3(-20, 12, 0));
+	std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube1->getComponents()[1])->setVelocity(glm::vec3(-1, 0, 0));
+
 	std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[1])->setAngularVelocity(glm::vec3(0, 0, 0));
     pawnThatPhysicsTheCube->setRotation(rotate(glm::quat(),glm::vec3(0, 0.75, 0)));
     std::static_pointer_cast<PhysicsComponent>(pawnThatPhysicsTheCube->getComponents()[0])->setGravityScale(glm::vec3 (0, 0, 0));

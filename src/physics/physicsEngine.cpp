@@ -507,12 +507,15 @@ void PhysicsEngine::addUniqueEdge(std::vector<std::pair<int, int> > &edges, std:
 
 void PhysicsEngine::applyForces(PhysicsElement &a, PhysicsElement &b, float collision_depth, glm::vec3 &collision_normal, glm::vec3 &collision_point)
 {
-	//positional correction
+	//------positional correction------
 	glm::vec3 correction_vector = collision_normal * collision_depth;
 	a.position = (a.position - correction_vector * (b.mass/(a.mass + b.mass)));
 	b.position = (b.position + correction_vector * (a.mass/(a.mass + b.mass)));
 
-	//impulse based collision response
+    glm::vec3 a_vel = a.velocity;
+    glm::vec3 b_vel = b.velocity;
+
+	//-----impulse based collision response-----
 	float relative_velocity = glm::dot(b.velocity - a.velocity, collision_normal);
 	float inverse_mass_a = 1.0/a.mass;
 	float inverse_mass_b = 1.0/b.mass;
@@ -521,27 +524,45 @@ void PhysicsEngine::applyForces(PhysicsElement &a, PhysicsElement &b, float coll
 	float impulse_scalar = -(1 + a.coefficient_of_restitution/2.0 + b.coefficient_of_restitution/2.0) * relative_velocity / (inverse_mass_a + inverse_mass_b);
 	glm::vec3 impulse_vector = impulse_scalar * collision_normal;
 
-	//apply impulse to objects
-	a.velocity = (a.velocity - impulse_vector * inverse_mass_a);
-	b.velocity = (b.velocity + impulse_vector * inverse_mass_b);
+    a.velocity -= impulse_vector * inverse_mass_a;
+    b.velocity += impulse_vector * inverse_mass_b;
 
-	//applying friction
-//    if (!(gravity_strength == glm::vec3{0, 0, 0}))
-//    {
-//        glm::vec3 tangent_velocity = (b.velocity - a.velocity) - collision_normal * relative_velocity;
-//        glm::vec3 friction_impulse_vector =
-//                -tangent_velocity * (impulse_scalar * a.coefficient_of_friction * b.coefficient_of_friction);
-//        a.velocity = (a.velocity - friction_impulse_vector * inverse_mass_a);
-//        b.velocity = (b.velocity + friction_impulse_vector * inverse_mass_b);
-//    }
+    // -----applying friction-----
+    glm::vec3 rel_vel = b_vel - a_vel;
 
-    out::info("punkt kolizji: %f %f %f", collision_point.x, collision_point.y, collision_point.z);
-	//applying rotational forces
-	glm::vec3 ra = collision_point - a.position;
-	glm::vec3 rb = collision_point - b.position;
-	a.angular_velocity = (a.angular_velocity + glm::cross(ra, impulse_vector) / a.inertia_tensor);
-	b.angular_velocity = (b.angular_velocity + glm::cross(rb, -impulse_vector) / b.inertia_tensor);
+    // project relative velocity onto the collision normal
+    glm::vec3 normal_velocity = glm::dot(rel_vel, collision_normal) * collision_normal;
 
+    // tangential velocity = full relative velocity - normal component
+    glm::vec3 tangent = rel_vel - normal_velocity;
+
+    // if tangent is near zero, skip friction
+    if (glm::length(tangent) > 0.0001f) {
+        tangent = glm::normalize(tangent);
+
+        // calculate magnitude of friction impulse
+        float friction_scalar = glm::length(impulse_vector); // magnitude of normal impulse
+
+        // average friction coefficients (can be more sophisticated if needed)
+        float mu_static = fmin(0.5f * (a.coefficient_of_friction + b.coefficient_of_friction) * 1.2f, 1);
+        float mu_dynamic = 0.5f * (a.coefficient_of_friction + b.coefficient_of_friction);
+
+        // calculate tangential impulse magnitude
+        float tangential_impulse_magnitude = -glm::dot(rel_vel, tangent) / (inverse_mass_a + inverse_mass_b);
+
+        // clamp friction based on Coulomb's law
+        glm::vec3 friction_impulse;
+        if (std::abs(tangential_impulse_magnitude) < friction_scalar * mu_static) {
+            // static friction
+            friction_impulse = tangential_impulse_magnitude * tangent;
+        } else {//dynamic friction
+        friction_impulse = -friction_scalar * mu_dynamic * tangent;
+        }
+
+        // apply friction impulse
+        a.velocity -= friction_impulse * inverse_mass_a;
+        b.velocity += friction_impulse * inverse_mass_b;
+    }
 }
 
 
