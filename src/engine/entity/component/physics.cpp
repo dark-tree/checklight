@@ -1,15 +1,17 @@
 #include "physics.hpp"
 
 
- PhysicsComponent::PhysicsComponent(SpatialPawn *sp, Collider collider, bool is_static, Material material, glm::vec3 gravity_scale)  : GameComponent(sp){
- 	this->is_static = is_static;
- 	this->gravity_scale = gravity_scale;
- 	this->material = material;
- 	this->collider = collider;
- 	this->mass = calculateMass();
- 	this->initMass = true;
-     this->collider.setInertiaTensor(glm::mat3x3(mass));
- }
+PhysicsComponent::PhysicsComponent(SpatialPawn *sp, Collider collider, bool is_static, Material material, glm::vec3 gravity_scale)  : GameComponent(sp){
+	this->is_static = is_static;
+	this->gravity_scale = gravity_scale;
+	this->material = material;
+	this->collider = collider;
+	this->mass = calculateMass();
+	this->initMass = true;
+	this->collider.setInertiaTensor(glm::mat3x3(mass));
+	this->velocity = glm::vec3(0);
+	this->angular_velocity = glm::vec3(0);
+}
 
 PhysicsComponent::PhysicsComponent(SpatialPawn *sp): GameComponent(sp) {
 	this->is_static = false;
@@ -19,13 +21,15 @@ PhysicsComponent::PhysicsComponent(SpatialPawn *sp): GameComponent(sp) {
 	this->mass = calculateMass();
 	this->initMass = true;
     this->collider.setInertiaTensor(glm::mat3x3(mass));
+	this->velocity = glm::vec3(0);
+	this->angular_velocity = glm::vec3(0);
 }
 
 
 void PhysicsComponent::onFixedUpdate(FixedContext c) {
-	glm::vec3 position = getPosition();
-	glm::quat rotation = getRotation();
-
+//	glm::vec3 position = getPosition();
+//	glm::quat rotation = getRotation();
+//
 //	//integrate position over time with respect to acceleration
 //	velocity += gravity_scale * (gravity_scale / 2.0f);
 //	position += velocity * static_cast<float>(TICK_DURATION);
