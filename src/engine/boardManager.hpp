@@ -37,6 +37,7 @@ protected:
 	std::mutex physics_mutex;
 
 	std::atomic<bool> continue_loop;
+	std::chrono::time_point<std::chrono::steady_clock> physics_next_tick;
 
 	/*
 	 * Creates standard setup of objects and components

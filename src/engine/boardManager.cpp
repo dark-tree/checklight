@@ -24,14 +24,14 @@ BoardManager::BoardManager(std::shared_ptr<InputDispatcher> disp): physics_engin
 
 	standardSetup();
 
-	physics_thread = std::thread([this]() {
-		fixedUpdateCycle();
-	});
+	// physics_thread = std::thread([this]() {
+	// 	fixedUpdateCycle();
+	// });
 }
 
 BoardManager::~BoardManager() {
 	continue_loop = false;
-	physics_thread.join();
+	// physics_thread.join();
 
 }
 
@@ -80,6 +80,19 @@ void BoardManager::updateCycle() {
 	usingBoard->updateBoard(std::chrono::duration<double>(now-before).count(), physics_mutex);
 	before = now;
 
+
+
+	auto next_tick = std::chrono::steady_clock::now();
+
+	if (next_tick > physics_next_tick) {
+		physics_next_tick = next_tick + std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(TICK_DURATION));
+
+		if (!current_board.expired()) {
+			current_board.lock()->fixedUpdateBoard();
+			physics_engine.physicsUpdate();
+		}
+	}
+
 	//------hardcoded updates-------
 
 	/*
@@ -114,31 +127,31 @@ void BoardManager::fixedUpdateCycle() {
 	// double sum = 0.0;
 	// int amount = 0;
 
-	auto nextTick = std::chrono::steady_clock::now();
-	// auto start = std::chrono::steady_clock::now();
-	while(continue_loop){
-		nextTick = nextTick + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-				std::chrono::duration<double>(TICK_DURATION));
-
-		if (!current_board.expired()) {
-			physics_mutex.lock();
-
-			current_board.lock()->fixedUpdateBoard();
-
-			physics_engine.physicsUpdate();
-
-			physics_mutex.unlock();
-		}
-		// auto end = std::chrono::steady_clock::now();
-		// double tick_calculation_time = std::chrono::duration<double>(end - start).count();
-		// sum += tick_calculation_time;
-		// amount++;
-		// start = end;
-		//
-		// printf("%f %f\n", sum/(double)amount, tick_calculation_time);
-		std::this_thread::sleep_until(nextTick);
-	}
-	out::info("%s", "Closing the physics thread...");
+	// auto nextTick = std::chrono::steady_clock::now();
+	// // auto start = std::chrono::steady_clock::now();
+	// while(continue_loop){
+	// 	nextTick = nextTick + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+	// 			std::chrono::duration<double>(TICK_DURATION));
+	//
+	// 	if (!current_board.expired()) {
+	// 		physics_mutex.lock();
+	//
+	// 		current_board.lock()->fixedUpdateBoard();
+	//
+	// 		physics_engine.physicsUpdate();
+	//
+	// 		physics_mutex.unlock();
+	// 	}
+	// 	// auto end = std::chrono::steady_clock::now();
+	// 	// double tick_calculation_time = std::chrono::duration<double>(end - start).count();
+	// 	// sum += tick_calculation_time;
+	// 	// amount++;
+	// 	// start = end;
+	// 	//
+	// 	// printf("%f %f\n", sum/(double)amount, tick_calculation_time);
+	// 	std::this_thread::sleep_until(nextTick);
+	// }
+	// out::info("%s", "Closing the physics thread...");
 }
 
 std::shared_ptr<Board> BoardManager::findWorkingBoard(bool &success) {

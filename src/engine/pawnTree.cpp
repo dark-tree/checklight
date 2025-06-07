@@ -148,8 +148,8 @@ void PawnTree::updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update, double 
 }
 
 void PawnTree::fixedUpdateTree() {
-	std::vector<std::shared_ptr<Pawn>> pawn_children = root->getChildren();
-	for (std::shared_ptr<Pawn> pawn_child : pawn_children) {
+	std::vector<std::shared_ptr<Pawn>>& pawn_children = root->getChildren();
+	for (std::shared_ptr<Pawn>& pawn_child : pawn_children) {
 		fixedUpdareTreeRecursion(pawn_child);
 	}
 }
