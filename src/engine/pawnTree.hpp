@@ -24,7 +24,7 @@ protected:
 	/**
 	 * returns part of a pawn tree in a string format, triggered by print() function
 	 */
-	std::string recursiveString(std::shared_ptr<Pawn> p, int depth, bool verbose);
+	std::string recursiveString(const std::shared_ptr<Pawn>& p, int depth, bool verbose);
 
 	/**
 	 * manages verbose/non-verbose printing
@@ -75,17 +75,17 @@ public:
 	/**
 	 * adds a pawn to RootPawn
 	 */
-	void addToRoot(std::shared_ptr<Pawn> pawn);
+	void addToRoot(const std::shared_ptr<Pawn>& pawn);
 
 	/**
 	 * updates/inserts a pawn to a PawnTree
 	 */
-	void mountPawn(std::shared_ptr<Pawn> pawn); //TODO moze dac update/insert
+	void mountPawn(const std::shared_ptr<Pawn>& pawn); //TODO moze dac update/insert
 
 	/**
 	 * updates children of given pawn in a PawnTree
 	 */
-	void updatePawnsChildren(std::shared_ptr<Pawn>& pawn);
+	void updatePawnsChildren(const std::shared_ptr<Pawn>& pawn);
 
 	/**
 	 * returns a RootPawn of given tree

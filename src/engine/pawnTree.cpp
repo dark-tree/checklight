@@ -81,12 +81,12 @@ size_t PawnTree::idHitSize(uint32_t id) {
 	return idMap.count(id);
 }
 
-void PawnTree::addToRoot(std::shared_ptr<Pawn> pawn) {
+void PawnTree::addToRoot(const std::shared_ptr<Pawn>& pawn) {
 	root->addChild(pawn);
 	mountPawn(pawn);
 }
 
-void PawnTree::mountPawn(std::shared_ptr<Pawn> pawn) {
+void PawnTree::mountPawn(const std::shared_ptr<Pawn>& pawn) {
 	bool isCopy = false;
 	bool isChanged = pawn->unregisteredChildAdded();
 
@@ -116,9 +116,8 @@ void PawnTree::mountPawn(std::shared_ptr<Pawn> pawn) {
 	}
 }
 
-void PawnTree::updatePawnsChildren(std::shared_ptr<Pawn>& pawn) {
-	std::vector<std::shared_ptr<Pawn>> pawn_children = pawn->getChildren();
-	for (std::shared_ptr<Pawn> pawn_child : pawn_children) {
+void PawnTree::updatePawnsChildren(const std::shared_ptr<Pawn>& pawn) {
+	for (std::shared_ptr<Pawn>& pawn_child : pawn->getChildren()) {
 		mountPawn(pawn_child);
 	}
 }
@@ -128,8 +127,7 @@ std::shared_ptr<RootPawn> PawnTree::getRoot() {
 }
 
 void PawnTree::updateTree(double delta, std::mutex& mtx) {
-	std::vector<std::shared_ptr<Pawn>> pawn_children = root->getChildren();
-	for (std::shared_ptr<Pawn> pawn_child : pawn_children) {
+	for (std::shared_ptr<Pawn>& pawn_child : root->getChildren()) {
 		updateTreeRecursion(pawn_child, delta, mtx);
 	}
 }
@@ -141,15 +139,13 @@ void PawnTree::updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update, double 
 	mtx.unlock();
 
 	//TODO maybe create iterator of some kind with lambda
-	std::vector<std::shared_ptr<Pawn>> pawn_children = pawn_to_update->getChildren();
-	for (std::shared_ptr<Pawn> pawn_child : pawn_children) {
+	for (std::shared_ptr<Pawn>& pawn_child : pawn_to_update->getChildren()) {
 		updateTreeRecursion(pawn_child, delta, mtx);
 	}
 }
 
 void PawnTree::fixedUpdateTree() {
-	std::vector<std::shared_ptr<Pawn>>& pawn_children = root->getChildren();
-	for (std::shared_ptr<Pawn>& pawn_child : pawn_children) {
+	for (std::shared_ptr<Pawn>& pawn_child : root->getChildren()) {
 		fixedUpdareTreeRecursion(pawn_child);
 	}
 }
@@ -158,8 +154,7 @@ void PawnTree::fixedUpdareTreeRecursion(std::shared_ptr<Pawn> pawn_to_fixed_upda
 	pawn_to_fixed_update->onFixedUpdate();
 
 	//TODO maybe create iterator of some kind with lambda
-	std::vector<std::shared_ptr<Pawn>> pawn_children = pawn_to_fixed_update->getChildren();
-	for (std::shared_ptr<Pawn> pawn_child : pawn_children) {
+	for (std::shared_ptr<Pawn>& pawn_child : pawn_to_fixed_update->getChildren()) {
 		fixedUpdareTreeRecursion(pawn_child);
 	}
 }
@@ -194,7 +189,7 @@ std::string PawnTree::printStart(bool verbose) {
 }
 
 
-std::string PawnTree::recursiveString(std::shared_ptr<Pawn> p, int depth, bool verbose) {
+std::string PawnTree::recursiveString(const std::shared_ptr<Pawn>& p, int depth, bool verbose) {
 	std::string result = "";
 	for (int i = 0; i < depth; i++) {
 		result += "  ";
