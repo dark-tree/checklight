@@ -4,46 +4,37 @@
 #include "engine/entity/component/camera.hpp"
 #include "shared/logger.hpp"
 #include <chrono>
-#include <render/render.hpp>
 #include "physics/physicsEngine.hpp"
-#include <render/renderer.hpp>
 
 /*
  * BoardManager
  */
 
-BoardManager::BoardManager(std::shared_ptr<InputDispatcher> disp): physics_engine({0.0, 0.0, 0.0}, this) {
+BoardManager::BoardManager(const std::shared_ptr<InputDispatcher>& disp): physics_engine({0.0, 0.0, 0.0}, this) {
 	dispatcher = disp;
 
-	std::shared_ptr<Board> new_board = std::make_shared<Board>();
+	const auto new_board = std::make_shared<Board>();
 	addBoard(new_board);
 
 	continue_loop = true;
 	task_delegator = std::make_unique<PhasedTaskDelegator>(task_pool);
-	globalTickNumber = 0;
+	global_tick_number = 0;
 
 	standardSetup();
-
-	// physics_thread = std::thread([this]() {
-	// 	fixedUpdateCycle();
-	// });
 }
 
 BoardManager::~BoardManager() {
 	continue_loop = false;
 	// physics_thread.join();
-
 }
 
-
-void BoardManager::standardSetup(){
-	std::shared_ptr<SpatialPawn> cameraPawn = std::make_shared<SpatialPawn>();
-	auto cam = cameraPawn->createComponent<Camera>();
+void BoardManager::standardSetup() {
+	const auto cameraPawn = std::make_shared<SpatialPawn>();
+	const auto cam = cameraPawn->createComponent<Camera>();
 
 	if (dispatcher) dispatcher->registerListener(cam);
 
 	cameraPawn->setName("Main Camera");
-
 
 	std::shared_ptr<Board> cb = current_board.lock();
 
@@ -66,8 +57,8 @@ void BoardManager::updateCycle() {
 
 	std::shared_ptr<Board> usingBoard;
 
-	if(!current_board.expired()) usingBoard = current_board.lock();
-	else{
+	if (!current_board.expired()) usingBoard = current_board.lock();
+	else {
 		bool success;
 		current_board = findWorkingBoard(success);
 		if (success) usingBoard = current_board.lock();
@@ -77,15 +68,15 @@ void BoardManager::updateCycle() {
 	//-----------update-------------
 
 	const auto now = std::chrono::high_resolution_clock::now();
-	usingBoard->updateBoard(std::chrono::duration<double>(now-before).count(), physics_mutex);
+	usingBoard->updateBoard(std::chrono::duration<double>(now - before).count(), physics_mutex);
 	before = now;
-
 
 
 	auto next_tick = std::chrono::steady_clock::now();
 
 	if (next_tick > physics_next_tick) {
-		physics_next_tick = next_tick + std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(TICK_DURATION));
+		physics_next_tick = next_tick + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+			                    std::chrono::duration<double>(TICK_DURATION));
 
 		if (!current_board.expired()) {
 			current_board.lock()->fixedUpdateBoard();
@@ -104,12 +95,12 @@ void BoardManager::updateCycle() {
 
 	//-----------remove--------------
 
-	if (usingBoard->pawnsToRemove() > 0) { //maybe someday it will be smarter
+	if (usingBoard->pawnsToRemove() > 0) {
+		//maybe someday it will be smarter
 		physics_mutex.lock();
 		usingBoard->dequeueRemove(100);
 		physics_mutex.unlock();
 	}
-
 
 
 	//-----------debug---------------
@@ -119,7 +110,7 @@ void BoardManager::updateCycle() {
 	// 	out::info("tick: %d", globalTickNumber);
 	// 	usingBoard->printBoardTreeVerbose();
 	// }
-	globalTickNumber++;
+	global_tick_number++;
 }
 
 
@@ -154,21 +145,21 @@ void BoardManager::fixedUpdateCycle() {
 	// out::info("%s", "Closing the physics thread...");
 }
 
-std::shared_ptr<Board> BoardManager::findWorkingBoard(bool &success) {
+std::shared_ptr<Board> BoardManager::findWorkingBoard(bool& success) {
 	std::shared_ptr<Board> new_board;
-	switch (board_revocery) {
-		case BoardRevocery::Default:
+	switch (board_recovery) {
+		case BoardRevocery::DEFAULT:
 			if (!default_board.expired()) {
 				new_board = default_board.lock();
 				success = true;
-			}else {
+			} else {
 				success = false;
 			}
 			break;
-		case BoardRevocery::None:
+		case BoardRevocery::NONE:
 			success = false;
 			break;
-		case BoardRevocery::Search:
+		case BoardRevocery::SEARCH:
 			if (default_board.expired()) {
 				new_board = default_board.lock();
 				success = true;
@@ -176,7 +167,7 @@ std::shared_ptr<Board> BoardManager::findWorkingBoard(bool &success) {
 				if (boardList.size() > 0) {
 					new_board = boardList[0];
 					success = true;
-				}else {
+				} else {
 					success = false;
 				}
 			}
@@ -192,7 +183,6 @@ std::weak_ptr<Board> BoardManager::getCurrentBoard() {
 	return current_board;
 }
 
-void BoardManager::setGravityStrenght(glm::vec3 gravity_strngth) {
-    physics_engine.setGravityScale(gravity_strngth);
+void BoardManager::setGravity(glm::vec3 gravity) {
+	physics_engine.setGravityScale(gravity);
 }
-

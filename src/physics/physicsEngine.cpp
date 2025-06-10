@@ -642,7 +642,7 @@ void PhysicsEngine::getElements() {
 			value->getCollider().getTriangles(),
 			false,
 			value->getGravityScale(),
-			value->getCollider().getSphereColliderRadious(),
+			value->getCollider().getSphereColliderRadius(),
 			value->getMass(),
 			value->getCollider().getInertiaTensor(),
 			value->getMaterial().coefficient_of_friction,

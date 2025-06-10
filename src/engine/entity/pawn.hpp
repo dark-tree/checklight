@@ -12,7 +12,7 @@ class Board;
 class RootPawn;
 
 namespace PawnState {
-	enum State{
+	enum State {
 		NEW,
 		LOCAL,
 		TRACKED,
@@ -30,7 +30,7 @@ namespace PawnState {
 	/**
 	 * Select state both for child and parent after adding a child to a parent (avoid using manually)
 	 */
-	bool convert(Pawn* new_child,Pawn* new_parent);
+	bool convert(Pawn* new_child, Pawn* new_parent);
 }
 
 /**
@@ -42,7 +42,9 @@ class Pawn : public Entity, public std::enable_shared_from_this<Pawn> {
 protected:
 	friend class PawnTree;
 	friend class Board;
-	friend bool PawnState::convert(Pawn* new_child,Pawn* new_parent);
+
+	friend bool PawnState::convert(Pawn* new_child, Pawn* new_parent);
+
 	std::vector<std::shared_ptr<Pawn>> children; //TODO updating this to make sure its up to date when removing children
 	std::weak_ptr<Pawn> parent;
 	bool to_remove;
@@ -61,7 +63,7 @@ protected:
 	std::weak_ptr<RootPawn> root_pawn;
 
 	std::vector<std::shared_ptr<Component>> components; //TODO unique ptr ???
-	std::weak_ptr<PhysicsComponent> physicsComponent;
+	std::weak_ptr<PhysicsComponent> physics_component;
 
 	/**
 	 * All the things that happens on basic update of the engine (intervals between basic updates can vary)
@@ -92,8 +94,8 @@ protected:
 
 
 	void removeComponents();
-public:
 
+public:
 	Pawn();
 
 	Pawn(const std::string& s);

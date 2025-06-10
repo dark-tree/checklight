@@ -4,7 +4,7 @@
 
 class UiComponent : public OwnedComponent<SurfacePawn> {
 protected:
+	UiComponent(SurfacePawn* parent);
 
-  UiComponent(SurfacePawn* parent);
-  //todo Magistermaks' UI
+	//todo Magistermaks' UI
 };

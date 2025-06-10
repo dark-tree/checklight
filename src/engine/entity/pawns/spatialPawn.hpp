@@ -56,7 +56,7 @@ public:
 	glm::mat4x3 getMatrix() const;
 
 	/**
-	 * Returns facing direction, TODO check if this is normalised
+	 * Returns facing direction
 	 */
-	glm::vec3 getForwardVector();
+	glm::vec3 getForwardVector() const;
 };

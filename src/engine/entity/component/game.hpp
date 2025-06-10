@@ -4,9 +4,8 @@
 
 class SpatialPawn;
 
-class GameComponent : public OwnedComponent<SpatialPawn> { // TODO come up with better name
+class GameComponent : public OwnedComponent<SpatialPawn> {
 public:
-
 	GameComponent() = delete;
 
 	GameComponent(SpatialPawn* t);

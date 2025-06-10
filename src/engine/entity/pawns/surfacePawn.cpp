@@ -4,17 +4,17 @@
  * SurfacePawn
  */
 
-SurfacePawn::SurfacePawn() {
-	position = {0,0};
+SurfacePawn::SurfacePawn(): result() {
+	position = {0, 0};
 	rotation = 0;
-	scale = {1,1};
+	scale = {1, 1};
 }
 
-void SurfacePawn::addPosition(glm::vec2 new_position) {
+void SurfacePawn::addPosition(const glm::vec2 new_position) {
 	position = position + new_position;
 }
 
-void SurfacePawn::setPosition(glm::vec2 new_position) {
+void SurfacePawn::setPosition(const glm::vec2 new_position) {
 	position = new_position;
 }
 
@@ -22,15 +22,15 @@ glm::vec2 SurfacePawn::getPosition() const {
 	return position;
 }
 
-void SurfacePawn::setRotation(float new_rotation) {
+void SurfacePawn::setRotation(const float new_rotation) {
 	rotation = new_rotation;
 }
 
-void SurfacePawn::rotateLeft(float new_rotation) {
+void SurfacePawn::rotateLeft(const float new_rotation) {
 	rotation -= new_rotation;
 }
 
-void SurfacePawn::rotateRight(float new_rotation) {
+void SurfacePawn::rotateRight(const float new_rotation) {
 	rotation += new_rotation;
 }
 
@@ -38,7 +38,7 @@ float SurfacePawn::getRotation() const {
 	return rotation;
 }
 
-void SurfacePawn::setScale(glm::vec2 new_scale) {
+void SurfacePawn::setScale(const glm::vec2 new_scale) {
 	scale = new_scale;
 }
 
@@ -47,14 +47,14 @@ glm::vec2 SurfacePawn::getScale() const {
 }
 
 glm::mat3x4 SurfacePawn::getMatrix() const {
-	return result; //TODO
+	return result;
 }
 
-glm::vec2 SurfacePawn::getForwardVector() {
+glm::vec2 SurfacePawn::getForwardVector() const {
 	return math::calculateForwardVector2D(rotation);
 }
 
-glm::vec3 SurfacePawn::getForwardVector3D() {
-	glm::vec2 forward = getForwardVector();
-	return glm::vec3{ forward.x, forward.y, 0 };
+glm::vec3 SurfacePawn::getForwardVector3D() const {
+	const glm::vec2 forward = getForwardVector();
+	return glm::vec3{forward.x, forward.y, 0};
 }

@@ -8,6 +8,7 @@ class SurfacePawn : public Pawn {
 	float rotation;
 
 	glm::mat3x4 result;
+
 public:
 	SurfacePawn();
 
@@ -66,10 +67,10 @@ public:
 	/**
 	 * Returns facing direction, normalised
 	 */
-	glm::vec2 getForwardVector();
+	glm::vec2 getForwardVector() const;
 
 	/**
 	 * Returns facing direction, normalised
 	 */
-	glm::vec3 getForwardVector3D();
+	glm::vec3 getForwardVector3D() const;
 };

@@ -8,19 +8,12 @@
  * GameComponent
  */
 
-// bool GameComponent::checkValidity(const Pawn& p) {
-// 	if (dynamic_cast<const SpatialPawn*>(&p)) {
-// 		return true;
-// 	}
-//
-// 	out::error("Object %s does not inherit \"SpatialPawn\" which is required by component %s", p.getPawnName().c_str(), this->getComponentName().c_str());
-// 	return false;
-// }
 
-GameComponent::GameComponent(SpatialPawn* t) : OwnedComponent(t) {}
+GameComponent::GameComponent(SpatialPawn* t) : OwnedComponent(t) {
+}
 
 SpatialPawn* GameComponent::getSpatialParent() const {
-	return (SpatialPawn*) parent;
+	return (SpatialPawn *) parent;
 }
 
 glm::vec3 GameComponent::getPosition() const {
@@ -42,4 +35,3 @@ void GameComponent::setRotation(const glm::quat rotation) const {
 glm::vec3 GameComponent::getForwardVector() const {
 	return getSpatialParent()->getForwardVector();
 }
-

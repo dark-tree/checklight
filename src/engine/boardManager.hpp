@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <physics/physicsEngine.hpp>
 
 #include "external.hpp"
@@ -10,9 +9,9 @@
 
 
 enum BoardRevocery {
-	None,
-	Default,
-	Search
+	NONE,
+	DEFAULT,
+	SEARCH
 };
 
 class Board;
@@ -20,13 +19,13 @@ class Board;
 class BoardManager {
 protected:
 	PhysicsEngine physics_engine;
-	unsigned long long globalTickNumber;
+	unsigned long long global_tick_number;
 	std::weak_ptr<Board> current_board;
 	std::vector<std::shared_ptr<Board>> boardList;
-	///board that generates when current_board suddenly disappears, (to avoid crashin the program), needs to be set by user
+	///board that generates when current_board suddenly disappears, (to avoid crashing the program), needs to be set by user
 	std::weak_ptr<Board> default_board;
 	///current board recovery mode
-	BoardRevocery board_revocery;
+	BoardRevocery board_recovery;
 
 	std::shared_ptr<InputDispatcher> dispatcher;
 
@@ -47,8 +46,7 @@ protected:
 	void addBoard(const std::shared_ptr<Board>& new_board);
 
 public:
-
-	BoardManager(std::shared_ptr<InputDispatcher> disp = nullptr);
+	BoardManager(const std::shared_ptr<InputDispatcher>& disp = nullptr);
 
 	~BoardManager();
 
@@ -72,5 +70,8 @@ public:
 	 */
 	std::weak_ptr<Board> getCurrentBoard();
 
-    void setGravityStrenght(glm::vec3 gravity_strngth);
+	/**
+	 * sets gravity vector
+	 */
+	void setGravity(glm::vec3 gravity);
 };

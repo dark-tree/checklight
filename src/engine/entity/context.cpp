@@ -5,7 +5,7 @@
  */
 
 
-Context::Context(float delta, std::shared_ptr<Pawn>& p) {
-	parentPawn = p;
+Context::Context(const float delta, const std::shared_ptr<Pawn>& pawn) {
+	parent_pawn = pawn;
 	deltaTime = delta;
 }

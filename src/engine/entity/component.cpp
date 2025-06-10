@@ -17,4 +17,3 @@ std::string Component::toString() {
 void Component::remove() {
 	to_remove = true;
 }
-

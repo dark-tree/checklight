@@ -1,6 +1,6 @@
 #pragma once
 #include "../../external.hpp"
-;
+
 class Entity {
 protected:
 	bool active;
@@ -14,12 +14,13 @@ public:
 
 	virtual ~Entity();
 
+	/**
+	 * if set true component will execute update and fixedUpdate functions
+	 */
 	uint32_t getEntityID() const;
 
-	/*
+	/**
 	 * if set true component will execute update and fixedUpdate functions
-	 */ 
+	 */
 	void setActive(bool value);
-
 };
-

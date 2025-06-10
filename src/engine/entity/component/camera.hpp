@@ -19,12 +19,12 @@ protected:
 	bool mouse_captured;
 
 	bool pressed_left,
-	    pressed_right,
-	    pressed_up,
-	    pressed_down,
-	    pressed_forward,
-	    pressed_backwards,
-	    mouse_move;
+			pressed_right,
+			pressed_up,
+			pressed_down,
+			pressed_forward,
+			pressed_backwards,
+			mouse_move;
 
 	void onUpdate(Context c) override;
 

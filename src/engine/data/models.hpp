@@ -2,7 +2,7 @@
 #include "render/render.hpp"
 #include "external.hpp"
 
-class Models{
+class Models {
 	inline static bool initialized = false;
 	inline static std::vector<std::shared_ptr<RenderModel>> models;
 
@@ -13,6 +13,8 @@ public:
 	};
 
 	static void init();
+
 	static void terminate();
+
 	static std::shared_ptr<RenderModel> getShape(Shape s);
 };

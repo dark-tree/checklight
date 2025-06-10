@@ -24,8 +24,9 @@ protected:
 	float calculateMass();
 
 public:
-	PhysicsComponent(SpatialPawn *sp, Collider collider, bool is_static, Material material, glm::vec3 gravity_scale);
-	PhysicsComponent(SpatialPawn *sp);
+	PhysicsComponent(SpatialPawn* sp, Collider collider, bool is_static, Material material, glm::vec3 gravity_scale);
+
+	PhysicsComponent(SpatialPawn* sp);
 
 	void onFixedUpdate(FixedContext c) override;
 
@@ -53,9 +54,8 @@ public:
 	/// Sets whether the object is static (non-movable)
 	void setStatic(bool is_static);
 
-    /// Sets the collider of the object
-    void setCollider(Collider c);
-
+	/// Sets the collider of the object
+	void setCollider(Collider c);
 
 	/// Gets the current velocity
 	glm::vec3 getVelocity() const;
@@ -82,13 +82,13 @@ public:
 	glm::vec3 furthestPointInDirection(glm::vec3 direction);
 
 	/// Returns the mass of an object
-	float getMass(); //TODO use mass inside of engine
+	float getMass();
 
 	void onUpdate(Context c) override;
 
 	void onConnected() override;
 
-	InputResult onEvent(const InputEvent &event) override;
+	InputResult onEvent(const InputEvent& event) override;
 
 	void remove() override;
 

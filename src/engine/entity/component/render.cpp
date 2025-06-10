@@ -5,23 +5,22 @@
 #include "engine/entity/pawns/spatialPawn.hpp"
 
 
-RenderComponent::RenderComponent(SpatialPawn* sp, Models::Shape s) : GameComponent(sp){
-	renderObject = RenderSystem::system->createRenderObject();
-	renderObject->setMatrix(glm::identity<glm::mat4x3>());
-	renderObject->setModel(Models::getShape(s));
-	renderObject->setActive(false);
+RenderComponent::RenderComponent(SpatialPawn* sp, Models::Shape s) : GameComponent(sp) {
+	render_object = RenderSystem::system->createRenderObject();
+	render_object->setMatrix(glm::identity<glm::mat4x3>());
+	render_object->setModel(Models::getShape(s));
+	render_object->setActive(false);
 	rendering = false;
 }
 
 void RenderComponent::onUpdate(Context c) {
-	renderObject->setMatrix(dynamic_cast<SpatialPawn*>(parent)->getMatrix()); //TODO if move byte
+	render_object->setMatrix(dynamic_cast<SpatialPawn *>(parent)->getMatrix()); //TODO if move byte
 }
 
 void RenderComponent::onFixedUpdate(FixedContext c) {
-
 }
 
-InputResult RenderComponent::onEvent(const InputEvent &event) {
+InputResult RenderComponent::onEvent(const InputEvent& event) {
 	return InputResult::PASS;
 }
 
@@ -30,20 +29,16 @@ void RenderComponent::onConnected() {
 }
 
 void RenderComponent::setRendering(bool is_rendering) {
-	if(is_rendering != rendering){
-		renderObject->setActive(is_rendering);
+	if (is_rendering != rendering) {
+		render_object->setActive(is_rendering);
 	}
 	rendering = is_rendering;
 }
 
 void RenderComponent::remove() {
 	GameComponent::remove();
-	//it will be removed when necessary
-	renderObject->setActive(false);
+	render_object->setActive(false);
 }
 
-RenderComponent::~RenderComponent() {}
-
-
-
-
+RenderComponent::~RenderComponent() {
+}

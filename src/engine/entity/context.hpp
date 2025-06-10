@@ -3,11 +3,11 @@
 
 struct Context {
 	double deltaTime;
-	std::shared_ptr<Pawn> parentPawn;
+	std::shared_ptr<Pawn> parent_pawn;
 
-	Context(float delta, std::shared_ptr<Pawn>& p);
+	Context(float delta, const std::shared_ptr<Pawn>& pawn);
 };
 
 struct FixedContext {
-	std::shared_ptr<Pawn> parentPawn;
+	std::shared_ptr<Pawn> parent_pawn;
 };

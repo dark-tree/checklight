@@ -1,7 +1,8 @@
 #include "physics.hpp"
 
 
-PhysicsComponent::PhysicsComponent(SpatialPawn *sp, Collider collider, bool is_static, Material material, glm::vec3 gravity_scale)  : GameComponent(sp){
+PhysicsComponent::PhysicsComponent(SpatialPawn* sp, Collider collider, bool is_static, Material material,
+                                   glm::vec3 gravity_scale) : GameComponent(sp) {
 	this->is_static = is_static;
 	this->gravity_scale = gravity_scale;
 	this->material = material;
@@ -13,35 +14,20 @@ PhysicsComponent::PhysicsComponent(SpatialPawn *sp, Collider collider, bool is_s
 	this->angular_velocity = glm::vec3(0);
 }
 
-PhysicsComponent::PhysicsComponent(SpatialPawn *sp): GameComponent(sp) {
+PhysicsComponent::PhysicsComponent(SpatialPawn* sp): GameComponent(sp) {
 	this->is_static = false;
 	this->gravity_scale = glm::vec3(1, 1, 1);
 	this->material = Material(0.4, 0.5, 1);
 	this->collider = Collider::getCube();
 	this->mass = calculateMass();
 	this->initMass = true;
-    this->collider.setInertiaTensor(glm::mat3x3(mass));
+	this->collider.setInertiaTensor(glm::mat3x3(mass));
 	this->velocity = glm::vec3(0);
 	this->angular_velocity = glm::vec3(0);
 }
 
 
 void PhysicsComponent::onFixedUpdate(FixedContext c) {
-//	glm::vec3 position = getPosition();
-//	glm::quat rotation = getRotation();
-//
-//	//integrate position over time with respect to acceleration
-//	velocity += gravity_scale * (gravity_scale / 2.0f);
-//	position += velocity * static_cast<float>(TICK_DURATION);
-//	position += gravity_scale * (gravity_scale / 2.0f);
-//
-//	//apply angular velocity
-//	rotation += (0.5f * rotation * glm::quat(0.0, angular_velocity) * static_cast<float>(TICK_DURATION));
-//	rotation = glm::normalize(rotation);
-//
-//	setPosition(position);
-//	setRotation(rotation);
-
 	initMass = false;
 }
 
@@ -110,13 +96,11 @@ glm::vec3 PhysicsComponent::furthestPointInDirection(glm::vec3 direction) {
 	const glm::quat rotation = getRotation();
 
 	double dot_result = -INFINITY;
-	glm::vec3 returnal {0, 0, 0};
-	for (glm::vec3 vertex : collider.getVertices())
-	{
+	glm::vec3 returnal{0, 0, 0};
+	for (glm::vec3 vertex: collider.getVertices()) {
 		glm::vec3 rotated = glm::rotate(rotation, vertex);
 		double dr = glm::dot(rotated, direction);
-		if (dr > dot_result)
-		{
+		if (dr > dot_result) {
 			dot_result = dr;
 			returnal = rotated;
 		}
@@ -133,14 +117,17 @@ float PhysicsComponent::getMass() {
 	return mass;
 }
 
-void PhysicsComponent::onUpdate(Context c) {}
+void PhysicsComponent::onUpdate(Context c) {
+}
 
-void PhysicsComponent::onConnected() {}
+void PhysicsComponent::onConnected() {
+}
 
-InputResult PhysicsComponent::onEvent(const InputEvent &event) {return InputResult::PASS;}
+InputResult PhysicsComponent::onEvent(const InputEvent& event) { return InputResult::PASS; }
 
 void PhysicsComponent::remove() {
 	GameComponent::remove();
 }
 
-PhysicsComponent::~PhysicsComponent() {}
+PhysicsComponent::~PhysicsComponent() {
+}

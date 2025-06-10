@@ -4,20 +4,23 @@
 
 class MatrixAnimation : public GameComponent {
 public:
-	enum AnimationType{
+	enum AnimationType {
 		NONE,
 		ROTATE,
 		TRANSLATE,
 		SHAPE
 	};
+
 protected:
 	AnimationType type;
-	double animationSpeed;
+	double animation_speed;
 	double percentage;
 	double old_percentage;
 
 	void rotation();
+
 	void translation();
+
 	void shape();
 
 public:
@@ -38,6 +41,4 @@ public:
 	void onConnected() override;
 
 	InputResult onEvent(const InputEvent& event) override;
-
 };
-

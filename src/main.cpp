@@ -50,7 +50,7 @@ static void entry(Args& args) {
 	auto dispacher = std::make_shared<InputDispatcher>();
 	window.getInputDispatcher().registerListener(dispacher);
 	BoardManager manager(dispacher);
-    manager.setGravityStrenght(glm::vec3(0, -10, 0));
+    manager.setGravity(glm::vec3(0, -10, 0));
 
 	std::shared_ptr<Board> sp = manager.getCurrentBoard().lock();
 
@@ -63,7 +63,7 @@ static void entry(Args& args) {
 	auto sphere = std::make_shared<SpatialPawn>();
 	sphere->setPosition({2,1,2});
 	sphere->createComponent<RenderComponent>(Models::SPHERE);
-	sphere->createComponent<MatrixAnimation>(MatrixAnimation::TRANSLATE);
+	//sphere->createComponent<MatrixAnimation>(MatrixAnimation::TRANSLATE);
 	sp->addPawnToRoot(sphere);
 
 	{
