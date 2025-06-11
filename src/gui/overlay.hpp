@@ -6,6 +6,10 @@
 
 class WidgetContext;
 
+/**
+ * GUI overlays, renderable components that are drown over the rest of the GUI
+ * and receive events before the rest of the GUI
+ */
 class Overlay {
 
 	private:

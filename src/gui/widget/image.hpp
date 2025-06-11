@@ -2,6 +2,9 @@
 
 #include "gui/widget.hpp"
 
+/**
+ * Simple sprite box widget
+ */
 class ImageWidget : public Widget {
 
 	private:

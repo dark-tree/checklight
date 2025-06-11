@@ -18,6 +18,9 @@ class ImmediateRenderer;
 class Navigator;
 class InputWidget;
 
+/**
+ * Base class of all GUI widget
+ */
 class Widget : public std::enable_shared_from_this<Widget> {
 
 	public:

@@ -2,6 +2,9 @@
 
 #include "external.hpp"
 
+/**
+ * Represents cursor shape
+ */
 struct CursorIcon {
 
 	enum Icon : int {

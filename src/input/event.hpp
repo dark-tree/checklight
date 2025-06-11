@@ -7,6 +7,9 @@ class InputEvent;
 template <class T>
 concept InputEventDerived = std::derived_from<T, InputEvent>;
 
+/**
+ * Base class of all input events
+ */
 class InputEvent {
 
 	public:

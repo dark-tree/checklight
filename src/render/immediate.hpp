@@ -25,6 +25,10 @@ enum Disabled {
 	DISABLED,
 };
 
+/**
+ * High-level 2D/3D immediate mode rendering
+ * API for GUI and debug usage
+ */
 class ImmediateRenderer {
 
 	private:

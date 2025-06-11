@@ -6,6 +6,11 @@
 
 class CommandRecorder;
 
+/**
+ * Manages the creation of acceleration structures,
+ * it implements batching for better usage of GPU/CPU resources
+ * during the creation of the TLAS/BLAS
+ */
 class AccelStructFactory {
 
 	private:
