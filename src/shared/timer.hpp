@@ -42,6 +42,7 @@ class Timer {
 		 *     // some operation
 		 *     printf("INFO: Operation took: %dms\n", (int) timer.milliseconds());
 		 * }
+		 * @endcode
 		 */
 		operator bool() const;
 
@@ -53,6 +54,7 @@ class Timer {
 		 * printf("INFO: Operation took: %dms\n", (int) Timer::of([&] () {
 		 *     // some operation
 		 * }).milliseconds());
+		 * @endcode
 		 */
 		static Timer of(const std::function<void()>& thing);
 

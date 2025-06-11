@@ -3,6 +3,9 @@
 #include "gui/widget.hpp"
 #include "render/draw/text.hpp"
 
+/**
+ * Simple non-mutable text box widget
+ */
 class TextWidget : public Widget {
 
 	public:

@@ -2,6 +2,9 @@
 
 #include "listener.hpp"
 
+/**
+ * Helper listener for monitoring received input events
+ */
 class DebugInputListener : public InputListener {
 
 	private:

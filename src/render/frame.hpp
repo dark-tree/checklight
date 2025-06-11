@@ -35,6 +35,9 @@ struct SceneUniform {
 	int gi_max_sample_age;
 };
 
+/**
+ * Per-frame render data structure
+ */
 class RenderFrame {
 
 	public:
