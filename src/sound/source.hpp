@@ -15,12 +15,12 @@ class SoundSourceObject {
 	/// Weak pointer to SoundClip where we get buffer
 	std::shared_ptr<SoundClip> sc_buffer;
 
-	/// Parameters for sound source
+	// Parameters for sound source
 
 	float sso_pitch = 1.0f;
 	float sso_gain = 1.0f;
 	bool sso_looping = false;
-	/// Mute sound source
+	// Mute sound source
 	bool sso_is_mute = false;
 	float sso_max_distance = 100.0f;
 	float sso_min_gain = 0.0f;
@@ -38,7 +38,7 @@ class SoundSourceObject {
 	glm::vec3 sso_direction = glm::vec3(0.0f, 0.0f, 0.0f);
 
 public:
-	// SoundSourceObject constructor to create object with only one sound source
+	/// SoundSourceObject constructor to create object with only one sound source
 	SoundSourceObject();
 
 	~SoundSourceObject();
