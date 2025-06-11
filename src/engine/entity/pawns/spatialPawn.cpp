@@ -7,6 +7,8 @@
 SpatialPawn::SpatialPawn() : Pawn() {
 	position = {0, 0, 0};
 	rotation = {1, 0, 0, 0};
+	velocity = {0, 0, 0};
+	angular_velocity = {0, 0, 0};
 	scale = {1, 1, 1};
 }
 
@@ -20,6 +22,22 @@ void SpatialPawn::setPosition(const glm::vec3 new_position) {
 
 glm::vec3 SpatialPawn::getPosition() const {
 	return position;
+}
+
+void SpatialPawn::setVelocity(const glm::vec3 velocity) {
+	this->velocity = velocity;
+}
+
+glm::vec3 SpatialPawn::getVelocity() {
+	return velocity;
+}
+
+void SpatialPawn::setAngularVelocity(const glm::vec3 velocity) {
+	this->angular_velocity = velocity;
+}
+
+glm::vec3 SpatialPawn::getAngularVelocity() {
+	return angular_velocity;
 }
 
 void SpatialPawn::setRotation(const glm::quat new_rotation) {

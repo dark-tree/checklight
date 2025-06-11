@@ -4,6 +4,9 @@
 
 class SpatialPawn : public Pawn {
 protected:
+	glm::vec3 velocity;
+	glm::vec3 angular_velocity;
+
 	glm::vec3 position;
 	glm::quat rotation;
 	glm::vec3 scale;
@@ -29,6 +32,26 @@ public:
 	 * Returns absolute position of a pawn in 3D space
 	 */
 	glm::vec3 getPosition() const;
+
+	/**
+	 * Sets velocity in 3D space
+	 */
+	void setVelocity(glm::vec3 velocity);
+
+	/**
+	 * Returns velocity in 3D space
+	 */
+	glm::vec3 getVelocity();
+
+	/**
+	 * Sets angular velocity in 3D space
+	 */
+	void setAngularVelocity(glm::vec3 velocity);
+
+	/**
+	 * Returns angular velocity in 3D space
+	 */
+	glm::vec3 getAngularVelocity();
 
 	/**
 	 * Sets absolute rotation of a pawn in 3D space

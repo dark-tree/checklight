@@ -21,4 +21,13 @@ public:
 	void setRotation(const glm::quat rotation) const;
 
 	glm::vec3 getForwardVector() const;
+
+	glm::vec3 getVelocity() const;
+
+	glm::vec3 getAngularVelocity() const;
+
+	void setVelocity(glm::vec3 velocity);
+
+	void setAngularVelocity(glm::vec3 angularVelocity);
 };
+

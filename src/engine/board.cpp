@@ -35,6 +35,7 @@ void Board::queueRemove(const std::shared_ptr<Component>& pawns_to_remove) {
 void Board::updateBoard(double delta, std::mutex& mtx) {
 	pawns.updateTree(delta, mtx);
 	SoundListener::setPosition(this->getCamPos());
+	SoundListener::setOrientation(this->getCamForward(), {0.0f,1.0f,0.0f});
 }
 
 

@@ -6,6 +6,7 @@ SoundComponent::SoundComponent(SpatialPawn* t,const std::string& path) : GameCom
 	sound_source_object = std::make_shared<SoundSourceObject>();
 	sound_manager.addSource(sound_source_object);
 	sound_manager.createSoundClipAndAddToSourceObject(path.c_str(), sound_source_object);
+	//sound_source_object->setReferenceDistance(10.f);
 }
 
 SoundComponent::~SoundComponent() {
@@ -17,6 +18,7 @@ void SoundComponent::onUpdate(Context c) {
 
 void SoundComponent::onFixedUpdate(FixedContext c) {
 	sound_source_object->setPosition(getPosition());
+	sound_source_object->setVelocity(getVelocity());
 }
 
 InputResult SoundComponent::onEvent(const InputEvent& event) {

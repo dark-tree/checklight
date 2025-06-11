@@ -8,8 +8,6 @@
 class PhysicsComponent : public GameComponent {
 protected:
 	std::shared_ptr<RenderObject> render_object;
-	glm::vec3 velocity;
-	glm::vec3 angular_velocity;
 
 	Collider collider;
 
@@ -30,18 +28,6 @@ public:
 
 	void onFixedUpdate(FixedContext c) override;
 
-	/// Sets the velocity using a glm::vec3
-	void setVelocity(glm::vec3 velocity);
-
-	/// Sets the velocity using individual float components
-	void setVelocity(float x, float y, float z);
-
-	/// Sets the angular velocity using a glm::vec3
-	void setAngularVelocity(glm::vec3 angular_velocity);
-
-	/// Sets the angular velocity using individual float components
-	void setAngularVelocity(float x, float y, float z);
-
 	/// Sets the gravity scale for the object
 	void setGravityScale(glm::vec3 scale);
 
@@ -55,13 +41,7 @@ public:
 	void setStatic(bool is_static);
 
 	/// Sets the collider of the object
-	void setCollider(Collider c);
-
-	/// Gets the current velocity
-	glm::vec3 getVelocity() const;
-
-	/// Gets the current angular velocity
-	glm::vec3 getAngularVelocity() const;
+	void setCollider(const Collider& c);
 
 	/// Gets the gravity scale
 	glm::vec3 getGravityScale() const;

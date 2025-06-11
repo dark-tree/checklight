@@ -10,8 +10,6 @@ PhysicsComponent::PhysicsComponent(SpatialPawn* sp, Collider collider, bool is_s
 	this->mass = calculateMass();
 	this->initMass = true;
 	this->collider.setInertiaTensor(glm::mat3x3(mass));
-	this->velocity = glm::vec3(0);
-	this->angular_velocity = glm::vec3(0);
 }
 
 PhysicsComponent::PhysicsComponent(SpatialPawn* sp): GameComponent(sp) {
@@ -22,8 +20,6 @@ PhysicsComponent::PhysicsComponent(SpatialPawn* sp): GameComponent(sp) {
 	this->mass = calculateMass();
 	this->initMass = true;
 	this->collider.setInertiaTensor(glm::mat3x3(mass));
-	this->velocity = glm::vec3(0);
-	this->angular_velocity = glm::vec3(0);
 }
 
 
@@ -31,20 +27,8 @@ void PhysicsComponent::onFixedUpdate(FixedContext c) {
 	initMass = false;
 }
 
-void PhysicsComponent::setVelocity(glm::vec3 velocity) {
-	this->velocity = velocity;
-}
-
-void PhysicsComponent::setVelocity(float x, float y, float z) {
-	this->velocity = glm::vec3(x, y, z);
-}
-
-void PhysicsComponent::setAngularVelocity(glm::vec3 angular_velocity) {
-	this->angular_velocity = angular_velocity;
-}
-
-void PhysicsComponent::setAngularVelocity(float x, float y, float z) {
-	this->angular_velocity = glm::vec3(x, y, z);
+void PhysicsComponent::setCollider(const Collider& c) {
+	this->collider = c;
 }
 
 void PhysicsComponent::setGravityScale(glm::vec3 scale) {
@@ -61,14 +45,6 @@ void PhysicsComponent::setSurface(Surface surface) {
 
 void PhysicsComponent::setStatic(bool is_static) {
 	this->is_static = is_static;
-}
-
-glm::vec3 PhysicsComponent::getVelocity() const {
-	return velocity;
-}
-
-glm::vec3 PhysicsComponent::getAngularVelocity() const {
-	return angular_velocity;
 }
 
 glm::vec3 PhysicsComponent::getGravityScale() const {

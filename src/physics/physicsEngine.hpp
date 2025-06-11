@@ -40,7 +40,7 @@ public:
      */
     double physicsUpdate();
 
-    void setGravityScale(glm::vec3 gravityScale);
+    void setGravityScale(const glm::vec3& gravityScale);
 
     bool initialCollisionCheck(PhysicsElement& a, PhysicsElement& b);
 

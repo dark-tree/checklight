@@ -653,6 +653,6 @@ void PhysicsEngine::getElements() {
 	}
 }
 
-void PhysicsEngine::setGravityScale(glm::vec3 gravityScale) {
+void PhysicsEngine::setGravityScale(const glm::vec3& gravityScale) {
     gravity_strength = gravityScale;
 }
