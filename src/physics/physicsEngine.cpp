@@ -650,7 +650,6 @@ void PhysicsEngine::getElements() {
 		};
 		elements.push_back(element);
         frame_num++;
-        out::info("%f, %f, %f, id: %d, frame: %d", element.position.x, element.position.y, element.position.z, value->getEntityID(), frame_num);
 	}
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "pawnTree.hpp"
+#include "sound/sound.hpp"
 
 class SpatialPawn;
 
@@ -14,7 +15,7 @@ private:
 	std::queue<std::shared_ptr<Pawn>>* pawns_to_remove;
 	std::queue<std::shared_ptr<Pawn>>* pawns_to_remove_from_hashmap;
 	std::queue<std::shared_ptr<Component>>* components_to_remove;
-
+	SoundListener sound_listener;
 
 	/**
 	 * queue remove a pawn
@@ -138,7 +139,6 @@ public:
 	 */
 	void removePhysicsComponent(const std::shared_ptr<PhysicsComponent>& physics_component);
 
-public:
 	PawnTree& getTree() {
 		return pawns;
 	}

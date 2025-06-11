@@ -25,6 +25,10 @@ protected:
 
 	InputResult onEvent(const InputEvent& event) override = 0;
 
+
+	/**
+	 * Executes when it's added to a pawn
+	 */
 	virtual void onConnected() = 0;
 
 public:

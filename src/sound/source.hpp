@@ -2,16 +2,14 @@
 
 #include "external.hpp"
 #include "clip.hpp"
-
-class SoundGroup;
 #include "group.hpp"
 
-class SoundSourceObject {
-private:
+struct SoundGroup;
 
+class SoundSourceObject {
 	/// Source
-	ALuint source;
-	
+	ALuint source; //always 1
+
 	/// Shared pointer to SoundGroup where we get offset for parameters and movement
 	std::shared_ptr<SoundGroup> sso_sg;
 	/// Weak pointer to SoundClip where we get buffer
@@ -40,7 +38,6 @@ private:
 	glm::vec3 sso_direction = glm::vec3(0.0f, 0.0f, 0.0f);
 
 public:
-
 	// SoundSourceObject constructor to create object with only one sound source
 	SoundSourceObject();
 
@@ -50,10 +47,21 @@ public:
 
 	/// Set position of sound source
 	void setPosition(float x, float y, float z);
+
+	/// Set position of sound source
+	void setPosition(const glm::vec3& position);
+
 	/// Set velocity of sound source
 	void setVelocity(float x, float y, float z);
+
+	/// Set velocity of sound source
+	void setVelocity(const glm::vec3& position);
+
 	/// Set direction of sound source
 	void setDirection(float x, float y, float z);
+
+	/// Set direction of sound source
+	void setDirection(const glm::vec3& direction);
 
 	/// Get position of sound source object without offset from sound group
 	glm::vec3 getPosition() const { return sso_position; };
@@ -64,15 +72,19 @@ public:
 
 	/// Get position of sound source object with offset from sound group
 	glm::vec3 getRealPosition();
+
 	/// Get velocity of sound source object with offset from sound group
 	glm::vec3 getRealVelocity();
+
 	/// Get direction of sound source object with offset from sound group
 	glm::vec3 getRealDirection();
 
 	/// Update source position with sound group position
 	void updatePosition();
+
 	/// Update source velocity with sound group velocity
 	void updateVelocity();
+
 	/// Update source direction with sound group direction
 	void updateDirection();
 
@@ -88,16 +100,27 @@ public:
 
 	/// Mute sound source
 	void setMute(bool mute);
+
 	void setPitch(float pitch);
+
 	void setGain(float gain);
+
 	void setLooping(bool looping);
+
 	void setMaxDistance(float max_distance);
+
 	void setMinGain(float min_gain);
+
 	void setMaxGain(float max_gain);
+
 	void setRolloffFactor(float rolloff_factor);
+
 	void setReferenceDistance(float reference_distance);
+
 	void setConeOuterGain(float cone_outer_gain);
+
 	void setConeInnerAngle(float cone_inner_angle);
+
 	void setConeOuterAngle(float cone_outer_angle);
 
 	bool getMute() const { return sso_is_mute; };
@@ -115,15 +138,25 @@ public:
 
 	/// Update individual parameter with sound group parameter
 	void updateMute();
+
 	void updatePitch();
+
 	void updateGain();
+
 	void updateLooping();
+
 	void updateMaxDistance();
+
 	void updateMinMaxGain();
+
 	void updateRolloffFactor();
+
 	void updateReferenceDistance();
+
 	void updateConeOuterGain();
+
 	void updateConeInnerAngle();
+
 	void updateConeOuterAngle();
 
 	/// Connect sound clip to sound source
@@ -141,15 +174,18 @@ public:
 	/// Add sound group to sound source
 	/// 
 	/// @param shared pointer to SoundGroup object
-	void addGroupParameters(std::shared_ptr <SoundGroup> sg);
+	void addGroupParameters(std::shared_ptr<SoundGroup> sg);
 
 	/// Update parameters of sound source
 	void updateParameters();
+
 	/// Update movement parameters of sound source
 	void updateMovement();
 
 	void playSound();
+
 	void stopSound();
+
 	void pauseSound();
 
 	/// Status of playing sound

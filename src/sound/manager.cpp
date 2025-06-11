@@ -84,7 +84,7 @@ void SoundManager::loadAudioToClip(const std::shared_ptr<SoundClip>& sc, const c
 }
 
 void SoundManager::connectClipWithSource(const std::shared_ptr<SoundClip>& sc, const std::shared_ptr<SoundSourceObject>& sso) {
-	assert(sso);
+	assert(sso.get());
 	assert(sc);
 
 #if ENGINE_DEBUG

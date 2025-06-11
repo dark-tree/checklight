@@ -7,6 +7,7 @@
  */
 
 Board::Board() {
+	SoundManager::getInstance(); //unfortunately sound system is kinda cooked, so I need to do this
 	pawns_to_remove = new std::queue<std::shared_ptr<Pawn>>();
 	pawns_to_remove_from_hashmap = new std::queue<std::shared_ptr<Pawn>>();
 	components_to_remove = new std::queue<std::shared_ptr<Component>>();
@@ -33,6 +34,7 @@ void Board::queueRemove(const std::shared_ptr<Component>& pawns_to_remove) {
 
 void Board::updateBoard(double delta, std::mutex& mtx) {
 	pawns.updateTree(delta, mtx);
+	SoundListener::setPosition(this->getCamPos());
 }
 
 
