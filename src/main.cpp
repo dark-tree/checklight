@@ -20,7 +20,7 @@ static void entry(Args& args) {
 	// Basic information about the program being run
 	ApplicationParameters parameters;
 	parameters.setName("My Checklight Game!");
-	parameters.setDimensions(1200, 800);
+	parameters.setDimensions(1500, 1000);
 
 	// Open the window and start the vulkan renderer
 	auto guard = RenderSystem::init(parameters);
@@ -73,25 +73,53 @@ static void entry(Args& args) {
 	sphere->createComponent<MatrixAnimation>(MatrixAnimation::TRANSLATE);
 	sphere->createComponent<SoundComponent>("assets/sounds/5.ogg");
 	sp->addPawnToRoot(sphere);
+    {
+        auto cube_2 = std::make_shared<SpatialPawn>();
+        cube_2->setPosition({30, 1.1, 5});
+        cube_2->createComponent<RenderComponent>(Models::CUBE);
+        cube_2->setRotation(rotate(glm::quat(), {0, 0, 0}));
+        cube_2->createComponent<SoundComponent>("assets/sounds/1.ogg");
+        auto pc = cube_2->createComponent<PhysicsComponent>();
+        pc->setVelocity({0, 10, 0});
+        pc->setAngularVelocity({0, 0, 0});
+        pc->setGravityScale({0, 1, 0});
+        pc->getMaterial().coefficient_of_restitution = -0.2f;
+        sp->addPawnToRoot(cube_2);
+    }
 	{
 		auto cube_2 = std::make_shared<SpatialPawn>();
-		cube_2->setPosition({50, 1.1, 15});
+		cube_2->setPosition({30, 1.1, 10});
 		cube_2->createComponent<RenderComponent>(Models::CUBE);
-		cube_2->setRotation(rotate(glm::quat(), {0, 0.75, 0}));
+		cube_2->setRotation(rotate(glm::quat(), {0, 0, 0}));
 		cube_2->createComponent<SoundComponent>("assets/sounds/1.ogg");
 		auto pc = cube_2->createComponent<PhysicsComponent>();
-		pc->setVelocity({-20, 12, 0});
+		pc->setVelocity({0, 10, 0});
 		pc->setAngularVelocity({0, 0, 0});
 		pc->setGravityScale({0, 1, 0});
+        pc->getMaterial().coefficient_of_restitution = 0.5f;
 		sp->addPawnToRoot(cube_2);
 	}
+    {
+        auto cube_2_5 = std::make_shared<SpatialPawn>();
+        cube_2_5->setPosition({30, 1.1, 15});
+        cube_2_5->createComponent<RenderComponent>(Models::CUBE);
+        cube_2_5->setRotation(rotate(glm::quat(), {0, 0, 0}));
+        cube_2_5->createComponent<SoundComponent>("assets/sounds/1.ogg");
+        auto pc = cube_2_5->createComponent<PhysicsComponent>();
+        pc->setVelocity({0, 10, 0});
+        pc->setAngularVelocity({0, 0, 0});
+        pc->setGravityScale({0, 1, 0});
+        pc->getMaterial().coefficient_of_restitution = 1.f;
+        sp->addPawnToRoot(cube_2_5);
+    }
 	{
 		auto cube_3 = std::make_shared<SpatialPawn>();
-		cube_3->setPosition({0, 5, 15.1});
+		cube_3->setPosition({30, 1.1, 20});
 		cube_3->createComponent<RenderComponent>(Models::CUBE);
 		cube_3->createComponent<SoundComponent>("assets/sounds/3.ogg");
 		auto pc = cube_3->createComponent<PhysicsComponent>();
-		pc->setVelocity({-1, 0, 0});
+		pc->setVelocity({0, 10, 0});
+        pc->getMaterial().coefficient_of_restitution = 1.3f;
 		sp->addPawnToRoot(cube_3);
 	}
 	{

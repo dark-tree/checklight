@@ -51,7 +51,7 @@ glm::vec3 PhysicsComponent::getGravityScale() const {
 	return gravity_scale;
 }
 
-Surface PhysicsComponent::getMaterial() const {
+Surface& PhysicsComponent::getMaterial() {
 	return material;
 }
 

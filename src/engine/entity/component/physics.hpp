@@ -47,7 +47,7 @@ public:
 	glm::vec3 getGravityScale() const;
 
 	/// Gets the surface properties
-	Surface getMaterial() const;
+	Surface& getMaterial();
 
 	/// Returns true if the object is static
 	bool isStatic() const;
