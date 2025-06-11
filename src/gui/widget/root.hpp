@@ -2,11 +2,14 @@
 
 #include "panel.hpp"
 
+/**
+ * Root widget, all widgets in a GUI descend from it
+ */
 class RootWidget : public PanelWidget {
 
 	private:
 
-	std::shared_ptr<Overlay> over;
+		std::shared_ptr<Overlay> over;
 		int x, y;
 		bool dirty = true;
 

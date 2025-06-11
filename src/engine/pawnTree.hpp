@@ -1,28 +1,31 @@
 #pragma once
+#include "entity/component/physics.hpp"
 #include "entity/pawns/rootPawn.hpp"
 
 class PawnTree {
 	friend Board;
+
 protected:
 	std::shared_ptr<RootPawn> root;
 
-	std::unordered_multimap<std::string, std::shared_ptr<Pawn>> nameMap;
-	std::unordered_multimap<uint32_t, std::shared_ptr<Pawn>> idMap;
+	std::unordered_multimap<std::string, std::shared_ptr<Pawn>> name_map;
+	std::unordered_multimap<uint32_t, std::shared_ptr<Pawn>> id_map;
+	std::set<std::shared_ptr<PhysicsComponent>> physics_components_to_update;
 
 	/**
 	 * performs standard game update on all the tree elements, triggered by updateTree() function
 	 */
-	void updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update);
+	void updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update, double delta, std::mutex& mtx);
 
 	/**
 	 * performs standard game update on all the tree elements, triggered by fixedUpdateTree() function
 	 */
-	void fixedUpdareTreeRecursion(std::shared_ptr<Pawn> pawn_to_fixed_update);
+	void fixedUpdateTreeRecursion(std::shared_ptr<Pawn> pawn_to_fixed_update);
 
 	/**
 	 * returns part of a pawn tree in a string format, triggered by print() function
 	 */
-	std::string recursiveString(std::shared_ptr<Pawn> p, int depth, bool verbose);
+	std::string recursiveString(const std::shared_ptr<Pawn>& p, int depth, bool verbose);
 
 	/**
 	 * manages verbose/non-verbose printing
@@ -32,12 +35,14 @@ protected:
 	/**
 	 * removes a pawn from hashmaps, returns true if operation was successful
 	 */
-	bool removeFromMaps(const std::string &name, uint32_t id);
+	bool removeFromMaps(const std::string& name, uint32_t id);
 
-	void addPawnToHash(const std::string& p_name, uint32_t p_id, std::shared_ptr<Pawn> p);
+	/**
+	 * adds pawn to a hashmaps
+	 */
+	void addPawnToHash(const std::string& p_name, uint32_t p_id, const std::shared_ptr<Pawn>& pawn);
 
 public:
-
 	PawnTree();
 
 	/**
@@ -63,27 +68,27 @@ public:
 	/**
 	 * returns size of entry in map with given key (name)
 	 */
-	size_t nameHitSize(const std::string& name);
+	size_t nameHitSize(const std::string& name) const;
 
 	/**
 	 * returns size of entry in map with given key (id)
 	 */
-	size_t idHitSize(uint32_t id);
+	size_t idHitSize(uint32_t id) const;
 
 	/**
 	 * adds a pawn to RootPawn
 	 */
-	void addToRoot(std::shared_ptr<Pawn> pawn);
+	void addToRoot(const std::shared_ptr<Pawn>& pawn);
 
 	/**
 	 * updates/inserts a pawn to a PawnTree
 	 */
-	void mountPawn(std::shared_ptr<Pawn> pawn); //TODO moze dac update/insert
+	void mountPawn(const std::shared_ptr<Pawn>& pawn);
 
 	/**
 	 * updates children of given pawn in a PawnTree
 	 */
-	void updatePawnsChildren(std::shared_ptr<Pawn>& pawn);
+	void updatePawnsChildren(const std::shared_ptr<Pawn>& pawn);
 
 	/**
 	 * returns a RootPawn of given tree
@@ -93,7 +98,7 @@ public:
 	/**
 	 * performs standard game update on all the tree elements
 	 */
-	void updateTree();
+	void updateTree(double delta, std::mutex& mtx);
 
 	/**
 	 * performs fixed game update on all the tree elements
@@ -109,4 +114,19 @@ public:
 	 * returns whole pawn tree in string format
 	 */
 	std::string toStringVerbose();
+
+	/**
+	 * registers physicsComponent to be included in physics update
+	 */
+	void registerPhysicsComponent(const std::shared_ptr<PhysicsComponent>& physics_component);
+
+	/**
+	 * removes physicsComponent from registry that stores components to update in physics update
+	 */
+	void removePhysicsComponent(const std::shared_ptr<PhysicsComponent>& physics_component);
+
+	/**
+	 * returns
+	 */
+	std::set<std::shared_ptr<PhysicsComponent>> getPhysicsComponents();
 };

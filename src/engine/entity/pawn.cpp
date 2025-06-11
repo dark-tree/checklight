@@ -5,13 +5,14 @@
 #include "../pawnTree.hpp"
 #include "../board.hpp"
 #include "shared/logger.hpp"
+#include "component/physics.hpp"
 
 
 /*
  * PawnState
  */
 
-std::string PawnState::to_str(PawnState::State p) {
+std::string PawnState::to_str(const PawnState::State p) {
 	switch (p) {
 		case State::NEW: return "new";
 		case State::LOCAL: return "local";
@@ -24,115 +25,115 @@ std::string PawnState::to_str(PawnState::State p) {
 	}
 }
 
-bool PawnState::convert(Pawn* new_child,Pawn* new_parent) {
+bool PawnState::convert(Pawn* new_child, Pawn* new_parent) {
 	PawnState::State childState = new_child->getState();
-	switch (new_parent->getState()){
+	switch (new_parent->getState()) {
 		case NEW:
 			switch (childState) {
-				case NEW:       //parent - NEW, child - NEW
+				case NEW: //parent - NEW, child - NEW
 					new_child->pawn_state = LOCAL;
 					break;
-				case LOCAL:     //parent - NEW, child - LOCAL
+				case LOCAL: //parent - NEW, child - LOCAL
 					new_child->pawn_state = LOCAL;
 					break;
-				case TRACKED:   //parent - NEW, child - TRACKED
+				case TRACKED: //parent - NEW, child - TRACKED
 					new_child->pawn_state = UNLISTED;
 					break;
-				case UNPINNED:  //parent - NEW, child - UNPINNED
+				case UNPINNED: //parent - NEW, child - UNPINNED
 					new_child->pawn_state = UNLISTED;
 					break;
-				case REMOVED:   //parent - NEW, child - REMOVED
+				case REMOVED: //parent - NEW, child - REMOVED
 					FAULT("Cant add child, the child is marked as REMOVED");
 					break;
-				case UNLISTED:  //parent - NEW, child - UNLISTED
+				case UNLISTED: //parent - NEW, child - UNLISTED
 					new_child->pawn_state = UNLISTED;
 					break;
-				case SINGLE:    //parent - NEW, child - SINGLE
+				case SINGLE: //parent - NEW, child - SINGLE
 					new_child->pawn_state = LOCAL;
 					break;
-				default:        //parent - NEW, child - UNKNOWN
+				default: //parent - NEW, child - UNKNOWN
 					FAULT("Unknown child pawn state");
 			}
 			new_parent->pawn_state = LOCAL;
 			break;
 		case LOCAL:
 			switch (childState) {
-				case NEW:      // parent - LOCAL, child - NEW
+				case NEW: // parent - LOCAL, child - NEW
 					new_child->pawn_state = LOCAL;
 					break;
-				case LOCAL:    // parent - LOCAL, child - LOCAL
+				case LOCAL: // parent - LOCAL, child - LOCAL
 					new_child->pawn_state = LOCAL;
 					break;
-				case TRACKED:  // parent - LOCAL, child - TRACKED
+				case TRACKED: // parent - LOCAL, child - TRACKED
 					new_child->pawn_state = UNLISTED;
 					break;
 				case UNPINNED: // parent - LOCAL, child - UNPINNED
 					new_child->pawn_state = UNLISTED;
 					break;
-				case REMOVED:  // parent - LOCAL, child - REMOVED
+				case REMOVED: // parent - LOCAL, child - REMOVED
 					FAULT("Cant add child, the child is marked as REMOVED");
 					break;
 				case UNLISTED: // parent - LOCAL, child - UNLISTED
 					new_child->pawn_state = UNLISTED;
 					break;
-				case SINGLE:   // parent - LOCAL, child - SINGLE
+				case SINGLE: // parent - LOCAL, child - SINGLE
 					new_child->pawn_state = LOCAL;
 					break;
-				default:       // parent - LOCAL, child - UNKNOWN
+				default: // parent - LOCAL, child - UNKNOWN
 					FAULT("Unknown child pawn state");
 			}
 			break;
 		case TRACKED:
 			switch (childState) {
-				case NEW:      // parent - TRACKED, child - NEW
+				case NEW: // parent - TRACKED, child - NEW
 					new_child->pawn_state = TRACKED;
 					break;
-				case LOCAL:    // parent - TRACKED, child - LOCAL
+				case LOCAL: // parent - TRACKED, child - LOCAL
 					new_child->pawn_state = TRACKED;
 					break;
-				case TRACKED:  // parent - TRACKED, child - TRACKED
+				case TRACKED: // parent - TRACKED, child - TRACKED
 					new_child->pawn_state = TRACKED;
 					break;
 				case UNPINNED: // parent - TRACKED, child - UNPINNED
 					new_child->pawn_state = TRACKED;
 					break;
-				case REMOVED:  // parent - TRACKED, child - REMOVED
+				case REMOVED: // parent - TRACKED, child - REMOVED
 					FAULT("Cant add child, the child is marked as REMOVED");
 					break;
 				case UNLISTED: // parent - TRACKED, child - UNLISTED
 					new_child->pawn_state = TRACKED;
 					break;
-				case SINGLE:   // parent - TRACKED, child - SINGLE
+				case SINGLE: // parent - TRACKED, child - SINGLE
 					new_child->pawn_state = TRACKED;
 					break;
-				default:       // parent - TRACKED, child - UNKNOWN
+				default: // parent - TRACKED, child - UNKNOWN
 					FAULT("Unknown child pawn state");
 			}
 			break;
 		case UNPINNED:
 			switch (childState) {
-				case NEW:      // parent - UNPINNED, child - NEW
+				case NEW: // parent - UNPINNED, child - NEW
 					new_child->pawn_state = UNPINNED;
 					break;
-				case LOCAL:    // parent - UNPINNED, child - LOCAL
+				case LOCAL: // parent - UNPINNED, child - LOCAL
 					new_child->pawn_state = UNPINNED;
 					break;
-				case TRACKED:  // parent - UNPINNED, child - TRACKED
+				case TRACKED: // parent - UNPINNED, child - TRACKED
 					new_child->pawn_state = UNPINNED;
 					break;
 				case UNPINNED: // parent - UNPINNED, child - UNPINNED
 					new_child->pawn_state = UNPINNED;
 					break;
-				case REMOVED:  // parent - UNPINNED, child - REMOVED
+				case REMOVED: // parent - UNPINNED, child - REMOVED
 					FAULT("Cant add child, the child is marked as REMOVED");
 					break;
 				case UNLISTED: // parent - UNPINNED, child - UNLISTED
 					new_child->pawn_state = UNPINNED;
 					break;
-				case SINGLE:   // parent - UNPINNED, child - SINGLE
+				case SINGLE: // parent - UNPINNED, child - SINGLE
 					new_child->pawn_state = UNPINNED;
 					break;
-				default:       // parent - UNPINNED, child - UNKNOWN
+				default: // parent - UNPINNED, child - UNKNOWN
 					FAULT("Unknown child pawn state");
 			}
 			break;
@@ -140,60 +141,60 @@ bool PawnState::convert(Pawn* new_child,Pawn* new_parent) {
 			FAULT("Cant add child, the parent is marked as REMOVED");
 		case UNLISTED:
 			switch (childState) {
-				case NEW:      // parent - UNLISTED, child - NEW
+				case NEW: // parent - UNLISTED, child - NEW
 					new_child->pawn_state = LOCAL;
 					break;
-				case LOCAL:    // parent - UNLISTED, child - LOCAL
+				case LOCAL: // parent - UNLISTED, child - LOCAL
 					new_child->pawn_state = LOCAL;
 					break;
-				case TRACKED:  // parent - UNLISTED, child - TRACKED
+				case TRACKED: // parent - UNLISTED, child - TRACKED
 					new_child->pawn_state = UNLISTED;
 					break;
 				case UNPINNED: // parent - UNLISTED, child - UNPINNED
 					new_child->pawn_state = UNLISTED;
 					break;
-				case REMOVED:  // parent - UNLISTED, child - REMOVED
+				case REMOVED: // parent - UNLISTED, child - REMOVED
 					FAULT("Cant add child, the child is marked as REMOVED");
 					break;
 				case UNLISTED: // parent - UNLISTED, child - UNLISTED
 					new_child->pawn_state = UNLISTED;
 					break;
-				case SINGLE:   // parent - UNLISTED, child - SINGLE
+				case SINGLE: // parent - UNLISTED, child - SINGLE
 					new_child->pawn_state = LOCAL;
 					break;
-				default:       // parent - UNLISTED, child - UNKNOWN
+				default: // parent - UNLISTED, child - UNKNOWN
 					FAULT("Unknown child pawn state");
 			}
 			break;
 		case SINGLE:
 			switch (childState) {
-				case NEW:      // parent - SINGLE, child - NEW
+				case NEW: // parent - SINGLE, child - NEW
 					new_child->pawn_state = LOCAL;
 					break;
-				case LOCAL:    // parent - SINGLE, child - LOCAL
+				case LOCAL: // parent - SINGLE, child - LOCAL
 					new_child->pawn_state = LOCAL;
 					break;
-				case TRACKED:  // parent - SINGLE, child - TRACKED
+				case TRACKED: // parent - SINGLE, child - TRACKED
 					new_child->pawn_state = UNLISTED;
 					break;
 				case UNPINNED: // parent - SINGLE, child - UNPINNED
 					new_child->pawn_state = UNLISTED;
 					break;
-				case REMOVED:  // parent - SINGLE, child - REMOVED
+				case REMOVED: // parent - SINGLE, child - REMOVED
 					FAULT("Cant add child, the child is marked as REMOVED");
 					break;
 				case UNLISTED: // parent - SINGLE, child - UNLISTED
 					new_child->pawn_state = UNLISTED;
 					break;
-				case SINGLE:   // parent - SINGLE, child - SINGLE
+				case SINGLE: // parent - SINGLE, child - SINGLE
 					new_child->pawn_state = LOCAL;
 					break;
-				default:       // parent - SINGLE, child - UNKNOWN
+				default: // parent - SINGLE, child - UNKNOWN
 					FAULT("Unknown child pawn state");
 			}
 			new_parent->pawn_state = LOCAL;
 			break;
-		default:               // parent - UNKNOWN child - ...
+		default: // parent - UNKNOWN child - ...
 			FAULT("Unknown parent pawn state");
 	}
 	return true;
@@ -203,17 +204,17 @@ bool PawnState::convert(Pawn* new_child,Pawn* new_parent) {
  * Pawn
  */
 
-void Pawn::onUpdate() {
+void Pawn::onUpdate(double delta) {
 	std::shared_ptr<Pawn> p = shared_from_this();
-	Context cntx(0.01f, p);
-	for (const std::shared_ptr<Component>& c : components) {
+	Context cntx(delta, p);
+	for (const std::shared_ptr<Component>& c: components) {
 		c->onUpdate(cntx);
 	}
 }
 
 void Pawn::onFixedUpdate() {
 	FixedContext cntx;
-	for (const std::shared_ptr<Component>& c : components) {
+	for (const std::shared_ptr<Component>& c: components) {
 		c->onFixedUpdate(cntx);
 	}
 }
@@ -227,13 +228,20 @@ Pawn::Pawn() : Entity() {
 	is_tracked_on_hash = false;
 }
 
+Pawn::Pawn(const std::string& s) : Pawn() {
+	name = s;
+}
 
-void Pawn::addComponent(std::shared_ptr<Component>& c) {
-	if (c->checkValidity(*this)) {
-		c->parent = this;
-		c->onConnected();
-		components.push_back(std::move(c));
+std::shared_ptr<Component>& Pawn::addComponent(std::shared_ptr<Component> c) {
+	c->parent = this;
+	c->onConnected();
+	if (auto const pc = std::dynamic_pointer_cast<PhysicsComponent>(c)) {
+		physics_component = pc;
+		if (isRooted()) {
+			board->registerPhysicsComponent(pc);
+		}
 	}
+	return components.emplace_back(c);
 }
 
 void Pawn::setBoard(Board* s) {
@@ -241,18 +249,8 @@ void Pawn::setBoard(Board* s) {
 }
 
 void Pawn::propagateRemove() {
-	for(const std::shared_ptr<Pawn>& c : children){
+	for (const std::shared_ptr<Pawn>& c: children) {
 		c->safeRemove();
-	}
-}
-
-template <typename T>
-typename std::enable_if<std::is_base_of<Component, T>::value, void>::type
-Pawn::createComponent() {
-	std::shared_ptr<Component> c = std::make_unique<T>();
-	if (c->checkValidity(*this)) {
-		c->parent = this;
-		components.push_back(std::move(c));
 	}
 }
 
@@ -266,7 +264,7 @@ bool Pawn::isRooted() {
 
 	// recursive_parent will be nullptr if parent expired
 	while (recursive_parent) {
-		if (recursive_parent->isRoot()/*std::dynamic_pointer_cast<RootPawn>(recursive_parent.lock())*/) {
+		if (recursive_parent->isRoot()) {
 			rooted = true;
 			root_pawn = std::static_pointer_cast<RootPawn>(recursive_parent);
 		}
@@ -280,12 +278,12 @@ std::string Pawn::getPawnName() const {
 }
 
 std::shared_ptr<Pawn> Pawn::getParent() const {
-	if(parent.expired()) return nullptr;
+	if (parent.expired()) return nullptr;
 	else return parent.lock();
 }
 
 Board* Pawn::getScene() {
-	if(is_mounted_to_board) return board;
+	if (is_mounted_to_board) return board;
 	else return nullptr;
 }
 
@@ -310,9 +308,8 @@ void Pawn::addChild(const std::shared_ptr<Pawn>& new_child) {
 		}
 
 		pt->mountPawn(new_child);
-	}
-	else{
-		if(!isRoot()){
+	} else {
+		if (!isRoot()) {
 			unregistered_child_added = true; //only when the change is not instantly commited to a data structure
 		}
 	}
@@ -334,16 +331,16 @@ bool Pawn::unregisteredChildAdded() const {
 	return unregistered_child_added;
 }
 
-bool Pawn::isMountedToBoard() const{
+bool Pawn::isMountedToBoard() const {
 	return is_mounted_to_board;
 }
 
-std::string Pawn::toString() const{
-	if(name != "") return name;
+std::string Pawn::toString() const {
+	if (name != "") return name;
 	else return "Unnamed Pawn";
 }
 
-std::string Pawn::toStringVerbose() const{
+std::string Pawn::toStringVerbose() const {
 	std::string result;
 	result +=
 			"{ id: " +
@@ -366,8 +363,8 @@ std::string Pawn::toStringVerbose() const{
 	return result;
 }
 
-std::shared_ptr<RootPawn> Pawn::getRoot(){
-	if(isRooted()) return root_pawn.lock();
+std::shared_ptr<RootPawn> Pawn::getRoot() {
+	if (isRooted()) return root_pawn.lock();
 	else return nullptr;
 }
 
@@ -376,14 +373,14 @@ PawnState::State Pawn::getState() const {
 }
 
 bool Pawn::remove() {
-	if(isRoot()){
+	if (isRoot()) {
 		FAULT("Cant remove root pawn!");
 	}
-	if(!to_remove){
-		#ifdef ENGINE_DEBUG
-				if(pawn_state == PawnState::REMOVED)
-					FAULT("Pawn state is REMOVED before using remove() function on it");
-		#endif
+	if (!to_remove) {
+#if ENGINE_DEBUG
+		if (pawn_state == PawnState::REMOVED)
+			FAULT("Pawn state is REMOVED before using remove() function on it");
+#endif
 		to_remove = true;
 
 		//this needs to be before destroying children and setting pawn state, otherwise it will break
@@ -394,18 +391,15 @@ bool Pawn::remove() {
 		board->queueRemove(shared_from_this());
 
 		//removing components
-		for(auto c : components){
-			c->to_remove = true;
+		for (auto c: components) {
+			c->remove();
 			board->queueRemove(c);
 		}
-
-
 		return true;
-	}
-	else{
-#ifdef ENGINE_DEBUG
-		for(const auto& c : components){
-			if(c->to_remove) FAULT("all children should be removed in a pawn described as removed!");
+	} else {
+#if ENGINE_DEBUG
+		for (const auto& c: components) {
+			if (c->to_remove) FAULT("all children should be removed in a pawn described as removed!");
 		}
 #endif
 		out::warn("Trying to remove() the same pawn more than once!");
@@ -413,15 +407,28 @@ bool Pawn::remove() {
 	}
 }
 
-bool Pawn::safeRemove(){
-#ifdef ENGINE_DEBUG
-	if(isRoot()){
+std::vector<std::shared_ptr<Component>>& Pawn::getComponents() {
+	return components;
+}
+
+void Pawn::debugDraw(ImmediateRenderer& renderer) {
+	for (std::shared_ptr<Pawn>& p : children) {
+		p->debugDraw(renderer);
+	}
+	for (std::shared_ptr<Component>& c : components) {
+		c->debugDraw(renderer);
+	}
+}
+
+bool Pawn::safeRemove() {
+#if ENGINE_DEBUG
+	if (isRoot()) {
 		FAULT("This shouldn't be root as its as this function should only be called for children of removed pawn");
 	}
 #endif
-	if(to_remove){
-#ifdef ENGINE_DEBUG
-		if(pawn_state == PawnState::REMOVED)
+	if (to_remove) {
+#if ENGINE_DEBUG
+		if (pawn_state == PawnState::REMOVED)
 			FAULT("Pawn state is REMOVED before using remove() function on it");
 #endif
 		to_remove = true;
@@ -431,8 +438,7 @@ bool Pawn::safeRemove(){
 		board->queueRemove(shared_from_this());
 
 		return true;
-	}
-	else{
+	} else {
 		out::warn("While removing children of an object Engine tried to remove() the same pawn more than once!");
 		return false;
 	}
@@ -443,10 +449,7 @@ void Pawn::setTracked(bool v) {
 }
 
 void Pawn::removeComponents() {
-	for(const auto& c : components){
+	for (const auto& c: components) {
 		c->setActive(false);
 	}
 }
-
-
-

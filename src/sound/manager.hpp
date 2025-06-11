@@ -72,7 +72,7 @@ public:
 	/// Load an OGG file from the given URI and add it to buffer[0] in SoundClip
 	/// 
 	/// @param sc std::shared_ptr SoundClip object
-	/// @param uri Path to the OGG file
+	/// @param path Path to the OGG file
 	void loadAudioToClip(const std::shared_ptr<SoundClip>& sc, const char* path);
 
 	/// Get a SoundClip with clip_name and add the first buffer from SoundClip to the SoundSourceObject
@@ -83,14 +83,14 @@ public:
 
 	/// Create a new SoundClip, add it to the vector v_clips, load the audio file from the given URL and add it to the SoundSourceObject
 	/// 
-	/// @param url Path to the audio file
+	/// @param path Path to the audio file
 	/// @return std::shared_ptr to the SoundClip object.
 	/// Do not get std::weak_ptr from this function, because it will be deleted after the function call
 	std::shared_ptr<SoundClip> createSoundClipAndLoadAudio(const char* path);
 
 	/// Create a new SoundClip, add it to the vector v_clips, load the audio file from the given URL and add it to the SoundSourceObject
 	/// 
-	/// @param url Path to the audio file
+	/// @param path Path to the audio file
 	/// @param sso std::shared_ptr SoundSourceObject object
 	/// 
 	/// @return std::shared_ptr to the SoundClip object.

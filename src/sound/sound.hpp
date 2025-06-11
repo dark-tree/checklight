@@ -1,3 +1,5 @@
+#pragma once
+
 #include "manager.hpp"
 #include "source.hpp"
 #include "clip.hpp"

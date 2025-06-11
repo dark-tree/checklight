@@ -60,6 +60,17 @@ class GraphicsPipeline {
 		VkPipelineBindPoint getBindPoint();
 };
 
+/**
+ * @section Dynamic
+ * - withDynamics()
+ *
+ * @section Descriptor
+ * - withPushConstant()
+ * - withDescriptorSetLayout()
+ *
+ * @section Shader
+ * - withShaders()
+ */
 template <class Self>
 class AbstractPipelineBuilder {
 
@@ -106,7 +117,7 @@ class AbstractPipelineBuilder {
 		 * pipeline but can be changed during pipeline usage to control some aspect of rendering.
 		 * When going for full performance this option should not be used but is provided nevertheless.
 		 *
-		 * @section Dynamic
+		 * Section: Dynamic
 		 * @param[in] states Parameter pack of VkDynamicState to use
 		 */
 		template <DynamicStateTrait... DynamicState>
@@ -121,7 +132,7 @@ class AbstractPipelineBuilder {
 		 * by writing to its slots. Layouts should be created once and cached, the same object can
 		 * be passed to multiple pipeline builders.
 		 *
-		 * @section Descriptor
+		 * Section: Descriptor
 		 * @param[in] layout Descriptor layout created using DescriptorSetLayoutBuilder
 		 */
 		Self& withDescriptorSetLayout(const DescriptorSetLayout& layout) {
@@ -137,7 +148,7 @@ class AbstractPipelineBuilder {
 		 * small sizes (only 128 bytes guaranteed by Vulkan 1.0 standard) and can't contains buffer
 		 * or texture references.
 		 *
-		 * @section Descriptor
+		 * Section: Descriptor
 		 * @param[in] constant The push constant to add to the pipeline
 		 */
 		Self& withPushConstant(const PushConstant& constant) {
@@ -148,7 +159,7 @@ class AbstractPipelineBuilder {
 		/**
 		 * Add shaders that are to be used by this pipeline.
 		 *
-		 * @section Shader
+		 * Section: Shader
 		 * @param[in] shaders Compiled shaders to be used
 		 */
 		template<ShaderTrait... Shaders>

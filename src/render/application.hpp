@@ -2,6 +2,10 @@
 
 #include "external.hpp"
 
+/**
+ * Generic parameters of the application (the game)
+ * that describe the window to the driver and the operating system
+ */
 class ApplicationParameters {
 
 	private:

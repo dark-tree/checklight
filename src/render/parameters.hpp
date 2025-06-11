@@ -4,6 +4,10 @@
 
 class SceneUniform;
 
+/**
+ * General settings of the render system that control
+ * how the final image is rendered
+ */
 class RenderParameters {
 
 	private:

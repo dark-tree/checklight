@@ -2,6 +2,39 @@
 
 #include "pipeline.hpp"
 
+/**
+ * @section View
+ * - withViewport()
+ * - withScissors()
+ *
+ * @section Vertex
+ * - withBindingLayout()
+ *
+ * @section Assembly
+ * - withPrimitive()
+ *
+ * @section Rasterizer
+ * - withDepthClamp()
+ * - withDepthBias()
+ * - withPolygonMode()
+ * - withLineWidth()
+ * - withCulling()
+ *
+ * @section Depth
+ * - withDepthBound()
+ * - withDepthTest()
+ *
+ * @section Blending
+ * - withBlendConstants()
+ * - withBlendWriteMask()
+ * - withBlendColorFunc()
+ * - withBlendAlphaFunc()
+ * - withBlendBitwiseFunc()
+ * - withBlendMode()
+ *
+ * @section Renderpass
+ * - withRenderPass()
+ */
 class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineBuilder> {
 
 	private:
@@ -37,7 +70,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		 * Specify the dimensions of the viewport (Vulkan analogue of the OpenGL glViewport()),
 		 * designates an rectangle that should at all times exactly match the screen to avoid image stretching.
 		 *
-		 * @section View
+		 * Section: View
 		 * @param[in] min_depth Specifies the lower bound for values that the depth field will assume
 		 * @param[in] max_depth Specifies the upper bound for values that the depth field will assume
 		 */
@@ -48,7 +81,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		 * will be applied. This is similar to the stencil buffer but instead of being able to specify an arbitrary
 		 * pixel mask scissors designate a box.
 		 *
-		 * @section View
+		 * Section: View
 		 */
 		GraphicsPipelineBuilder& withScissors(int x, int y, uint32_t width, uint32_t height);
 
@@ -57,7 +90,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		 * bindings can specified for a single pipeline. Layouts should be created once and cached,
 		 * the same object can be passed to multiple pipeline builders.
 		 *
-		 * @section Vertex
+		 * Section: Vertex
 		 * @param[in] layout Vertex layout created using BindingLayoutBuilder
 		 */
 		GraphicsPipelineBuilder& withBindingLayout(BindingLayout& layout);
@@ -67,7 +100,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		 * primitive restart should be kept disabled unless actually used. Primitive restart only affects
 		 * drawing of indexed geometry.
 		 *
-		 * @section Assembly
+		 * Section: Assembly
 		 * @param[in] topology       The type of the basic rendering primitive used (triangle, triangle_strip, line, etc.)
 		 * @param[in] enable_restart Whether 'primitive restart' should be enabled for indexed geometry
 		 */
@@ -78,7 +111,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		 * so that the value is never lower than the min_depth or higher than the max_depth. By default this is
 		 * disabled.
 		 *
-		 * @section Rasterizer
+		 * Section: Rasterizer
 		 * @param[in] enable Enable fragment depth clamp
 		 */
 		GraphicsPipelineBuilder& withDepthClamp(bool enable);
@@ -97,7 +130,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		 * The fancy calculus notation for the max slope in context of triangles resolved to the simple
 		 * maximum slope of the triangle face along any of the two axis. By default depth bias is left disabled.
 		 *
-		 * @section Rasterizer
+		 * Section: Rasterizer
 		 * @param[in] constant constant offset added to the depth, in epsilon units
 		 * @param[in] clamp    maximal bias (both negative and positive)
 		 * @param[in] slope    slope-multiplied depth bias
@@ -108,7 +141,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		 * Controls how the selected primitive will actually be rasterized to the screen, primitive can either be
 		 * drawn as a filled plane, as vertex-connecting lines, or vertex points. By default this is set to fill.
 		 *
-		 * @section Rasterizer
+		 * Section: Rasterizer
 		 * @param[in] mode Mode to use
 		 */
 		GraphicsPipelineBuilder& withPolygonMode(VkPolygonMode mode);
@@ -116,7 +149,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		/**
 		 * Relevant only for line polygons mode, specified the width of the lines used.
 		 *
-		 * @section Rasterizer
+		 * Section: Rasterizer
 		 * @param[in] width Line width in pixels
 		 */
 		GraphicsPipelineBuilder& withLineWidth(float width);
@@ -128,7 +161,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		 * triangle based on the order of its vertices. For the best culling performance use clockwise triangles in
 		 * 'back' mode. By default culling is disabled.
 		 *
-		 * @section Rasterizer
+		 * Section: Rasterizer
 		 * @param[in] enable Enable culling
 		 * @param[in] face   (Optional) Select the winding of the front face
 		 * @param[in] mode   (Optional) Select which faces should be culled
@@ -139,7 +172,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		 * Specifies the range in which depth value needs to fall for the depth test
 		 * to be passed. Calling this function enabled depth bounds. Depth bounds are disabled by default.
 		 *
-		 * @section Depth
+		 * Section: Depth
 		 * @param[in] lower The lower depth value
 		 * @param[in] upper The upper depth value
 		 */
@@ -159,7 +192,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		 * }
 		 * @endcode
 		 *
-		 * @section Depth
+		 * Section: Depth
 		 * @param[in] function Depth value comparator
 		 * @param[in] read     Should the depth test be skipped?
 		 * @param[in] write    Should the new value be saved?
@@ -169,7 +202,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		/**
 		 * Specifies blend constants, those can be used by standard blending functions.
 		 *
-		 * @section Blending
+		 * Section: Blending
 		 * @param[in] r Red constant
 		 * @param[in] g Green constant
 		 * @param[in] b Blue constant
@@ -184,7 +217,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		 * final_color = fragment_color & mask;
 		 * @endcode
 		 *
-		 * @section Blending
+		 * Section: Blending
 		 * @param[in] mask Specifies which color channels should be kept
 		 */
 		GraphicsPipelineBuilder& withBlendWriteMask(VkColorComponentFlags mask);
@@ -198,7 +231,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		 *
 		 * @note For this to apply blending must be set to enabled!
 		 *
-		 * @section Blending
+		 * Section: Blending
 		 * @param[in] src Specifies how the color returned by the fragment should be treated
 		 * @param[in] op  Specifies how the colors should be combined
 		 * @param[in] dst Specifies how the old color should be treated
@@ -214,7 +247,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		 *
 		 * @note For this to apply blending must be set to enabled!
 		 *
-		 * @section Blending
+		 * Section: Blending
 		 * @param[in] src Specifies how the alpha returned by the fragment should be treated
 		 * @param[in] op  Specifies how the alphas should be combined
 		 * @param[in] dst Specifies how the old alpha should be treated
@@ -230,7 +263,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		 *
 		 * @note For this to apply blending must be set to bitwise!
 		 *
-		 * @section Blending
+		 * Section: Blending
 		 * @param[in] op The binary function to use
 		 */
 		GraphicsPipelineBuilder& withBlendBitwiseFunc(VkLogicOp op);
@@ -239,7 +272,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		 * Specifies the blending mode (disabled, enabled, bitwise), enabling this is a prerequisite for using
 		 * any blending function.
 		 *
-		 * @section Blending
+		 * Section: Blending
 		 * @param[in] mode The blending mode to use.
 		 */
 		GraphicsPipelineBuilder& withBlendMode(BlendMode mode);
@@ -247,7 +280,7 @@ class GraphicsPipelineBuilder : public AbstractPipelineBuilder<GraphicsPipelineB
 		/**
 		 * Connects this pipeline with render pass subpass it implements.
 		 *
-		 * @section Renderpass
+		 * Section: Renderpass
 		 * @param[in] render_pass   The render pass
 		 * @param[in] subpass_index The index of the subpass withing the render pass
 		 */

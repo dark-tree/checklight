@@ -3,14 +3,16 @@
 #include "component.hpp"
 #include "input/input.hpp"
 #include "context.hpp"
+#include "../trait.hpp"
+
+class PhysicsComponent;
 
 class PawnTree;
 class Board;
 class RootPawn;
 
-
 namespace PawnState {
-	enum State{
+	enum State {
 		NEW,
 		LOCAL,
 		TRACKED,
@@ -28,15 +30,21 @@ namespace PawnState {
 	/**
 	 * Select state both for child and parent after adding a child to a parent (avoid using manually)
 	 */
-	bool convert(Pawn* new_child,Pawn* new_parent);
+	bool convert(Pawn* new_child, Pawn* new_parent);
 }
 
+/**
+ * Enables the component to bind to this enclosing pawn
+ */
+#define COMPONENT_BIND_POINT template<DerivedTrait<Component> T, typename... Args> std::shared_ptr<T> createComponent(Args... args) { return static_pointer_cast<T>(addComponent(std::make_shared<T>(this, args...))); }
 
 class Pawn : public Entity, public std::enable_shared_from_this<Pawn> {
 protected:
 	friend class PawnTree;
 	friend class Board;
-	friend bool PawnState::convert(Pawn* new_child,Pawn* new_parent);
+
+	friend bool PawnState::convert(Pawn* new_child, Pawn* new_parent);
+
 	std::vector<std::shared_ptr<Pawn>> children; //TODO updating this to make sure its up to date when removing children
 	std::weak_ptr<Pawn> parent;
 	bool to_remove;
@@ -55,11 +63,12 @@ protected:
 	std::weak_ptr<RootPawn> root_pawn;
 
 	std::vector<std::shared_ptr<Component>> components; //TODO unique ptr ???
+	std::weak_ptr<PhysicsComponent> physics_component;
 
 	/**
 	 * All the things that happens on basic update of the engine (intervals between basic updates can vary)
 	 */
-	virtual void onUpdate();
+	virtual void onUpdate(double delta);
 
 	/**
 	 * All the things that happens on fixed update of the engine (fixed intervals between updates, updates with the same frequency as physics)
@@ -85,21 +94,19 @@ protected:
 
 
 	void removeComponents();
-public:
 
+public:
 	Pawn();
+
+	Pawn(const std::string& s);
 
 	/**
 	 * Adds a new component to a pawn
 	 */
-	void addComponent(std::shared_ptr<Component>& c);
+	//todo fix
+	std::shared_ptr<Component>& addComponent(std::shared_ptr<Component> c);
 
-	/**
-	 * TODO will be removed
-	 */
-	template <typename T>
-	typename std::enable_if<std::is_base_of<Component, T>::value, void>::type
-		createComponent();
+	COMPONENT_BIND_POINT
 
 	/**
 	 * Checks if a pawn belongs to a Scene (contains a RootPawn in its parent chain)
@@ -122,7 +129,7 @@ public:
 	Board* getScene();
 
 	/**
-	 * Returns all of the pawns children
+	 * Returns all the pawns children
 	 */
 	std::vector<std::shared_ptr<Pawn>>& getChildren();
 
@@ -143,7 +150,7 @@ public:
 
 
 	/**
-	 * Returns true if its a root of an pawn tree (therefore of RootPawn type)
+	 * Returns true if it's a root of a pawn tree (therefore of RootPawn type)
 	 */
 	virtual bool isRoot();
 
@@ -168,17 +175,17 @@ public:
 	std::string toString() const;
 
 	/**
-	 * returns information about the pawn in a string string
+	 * returns information about the pawn in a string
 	 */
 	std::string toStringVerbose() const;
 
 	/**
-	 * returns root pawn or nullptr if root pawn doesn't exists
+	 * returns root pawn or nullptr if root pawn doesn't exist
 	 */
 	std::shared_ptr<RootPawn> getRoot();
 
 	/**
-	 * returns information about the state of pawn in regards to the way its stored and its visibility
+	 * returns information about the state of pawn in regard to the way its stored and its visibility
 	 */
 	PawnState::State getState() const;
 
@@ -186,4 +193,8 @@ public:
 	 * mark a Pawn and all its children as "Removed", unpin it from Pawn Tree
 	 */
 	bool remove();
+
+	std::vector<std::shared_ptr<Component>>& getComponents();
+
+	void debugDraw(ImmediateRenderer& renderer) override;
 };

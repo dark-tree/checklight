@@ -20,10 +20,16 @@ class WidgetContext : public InputListener {
 
 	public:
 
+		/// Focuses the widget for keyboard navigation
 		void setSelected(const std::shared_ptr<InputWidget>& widget);
+
+		/// Sets the given widget as the root of thw widget tree and recomputes navigator
 		void setRoot(const std::shared_ptr<Widget>& widget);
 
+		/// Draw the widget using the given immediate
 		void draw(ImmediateRenderer& immediate);
+
+		/// Pass an event for processing into the GUI widget tree
 		InputResult onEvent(const InputEvent& any) override;
 
 };

@@ -1,34 +1,53 @@
 #pragma once
+
+#include <physics/physicsEngine.hpp>
+
 #include "external.hpp"
 #include "render/window.hpp"
 #include "shared/thread/phased.hpp"
 #include "shared/thread/mailbox.hpp"
 
+
+enum BoardRevocery {
+	NONE,
+	DEFAULT,
+	SEARCH
+};
+
 class Board;
 
 class BoardManager {
 protected:
-	unsigned long long globalTickNumber;
+	PhysicsEngine physics_engine;
+	unsigned long long global_tick_number;
 	std::weak_ptr<Board> current_board;
 	std::vector<std::shared_ptr<Board>> boardList;
+	///board that generates when current_board suddenly disappears, (to avoid crashing the program), needs to be set by user
+	std::weak_ptr<Board> default_board;
+	///current board recovery mode
+	BoardRevocery board_recovery;
 
-	std::unique_ptr<PhasedTaskDelegator> taskDelegator;
-	TaskPool taskPool;
+	std::shared_ptr<InputDispatcher> dispatcher;
 
-	std::unique_ptr<MailboxTaskDelegator> physicsDelegator;
+	std::unique_ptr<PhasedTaskDelegator> task_delegator;
+	TaskPool task_pool;
+	std::thread physics_thread;
+
+	std::mutex physics_mutex;
+
 	std::atomic<bool> continue_loop;
+	std::chrono::time_point<std::chrono::steady_clock> physics_next_tick;
 
-	Window* w;
 	/*
 	 * Creates standard setup of objects and components
 	 */
 	void standardSetup();
 
-
+	void addBoard(const std::shared_ptr<Board>& new_board);
 
 public:
+	BoardManager(const std::shared_ptr<InputDispatcher>& disp = nullptr);
 
-	explicit BoardManager(Window &window);
 	~BoardManager();
 
 	/**
@@ -39,10 +58,20 @@ public:
 	/**
 	 * facilitates fixed update
 	 */
-	[[noreturn]] void fixedUpdateCycle();
+	void fixedUpdateCycle();
+
+	/**
+	 * if board expires it tries to load other one if board recovery is set to true...
+	 */
+	std::shared_ptr<Board> findWorkingBoard(bool& success);
 
 	/**
 	 * returns currently used board
 	 */
 	std::weak_ptr<Board> getCurrentBoard();
+
+	/**
+	 * sets gravity vector
+	 */
+	void setGravity(glm::vec3 gravity);
 };

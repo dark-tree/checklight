@@ -2,6 +2,9 @@
 
 #include "external.hpp"
 
+/**
+ * Context for property value lambdas
+ */
 struct ElementState {
 
 	enum Lifecycle {

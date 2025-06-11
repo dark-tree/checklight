@@ -1,6 +1,7 @@
 build/
 cmake-build-debug/
 cmake-build-release/
+doxygen-build/
 .idea/
 out/
 .vs/

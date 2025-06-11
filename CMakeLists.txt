@@ -150,6 +150,9 @@ add_library(checklight_shared_system ${CHECKLIGHT_SHARED_SOURCES} )
 file(GLOB_RECURSE CHECKLIGHT_INPUT_SOURCES "src/input/*.cpp")
 add_library(checklight_input_system ${CHECKLIGHT_INPUT_SOURCES} )
 
+file(GLOB_RECURSE CHECKLIGHT_PHYSICS_SOURCES "src/physics/*.cpp")
+add_library(checklight_physics_system ${CHECKLIGHT_PHYSICS_SOURCES})
+
 file(GLOB_RECURSE CHECKLIGHT_SOUND_SOURCES "src/sound/*.cpp")
 add_library(checklight_sound_system ${CHECKLIGHT_SOUND_SOURCES} )
 
@@ -161,7 +164,7 @@ add_library(checklight_external
 		lib/stb_image_write.cpp
 		lib/stb_vorbis.cpp
 		lib/vk_mem_alloc.cpp
- )
+)
 
 target_include_directories(checklight_external PRIVATE
 		${CHECKLIGHT_LIBRARIES}
@@ -174,6 +177,7 @@ target_link_libraries(checklight_engine_system PRIVATE
 		checklight_common
 		checklight_shared_system
 		checklight_render_system
+		checklight_sound_system
 )
 
 target_link_libraries(checklight_render_system PRIVATE
@@ -210,6 +214,12 @@ target_link_libraries(checklight_gui_system PRIVATE
 		checklight_shared_system
 )
 
+target_link_libraries(checklight_physics_system PRIVATE
+		checklight_common
+		checklight_shared_system
+		checklight_engine_system
+)
+
 target_link_libraries(checklight PRIVATE
 		checklight_common
 		checklight_render_system
@@ -218,6 +228,7 @@ target_link_libraries(checklight PRIVATE
 		checklight_sound_system
 		checklight_gui_system
 		checklight_engine_system
+        checklight_physics_system
 )
 
 target_link_libraries(checklight_test PRIVATE
@@ -225,6 +236,7 @@ target_link_libraries(checklight_test PRIVATE
 		checklight_gui_system
 		checklight_shared_system
 		checklight_render_system
+		checklight_engine_system
 )
 
 target_include_directories(checklight_test PRIVATE
@@ -307,3 +319,5 @@ if (WIN32)
 			"${openal-soft_BINARY_DIR}/OpenAL32.dll"
 			"${CMAKE_BINARY_DIR}/OpenAL32.dll")
 endif()
+
+target_compile_options(checklight_common INTERFACE -fnon-call-exceptions)

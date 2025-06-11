@@ -47,6 +47,9 @@ class TextCursor {
 
 };
 
+/**
+ * Simple Unicode text field with several options
+ */
 class FieldWidget : public InputWidget {
 
 	public:

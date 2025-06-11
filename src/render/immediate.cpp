@@ -646,12 +646,12 @@ void ImmediateRenderer::drawRect3D(float x, float y, float z, float w, float h) 
 
 	glm::quat rot = getBillboardRotation(pos);
 
-	drawBillboardVertex(rot, pos, sx, sy, sprite.u1, sprite.v1);
-	drawBillboardVertex(rot, pos, ex, ey, sprite.u2, sprite.v2);
-	drawBillboardVertex(rot, pos, sx, ey, sprite.u1, sprite.v2);
+	drawBillboardVertex(rot, pos, sx, sy, sprite.u2, sprite.v1);
+	drawBillboardVertex(rot, pos, ex, ey, sprite.u1, sprite.v2);
+	drawBillboardVertex(rot, pos, sx, ey, sprite.u2, sprite.v2);
 
-	drawBillboardVertex(rot, pos, sx, sy, sprite.u1, sprite.v1);
-	drawBillboardVertex(rot, pos, ex, sy, sprite.u2, sprite.v1);
-	drawBillboardVertex(rot, pos, ex, ey, sprite.u2, sprite.v2);
+	drawBillboardVertex(rot, pos, sx, sy, sprite.u2, sprite.v1);
+	drawBillboardVertex(rot, pos, ex, sy, sprite.u1, sprite.v1);
+	drawBillboardVertex(rot, pos, ex, ey, sprite.u1, sprite.v2);
 
 }

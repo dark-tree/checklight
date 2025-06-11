@@ -14,16 +14,16 @@ SoundClip::~SoundClip(){
 }
 
 void SoundClip::convertChannels(int* audio_size, int channels, short* data) {
-	/// Resize to 1 channel
+	// Resize to 1 channel
 	int new_audio_size = *audio_size / channels;
-	/// Get data only from 1 channel
+	// Get data only from 1 channel
 	int j = 0;
 	int sum_audio = 0;
 	for (int i = 0; i < *audio_size; i++) {
 		sum_audio += data[i];
-		/// Check if we are at the end of the block of channels
-		/// If we are, get average of the channels and save to the output
-		/// All channels convert to mono as average of the channels
+		// Check if we are at the end of the block of channels
+		// If we are, get average of the channels and save to the output
+		// All channels convert to mono as average of the channels
 		if (i % channels == (channels-1)) {
 			data[j] = sum_audio/channels;
 			sum_audio = 0;
@@ -50,7 +50,7 @@ void SoundClip::loadOGGFile(const char* filename) {
 	}
 	this->path = filename;
 
-	/// Check of the file has more than 2 channels. If it has, convert it to mono
+	// Check of the file has more than 2 channels. If it has, convert it to mono
 	if (channels >= 2) {
 		convertChannels(&size_block, channels, output);
 	}
@@ -72,8 +72,8 @@ void SoundClip::loadOGGFile(const char* filename) {
 void SoundClip::loadWAVFile(const char* filename) {
 	alGetError();
 	/// WAV File Header
-	/// https://docs.fileformat.com/audio/wav/
-	/// http://soundfile.sapp.org/doc/WaveFormat/
+	// https://docs.fileformat.com/audio/wav/
+	// http://soundfile.sapp.org/doc/WaveFormat/
 	struct WAVFile {
 		char chunk_ID[4];
 		uint32_t chunk_size;
@@ -94,14 +94,14 @@ void SoundClip::loadWAVFile(const char* filename) {
 
 	std::ifstream wav_file(filename, std::ios::binary);
 	WAVFile wav_header;
-	/// Read header from file
+	// Read header from file
 	if (!wav_file.read(reinterpret_cast<char*>(&wav_header), sizeof(WAVFile))) {
 		out::error("Failed decode WAV file '%s', can't read file header!", filename);
 		return;
 	}
 
 	ALsizei frequency = wav_header.sample_rate;
-	/// Read all audio data without header from file
+	// Read all audio data without header from file
 	std::vector<short> data;
 	data.resize(wav_header.subchunk2_size);
 
@@ -111,7 +111,7 @@ void SoundClip::loadWAVFile(const char* filename) {
 	}
 	ALsizei audio_size = wav_header.subchunk2_size;
 
-	/// Check of the file has more than 2 channels. If it has, convert it to mono
+	// Check of the file has more than 2 channels. If it has, convert it to mono
 	if (wav_header.num_channels >= 2) {
 		convertChannels(&audio_size, wav_header.num_channels, data.data());
 	}

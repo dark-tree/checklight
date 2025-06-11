@@ -4,6 +4,9 @@
 
 class SelectWidget;
 
+/**
+ * GUI overlay used by by SelectWidget
+ */
 class DropdownOverlay : public Overlay {
 
 	private:
@@ -19,6 +22,9 @@ class DropdownOverlay : public Overlay {
 
 };
 
+/**
+ * Dropdown selection widget
+ */
 class SelectWidget : public InputWidget {
 
 	public:
