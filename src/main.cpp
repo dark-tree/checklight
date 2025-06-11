@@ -182,6 +182,11 @@ static void entry(Args& args) {
 		immediate.setTextAlignment(VerticalAlignment::TOP);
 		immediate.drawString2D(system.width() - 10, 10, "FPS: " + std::to_string(fps));
 
+		// DEBUG
+
+		immediate.setBillboardTarget(current_board->getCamPos());
+		current_board->getTree().getRoot()->debugDraw(immediate);
+
 		// update uniforms, do this once at the beginning of frame rendering
 		system.setProjectionMatrix(65.0f, 0.01f, 1000.0f);
 		system.setViewMatrix(current_board->getCamPos(), current_board->getCamForward());
@@ -193,7 +198,6 @@ static void entry(Args& args) {
 		system.getLightManager().flush();
 
 		// render the scene
-
 		system.draw();
 	}
 

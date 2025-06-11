@@ -195,4 +195,6 @@ public:
 	bool remove();
 
 	std::vector<std::shared_ptr<Component>>& getComponents();
+
+	void debugDraw(ImmediateRenderer& renderer) override;
 };

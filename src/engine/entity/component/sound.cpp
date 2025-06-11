@@ -28,3 +28,10 @@ InputResult SoundComponent::onEvent(const InputEvent& event) {
 void SoundComponent::onConnected() {
 
 }
+
+void SoundComponent::debugDraw(ImmediateRenderer& renderer) {
+	const glm::vec3 position = getPosition();
+	renderer.setBillboardMode(BillboardMode::TWO_AXIS);
+	renderer.setSprite(default_file_name);
+	renderer.drawRect3D(position.x,position.y,position.z,1.0f,1.0f);
+}

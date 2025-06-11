@@ -1,5 +1,6 @@
 #pragma once
 #include "../../external.hpp"
+#include "render/render.hpp"
 
 class Entity {
 protected:
@@ -23,4 +24,6 @@ public:
 	 * if set true component will execute update and fixedUpdate functions
 	 */
 	void setActive(bool value);
+
+	virtual void debugDraw(ImmediateRenderer& renderer);
 };

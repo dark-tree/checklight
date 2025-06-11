@@ -20,3 +20,6 @@ uint32_t Entity::getEntityID() const {
 void Entity::setActive(const bool value) {
 	active = value;
 }
+
+void Entity::debugDraw(ImmediateRenderer& renderer) {
+}

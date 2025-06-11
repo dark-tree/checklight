@@ -411,6 +411,15 @@ std::vector<std::shared_ptr<Component>>& Pawn::getComponents() {
 	return components;
 }
 
+void Pawn::debugDraw(ImmediateRenderer& renderer) {
+	for (std::shared_ptr<Pawn>& p : children) {
+		p->debugDraw(renderer);
+	}
+	for (std::shared_ptr<Component>& c : components) {
+		c->debugDraw(renderer);
+	}
+}
+
 bool Pawn::safeRemove() {
 #if ENGINE_DEBUG
 	if (isRoot()) {

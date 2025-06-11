@@ -2,6 +2,7 @@
 #include "entity.hpp"
 #include "input/input.hpp"
 #include "../trait.hpp"
+#include "render/render.hpp"
 
 struct Context;
 struct FixedContext;
