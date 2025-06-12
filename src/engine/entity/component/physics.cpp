@@ -39,8 +39,8 @@ void PhysicsComponent::setMass(float mass) {
 	this->mass = mass;
 }
 
-void PhysicsComponent::setSurface(Surface surface) {
-	this->material = surface;
+void PhysicsComponent::setMaterial(Material material) {
+	this->material = material;
 }
 
 void PhysicsComponent::setStatic(bool is_static) {
@@ -51,7 +51,7 @@ glm::vec3 PhysicsComponent::getGravityScale() const {
 	return gravity_scale;
 }
 
-Surface& PhysicsComponent::getMaterial() {
+Material& PhysicsComponent::getMaterial() {
 	return material;
 }
 
@@ -61,10 +61,6 @@ bool PhysicsComponent::isStatic() const {
 
 Collider& PhysicsComponent::getCollider() {
 	return collider;
-}
-
-std::shared_ptr<RenderObject> PhysicsComponent::getRenderObject() {
-	return render_object;
 }
 
 glm::vec3 PhysicsComponent::furthestPointInDirection(glm::vec3 direction) {
