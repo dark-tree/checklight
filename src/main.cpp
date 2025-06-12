@@ -119,7 +119,7 @@ static void entry(Args& args) {
 		cube_3->createComponent<SoundComponent>("assets/sounds/3.ogg");
 		auto pc = cube_3->createComponent<PhysicsComponent>();
 		pc->setVelocity({0, 10, 0});
-        pc->getMaterial().coefficient_of_restitution = 1.3f;
+        pc->getMaterial().coefficient_of_restitution = 1.8f;
 		sp->addPawnToRoot(cube_3);
 	}
 	{

@@ -92,19 +92,25 @@ protected:
 	 */
 	void setTracked(bool v);
 
+	/**
+	 * Adds a new component to a pawn
+	 */
+	//todo fix
+	std::shared_ptr<Component>& addComponent(std::shared_ptr<Component> c);
 
 	void removeComponents();
+
+	/**
+	 * returns true if there were some additive changes to pawn tree (like new children added) that requires changes to PawnTree structure
+	 */
+	bool unregisteredChildAdded() const;
 
 public:
 	Pawn();
 
 	Pawn(const std::string& s);
 
-	/**
-	 * Adds a new component to a pawn
-	 */
-	//todo fix
-	std::shared_ptr<Component>& addComponent(std::shared_ptr<Component> c);
+
 
 	COMPONENT_BIND_POINT
 
@@ -153,11 +159,6 @@ public:
 	 * Returns true if it's a root of a pawn tree (therefore of RootPawn type)
 	 */
 	virtual bool isRoot();
-
-	/**
-	 * returns true if there were some additive changes to pawn tree (like new children added) that requires changes to PawnTree structure
-	 */
-	bool unregisteredChildAdded() const;
 
 	/**
 	 * returns true if there were some subtractive changes to pawn tree (like removed a children) that requires changes to PawnTree structure
