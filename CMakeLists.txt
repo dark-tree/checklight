@@ -178,6 +178,7 @@ target_link_libraries(checklight_engine_system PRIVATE
 		checklight_shared_system
 		checklight_render_system
 		checklight_sound_system
+		checklight_physics_system
 )
 
 target_link_libraries(checklight_render_system PRIVATE
