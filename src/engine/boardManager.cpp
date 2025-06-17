@@ -32,7 +32,7 @@ void BoardManager::standardSetup() {
 	const auto cameraPawn = std::make_shared<SpatialPawn>();
 	const auto cam = cameraPawn->createComponent<Camera>();
 
-	if (dispatcher) dispatcher->registerListener(cam);
+	if(dispatcher) dispatcher->registerListener(cam);
 
 	cameraPawn->setName("Main Camera");
 
@@ -44,7 +44,7 @@ void BoardManager::standardSetup() {
 }
 
 void BoardManager::addBoard(const std::shared_ptr<Board>& new_board) {
-	boardList.push_back(new_board);
+	board_list.push_back(new_board);
 	current_board = new_board;
 }
 
@@ -57,11 +57,11 @@ void BoardManager::updateCycle() {
 
 	std::shared_ptr<Board> usingBoard;
 
-	if (!current_board.expired()) usingBoard = current_board.lock();
+	if(!current_board.expired()) usingBoard = current_board.lock();
 	else {
 		bool success;
 		current_board = findWorkingBoard(success);
-		if (success) usingBoard = current_board.lock();
+		if(success) usingBoard = current_board.lock();
 		else FAULT("There is no available board!");
 	}
 
@@ -74,11 +74,11 @@ void BoardManager::updateCycle() {
 
 	auto next_tick = std::chrono::steady_clock::now();
 
-	if (next_tick > physics_next_tick) {
+	if(next_tick > physics_next_tick) {
 		physics_next_tick = next_tick + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-			                    std::chrono::duration<double>(TICK_DURATION));
+			std::chrono::duration<double>(TICK_DURATION));
 
-		if (!current_board.expired()) {
+		if(!current_board.expired()) {
 			current_board.lock()->fixedUpdateBoard();
 			physics_engine.physicsUpdate();
 		}
@@ -95,7 +95,7 @@ void BoardManager::updateCycle() {
 
 	//-----------remove--------------
 
-	if (usingBoard->pawnsToRemove() > 0) {
+	if(usingBoard->pawnsToRemove() > 0) {
 		//maybe someday it will be smarter
 		physics_mutex.lock();
 		usingBoard->dequeueRemove(100);
@@ -147,9 +147,9 @@ void BoardManager::fixedUpdateCycle() {
 
 std::shared_ptr<Board> BoardManager::findWorkingBoard(bool& success) {
 	std::shared_ptr<Board> new_board;
-	switch (board_recovery) {
+	switch(board_recovery) {
 		case BoardRevocery::DEFAULT:
-			if (!default_board.expired()) {
+			if(!default_board.expired()) {
 				new_board = default_board.lock();
 				success = true;
 			} else {
@@ -160,12 +160,12 @@ std::shared_ptr<Board> BoardManager::findWorkingBoard(bool& success) {
 			success = false;
 			break;
 		case BoardRevocery::SEARCH:
-			if (default_board.expired()) {
+			if(default_board.expired()) {
 				new_board = default_board.lock();
 				success = true;
 			} else {
-				if (boardList.size() > 0) {
-					new_board = boardList[0];
+				if(board_list.size() > 0) {
+					new_board = board_list[0];
 					success = true;
 				} else {
 					success = false;

@@ -15,11 +15,11 @@ Board::Board() {
 
 void Board::queueRemove(const std::shared_ptr<Pawn>& p_to_remove) const {
 #if ENGINE_DEBUG
-	if (p_to_remove->to_remove && p_to_remove->getState() != PawnState::REMOVED) {
+	if(p_to_remove->to_remove && p_to_remove->getState() != PawnState::REMOVED) {
 		FAULT("Pawn unprepared to be removed!");
 	}
 #endif
-	if (p_to_remove->is_tracked_on_hash) {
+	if(p_to_remove->is_tracked_on_hash) {
 		//pawn needs to be removed from hashmap
 		pawns_to_remove->push(p_to_remove);
 		pawns_to_remove_from_hashmap->push(p_to_remove);
@@ -35,7 +35,7 @@ void Board::queueRemove(const std::shared_ptr<Component>& pawns_to_remove) {
 void Board::updateBoard(double delta, std::mutex& mtx) {
 	pawns.updateTree(delta, mtx);
 	SoundListener::setPosition(this->getCamPos());
-	SoundListener::setOrientation(this->getCamForward(), {0.0f,1.0f,0.0f});
+	SoundListener::setOrientation(this->getCamForward(), {0.0f, 1.0f, 0.0f});
 }
 
 
@@ -57,7 +57,7 @@ std::shared_ptr<Pawn> Board::findPawnByID(const uint32_t id) {
 
 std::shared_ptr<Pawn> Board::findPawnByID(const uint32_t id, const size_t position) {
 	std::vector query_result = pawns.findAllByID(id);
-	if (query_result.size() > position) {
+	if(query_result.size() > position) {
 		return query_result[position];
 	}
 
@@ -66,7 +66,7 @@ std::shared_ptr<Pawn> Board::findPawnByID(const uint32_t id, const size_t positi
 
 
 std::shared_ptr<Pawn> Board::findPawnByID(const int32_t id) {
-	if (id < 0) {
+	if(id < 0) {
 		FAULT("ID can't be negative!");
 	}
 
@@ -75,12 +75,12 @@ std::shared_ptr<Pawn> Board::findPawnByID(const int32_t id) {
 
 
 std::shared_ptr<Pawn> Board::findPawnByID(const int32_t id, const size_t position) {
-	if (id < 0) {
+	if(id < 0) {
 		FAULT("ID can't be negative!");
 	}
 
 	std::vector query_result = pawns.findAllByID(static_cast<uint32_t>(id));
-	if (query_result.size() > position) {
+	if(query_result.size() > position) {
 		return query_result[position];
 	}
 
@@ -100,7 +100,7 @@ std::shared_ptr<Pawn> Board::findPawnByName(const std::string& name) {
 
 std::shared_ptr<Pawn> Board::findPawnByName(const std::string& name, const size_t position) {
 	std::vector query_result = pawns.findAllByName(name);
-	if (query_result.size() > position) {
+	if(query_result.size() > position) {
 		return query_result[position];
 	}
 
@@ -148,12 +148,12 @@ Board::~Board() {
 }
 
 void Board::dequeueRemove(const size_t amount) {
-	while (!pawns_to_remove->empty()) {
+	while(!pawns_to_remove->empty()) {
 		std::shared_ptr<Pawn> to_be_removed = pawns_to_remove->front();
 
 		std::destroy(to_be_removed->children.begin(), to_be_removed->children.end());
 
-		if (std::weak_ptr parent = to_be_removed->parent; !parent.expired()) {
+		if(std::weak_ptr parent = to_be_removed->parent; !parent.expired()) {
 			auto& children = parent.lock()->getChildren();
 			std::erase_if(children,
 			              [id = to_be_removed->id](const std::shared_ptr<Pawn>& x) {
@@ -164,12 +164,12 @@ void Board::dequeueRemove(const size_t amount) {
 		to_be_removed->parent.reset();
 
 #if ENGINE_DEBUG
-		if (!to_be_removed.get()->is_tracked_on_hash) {
+		if(!to_be_removed.get()->is_tracked_on_hash) {
 			//pawn should die here
 			std::weak_ptr<Pawn> check = to_be_removed;
 			pawns_to_remove->pop();
 
-			if (!check.expired()) {
+			if(!check.expired()) {
 				FAULT("There is some reference to a pawn, not good...");
 			}
 		} else {
@@ -180,12 +180,12 @@ void Board::dequeueRemove(const size_t amount) {
         pawns_to_remove->pop();
 #endif
 	}
-	for (size_t i = 0;
-	     i < (pawns_to_remove_from_hashmap->size() > amount ? amount : pawns_to_remove_from_hashmap->size()); i++) {
+	for(size_t i = 0;
+	    i < (pawns_to_remove_from_hashmap->size() > amount ? amount : pawns_to_remove_from_hashmap->size()); i++) {
 		const std::shared_ptr<Pawn> to_be_removed = pawns_to_remove_from_hashmap->front();
 
 #if ENGINE_DEBUG
-		if (!to_be_removed.get()->is_tracked_on_hash) {
+		if(!to_be_removed.get()->is_tracked_on_hash) {
 			FAULT("Trying to remove pawn from hashmap that is explicitly mark for net being in the hashmap");
 		}
 #endif
@@ -193,7 +193,7 @@ void Board::dequeueRemove(const size_t amount) {
 
 		pawns_to_remove_from_hashmap->pop();
 	}
-	for (size_t i = 0; i < (components_to_remove->size() > amount ? amount : components_to_remove->size()); i++) {
+	for(size_t i = 0; i < (components_to_remove->size() > amount ? amount : components_to_remove->size()); i++) {
 		std::shared_ptr<Component>* to_be_removed = &components_to_remove->front();
 
 		//todo removing from components hashmap after adding it

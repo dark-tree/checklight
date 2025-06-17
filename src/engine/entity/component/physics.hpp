@@ -7,15 +7,13 @@
 
 class PhysicsComponent : public GameComponent {
 protected:
-	std::shared_ptr<RenderObject> render_object;
-
 	Collider collider;
 
 	bool is_static;
 	glm::vec3 gravity_scale;
 
 	float mass;
-	bool initMass;
+	bool init_mass;
 
 	Material material;
 
@@ -35,7 +33,7 @@ public:
 	void setMass(float mass);
 
 	/// Sets the surface properties of the object
-	void setSurface(Surface surface);
+	void setMaterial(Material material);
 
 	/// Sets whether the object is static (non-movable)
 	void setStatic(bool is_static);
@@ -47,16 +45,13 @@ public:
 	glm::vec3 getGravityScale() const;
 
 	/// Gets the surface properties
-	Surface& getMaterial();
+	Material& getMaterial();
 
 	/// Returns true if the object is static
 	bool isStatic() const;
 
 	/// Gets the collider
 	Collider& getCollider();
-
-	/// Gets the associated render object
-	std::shared_ptr<RenderObject> getRenderObject();
 
 	/// Returns the furthest point from object origin in a given direction in relation to the world space
 	glm::vec3 furthestPointInDirection(glm::vec3 direction);
@@ -73,4 +68,5 @@ public:
 	void remove() override;
 
 	~PhysicsComponent() override;
+
 };

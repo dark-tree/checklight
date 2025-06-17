@@ -30,4 +30,3 @@ public:
 
 	void setAngularVelocity(glm::vec3 angularVelocity);
 };
-

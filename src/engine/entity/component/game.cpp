@@ -8,13 +8,11 @@
  * GameComponent
  */
 
-
 GameComponent::GameComponent(SpatialPawn* t) : OwnedComponent(t) {
-
 }
 
 SpatialPawn* GameComponent::getSpatialParent() const {
-	return (SpatialPawn *) parent;
+	return (SpatialPawn*) parent;
 }
 
 glm::vec3 GameComponent::getPosition() const {
@@ -52,5 +50,3 @@ void GameComponent::setVelocity(const glm::vec3 velocity) {
 void GameComponent::setAngularVelocity(const glm::vec3 angularVelocity) {
 	getSpatialParent()->setAngularVelocity(angularVelocity);
 }
-
-
