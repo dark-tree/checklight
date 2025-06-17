@@ -91,7 +91,7 @@ class SwapchainInfo {
 		const std::vector<VkPresentModeKHR>& getModes() const;
 
 		/// Get extend for a given window, supported by the swapchain
-		VkExtent2D getExtent(Window& window) const;
+		VkExtent2D getExtent(const Window& window) const;
 
 		/// Clamp desired image number into a supported range
 		uint32_t getImageCount(uint32_t images) const;

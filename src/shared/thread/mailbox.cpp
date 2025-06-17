@@ -13,5 +13,5 @@ void MailboxTaskDelegator::enqueue(const Task& task) {
 }
 
 void MailboxTaskDelegator::wait() {
-	std::lock_guard {mutex};
+	std::lock_guard lock{mutex};
 }

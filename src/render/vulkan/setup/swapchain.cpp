@@ -176,11 +176,11 @@ const std::vector<VkPresentModeKHR>& SwapchainInfo::getModes() const {
 	return modes;
 }
 
-VkExtent2D SwapchainInfo::getExtent(Window& window) const {
+VkExtent2D SwapchainInfo::getExtent(const Window& window) const {
 
 	// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkSurfaceCapabilitiesKHR.html
 	// check agains the special value specified in the spec
-	if (capabilities.currentExtent.width == SWAPCHAIN_EXTENT_AUTO && capabilities.currentExtent.height == SWAPCHAIN_EXTENT_AUTO) {
+	if (capabilities.currentExtent.width != SWAPCHAIN_EXTENT_AUTO && capabilities.currentExtent.height != SWAPCHAIN_EXTENT_AUTO) {
 		return capabilities.currentExtent;
 	}
 
