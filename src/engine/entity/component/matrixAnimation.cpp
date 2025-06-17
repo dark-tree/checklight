@@ -30,8 +30,8 @@ void MatrixAnimation::onUpdate(Context c) {
 void MatrixAnimation::onFixedUpdate(FixedContext c) {
 	old_percentage = percentage;
 	percentage += TICK_DURATION * animation_speed;
-	if (percentage > 1) percentage -= 1;
-	switch (type) {
+	if(percentage > 1) percentage -= 1;
+	switch(type) {
 		case NONE:
 			break;
 		case ROTATE:

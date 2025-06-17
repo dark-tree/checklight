@@ -8,7 +8,7 @@ PhysicsComponent::PhysicsComponent(SpatialPawn* sp, Collider collider, bool is_s
 	this->material = material;
 	this->collider = collider;
 	this->mass = calculateMass();
-	this->initMass = true;
+	this->init_mass = true;
 	this->collider.setInertiaTensor(glm::mat3x3(mass));
 }
 
@@ -18,13 +18,13 @@ PhysicsComponent::PhysicsComponent(SpatialPawn* sp): GameComponent(sp) {
 	this->material = Material(0.4, 0.5, 1);
 	this->collider = Collider::getCube();
 	this->mass = calculateMass();
-	this->initMass = true;
+	this->init_mass = true;
 	this->collider.setInertiaTensor(glm::mat3x3(mass));
 }
 
 
 void PhysicsComponent::onFixedUpdate(FixedContext c) {
-	initMass = false;
+	init_mass = false;
 }
 
 void PhysicsComponent::setCollider(const Collider& c) {
@@ -69,10 +69,10 @@ glm::vec3 PhysicsComponent::furthestPointInDirection(glm::vec3 direction) {
 
 	double dot_result = -INFINITY;
 	glm::vec3 returnal{0, 0, 0};
-	for (glm::vec3 vertex: collider.getVertices()) {
+	for(glm::vec3 vertex : collider.getVertices()) {
 		glm::vec3 rotated = glm::rotate(rotation, vertex);
 		double dr = glm::dot(rotated, direction);
-		if (dr > dot_result) {
+		if(dr > dot_result) {
 			dot_result = dr;
 			returnal = rotated;
 		}
@@ -85,7 +85,7 @@ float PhysicsComponent::calculateMass() {
 }
 
 float PhysicsComponent::getMass() {
-	if (!initMass) mass = calculateMass();
+	if(!init_mass) mass = calculateMass();
 	return mass;
 }
 

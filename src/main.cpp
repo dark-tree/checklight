@@ -51,9 +51,7 @@ static void entry(Args& args) {
 	BoardManager manager(dispacher);
 	manager.setGravity(glm::vec3(0, -10, 0));
 
-	std::shared_ptr<Board> sp = manager.getCurrentBoard().lock();
-
-	{
+	std::shared_ptr<Board> sp = manager.getCurrentBoard().lock(); {
 		auto invisible_pawn = std::make_shared<SpatialPawn>();
 		invisible_pawn->setPosition(glm::vec3(0, 10, 0));
 		invisible_pawn->createComponent<SoundComponent>("assets/sounds/4.ogg");
@@ -72,21 +70,19 @@ static void entry(Args& args) {
 	sphere->createComponent<RenderComponent>(Models::SPHERE);
 	sphere->createComponent<MatrixAnimation>(MatrixAnimation::TRANSLATE);
 	sphere->createComponent<SoundComponent>("assets/sounds/5.ogg");
-	sp->addPawnToRoot(sphere);
-    {
-        auto cube_2 = std::make_shared<SpatialPawn>();
-        cube_2->setPosition({30, 1.1, 5});
-        cube_2->createComponent<RenderComponent>(Models::CUBE);
-        cube_2->setRotation(rotate(glm::quat(), {0, 0, 0}));
-        cube_2->createComponent<SoundComponent>("assets/sounds/1.ogg");
-        auto pc = cube_2->createComponent<PhysicsComponent>();
-        pc->setVelocity({0, 10, 0});
-        pc->setAngularVelocity({0, 0, 0});
-        pc->setGravityScale({0, 1, 0});
-        pc->getMaterial().coefficient_of_restitution = -0.2f;
-        sp->addPawnToRoot(cube_2);
-    }
-	{
+	sp->addPawnToRoot(sphere); {
+		auto cube_2 = std::make_shared<SpatialPawn>();
+		cube_2->setPosition({30, 1.1, 5});
+		cube_2->createComponent<RenderComponent>(Models::CUBE);
+		cube_2->setRotation(rotate(glm::quat(), {0, 0, 0}));
+		cube_2->createComponent<SoundComponent>("assets/sounds/1.ogg");
+		auto pc = cube_2->createComponent<PhysicsComponent>();
+		pc->setVelocity({0, 10, 0});
+		pc->setAngularVelocity({0, 0, 0});
+		pc->setGravityScale({0, 1, 0});
+		pc->getMaterial().coefficient_of_restitution = -0.2f;
+		sp->addPawnToRoot(cube_2);
+	} {
 		auto cube_2 = std::make_shared<SpatialPawn>();
 		cube_2->setPosition({30, 1.1, 10});
 		cube_2->createComponent<RenderComponent>(Models::CUBE);
@@ -96,33 +92,30 @@ static void entry(Args& args) {
 		pc->setVelocity({0, 10, 0});
 		pc->setAngularVelocity({0, 0, 0});
 		pc->setGravityScale({0, 1, 0});
-        pc->getMaterial().coefficient_of_restitution = 0.5f;
+		pc->getMaterial().coefficient_of_restitution = 0.5f;
 		sp->addPawnToRoot(cube_2);
-	}
-    {
-        auto cube_2_5 = std::make_shared<SpatialPawn>();
-        cube_2_5->setPosition({30, 1.1, 15});
-        cube_2_5->createComponent<RenderComponent>(Models::CUBE);
-        cube_2_5->setRotation(rotate(glm::quat(), {0, 0, 0}));
-        cube_2_5->createComponent<SoundComponent>("assets/sounds/1.ogg");
-        auto pc = cube_2_5->createComponent<PhysicsComponent>();
-        pc->setVelocity({0, 10, 0});
-        pc->setAngularVelocity({0, 0, 0});
-        pc->setGravityScale({0, 1, 0});
-        pc->getMaterial().coefficient_of_restitution = 1.f;
-        sp->addPawnToRoot(cube_2_5);
-    }
-	{
+	} {
+		auto cube_2_5 = std::make_shared<SpatialPawn>();
+		cube_2_5->setPosition({30, 1.1, 15});
+		cube_2_5->createComponent<RenderComponent>(Models::CUBE);
+		cube_2_5->setRotation(rotate(glm::quat(), {0, 0, 0}));
+		cube_2_5->createComponent<SoundComponent>("assets/sounds/1.ogg");
+		auto pc = cube_2_5->createComponent<PhysicsComponent>();
+		pc->setVelocity({0, 10, 0});
+		pc->setAngularVelocity({0, 0, 0});
+		pc->setGravityScale({0, 1, 0});
+		pc->getMaterial().coefficient_of_restitution = 1.f;
+		sp->addPawnToRoot(cube_2_5);
+	} {
 		auto cube_3 = std::make_shared<SpatialPawn>();
 		cube_3->setPosition({30, 1.1, 20});
 		cube_3->createComponent<RenderComponent>(Models::CUBE);
 		cube_3->createComponent<SoundComponent>("assets/sounds/3.ogg");
 		auto pc = cube_3->createComponent<PhysicsComponent>();
 		pc->setVelocity({0, 10, 0});
-        pc->getMaterial().coefficient_of_restitution = 1.8f;
+		pc->getMaterial().coefficient_of_restitution = 1.8f;
 		sp->addPawnToRoot(cube_3);
-	}
-	{
+	} {
 		auto floor = std::make_shared<SpatialPawn>();
 		floor->setPosition({0, -1000, 0});
 		auto pc = floor->createComponent<PhysicsComponent>();
@@ -150,14 +143,14 @@ static void entry(Args& args) {
 
 	std::vector<std::shared_ptr<RenderObject>> objects;
 
-	for (auto& model: models) {
+	for(auto& model : models) {
 		auto object = system.createRenderObject();
 		object->setMatrix(glm::identity<glm::mat4x3>());
 		object->setModel(model);
 		objects.push_back(object);
 	}
 
-	for (auto& model: cube) {
+	for(auto& model : cube) {
 		auto object = system.createRenderObject();
 		object->setMatrix(glm::translate(glm::identity<glm::mat4>(), glm::vec3(4, 0, 4)));
 		object->setModel(model);
@@ -189,7 +182,7 @@ static void entry(Args& args) {
 
 
 	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
-	while (!window.shouldClose()) {
+	while(!window.shouldClose()) {
 		window.poll();
 
 		//physics update before rendering
@@ -239,7 +232,7 @@ int main(int argc, const char* argv[]) {
 	std::string path = std::filesystem::current_path().generic_string();
 	out::info("Current working directory: %s", path.c_str());
 
-	if (args.has("--verbose")) {
+	if(args.has("--verbose")) {
 		out::logger.setLogLevelMask(Logger::LEVEL_VERBOSE);
 	}
 

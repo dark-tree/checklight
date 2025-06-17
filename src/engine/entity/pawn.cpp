@@ -13,23 +13,23 @@
  */
 
 std::string PawnState::to_str(const PawnState::State p) {
-	switch (p) {
-		case State::NEW: return "new";
-		case State::LOCAL: return "local";
-		case State::TRACKED: return "tracked";
-		case State::UNPINNED: return "unpinned";
-		case State::REMOVED: return "removed";
-		case State::UNLISTED: return "unlisted";
-		case State::SINGLE: return "single";
+	switch(p) {
+		case NEW: return "new";
+		case LOCAL: return "local";
+		case TRACKED: return "tracked";
+		case UNPINNED: return "unpinned";
+		case REMOVED: return "removed";
+		case UNLISTED: return "unlisted";
+		case SINGLE: return "single";
 		default: return "unknown";
 	}
 }
 
 bool PawnState::convert(Pawn* new_child, Pawn* new_parent) {
-	PawnState::State childState = new_child->getState();
-	switch (new_parent->getState()) {
+	State childState = new_child->getState();
+	switch(new_parent->getState()) {
 		case NEW:
-			switch (childState) {
+			switch(childState) {
 				case NEW: //parent - NEW, child - NEW
 					new_child->pawn_state = LOCAL;
 					break;
@@ -57,7 +57,7 @@ bool PawnState::convert(Pawn* new_child, Pawn* new_parent) {
 			new_parent->pawn_state = LOCAL;
 			break;
 		case LOCAL:
-			switch (childState) {
+			switch(childState) {
 				case NEW: // parent - LOCAL, child - NEW
 					new_child->pawn_state = LOCAL;
 					break;
@@ -84,7 +84,7 @@ bool PawnState::convert(Pawn* new_child, Pawn* new_parent) {
 			}
 			break;
 		case TRACKED:
-			switch (childState) {
+			switch(childState) {
 				case NEW: // parent - TRACKED, child - NEW
 					new_child->pawn_state = TRACKED;
 					break;
@@ -111,7 +111,7 @@ bool PawnState::convert(Pawn* new_child, Pawn* new_parent) {
 			}
 			break;
 		case UNPINNED:
-			switch (childState) {
+			switch(childState) {
 				case NEW: // parent - UNPINNED, child - NEW
 					new_child->pawn_state = UNPINNED;
 					break;
@@ -140,7 +140,7 @@ bool PawnState::convert(Pawn* new_child, Pawn* new_parent) {
 		case REMOVED:
 			FAULT("Cant add child, the parent is marked as REMOVED");
 		case UNLISTED:
-			switch (childState) {
+			switch(childState) {
 				case NEW: // parent - UNLISTED, child - NEW
 					new_child->pawn_state = LOCAL;
 					break;
@@ -167,7 +167,7 @@ bool PawnState::convert(Pawn* new_child, Pawn* new_parent) {
 			}
 			break;
 		case SINGLE:
-			switch (childState) {
+			switch(childState) {
 				case NEW: // parent - SINGLE, child - NEW
 					new_child->pawn_state = LOCAL;
 					break;
@@ -207,14 +207,14 @@ bool PawnState::convert(Pawn* new_child, Pawn* new_parent) {
 void Pawn::onUpdate(double delta) {
 	std::shared_ptr<Pawn> p = shared_from_this();
 	Context cntx(delta, p);
-	for (const std::shared_ptr<Component>& c: components) {
+	for(const std::shared_ptr<Component>& c : components) {
 		c->onUpdate(cntx);
 	}
 }
 
 void Pawn::onFixedUpdate() {
 	FixedContext cntx;
-	for (const std::shared_ptr<Component>& c: components) {
+	for(const std::shared_ptr<Component>& c : components) {
 		c->onFixedUpdate(cntx);
 	}
 }
@@ -235,9 +235,9 @@ Pawn::Pawn(const std::string& s) : Pawn() {
 std::shared_ptr<Component>& Pawn::addComponent(std::shared_ptr<Component> c) {
 	c->parent = this;
 	c->onConnected();
-	if (auto const pc = std::dynamic_pointer_cast<PhysicsComponent>(c)) {
+	if(auto const pc = std::dynamic_pointer_cast<PhysicsComponent>(c)) {
 		physics_component = pc;
-		if (isRooted()) {
+		if(isRooted()) {
 			board->registerPhysicsComponent(pc);
 		}
 	}
@@ -249,13 +249,13 @@ void Pawn::setBoard(Board* s) {
 }
 
 void Pawn::propagateRemove() {
-	for (const std::shared_ptr<Pawn>& c: children) {
+	for(const std::shared_ptr<Pawn>& c : children) {
 		c->safeRemove();
 	}
 }
 
 bool Pawn::isRooted() {
-	if (!root_pawn.expired()) {
+	if(!root_pawn.expired()) {
 		return true;
 	}
 
@@ -263,8 +263,8 @@ bool Pawn::isRooted() {
 	std::shared_ptr<Pawn> recursive_parent = parent.lock();
 
 	// recursive_parent will be nullptr if parent expired
-	while (recursive_parent) {
-		if (recursive_parent->isRoot()) {
+	while(recursive_parent) {
+		if(recursive_parent->isRoot()) {
 			rooted = true;
 			root_pawn = std::static_pointer_cast<RootPawn>(recursive_parent);
 		}
@@ -278,12 +278,12 @@ std::string Pawn::getPawnName() const {
 }
 
 std::shared_ptr<Pawn> Pawn::getParent() const {
-	if (parent.expired()) return nullptr;
+	if(parent.expired()) return nullptr;
 	else return parent.lock();
 }
 
 Board* Pawn::getScene() {
-	if (is_mounted_to_board) return board;
+	if(is_mounted_to_board) return board;
 	else return nullptr;
 }
 
@@ -297,19 +297,19 @@ void Pawn::addChild(const std::shared_ptr<Pawn>& new_child) {
 	PawnState::convert(new_child.get(), this);
 
 	children.push_back(new_child); //cannot be std move (it would destroy the argument)
-	if (isRooted()) {
-		if (root_pawn.expired()) {
+	if(isRooted()) {
+		if(root_pawn.expired()) {
 			FAULT("Root Pawn shouldn't have expired after isRooted() call!");
 		}
 
 		PawnTree* pt = root_pawn.lock()->getTree();
-		if (pt == nullptr) {
+		if(pt == nullptr) {
 			FAULT("Pawn Tree shouldn't be null, all Root Pawns should be children of one Pawn Tree!");
 		}
 
 		pt->mountPawn(new_child);
 	} else {
-		if (!isRoot()) {
+		if(!isRoot()) {
 			unregistered_child_added = true; //only when the change is not instantly commited to a data structure
 		}
 	}
@@ -336,35 +336,35 @@ bool Pawn::isMountedToBoard() const {
 }
 
 std::string Pawn::toString() const {
-	if (name != "") return name;
+	if(name != "") return name;
 	else return "Unnamed Pawn";
 }
 
 std::string Pawn::toStringVerbose() const {
 	std::string result;
 	result +=
-			"{ id: " +
-			std::to_string(id) +
-			", name: \"" +
-			Pawn::toString() +
-			"\", children: " +
-			std::to_string(children.size()) +
-			", update: " +
-			std::to_string(unregistered_child_added) +
-			", remove: " +
-			std::to_string(to_remove) +
-			", state: " +
-			PawnState::to_str(pawn_state) +
-			", components: " +
-			std::to_string(components.size()) +
-			", parent: " +
-			(getParent() != nullptr ? "1" : "0") +
-			"}";
+	"{ id: " +
+	std::to_string(id) +
+	", name: \"" +
+	Pawn::toString() +
+	"\", children: " +
+	std::to_string(children.size()) +
+	", update: " +
+	std::to_string(unregistered_child_added) +
+	", remove: " +
+	std::to_string(to_remove) +
+	", state: " +
+	PawnState::to_str(pawn_state) +
+	", components: " +
+	std::to_string(components.size()) +
+	", parent: " +
+	(getParent() != nullptr ? "1" : "0") +
+	"}";
 	return result;
 }
 
 std::shared_ptr<RootPawn> Pawn::getRoot() {
-	if (isRooted()) return root_pawn.lock();
+	if(isRooted()) return root_pawn.lock();
 	else return nullptr;
 }
 
@@ -373,12 +373,12 @@ PawnState::State Pawn::getState() const {
 }
 
 bool Pawn::remove() {
-	if (isRoot()) {
+	if(isRoot()) {
 		FAULT("Cant remove root pawn!");
 	}
-	if (!to_remove) {
+	if(!to_remove) {
 #if ENGINE_DEBUG
-		if (pawn_state == PawnState::REMOVED)
+		if(pawn_state == PawnState::REMOVED)
 			FAULT("Pawn state is REMOVED before using remove() function on it");
 #endif
 		to_remove = true;
@@ -391,15 +391,15 @@ bool Pawn::remove() {
 		board->queueRemove(shared_from_this());
 
 		//removing components
-		for (auto c: components) {
+		for(auto c : components) {
 			c->remove();
 			board->queueRemove(c);
 		}
 		return true;
 	} else {
 #if ENGINE_DEBUG
-		for (const auto& c: components) {
-			if (c->to_remove) FAULT("all children should be removed in a pawn described as removed!");
+		for(const auto& c : components) {
+			if(c->to_remove) FAULT("all children should be removed in a pawn described as removed!");
 		}
 #endif
 		out::warn("Trying to remove() the same pawn more than once!");
@@ -412,23 +412,23 @@ std::vector<std::shared_ptr<Component>>& Pawn::getComponents() {
 }
 
 void Pawn::debugDraw(ImmediateRenderer& renderer) {
-	for (std::shared_ptr<Pawn>& p : children) {
+	for(std::shared_ptr<Pawn>& p : children) {
 		p->debugDraw(renderer);
 	}
-	for (std::shared_ptr<Component>& c : components) {
+	for(std::shared_ptr<Component>& c : components) {
 		c->debugDraw(renderer);
 	}
 }
 
 bool Pawn::safeRemove() {
 #if ENGINE_DEBUG
-	if (isRoot()) {
+	if(isRoot()) {
 		FAULT("This shouldn't be root as its as this function should only be called for children of removed pawn");
 	}
 #endif
-	if (to_remove) {
+	if(to_remove) {
 #if ENGINE_DEBUG
-		if (pawn_state == PawnState::REMOVED)
+		if(pawn_state == PawnState::REMOVED)
 			FAULT("Pawn state is REMOVED before using remove() function on it");
 #endif
 		to_remove = true;
@@ -449,7 +449,7 @@ void Pawn::setTracked(bool v) {
 }
 
 void Pawn::removeComponents() {
-	for (const auto& c: components) {
+	for(const auto& c : components) {
 		c->setActive(false);
 	}
 }

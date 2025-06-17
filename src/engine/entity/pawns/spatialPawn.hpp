@@ -11,7 +11,7 @@ protected:
 	glm::quat rotation;
 	glm::vec3 scale;
 
-	glm::mat4x3 affineTransformMatrix;
+	glm::mat4x3 affine_transform_matrix;
 
 public:
 	SpatialPawn();

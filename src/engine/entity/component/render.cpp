@@ -14,7 +14,7 @@ RenderComponent::RenderComponent(SpatialPawn* sp, Models::Shape s) : GameCompone
 }
 
 void RenderComponent::onUpdate(Context c) {
-	render_object->setMatrix(dynamic_cast<SpatialPawn *>(parent)->getMatrix()); //TODO if move byte
+	render_object->setMatrix(dynamic_cast<SpatialPawn*>(parent)->getMatrix()); //TODO if move byte
 }
 
 void RenderComponent::onFixedUpdate(FixedContext c) {
@@ -29,7 +29,7 @@ void RenderComponent::onConnected() {
 }
 
 void RenderComponent::setRendering(bool is_rendering) {
-	if (is_rendering != rendering) {
+	if(is_rendering != rendering) {
 		render_object->setActive(is_rendering);
 	}
 	rendering = is_rendering;

@@ -21,7 +21,7 @@ protected:
 	PhysicsEngine physics_engine;
 	unsigned long long global_tick_number;
 	std::weak_ptr<Board> current_board;
-	std::vector<std::shared_ptr<Board>> boardList;
+	std::vector<std::shared_ptr<Board>> board_list;
 	///board that generates when current_board suddenly disappears, (to avoid crashing the program), needs to be set by user
 	std::weak_ptr<Board> default_board;
 	///current board recovery mode

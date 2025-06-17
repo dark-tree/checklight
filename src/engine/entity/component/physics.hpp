@@ -13,7 +13,7 @@ protected:
 	glm::vec3 gravity_scale;
 
 	float mass;
-	bool initMass;
+	bool init_mass;
 
 	Material material;
 

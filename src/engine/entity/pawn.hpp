@@ -111,7 +111,6 @@ public:
 	Pawn(const std::string& s);
 
 
-
 	COMPONENT_BIND_POINT
 
 	/**

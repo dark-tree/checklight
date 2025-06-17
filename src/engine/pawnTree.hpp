@@ -7,7 +7,6 @@ class PawnTree {
 
 protected:
 	std::shared_ptr<RootPawn> root;
-
 	std::unordered_multimap<std::string, std::shared_ptr<Pawn>> name_map;
 	std::unordered_multimap<uint32_t, std::shared_ptr<Pawn>> id_map;
 	std::set<std::shared_ptr<PhysicsComponent>> physics_components_to_update;
