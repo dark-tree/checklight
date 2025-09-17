@@ -21,7 +21,7 @@ protected:
 	PhysicsEngine physics_engine;
 	unsigned long long global_tick_number;
 	std::weak_ptr<Board> current_board;
-	std::vector<std::shared_ptr<Board>> boardList;
+	std::vector<std::shared_ptr<Board>> board_list;
 	///board that generates when current_board suddenly disappears, (to avoid crashing the program), needs to be set by user
 	std::weak_ptr<Board> default_board;
 	///current board recovery mode
@@ -45,6 +45,11 @@ protected:
 
 	void addBoard(const std::shared_ptr<Board>& new_board);
 
+	/**
+	 * if board expires it tries to load other one if board recovery is set to true...
+	 */
+	std::shared_ptr<Board> findWorkingBoard(bool& success);
+
 public:
 	BoardManager(const std::shared_ptr<InputDispatcher>& disp = nullptr);
 
@@ -60,10 +65,6 @@ public:
 	 */
 	void fixedUpdateCycle();
 
-	/**
-	 * if board expires it tries to load other one if board recovery is set to true...
-	 */
-	std::shared_ptr<Board> findWorkingBoard(bool& success);
 
 	/**
 	 * returns currently used board

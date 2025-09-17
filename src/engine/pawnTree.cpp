@@ -7,14 +7,13 @@
 
 PawnTree::PawnTree() {
 	root = std::make_shared<RootPawn>();
-	//TODO adding root to hashmap (?)
 	root->pawn_state = PawnState::TRACKED;
 	root->tr = this;
 }
 
 std::shared_ptr<Pawn> PawnTree::findByName(const std::string& name) {
 	std::unordered_multimap<std::string, std::shared_ptr<Pawn>>::iterator result = name_map.find(name);
-	if (result != name_map.end()) {
+	if(result != name_map.end()) {
 		return result->second;
 	}
 	return nullptr;
@@ -22,7 +21,7 @@ std::shared_ptr<Pawn> PawnTree::findByName(const std::string& name) {
 
 std::shared_ptr<Pawn> PawnTree::findByID(uint32_t id) {
 	std::unordered_multimap<uint32_t, std::shared_ptr<Pawn>>::iterator result = id_map.find(id);
-	if (result != id_map.end()) {
+	if(result != id_map.end()) {
 		return result->second;
 	}
 	return nullptr;
@@ -33,8 +32,8 @@ bool PawnTree::removeFromMaps(const std::string& name, uint32_t id) {
 
 	auto results = name_map.equal_range(name);
 
-	for (auto it = results.first; it != results.second;) {
-		if (it->second->id == id) {
+	for(auto it = results.first; it != results.second;) {
+		if(it->second->id == id) {
 			it = name_map.erase(it);
 			erasedAmount++;
 			continue;
@@ -42,7 +41,7 @@ bool PawnTree::removeFromMaps(const std::string& name, uint32_t id) {
 		++it;
 	}
 
-	if (erasedAmount == 1) {
+	if(erasedAmount == 1) {
 	} else {
 		FAULT("There should be only one entity with given name and ID");
 	}
@@ -55,7 +54,7 @@ bool PawnTree::removeFromMaps(const std::string& name, uint32_t id) {
 std::vector<std::shared_ptr<Pawn>> PawnTree::findAllByName(const std::string& name) {
 	std::vector<std::shared_ptr<Pawn>> result;
 	auto range = name_map.equal_range(name);
-	for (auto r = range.first; r != range.second; ++r) {
+	for(auto r = range.first; r != range.second; ++r) {
 		result.push_back(r->second);
 	}
 	return result;
@@ -64,7 +63,7 @@ std::vector<std::shared_ptr<Pawn>> PawnTree::findAllByName(const std::string& na
 std::vector<std::shared_ptr<Pawn>> PawnTree::findAllByID(const uint32_t id) {
 	std::vector<std::shared_ptr<Pawn>> result;
 	auto range = id_map.equal_range(id);
-	for (auto r = range.first; r != range.second; ++r) {
+	for(auto r = range.first; r != range.second; ++r) {
 		result.push_back(r->second);
 	}
 	return result;
@@ -87,34 +86,34 @@ void PawnTree::mountPawn(const std::shared_ptr<Pawn>& pawn) {
 	bool isCopy = false;
 	bool isChanged = pawn->unregisteredChildAdded();
 
-	if (id_map.count(pawn->getEntityID()) > 0) {
+	if(id_map.count(pawn->getEntityID()) > 0) {
 		auto range = id_map.equal_range(pawn->getEntityID());
-		for (auto r = range.first; r != range.second; ++r) {
-			if (r->second == pawn) {
+		for(auto r = range.first; r != range.second; ++r) {
+			if(r->second == pawn) {
 				isCopy = true;
 			}
 		}
 	}
 
-	if (!pawn->physics_component.expired()) {
+	if(!pawn->physics_component.expired()) {
 		physics_components_to_update.insert(pawn->physics_component.lock());
 	}
 
 	//TODO test if it works
-	if (!isCopy) {
+	if(!isCopy) {
 		const std::string p_name = pawn->getName();
 		const uint32_t p_id = pawn->getEntityID();
 		addPawnToHash(p_name, p_id, pawn);
 	}
 
-	if (isChanged) {
+	if(isChanged) {
 		updatePawnsChildren(pawn);
 		isChanged = false;
 	}
 }
 
 void PawnTree::updatePawnsChildren(const std::shared_ptr<Pawn>& pawn) {
-	for (std::shared_ptr<Pawn>& pawn_child: pawn->getChildren()) {
+	for(std::shared_ptr<Pawn>& pawn_child : pawn->getChildren()) {
 		mountPawn(pawn_child);
 	}
 }
@@ -124,7 +123,7 @@ std::shared_ptr<RootPawn> PawnTree::getRoot() {
 }
 
 void PawnTree::updateTree(double delta, std::mutex& mtx) {
-	for (std::shared_ptr<Pawn>& pawn_child: root->getChildren()) {
+	for(std::shared_ptr<Pawn>& pawn_child : root->getChildren()) {
 		updateTreeRecursion(pawn_child, delta, mtx);
 	}
 }
@@ -135,13 +134,13 @@ void PawnTree::updateTreeRecursion(std::shared_ptr<Pawn> pawn_to_update, double 
 	mtx.unlock();
 
 	//TODO maybe create iterator of some kind with lambda
-	for (std::shared_ptr<Pawn>& pawn_child: pawn_to_update->getChildren()) {
+	for(std::shared_ptr<Pawn>& pawn_child : pawn_to_update->getChildren()) {
 		updateTreeRecursion(pawn_child, delta, mtx);
 	}
 }
 
 void PawnTree::fixedUpdateTree() {
-	for (std::shared_ptr<Pawn>& pawn_child: root->getChildren()) {
+	for(std::shared_ptr<Pawn>& pawn_child : root->getChildren()) {
 		fixedUpdateTreeRecursion(pawn_child);
 	}
 }
@@ -150,7 +149,7 @@ void PawnTree::fixedUpdateTreeRecursion(std::shared_ptr<Pawn> pawn_to_fixed_upda
 	pawn_to_fixed_update->onFixedUpdate();
 
 	//TODO maybe create iterator of some kind with lambda
-	for (std::shared_ptr<Pawn>& pawn_child: pawn_to_fixed_update->getChildren()) {
+	for(std::shared_ptr<Pawn>& pawn_child : pawn_to_fixed_update->getChildren()) {
 		fixedUpdateTreeRecursion(pawn_child);
 	}
 }
@@ -175,10 +174,10 @@ void PawnTree::removePhysicsComponent(const std::shared_ptr<PhysicsComponent>& p
 std::string PawnTree::printStart(bool verbose) {
 	std::string result;
 	std::string n;
-	if (!verbose) n = root->toString();
+	if(!verbose) n = root->toString();
 	else n = root->toStringVerbose();
 	result += "Root:" + n + "\n";
-	for (const auto& c: root->getChildren()) {
+	for(const auto& c : root->getChildren()) {
 		result += recursiveString(c, 1, verbose);
 	}
 	return result;
@@ -187,19 +186,19 @@ std::string PawnTree::printStart(bool verbose) {
 
 std::string PawnTree::recursiveString(const std::shared_ptr<Pawn>& p, const int depth, const bool verbose) {
 	std::string result;
-	for (int i = 0; i < depth; i++) {
+	for(int i = 0; i < depth; i++) {
 		result += "  ";
 	}
 
 	std::string n;
-	if (!verbose) n = p->toString();
+	if(!verbose) n = p->toString();
 	else n = p->toStringVerbose();
 
 	result += "Pawn:" + n + "\n";
 
-	if (verbose) {
-		for (const auto& component: p->components) {
-			for (int i = 0; i <= depth; i++) {
+	if(verbose) {
+		for(const auto& component : p->components) {
+			for(int i = 0; i <= depth; i++) {
 				result += "  ";
 			}
 			result += "Component:" + component->toString() + "\n";
@@ -207,7 +206,7 @@ std::string PawnTree::recursiveString(const std::shared_ptr<Pawn>& p, const int 
 	}
 
 	std::vector<std::shared_ptr<Pawn>> p_children = p->getChildren();
-	for (const auto& i: p_children) {
+	for(const auto& i : p_children) {
 		result += recursiveString(i, depth + 1, verbose);
 	}
 	return result;

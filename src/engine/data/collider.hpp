@@ -36,7 +36,7 @@ public:
 
 	void setTriangles(const std::vector<glm::ivec3>& triangles);
 
-	void LoadFromModel(std::shared_ptr<RenderMesh>);
+	void loadFromModel(std::shared_ptr<RenderMesh>);
 
 	void setAutoCenter();
 

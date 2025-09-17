@@ -29,6 +29,16 @@ private:
 
 	void dequeueRemove(size_t amount);
 
+	/**
+ * registers physicsComponent to be included in physics update
+ */
+	void registerPhysicsComponent(const std::shared_ptr<PhysicsComponent>& physics_component);
+
+	/**
+	 * removes physicsComponent from registry that stores components to update in physics update
+	 */
+	void removePhysicsComponent(const std::shared_ptr<PhysicsComponent>& physics_component);
+
 public:
 	Board();
 
@@ -129,15 +139,6 @@ public:
 	 */
 	int pawnsToRemove() const;
 
-	/**
-	 * registers physicsComponent to be included in physics update
-	 */
-	void registerPhysicsComponent(const std::shared_ptr<PhysicsComponent>& physics_component);
-
-	/**
-	 * removes physicsComponent from registry that stores components to update in physics update
-	 */
-	void removePhysicsComponent(const std::shared_ptr<PhysicsComponent>& physics_component);
 
 	PawnTree& getTree() {
 		return pawns;

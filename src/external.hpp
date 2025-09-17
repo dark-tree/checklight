@@ -1,4 +1,3 @@
-
 #include "const.hpp"
 
 // C libs

@@ -4,13 +4,11 @@
 
 
 class SoundComponent : public GameComponent {
-
 	static inline std::string default_file_name = "assets/image/speaker.png";
 
 	std::shared_ptr<SoundSourceObject> sound_source_object;
+
 public:
-
-
 	SoundComponent(SpatialPawn* t, const std::string& path);
 
 	~SoundComponent() override;

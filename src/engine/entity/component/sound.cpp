@@ -1,6 +1,6 @@
 #include "sound.hpp"
 
-SoundComponent::SoundComponent(SpatialPawn* t,const std::string& path) : GameComponent(t) {
+SoundComponent::SoundComponent(SpatialPawn* t, const std::string& path) : GameComponent(t) {
 	SoundManager& sound_manager = SoundManager::getInstance();
 
 	sound_source_object = std::make_shared<SoundSourceObject>();
@@ -26,12 +26,11 @@ InputResult SoundComponent::onEvent(const InputEvent& event) {
 }
 
 void SoundComponent::onConnected() {
-
 }
 
 void SoundComponent::debugDraw(ImmediateRenderer& renderer) {
 	const glm::vec3 position = getPosition();
 	renderer.setBillboardMode(BillboardMode::TWO_AXIS);
 	renderer.setSprite(default_file_name);
-	renderer.drawRect3D(position.x,position.y,position.z,1.0f,1.0f);
+	renderer.drawRect3D(position.x, position.y, position.z, 1.0f, 1.0f);
 }

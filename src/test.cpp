@@ -50,7 +50,7 @@ TEST(util_pyramid) {
 };
 
 TEST(util_weighed_set) {
-	WeighedSet<int, std::greater<> > set;
+	WeighedSet<int, std::greater<>> set;
 
 	ASSERT(set.empty());
 
@@ -68,7 +68,7 @@ TEST(util_weighed_set) {
 
 	std::vector<int> order;
 
-	for (int i: set) {
+	for(int i : set) {
 		order.push_back(i);
 	}
 
@@ -80,7 +80,7 @@ TEST(util_weighed_set) {
 };
 
 TEST(util_weighed_set_limit) {
-	WeighedSet<int, std::greater<> > set;
+	WeighedSet<int, std::greater<>> set;
 
 	EXPECT(std::length_error, {
 	       set.lowest();
@@ -106,7 +106,7 @@ TEST(util_weighed_set_limit) {
 };
 
 TEST(util_weighed_set_repeated) {
-	WeighedSet<int, std::greater<> > set;
+	WeighedSet<int, std::greater<>> set;
 
 	set.insert(20, 111);
 	set.insert(10, 132);
@@ -116,7 +116,7 @@ TEST(util_weighed_set_repeated) {
 	CHECK(set.size(), 4);
 	int sum = 0;
 
-	for (auto &i: set) {
+	for(auto& i : set) {
 		sum += i;
 	}
 
@@ -127,11 +127,11 @@ TEST(util_weighed_set_repeated) {
 };
 
 TEST(util_program_args) {
-	const char *argv[] = {
+	const char* argv[] = {
 		"program.exe", "--verbose", "--test", "value", "--another", "-f", "X", "-r", "-w"
 	};
 
-	int argc = sizeof(argv) / sizeof(char *);
+	int argc = sizeof(argv) / sizeof(char*);
 
 	Args args(argc, argv);
 
@@ -154,7 +154,7 @@ TEST(util_program_args) {
 };
 
 TEST(gui_simple_padded_absolute) {
-	for (Flow flow: {Flow::LEFT_TO_RIGHT, Flow::RIGHT_TO_LEFT, Flow::TOP_TO_BOTTOM, Flow::BOTTOM_TO_TOP}) {
+	for(Flow flow : {Flow::LEFT_TO_RIGHT, Flow::RIGHT_TO_LEFT, Flow::TOP_TO_BOTTOM, Flow::BOTTOM_TO_TOP}) {
 		auto context = std::make_shared<WidgetContext>();
 		auto root = std::make_shared<RootWidget>(10, 10);
 		auto sub = std::make_shared<PanelWidget>();
@@ -196,7 +196,7 @@ TEST(gui_simple_padded_absolute) {
 };
 
 TEST(gui_simple_padded_fit) {
-	for (Flow flow: {Flow::LEFT_TO_RIGHT, Flow::RIGHT_TO_LEFT, Flow::TOP_TO_BOTTOM, Flow::BOTTOM_TO_TOP}) {
+	for(Flow flow : {Flow::LEFT_TO_RIGHT, Flow::RIGHT_TO_LEFT, Flow::TOP_TO_BOTTOM, Flow::BOTTOM_TO_TOP}) {
 		auto context = std::make_shared<WidgetContext>();
 		auto root = std::make_shared<RootWidget>(10, 10);
 		auto sub = std::make_shared<PanelWidget>();
@@ -668,22 +668,22 @@ TEST(get_multiple_by_name) {
 	std::shared_ptr<Pawn> a[10];
 	std::shared_ptr<Pawn> b[7];
 
-	for (int i = 0; i < 10; i++) {
+	for(int i = 0; i < 10; i++) {
 		a[i] = std::make_shared<Pawn>("SetA");
 	}
 
-	for (int i = 0; i < 7; i++) {
+	for(int i = 0; i < 7; i++) {
 		b[i] = std::make_shared<Pawn>("SetB");
 	}
 
 	CHECK(board->findPawnByName("SetA"), nullptr);
 	ASSERT(board->findPawnsByName("SetA").empty());
 
-	for (int i = 0; i < 10; i++) {
+	for(int i = 0; i < 10; i++) {
 		board->addPawnToRoot(a[i]);
 	}
 
-	for (int i = 0; i < 7; i++) {
+	for(int i = 0; i < 7; i++) {
 		board->addPawnToRoot(b[i]);
 	}
 
@@ -701,12 +701,12 @@ TEST(get_multiple_by_id) {
 	//cant check for multiple instances of the same id (would require creating more than bilion elements)
 	std::shared_ptr<Pawn> a[10];
 
-	for (int i = 0; i < 10; i++) {
+	for(int i = 0; i < 10; i++) {
 		a[i] = std::make_shared<Pawn>("SetA");
 		board->addPawnToRoot(a[i]);
 	}
 
-	for (int i = 0; i < 10; i++) {
+	for(int i = 0; i < 10; i++) {
 		CHECK(board->findPawnsByID(a[i]->getEntityID()).size(), 1);
 		CHECK(board->findPawnsByID(a[i]->getEntityID())[0], a[i]);
 	}

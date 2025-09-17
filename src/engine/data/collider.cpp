@@ -58,7 +58,7 @@ void Collider::setTriangles(const std::vector<glm::ivec3>& triangles) {
 	this->triangles = triangles;
 }
 
-void Collider::LoadFromModel(std::shared_ptr<RenderMesh>) {
+void Collider::loadFromModel(std::shared_ptr<RenderMesh>) {
 	//TODO replace this with actual code
 	this->vertices = Collider::getCube().getVertices();
 	this->triangles = Collider::getCube().getTriangles();
@@ -70,8 +70,8 @@ void Collider::LoadFromModel(std::shared_ptr<RenderMesh>) {
 
 void Collider::calculateSphereColliderRadius() {
 	sphere_collider_radius = 0;
-	for (glm::vec3 vec3: vertices) {
-		if (glm::length(vec3) > sphere_collider_radius) {
+	for(glm::vec3 vec3 : vertices) {
+		if(glm::length(vec3) > sphere_collider_radius) {
 			sphere_collider_radius = glm::length(vec3);
 		}
 	}
@@ -114,7 +114,7 @@ glm::vec3 Collider::findCenterOfMass() {
 	double total_volume = 0;
 	glm::vec3 center = glm::vec3(0, 0, 0);
 
-	for (glm::ivec3 triangle: triangles) {
+	for(glm::ivec3 triangle : triangles) {
 		//get vertices of a given face
 		glm::vec3 v1 = vertices[triangle[0]];
 		glm::vec3 v2 = vertices[triangle[1]];
@@ -125,8 +125,8 @@ glm::vec3 Collider::findCenterOfMass() {
 		// given by the formula V = — | v2x v2y v2z |
 		//                          6 | v3x v3y v3z |
 		float local_volume = (v1[0] * (v2[1] * v3[2] - v2[2] * v3[1])
-		                      - v1[1] * (v2[0] * v3[2] - v2[2] * v3[0])
-		                      + v1[2] * (v2[0] * v3[1] - v2[1] * v3[0])) / 6.0;
+			- v1[1] * (v2[0] * v3[2] - v2[2] * v3[0])
+			+ v1[2] * (v2[0] * v3[1] - v2[1] * v3[0])) / 6.0;
 
 		//compute center of given tetrahedron
 		glm::vec3 centroid = glm::vec3((v1[0] + v2[0] + v3[0]) / 4.0, (v1[1] + v2[1] + v3[1]) / 4.0,
@@ -147,7 +147,7 @@ float Collider::findVolume() {
 	double total_volume = 0;
 	const glm::vec3 offset = vertices[0];
 
-	for (glm::ivec3 triangle: triangles) {
+	for(glm::ivec3 triangle : triangles) {
 		//get vertices of a given face offset in a way to make origin fall on 1 of the points of the polygon
 		//While calculating the local_volume of the tetrahedrons it didn't matter whether the origin fell outside the polygon
 		//due to the "force of pull" of each polygon being additive with the distance from origin, but now the added
@@ -163,8 +163,8 @@ float Collider::findVolume() {
 		// given by the formula V = — | v2x v2y v2z |
 		//                          6 | v3x v3y v3z |
 		const float local_volume = (v1[0] * (v2[1] * v3[2] - v2[2] * v3[1])
-		                            - v1[1] * (v2[0] * v3[2] - v2[2] * v3[0])
-		                            + v1[2] * (v2[0] * v3[1] - v2[1] * v3[0])) / 6.0;
+			- v1[1] * (v2[0] * v3[2] - v2[2] * v3[0])
+			+ v1[2] * (v2[0] * v3[1] - v2[1] * v3[0])) / 6.0;
 
 		//update local_volume and mass
 		total_volume += local_volume;
