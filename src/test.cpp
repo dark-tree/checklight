@@ -11,8 +11,6 @@
 #include "shared/pyramid.hpp"
 #include "shared/weighed.hpp"
 
-BEGIN(VSTL_MODE_LENIENT)
-
 TEST(util_pyramid) {
 	Pyramid<int> pyramid;
 	ASSERT(pyramid.empty());
@@ -82,13 +80,13 @@ TEST(util_weighed_set) {
 TEST(util_weighed_set_limit) {
 	WeighedSet<int, std::greater<>> set;
 
-	EXPECT(std::length_error, {
-	       set.lowest();
-	       });
+	EXPECT_THROW(std::length_error) {
+		(void) set.lowest();
+	};
 
-	EXPECT(std::length_error, {
-	       set.highest();
-	       });
+	EXPECT_THROW(std::length_error) {
+		(void) set.highest();
+	};
 
 	set.insert(10, 101);
 
