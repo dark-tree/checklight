@@ -40,7 +40,7 @@ if (NOT OpenAL_FOUND)
     FetchContent_Declare(
             openal-soft
             GIT_REPOSITORY https://github.com/kcat/openal-soft
-            GIT_TAG 1.23.1
+            GIT_TAG 1.24.3
             GIT_PROGRESS TRUE
     )
 
