@@ -1005,7 +1005,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.descriptor(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 		.done(device);
-	
+
 	// add layouts to the pool so that they can be allocated
 	descriptor_pool = DescriptorPoolBuilder::begin()
 		.addDynamic(layout_immediate, 1)

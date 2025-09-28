@@ -8,8 +8,8 @@ layout(binding = 1) uniform sampler2D uAtlas;
 
 void main() {
 	ivec2 textureSize = textureSize(uAtlas, 0);
-    
+
     vec2 normalizedTexCoords = vTexture / vec2(textureSize);
-    
+
     fColor = vec4(normalizedTexCoords,1.0,0.0) * vColor;
 }
