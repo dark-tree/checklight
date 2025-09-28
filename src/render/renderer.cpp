@@ -366,7 +366,7 @@ void Renderer::createShaders() {
 	shader_blur_fragment = Shader::loadFromFile(device, "blur.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 	shader_denoise_fragment = Shader::loadFromFile(device, "denoise.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 	shader_denoise2_fragment = Shader::loadFromFile(device, "denoise2.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
-
+	shader_raster_fragment = Shader::loadFromFile(device, "raster.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 }
 
 void Renderer::createAttachments() {
@@ -742,6 +742,21 @@ void Renderer::createPipelines() {
 		.withDepthTest(VK_COMPARE_OP_ALWAYS, true, false)
 		.build();
 
+	// raytracing pipeline
+	pipeline_raster_3d = GraphicsPipelineBuilder::of(device)
+		.withViewport(0, 0, extent.width, extent.height)
+		.withScissors(0, 0, extent.width, extent.height)
+		.withCulling(true, VK_FRONT_FACE_COUNTER_CLOCKWISE)
+		.withRenderPass(pass_immediate, 0)	// do zmiany
+		.withShaders(shader_world_vertex, shader_raster_fragment)
+		.withBindingLayout(binding_3d)
+		.withDescriptorSetLayout(layout_raster)
+		.withBlendMode(BlendMode::ENABLED)
+		.withBlendAlphaFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withBlendColorFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
+		.build();
+
 	ShaderTableBuilder builder;
 	builder.addMissShader(shader_trace_miss);
 	builder.addMissShader(shader_trace_shadow_miss);
@@ -769,6 +784,7 @@ void Renderer::closePipelines() {
 	pipeline_compose_2d.close();
 	pipeline_denoise_2d.close();
 	pipeline_denoise2_2d.close();
+	pipeline_raster_3d.close();
 }
 
 void Renderer::closeFrames() {
@@ -985,6 +1001,11 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(13, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
 		.done(device);
 
+	layout_raster = DescriptorSetLayoutBuilder::begin()
+		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+		.done(device);
+	
 	// add layouts to the pool so that they can be allocated
 	descriptor_pool = DescriptorPoolBuilder::begin()
 		.addDynamic(layout_immediate, 1)
@@ -992,6 +1013,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.addDynamic(layout_compose, 1)
 		.addDynamic(layout_denoise2, 1)
 		.addDynamic(layout_denoise, 1)
+		.addDynamic(layout_raster, 1)
 		.done(device, concurrent);
 
 	// render pass used during mesh rendering
@@ -1019,6 +1041,7 @@ Renderer::~Renderer() {
 	layout_compose.close();
 	layout_denoise.close();
 	layout_denoise2.close();
+	layout_raster.close();
 
 	descriptor_pool.close();
 	transient_pool.close();
@@ -1053,6 +1076,7 @@ Renderer::~Renderer() {
 	shader_blur_fragment.close();
 	shader_denoise_fragment.close();
 	shader_denoise2_fragment.close();
+	shader_raster_fragment.close();
 
 	VulkanDebug::assertAllDead();
 	allocator.close();
@@ -1141,6 +1165,13 @@ void Renderer::draw() {
 		.bindPipeline(pipeline_compose_2d)
 		.bindDescriptorSet(frame.set_compose)
 		.draw(3)
+		.endRenderPass();
+
+	recorder.beginRenderPass(pass_immediate, current_image, swapchain.getExtend())
+		.bindPipeline(pipeline_raster_3d)
+		.bindDescriptorSet(frame.set_immediate)
+		.bindVertexBuffer(test_mesh->getVertexData().getBuffer())
+		.draw(test_mesh->getCount())
 		.endRenderPass();
 
 	// upload buffers and textures

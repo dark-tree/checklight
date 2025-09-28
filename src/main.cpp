@@ -46,6 +46,17 @@ static void entry(Args& args) {
 	auto models = system.importObj("assets/models/checklight.obj");
 	auto cube = system.importObj("assets/models/cube.obj");
 
+	std::vector<Vertex3D> triangle = {
+		{-10.5f, -10.5f, -10.0f, 255, 0, 0, 255, 0.0f, 1.0f},
+		{10.5f, -10.5f, -10.0f, 0, 255, 0, 255, 0.0f, 0.0f},
+		{10.5f, 10.5f, -10.0f, 0, 0, 255, 255, 0.0f, 1.0f },
+		{-10.5f, 10.5f, -10.0f, 255, 255, 255, 255, 1.0f, 1.0f}
+	};
+	auto commander = system.createTransientCommander();
+	system.test_mesh = system.createMesh();
+	system.test_mesh->uploadVertices(*commander, triangle);
+	commander->complete();
+
 	auto dispacher = std::make_shared<InputDispatcher>();
 	window.getInputDispatcher().registerListener(dispacher);
 	BoardManager manager(dispacher);

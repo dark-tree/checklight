@@ -15,7 +15,8 @@ SingletonGuard<RenderSystem> RenderSystem::init(ApplicationParameters& parameter
 }
 
 RenderSystem::RenderSystem(ApplicationParameters& parameters)
-: Renderer(parameters) {}
+: Renderer(parameters) {
+}
 
 std::vector<std::shared_ptr<RenderModel>> RenderSystem::createRenderModels(std::vector<std::shared_ptr<RenderMesh>> meshes) {
 	std::vector<std::shared_ptr<RenderModel>> models;

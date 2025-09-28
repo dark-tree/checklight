@@ -99,6 +99,7 @@ class Renderer {
 		Shader shader_blur_fragment;
 		Shader shader_denoise_fragment;
 		Shader shader_denoise2_fragment;
+		Shader shader_raster_fragment;
 
 		// attachments
 		Attachment attachment_screen;
@@ -120,6 +121,7 @@ class Renderer {
 		DescriptorSetLayout layout_raytrace;
 		DescriptorSetLayout layout_denoise;
 		DescriptorSetLayout layout_denoise2;
+		DescriptorSetLayout layout_raster;
 
 		// layouts
 		BindingLayout binding_3d;
@@ -138,6 +140,7 @@ class Renderer {
 		GraphicsPipeline pipeline_compose_2d;
 		GraphicsPipeline pipeline_denoise_2d;
 		GraphicsPipeline pipeline_denoise2_2d;
+		GraphicsPipeline pipeline_raster_3d;
 
 		// late vulkan objects
 		Swapchain swapchain;
@@ -150,6 +153,8 @@ class Renderer {
 
 		// current multisampling anti-aliasing setting
 		VkSampleCountFlagBits msaa;
+
+		public: std::shared_ptr<RenderMesh> test_mesh;
 
 	private:
 
