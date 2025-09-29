@@ -3,7 +3,7 @@ if (NOT TARGET freetype)
 		FetchContent_Declare(
 				freetype
 				GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
-				GIT_TAG VER-2-13-2
+				GIT_TAG VER-2-14-1
 				GIT_PROGRESS TRUE
 		)
 		FetchContent_MakeAvailable(freetype)

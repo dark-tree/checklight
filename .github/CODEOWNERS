@@ -1,0 +1,12 @@
+
+* @magistermaks
+/shader @magistermaks @MateuszTk
+
+# Engine Subsystems
+/src/engine @skay44
+/src/gui @magistermaks
+/src/input @magistermaks
+/src/physics @1Tymon1
+/src/render @magistermaks @MateuszTk
+/src/shared @skay44 @magistermaks
+/src/sound @Wiesiek418

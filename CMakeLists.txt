@@ -40,7 +40,7 @@ if (NOT OpenAL_FOUND)
     FetchContent_Declare(
             openal-soft
             GIT_REPOSITORY https://github.com/kcat/openal-soft
-            GIT_TAG 1.23.1
+            GIT_TAG 1.24.3
             GIT_PROGRESS TRUE
     )
 
@@ -64,13 +64,13 @@ endif()
 FetchContent_Declare(
 		vstl
 		GIT_REPOSITORY https://github.com/magistermaks/lib-vstl
-		GIT_TAG v3.2
+		GIT_TAG 38ae3ec4939e744c7bf375d502e3aa382e5f6679 # 3.3 (+ bugfix)
 )
 
 FetchContent_Declare(
 		msdfgen
 		GIT_REPOSITORY https://github.com/Chlumsky/msdfgen
-		GIT_TAG v1.12
+		GIT_TAG v1.12.1
 		GIT_PROGRESS TRUE
 )
 
@@ -83,7 +83,7 @@ FetchContent_Declare(
 
 FetchContent_Declare(
 		glfw
-		GIT_REPOSITORY https://github.com/glfw/glfw.git
+		GIT_REPOSITORY https://github.com/glfw/glfw
 		GIT_TAG 3.4
 		GIT_PROGRESS TRUE
 )
@@ -91,14 +91,14 @@ FetchContent_Declare(
 FetchContent_Declare(
 		stb
 		GIT_REPOSITORY https://github.com/nothings/stb
-		GIT_TAG 5736b15f7ea0ffb08dd38af21067c314d6a3aae9
+		GIT_TAG fede005abaf93d9d7f3a679d1999b2db341b360f
 		GIT_PROGRESS TRUE
 )
 
 FetchContent_Declare(
 		glm
 		GIT_REPOSITORY https://github.com/g-truc/glm
-		GIT_TAG 0.9.9.8
+		GIT_TAG 1.0.1
 		GIT_PROGRESS TRUE
 )
 
@@ -268,6 +268,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 			-Werror=init-self           # Fail if a class member is initialized with itself
 			-Werror=uninitialized       # Fail if a uninitialized variables is used
 			-Werror=cast-qual           # Fail when you try to cast the const away
+			-Werror=switch              # Fail when enum value is not handled in switch
 
 			# Warnings
 			-Wnoexcept                  # Warn if the lack of noexcept disables some optimizations
@@ -275,7 +276,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 			-Wparentheses               # Warn if there is a high chance we forgot about some parentheses
 			-Wlogical-op                # Warn if there is a high chance we messed up the logical operator
 			-Wdisabled-optimization     # Warn if you managed to confuse the compiler :skull:
-			-Wswitch-default            # Warn whenever a switch statement does not have a default case
 			-Wredundant-decls           # Warn if anything is declared more than once in the same scope
 			-Wmissing-declarations      # Warn if a global function is defined without a previous declaration
 

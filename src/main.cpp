@@ -1,20 +1,12 @@
 #include <engine/entity/component/sound.hpp>
-#include <gui/context.hpp>
-#include <gui/debug/render.hpp>
-#include <gui/theme/dark.hpp>
-#include <gui/theme/light.hpp>
-#include <gui/widget/panel.hpp>
-#include <gui/widget/root.hpp>
-#include <gui/widget/text.hpp>
 #include <shared/args.hpp>
 #include <shared/logger.hpp>
-#include "sound/sound.hpp"
+#include "gui/gui.hpp"
 #include "render/render.hpp"
 #include "input/input.hpp"
 #include "engine/engine.hpp"
-#include "gui/gui.hpp"
 #include "engine/entity/component/matrixAnimation.hpp"
-#include "glm/gtc/noise.hpp"
+#include "gui/debug/render.hpp"
 
 static void entry(Args& args) {
 	// Basic information about the program being run
@@ -42,12 +34,12 @@ static void entry(Args& args) {
 	auto context = RenderSystemOverlay::create(theme);
 
 	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
-	window.getInputDispatcher().registerListener(context);
+	window.getInputDispatcher().registerListener(context, 1);
 	auto models = system.importObj("assets/models/checklight.obj");
 	auto cube = system.importObj("assets/models/cube.obj");
 
 	auto dispacher = std::make_shared<InputDispatcher>();
-	window.getInputDispatcher().registerListener(dispacher);
+	window.getInputDispatcher().registerListener(dispacher, 2);
 	BoardManager manager(dispacher);
 	manager.setGravity(glm::vec3(0, -10, 0));
 
