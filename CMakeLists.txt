@@ -268,6 +268,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 			-Werror=init-self           # Fail if a class member is initialized with itself
 			-Werror=uninitialized       # Fail if a uninitialized variables is used
 			-Werror=cast-qual           # Fail when you try to cast the const away
+			-Werror=switch              # Fail when enum value is not handled in switch
 
 			# Warnings
 			-Wnoexcept                  # Warn if the lack of noexcept disables some optimizations
@@ -275,7 +276,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 			-Wparentheses               # Warn if there is a high chance we forgot about some parentheses
 			-Wlogical-op                # Warn if there is a high chance we messed up the logical operator
 			-Wdisabled-optimization     # Warn if you managed to confuse the compiler :skull:
-			-Wswitch-default            # Warn whenever a switch statement does not have a default case
 			-Wredundant-decls           # Warn if anything is declared more than once in the same scope
 			-Wmissing-declarations      # Warn if a global function is defined without a previous declaration
 
