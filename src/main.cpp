@@ -42,7 +42,7 @@ static void entry(Args& args) {
 	auto context = RenderSystemOverlay::create(theme);
 
 	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
-	window.getInputDispatcher().registerListener(context);
+	window.getInputDispatcher().registerListener(context, 1);
 	auto models = system.importObj("assets/models/checklight.obj");
 	auto cube = system.importObj("assets/models/cube.obj");
 
@@ -60,7 +60,7 @@ static void entry(Args& args) {
 	commander->complete();
 
 	auto dispacher = std::make_shared<InputDispatcher>();
-	window.getInputDispatcher().registerListener(dispacher);
+	window.getInputDispatcher().registerListener(dispacher, 2);
 	BoardManager manager(dispacher);
 	manager.setGravity(glm::vec3(0, -10, 0));
 
