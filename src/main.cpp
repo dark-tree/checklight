@@ -80,7 +80,7 @@ static void entry(Args& args) {
 	sphere->setPosition({2, 1, 2});
 	sphere->createComponent<RenderComponent>(Models::SPHERE);
 	sphere->createComponent<MatrixAnimation>(MatrixAnimation::TRANSLATE);
-	sphere->createComponent<SoundComponent>("assets/sounds/5.ogg");
+	//sphere->createComponent<SoundComponent>("assets/sounds/5.ogg");
 	sp->addPawnToRoot(sphere); {
 		auto cube_2 = std::make_shared<SpatialPawn>();
 		cube_2->setPosition({30, 1.1, 5});
