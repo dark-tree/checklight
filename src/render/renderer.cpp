@@ -751,7 +751,7 @@ void Renderer::createPipelines() {
 		.withShaders(shader_world_vertex, shader_raster_fragment)
 		.withBindingLayout(binding_3d)
 		.withDescriptorSetLayout(layout_raster)
-		.withBlendMode(BlendMode::ENABLED)
+		.withBlendMode(BlendMode::DISABLED)
 		.withBlendAlphaFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
 		.withBlendColorFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
 		.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)

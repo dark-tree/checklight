@@ -47,10 +47,12 @@ static void entry(Args& args) {
 	auto cube = system.importObj("assets/models/cube.obj");
 
 	std::vector<Vertex3D> triangle = {
-		{-10.5f, -10.5f, -10.0f, 255, 0, 0, 255, 0.0f, 1.0f},
-		{10.5f, -10.5f, -10.0f, 0, 255, 0, 255, 0.0f, 0.0f},
-		{10.5f, 10.5f, -10.0f, 0, 0, 255, 255, 0.0f, 1.0f },
-		{-10.5f, 10.5f, -10.0f, 255, 255, 255, 255, 1.0f, 1.0f}
+		{30.5f, -10.5f, 10.0f, 1, 0, 0, 255, 0.0f, 1.0f},
+		{30.5f, -10.5f, 15.0f, 0, 255, 0, 255, 0.0f, 0.0f},
+		{30.5f, 10.5f, 15.0f, 0, 0, 255, 255, 0.0f, 1.0f },
+		{30.5f, 10.5f, 10.0f, 255, 255, 255, 255, 1.0f, 1.0f},
+		{30.5f, -10.5f, 10.0f, 1, 0, 0, 255, 0.0f, 1.0f},
+		{30.5f, -10.5f, 15.0f, 0, 255, 0, 255, 0.0f, 0.0f},
 	};
 	auto commander = system.createTransientCommander();
 	system.test_mesh = system.createMesh();
