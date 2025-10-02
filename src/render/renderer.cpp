@@ -1167,12 +1167,15 @@ void Renderer::draw() {
 		.draw(3)
 		.endRenderPass();
 
-	recorder.beginRenderPass(pass_immediate, current_image, swapchain.getExtend())
-		.bindPipeline(pipeline_raster_3d)
-		.bindDescriptorSet(frame.set_immediate)
-		.bindVertexBuffer(test_mesh->getVertexData().getBuffer())
-		.draw(test_mesh->getCount())
-		.endRenderPass();
+	recorder.beginRenderPass(pass_immediate, current_image, swapchain.getExtend());
+	recorder.bindPipeline(pipeline_raster_3d);
+	recorder.bindDescriptorSet(frame.set_immediate);
+	for (auto& mesh : test_meshes) {
+		recorder.bindVertexBuffer(mesh->getVertexData().getBuffer());
+		recorder.bindIndexBuffer(mesh->getIndexData().getBuffer());
+		recorder.drawIndexed(mesh->getCount());
+	}
+	recorder.endRenderPass();
 
 	// upload buffers and textures
 	immediate.upload(recorder);

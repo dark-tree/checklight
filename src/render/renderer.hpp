@@ -154,7 +154,7 @@ class Renderer {
 		// current multisampling anti-aliasing setting
 		VkSampleCountFlagBits msaa;
 
-		public: std::shared_ptr<RenderMesh> test_mesh;
+		public: std::vector<std::shared_ptr<RenderMesh>> test_meshes;
 
 	private:
 

@@ -5,6 +5,7 @@
 #include "api/commander.hpp"
 #include "api/mesh.hpp"
 #include "api/model.hpp"
+#include <iostream>
 
 /*
  * RenderSystem
@@ -140,6 +141,7 @@ std::vector<std::shared_ptr<RenderModel>> RenderSystem::importObj(const std::str
 
 	system->materials.flush(system->allocator, commander->getRecorder(), commander->getTaskQueue(), system->device);
 
+	std::cout << "Importing OBJ with " << scene.size() << " objects from " << path << std::endl;
 	for (auto& object : scene) {
 		std::shared_ptr<RenderMesh> mesh = system->createMesh();
 
@@ -171,6 +173,116 @@ std::vector<std::shared_ptr<RenderModel>> RenderSystem::importObj(const std::str
 			}
 		}
 
+		mesh->uploadVertices(*commander, vertices);
+		mesh->uploadIndices(*commander, indices);
+
+		meshes.push_back(mesh);
+	}
+
+	auto models = createRenderModels(meshes);
+	rebuildBottomLevel(commander->getRecorder());
+
+	commander->complete();
+
+	return models;
+}
+
+std::vector<std::shared_ptr<RenderModel>> RenderSystem::importObj(const std::string& path, bool print) {
+
+	auto imported = importMaterials(path);
+
+	auto open_texture = [&](std::string texture_path) -> TextureHandle {
+		TextureManager& manager = materials.getTextureManager();
+
+		if (std::filesystem::exists(texture_path)) {
+			return manager.createTexture(texture_path);
+		}
+
+		auto base = std::filesystem::path{ path };
+		auto material = base.parent_path() / texture_path;
+
+		if (std::filesystem::exists(material)) {
+			return manager.createTexture(material.generic_string());
+		}
+
+		FAULT("Failed to find referenced object texture '", texture_path, "'");
+		};
+
+	std::map<std::shared_ptr<ObjMaterial>, RenderMaterial> render_materials;
+
+	for (auto& [name, material] : imported) {
+		RenderMaterial& render_material = system->materials.createMaterial();
+
+		render_material.albedo = glm::vec4(material->diffuse, material->alpha);
+		render_material.emissive = material->emissive;
+		render_material.specular = material->specular;
+		render_material.shininess = material->shininess;
+
+		if (!material->diffuseMap.empty()) {
+			render_material.albedo_texture = open_texture(material->diffuseMap);
+		}
+
+		render_materials[material] = render_material;
+	}
+
+	auto scene = ObjObject::open(path, imported);
+
+	std::vector<std::shared_ptr<RenderMesh>> meshes;
+
+	// FIXME you should not create the commander multiple times
+	//       create one and reuse, this is very slow
+	auto commander = system->createTransientCommander();
+
+	system->materials.flush(system->allocator, commander->getRecorder(), commander->getTaskQueue(), system->device);
+
+	std::cout << "Importing OBJ with " << scene.size() << " objects from " << path << std::endl;
+	for (auto& object : scene) {
+		std::shared_ptr<RenderMesh> mesh = system->createMesh();
+
+#if ENGINE_DEBUG
+		std::string debug_name = "Mesh " + object.name + " from " + path;
+		mesh->setDebugName(debug_name.c_str());
+#endif
+
+		std::vector<Vertex3D> vertices;
+
+		for (auto& vertex : object.vertices) {
+			float r = (vertex.normal.x + 1) / 2;
+			float g = (vertex.normal.y + 1) / 2;
+			float b = (vertex.normal.z + 1) / 2;
+			vertices.emplace_back(vertex.position.x, vertex.position.y, vertex.position.z, r * 255, g * 255, b * 255, 255, vertex.uv.x, 1.0 - vertex.uv.y, 0);
+		}
+
+		std::vector<uint32_t> indices;
+
+		for (size_t i = 0; i < object.groups.size(); i++) {
+			const auto& group = object.groups[i];
+			indices.insert(indices.end(), group.indices.begin(), group.indices.end());
+
+			// Assign material to vertices
+			RenderMaterial& material = render_materials[group.material];
+
+			for (uint32_t vertex_index : group.indices) {
+				vertices[vertex_index].material_index = material.index;
+			}
+		}
+
+		if (print) {
+		/*	for (auto& v : vertices) {
+				std::cout << "Vertex: Pos(" << v.x << ", " << v.y << ", " << v.z << ") "
+					<< "Color(" << (int)v.r << ", " << (int)v.g << ", " << (int)v.b << ", " << (int)v.a << ") "
+					<< "UV(" << v.u << ", " << v.v << ") "
+					<< "MaterialIndex(" << (int)v.material_index << ")" << std::endl;
+			}
+			for (auto& idx : indices) {
+				std::cout << "Index: " << idx << std::endl;
+			}*/
+			std::shared_ptr<RenderMesh> test_mesh;
+			test_mesh = createMesh();
+			test_mesh->uploadVertices(*commander, vertices);
+			test_mesh->uploadIndices(*commander, indices);
+			test_meshes.push_back(test_mesh);
+		}
 		mesh->uploadVertices(*commander, vertices);
 		mesh->uploadIndices(*commander, indices);
 

@@ -35,10 +35,10 @@ static void entry(Args& args) {
 
 	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 	window.getInputDispatcher().registerListener(context, 1);
-	auto models = system.importObj("assets/models/checklight.obj");
-	auto cube = system.importObj("assets/models/cube.obj");
+	auto models = system.importObj("assets/models/checklight.obj", true);
+	auto cube = system.importObj("assets/models/cube.obj", true);
 
-	std::vector<Vertex3D> triangle = {
+	/*std::vector<Vertex3D> triangle = {
 		{30.5f, -10.5f, 10.0f, 1, 0, 0, 255, 0.0f, 1.0f},
 		{30.5f, -10.5f, 15.0f, 0, 255, 0, 255, 0.0f, 0.0f},
 		{30.5f, 10.5f, 15.0f, 0, 0, 255, 255, 0.0f, 1.0f },
@@ -49,7 +49,7 @@ static void entry(Args& args) {
 	auto commander = system.createTransientCommander();
 	system.test_mesh = system.createMesh();
 	system.test_mesh->uploadVertices(*commander, triangle);
-	commander->complete();
+	commander->complete();*/
 
 	auto dispacher = std::make_shared<InputDispatcher>();
 	window.getInputDispatcher().registerListener(dispacher, 2);

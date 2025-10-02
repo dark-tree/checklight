@@ -87,7 +87,7 @@ class RenderSystem : public Renderer {
 		 * Import an OBJ file and return a list of models loaded from it
 		 */
 		std::vector<std::shared_ptr<RenderModel>> importObj(const std::string& path);
-
+		std::vector<std::shared_ptr<RenderModel>> importObj(const std::string& path,bool print);
 		/**
 		 * Get asset manager, this class can be used to request many resources
 		 * used during rendering (sprites, fonts)
