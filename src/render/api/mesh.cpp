@@ -34,6 +34,14 @@ size_t RenderMesh::getCount() const {
 	return hasIndexData() ? index.getCount() : vertex.getCount();
 }
 
+size_t RenderMesh::getVertexCount() const {
+	return vertex.getCount();
+}
+
+size_t RenderMesh::getIndexCount() const {
+	return index.getCount();
+}
+
 const ReusableBuffer& RenderMesh::getVertexData() const {
 	return vertex;
 }

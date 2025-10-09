@@ -341,13 +341,14 @@ void Renderer::createSwapchain() {
 	attachment_soild_illumination.allocate(device, extent, allocator);
 	attachment_world_position.allocate(device, extent, allocator);
 	attachment_prev_world_position.allocate(device, extent, allocator);
+	attachment_color.allocate(device, extent, allocator);
 
 	// create framebuffers
 	pass_immediate.prepareFramebuffers(swapchain);
 	pass_compose.prepareFramebuffers(swapchain);
 	pass_denoise.prepareFramebuffers(swapchain);
 	pass_denoise2.prepareFramebuffers(swapchain);
-
+	pass_raster.prepareFramebuffers(swapchain);
 	out::info("Swapchain ready!");
 
 }
@@ -367,6 +368,7 @@ void Renderer::createShaders() {
 	shader_denoise_fragment = Shader::loadFromFile(device, "denoise.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 	shader_denoise2_fragment = Shader::loadFromFile(device, "denoise2.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 	shader_raster_fragment = Shader::loadFromFile(device, "raster.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+	shader_world_raster_vertex = Shader::loadFromFile(device,"world_raster.vert", VK_SHADER_STAGE_VERTEX_BIT);
 }
 
 void Renderer::createAttachments() {
@@ -466,6 +468,14 @@ void Renderer::createAttachments() {
 		.setDebugName("Prev World Position")
 		.createAttachment();
 
+	attachment_color = TextureBuilder::begin()
+		.setFormat(surface_format)
+		.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+		.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+		.setClearColor(0.5f, 0.5f, 0.5f, 1.0f)
+		.setDebugName("Color")
+		.createAttachment();
+
 	// very important UwU
 	attachment_screen.markSwapchainBacked();
 
@@ -530,6 +540,52 @@ void Renderer::createRenderPasses() {
 
 		pass_immediate = builder.build(device, "Immediate");
 
+	}
+
+	{
+		RenderPassBuilder builder;
+
+		Attachment::Ref depth = builder.addAttachment(attachment_depth_msaa)
+			.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+			.end(ColorOp::STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+			.next();
+
+		builder.addDependency()
+			.first(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0)
+			.then(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+			.next();
+
+		builder.addDependency(VK_DEPENDENCY_BY_REGION_BIT)
+			.first(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+			.then(VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_MEMORY_READ_BIT)
+			.next();
+
+		if (msaa > VK_SAMPLE_COUNT_1_BIT) {
+
+			Attachment::Ref color = builder.addAttachment(attachment_color)
+				.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.next();
+
+			builder.addSubpass()
+				.addOutput(color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+				.next();
+
+		} else {
+
+			Attachment::Ref screen = builder.addAttachment(attachment_screen)
+				.begin(ColorOp::LOAD, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.end(ColorOp::STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.next();
+
+			builder.addSubpass()
+				.addOutput(screen, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+				.addDepth(depth, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+				.next();
+		}
+
+		pass_raster = builder.build(device, "Raster");
 	}
 
 	{ // compose 2d pass
@@ -661,6 +717,7 @@ void Renderer::closeRenderPasses() {
 	pass_compose.close();
 	pass_denoise.close();
 	pass_denoise2.close();
+	pass_raster.close();
 }
 
 void Renderer::createPipelines() {
@@ -742,18 +799,18 @@ void Renderer::createPipelines() {
 		.withDepthTest(VK_COMPARE_OP_ALWAYS, true, false)
 		.build();
 
-	// raytracing pipeline
 	pipeline_raster_3d = GraphicsPipelineBuilder::of(device)
 		.withViewport(0, 0, extent.width, extent.height)
 		.withScissors(0, 0, extent.width, extent.height)
 		.withCulling(true, VK_FRONT_FACE_COUNTER_CLOCKWISE)
-		.withRenderPass(pass_immediate, 0)	// do zmiany
-		.withShaders(shader_world_vertex, shader_raster_fragment)
+		.withRenderPass(pass_raster, 0)
+		.withShaders(shader_world_raster_vertex, shader_raster_fragment)
 		.withBindingLayout(binding_3d)
 		.withDescriptorSetLayout(layout_raster)
 		.withBlendMode(BlendMode::DISABLED)
 		.withBlendAlphaFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
 		.withBlendColorFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+		// .withPushConstant(mesh_constant)
 		.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
 		.build();
 
@@ -822,6 +879,7 @@ void Renderer::lateClose() {
 	attachment_soild_illumination.close(device);
 	attachment_world_position.close(device);
 	attachment_prev_world_position.close(device);
+	attachment_color.close(device);
 
 	swapchain.close();
 	closeFrames();
@@ -931,7 +989,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	concurrent = 1;
 	surface_format = VK_FORMAT_B8G8R8A8_SRGB;
 	frames.reserve(concurrent);
-	instances = std::make_unique<InstanceManager>();
+	instances = std::make_unique<RayTraceInstanceManager>();
 
 	// early init
 	createInstance(parameters);
@@ -1077,6 +1135,7 @@ Renderer::~Renderer() {
 	shader_denoise_fragment.close();
 	shader_denoise2_fragment.close();
 	shader_raster_fragment.close();
+	shader_world_raster_vertex.close();
 
 	VulkanDebug::assertAllDead();
 	allocator.close();
@@ -1167,9 +1226,9 @@ void Renderer::draw() {
 		.draw(3)
 		.endRenderPass();
 
-	recorder.beginRenderPass(pass_immediate, current_image, swapchain.getExtend());
+	recorder.beginRenderPass(pass_raster, current_image, swapchain.getExtend());
 	recorder.bindPipeline(pipeline_raster_3d);
-	recorder.bindDescriptorSet(frame.set_immediate);
+	recorder.bindDescriptorSet(frame.set_raster);
 	for (auto& mesh : test_meshes) {
 		recorder.bindVertexBuffer(mesh->getVertexData().getBuffer());
 		recorder.bindIndexBuffer(mesh->getIndexData().getBuffer());

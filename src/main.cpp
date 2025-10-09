@@ -35,8 +35,8 @@ static void entry(Args& args) {
 
 	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 	window.getInputDispatcher().registerListener(context, 1);
-	auto models = system.importObj("assets/models/checklight.obj", true);
-	auto cube = system.importObj("assets/models/cube.obj", true);
+	auto models = system.importObj("assets/models/checklight.obj");
+	auto cube = system.importObj("assets/models/cube.obj");
 
 	/*std::vector<Vertex3D> triangle = {
 		{30.5f, -10.5f, 10.0f, 1, 0, 0, 255, 0.0f, 1.0f},
@@ -152,6 +152,7 @@ static void entry(Args& args) {
 		auto object = system.createRenderObject();
 		object->setMatrix(glm::identity<glm::mat4x3>());
 		object->setModel(model);
+		system.test_meshes.push_back(model->getMesh());
 		objects.push_back(object);
 	}
 
@@ -163,6 +164,7 @@ static void entry(Args& args) {
 		glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(-4, 8, 4));
 		portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 0, 1));
 		object->setPortal(portal);
+		system.test_meshes.push_back(model->getMesh());
 		objects.push_back(object);
 	}
 
@@ -185,6 +187,9 @@ static void entry(Args& args) {
 		true
 	);
 
+	//for (auto& object : objects) {
+	//	system.test_meshes.push_back(object->);
+	//}
 
 	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 	while(!window.shouldClose()) {

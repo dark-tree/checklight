@@ -41,6 +41,9 @@ class RenderMesh {
 		/// Get final number of elements in the mesh
 		size_t getCount() const;
 
+		size_t getVertexCount() const;
+		size_t getIndexCount() const;
+
 		/// Get underlying vertex buffer
 		const ReusableBuffer& getVertexData() const;
 

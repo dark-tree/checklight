@@ -9,14 +9,14 @@ class RenderObject;
 /**
  * Manages all objects (instances) present in the scene
  */
-class RayTraceInstanceManager final : public InstanceManager {
+class RasterInstanceManager final : public InstanceManager {
 
 	protected:
 		void write(const RenderObject& delegate) override;
 
 	public:
 
-		RayTraceInstanceManager();
+		RasterInstanceManager();
 
 		/// Create new delegate
 		std::shared_ptr<RenderObject> create() override;

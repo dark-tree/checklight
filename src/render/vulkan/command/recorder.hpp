@@ -77,10 +77,13 @@ class CommandRecorder {
 		/// Issue a draw command, requires a pipeline and subpass to be bound at the same time
 		CommandRecorder& draw(uint32_t vertices, uint32_t instances = 1, uint32_t vertexIndexOffset = 0, uint32_t instanceIndexOffset = 0);
 
-		/// Issue a indexed draw command,  requires a pipeline and subpass to be bound at the same time
+		/// Issue an indexed draw command,  requires a pipeline and subpass to be bound at the same time
 		CommandRecorder& drawIndexed(uint32_t indexes, uint32_t instances = 1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t instanceIndexOffset = 0);
 
-		/// Ends the render pass, requires the render pass to be bound the the subpass index to point to the last subpass in that renderpass
+		/// Issue an indirect draw command, requires a pipeline and subpass to be bound at the same time
+		CommandRecorder& drawIndirect(const Buffer& buffer, VkDeviceSize offset, uint32_t drawCount, VkDeviceSize stride);
+
+		/// Ends the render pass, requires the render pass to be bound the subpass index to point to the last subpass in that renderpass
 		CommandRecorder& endRenderPass();
 
 		/// Writes data to the pipeline's push constant, the data is immediately available to the subsequent draw calls

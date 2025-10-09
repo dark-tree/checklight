@@ -4,21 +4,21 @@
 #include "render/api/object.hpp"
 
 /*
- * RayTracingInstanceManager
+ * RasterInstanceManager
  */
 
-void RayTraceInstanceManager::write(const RenderObject& delegate) {
+void RasterInstanceManager::write(const RenderObject& delegate) {
 	instance_buffer.writeToStaging(delegate.getInstanceData(), 1, sizeof(VkAccelerationStructureInstanceKHR), delegate.getIndex());
 	attachment_buffer.writeToStaging(delegate.getObjectData(), 1, sizeof(RenderObjectData), delegate.getIndex());
 }
 
-RayTraceInstanceManager::RayTraceInstanceManager()
+RasterInstanceManager::RasterInstanceManager()
 	: InstanceManager(
-		VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR,
+		VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 		VK_BUFFER_USAGE_STORAGE_BUFFER_BIT
 	){};
 
-std::shared_ptr<RenderObject> RayTraceInstanceManager::create() {
+std::shared_ptr<RenderObject> RasterInstanceManager::create() {
 
 	// maybe not the best idea, but we can change it later
 	if (freed == 0) {

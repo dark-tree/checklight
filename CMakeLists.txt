@@ -254,7 +254,10 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
 	if (CMAKE_BUILD_TYPE STREQUAL "Release")
 		message(STATUS "Compiling with striped symbols")
-		target_link_options(checklight_common INTERFACE -s -z now)
+		target_link_options(checklight_common INTERFACE -s)
+		if (NOT WIN32)
+			target_link_options(checklight_common INTERFACE -z now)
+		endif()
 	endif()
 
 	target_compile_options(checklight_common INTERFACE

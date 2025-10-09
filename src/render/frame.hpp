@@ -76,6 +76,7 @@ class RenderFrame {
 		DescriptorSet set_raytrace;
 		DescriptorSet set_denoise;
 		DescriptorSet set_denoise2;
+		DescriptorSet set_raster;
 
 	public:
 

@@ -21,6 +21,7 @@
 #include "render/vulkan/descriptor/push.hpp"
 #include "render/vulkan/raytrace/instance.hpp"
 #include "render/vulkan/raytrace/factory.hpp"
+#include "render/vulkan/raster/instance.hpp"
 #include "render/asset/material.hpp"
 #include "render/asset/asset.hpp"
 #include "render/asset/light.hpp"
@@ -81,7 +82,7 @@ class Renderer {
 		DescriptorPool descriptor_pool;
 
 		// raytracing
-		std::unique_ptr<InstanceManager> instances;
+		std::unique_ptr<RayTraceInstanceManager> instances;
 		AccelStructFactory bakery;
 		std::shared_ptr<RenderModel> tlas;
 		ShaderTable shader_table;
@@ -100,6 +101,7 @@ class Renderer {
 		Shader shader_denoise_fragment;
 		Shader shader_denoise2_fragment;
 		Shader shader_raster_fragment;
+		Shader shader_world_raster_vertex;
 
 		// attachments
 		Attachment attachment_screen;
@@ -114,6 +116,7 @@ class Renderer {
 		Attachment attachment_soild_illumination;
 		Attachment attachment_world_position;
 		Attachment attachment_prev_world_position;
+		Attachment attachment_color;
 
 		// descriptors
 		DescriptorSetLayout layout_immediate;
@@ -131,6 +134,7 @@ class Renderer {
 		RenderPass pass_compose;
 		RenderPass pass_denoise;
 		RenderPass pass_denoise2;
+		RenderPass pass_raster;
 
 		// Pipelines
 		GraphicsPipeline pipeline_immediate_2d;

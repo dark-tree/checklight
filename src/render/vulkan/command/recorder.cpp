@@ -1,5 +1,8 @@
 
 #include "recorder.hpp"
+
+#include <ranges>
+
 #include "render/vulkan/buffer/image.hpp"
 #include "render/vulkan/buffer/buffer.hpp"
 #include "render/vulkan/pass/render.hpp"
@@ -96,6 +99,11 @@ CommandRecorder& CommandRecorder::draw(uint32_t vertices, uint32_t instances, ui
 
 CommandRecorder& CommandRecorder::drawIndexed(uint32_t indexes, uint32_t instances, uint32_t firstIndex, int32_t vertexOffset, uint32_t instanceIndexOffset) {
 	vkCmdDrawIndexed(vk_buffer, indexes, instances, firstIndex, vertexOffset, instanceIndexOffset);
+	return *this;
+}
+
+CommandRecorder& CommandRecorder::drawIndirect(const Buffer& buffer, VkDeviceSize offset, uint32_t drawCount, VkDeviceSize stride) {
+	vkCmdDrawIndirect(vk_buffer,buffer.getHandle(), offset, drawCount, stride);
 	return *this;
 }
 
