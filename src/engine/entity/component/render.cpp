@@ -6,7 +6,7 @@
 
 
 RenderComponent::RenderComponent(SpatialPawn* sp, Models::Shape s) : GameComponent(sp) {
-	render_object = RenderSystem::system->createRenderObject();
+	render_object = RenderSystem::system->createRenderObject(false);
 	render_object->setMatrix(glm::identity<glm::mat4x3>());
 	render_object->setModel(Models::getShape(s));
 	render_object->setActive(false);

@@ -81,7 +81,7 @@ class RenderSystem : public Renderer {
 		 * each delegate contains an affine transformation matrix you can access and modify to move the object
 		 * in the world space.
 		 */
-		std::shared_ptr<RenderObject> createRenderObject();
+		std::shared_ptr<RenderObject> createRenderObject(bool mode);
 
 		/**
 		 * Import an OBJ file and return a list of models loaded from it
@@ -115,4 +115,5 @@ class RenderSystem : public Renderer {
 		 * Render the next frame, all rendering should happen inside this call
 		 */
 		void draw() override;
+		void addMeshModel(std::shared_ptr<RenderModel> model);
 };

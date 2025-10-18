@@ -55,3 +55,7 @@ const ReusableBuffer& InstanceManager::getAttachmentBuffer() const {
 uint32_t InstanceManager::count() const {
 	return static_cast<uint32_t>(delegates.size());
 }
+
+std::vector<std::shared_ptr<RenderObject>> InstanceManager::getDelegates() const {
+	return delegates;
+}

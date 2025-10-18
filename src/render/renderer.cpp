@@ -1,6 +1,7 @@
 
 #include "renderer.hpp"
 #include "const.hpp"
+#include "api/object.hpp"
 
 #include "render/vulkan/setup/device.hpp"
 #include "render/vulkan/buffer/texture.hpp"
@@ -810,7 +811,7 @@ void Renderer::createPipelines() {
 		.withBlendMode(BlendMode::DISABLED)
 		.withBlendAlphaFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
 		.withBlendColorFunc(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
-		// .withPushConstant(mesh_constant)
+		.withPushConstant(raster_mesh_constant)
 		.withDepthTest(VK_COMPARE_OP_LESS_OR_EQUAL, true, true)
 		.build();
 
@@ -990,6 +991,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	surface_format = VK_FORMAT_B8G8R8A8_SRGB;
 	frames.reserve(concurrent);
 	instances = std::make_unique<RayTraceInstanceManager>();
+	raster_instances = std::make_unique<RasterInstanceManager>();
 
 	// early init
 	createInstance(parameters);
@@ -1062,6 +1064,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	layout_raster = DescriptorSetLayoutBuilder::begin()
 		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.descriptor(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+		.descriptor(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER)
 		.done(device);
 
 	// add layouts to the pool so that they can be allocated
@@ -1076,7 +1079,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 
 	// render pass used during mesh rendering
 	mesh_constant = createPushConstant(VK_SHADER_STAGE_VERTEX_BIT, sizeof(MeshConstant));
-
+	raster_mesh_constant = createPushConstant(VK_SHADER_STAGE_VERTEX_BIT, sizeof(uint32_t));
 	createAttachments();
 	createRenderPasses();
 	createShaders();
@@ -1112,6 +1115,7 @@ Renderer::~Renderer() {
 
 	vkDestroySurfaceKHR(instance.getHandle(), surface, nullptr);
 	instances.reset();
+	raster_instances.reset();
 	immediate.close(device);
 	materials.close(device);
 	lights.close();
@@ -1192,6 +1196,10 @@ void Renderer::draw() {
 
 	materials.getTextureManager().updateDescriptorSet(device, frame.set_raytrace, 4);
 
+	raster_instances->flush(recorder);
+	auto& raster_buffer = raster_instances->getInstanceBuffer();
+	frame.set_raster.buffer(2, raster_buffer.getBuffer(), raster_buffer.getBuffer().size());
+
 	// wait for uniform transfer before raytracing or rasterization starts
 	recorder.memoryBarrier()
 		.first(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT)
@@ -1229,11 +1237,31 @@ void Renderer::draw() {
 	recorder.beginRenderPass(pass_raster, current_image, swapchain.getExtend());
 	recorder.bindPipeline(pipeline_raster_3d);
 	recorder.bindDescriptorSet(frame.set_raster);
-	for (auto& mesh : test_meshes) {
-		recorder.bindVertexBuffer(mesh->getVertexData().getBuffer());
-		recorder.bindIndexBuffer(mesh->getIndexData().getBuffer());
-		recorder.drawIndexed(mesh->getCount());
+
+	auto delegates = raster_instances->getDelegates();
+	uint32_t globalInstanceOffset = 0;
+
+	for (auto& mesh : object_meshes) {
+		uint32_t instanceCount = 0;
+
+		for (size_t i = globalInstanceOffset; i < delegates.size(); ++i) {
+			if (delegates[i]->getModel()->getMesh() == mesh.first)
+				++instanceCount;
+			else
+				break;
+		}
+
+		if (instanceCount == 0) continue;
+
+		recorder.bindVertexBuffer(mesh.first->getVertexData().getBuffer());
+		recorder.bindIndexBuffer(mesh.first->getIndexData().getBuffer());
+
+		recorder.writePushConstant(raster_mesh_constant, &globalInstanceOffset);
+		recorder.drawIndexed(mesh.first->getCount(), instanceCount, 0, 0);
+
+		globalInstanceOffset += instanceCount;
 	}
+
 	recorder.endRenderPass();
 
 	// upload buffers and textures

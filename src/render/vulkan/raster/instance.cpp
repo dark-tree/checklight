@@ -7,8 +7,27 @@
  * RasterInstanceManager
  */
 
+void RasterInstanceManager::sortDelegates() {
+	return;
+}
+
+void RasterInstanceManager::flush(CommandRecorder& recorder) {
+
+	if (modifyDelegateVector) {
+		sortDelegates();
+		modifyDelegateVector=false;
+	}
+
+	for (const std::shared_ptr<RenderObject>& delegate : delegates) {
+		write(*delegate);
+	}
+
+	instance_buffer.flushStaging(recorder);
+	attachment_buffer.flushStaging(recorder);
+}
+
 void RasterInstanceManager::write(const RenderObject& delegate) {
-	instance_buffer.writeToStaging(delegate.getInstanceData(), 1, sizeof(VkAccelerationStructureInstanceKHR), delegate.getIndex());
+	instance_buffer.writeToStaging(delegate.getRasterInstanceData(), 1, sizeof(RasterInstanceData), delegate.getIndex());
 	attachment_buffer.writeToStaging(delegate.getObjectData(), 1, sizeof(RenderObjectData), delegate.getIndex());
 }
 
@@ -25,6 +44,7 @@ std::shared_ptr<RenderObject> RasterInstanceManager::create() {
 		trim();
 	}
 
+	modifyDelegateVector=true;
 	// no blocks to reuse
 	if (freed == 0) {
 		size_t offset = delegates.size();
@@ -35,7 +55,7 @@ std::shared_ptr<RenderObject> RasterInstanceManager::create() {
 			capacity = (capacity > 0) ? (capacity * 2) : 16;
 
 			instance_buffer.close();
-			instance_buffer.allocateBuffers(capacity, sizeof(VkAccelerationStructureInstanceKHR));
+			instance_buffer.allocateBuffers(capacity, sizeof(RasterInstanceManager));
 
 			attachment_buffer.close();
 			attachment_buffer.allocateBuffers(capacity, sizeof(RenderObjectData));

@@ -68,8 +68,11 @@ void RenderSystem::setViewMatrix(glm::vec3 eye, glm::vec3 direction) {
 	getFrame().uniforms.view_inv = glm::inverse(getFrame().uniforms.view);
 }
 
-std::shared_ptr<RenderObject> RenderSystem::createRenderObject() {
-	return {instances->create()};
+std::shared_ptr<RenderObject> RenderSystem::createRenderObject(bool mode) {
+	if (mode)
+		return {instances->create()};
+	else
+		return {raster_instances->create()};
 }
 
 std::map<std::string, std::shared_ptr<ObjMaterial>> RenderSystem::importMaterials(const std::string& path) {
@@ -228,4 +231,9 @@ void RenderSystem::draw() {
 
 	scene.prev_view = scene.view;
 	scene.prev_view_inv = scene.view_inv;
+}
+
+void RenderSystem::addMeshModel(std::shared_ptr<RenderModel> model) {
+	auto mesh = model->getMesh();
+	object_meshes.emplace(mesh, mesh.get());
 }

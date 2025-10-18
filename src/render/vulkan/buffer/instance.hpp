@@ -42,4 +42,6 @@ public:
     /// Get the number of instances
     uint32_t count() const;
 
+    std::vector<std::shared_ptr<RenderObject>> getDelegates() const;
+
 };

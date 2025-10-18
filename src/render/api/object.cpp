@@ -8,7 +8,7 @@
  */
 
 RenderObject::RenderObject(uint32_t index)
-: index(index), instance({}) {
+: index(index), instance({}), raster_instance({}) {
 	instance.instanceCustomIndex = index;
 	instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
 
@@ -22,6 +22,10 @@ const VkAccelerationStructureInstanceKHR* RenderObject::getInstanceData() const 
 	return &instance;
 }
 
+const RasterInstanceData* RenderObject::getRasterInstanceData() const {
+	return &raster_instance;
+}
+
 const RenderObjectData* RenderObject::getObjectData() const {
 	return &data;
 }
@@ -32,6 +36,7 @@ uint32_t RenderObject::getIndex() const {
 
 void RenderObject::setMatrix(const glm::mat4x3& model) {
 	instance.transform = math::toVulkanAffine(model);
+	raster_instance.model = glm::mat4(model);
 }
 
 void RenderObject::setShader(uint32_t offset) {
@@ -44,10 +49,14 @@ void RenderObject::setTraits(VkGeometryInstanceFlagsKHR flags) {
 
 void RenderObject::setModel(const std::shared_ptr<RenderModel>& model) {
 	this->model = model;
-
+	system.addMeshModel(model);
 	instance.accelerationStructureReference = model->getAddress();
 	data.vertex_address = model->getMesh()->getVertexData().getDeviceAddress();
 	data.index_address = model->getMesh()->getIndexData().getDeviceAddress();
+}
+
+std::shared_ptr<RenderModel> RenderObject::getModel() {
+	return model;
 }
 
 void RenderObject::setActive(bool active) {

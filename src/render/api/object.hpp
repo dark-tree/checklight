@@ -3,7 +3,12 @@
 #include "external.hpp"
 #include "render/vulkan/setup/device.hpp"
 
+#include "render/system.hpp"
 class RenderModel;
+
+struct RasterInstanceData {
+	glm::mat4 model;
+};
 
 struct RenderObjectData {
 	uint64_t vertex_address;
@@ -18,10 +23,11 @@ struct RenderObjectData {
 class RenderObject {
 
 	private:
-
+		RenderSystem& system = *RenderSystem::system;
 		std::shared_ptr<RenderModel> model;
 		uint32_t index;
 		VkAccelerationStructureInstanceKHR instance;
+		RasterInstanceData raster_instance;
 		RenderObjectData data;
 
 		void setShader(uint32_t index);
@@ -31,9 +37,10 @@ class RenderObject {
 		RenderObject(uint32_t index);
 
 		const VkAccelerationStructureInstanceKHR* getInstanceData() const;
+		const RasterInstanceData* getRasterInstanceData() const;
 		const RenderObjectData* getObjectData() const;
 		uint32_t getIndex() const;
-
+		std::shared_ptr<RenderModel> getModel();
 		/**
 		 * Update the affine transform matrix of this render object,
 		 * this allows the object to be moved, rotated, scaled, stretched

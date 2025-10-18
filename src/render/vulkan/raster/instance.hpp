@@ -10,8 +10,10 @@ class RenderObject;
  * Manages all objects (instances) present in the scene
  */
 class RasterInstanceManager final : public InstanceManager {
-
+	private:
+		void sortDelegates();
 	protected:
+		bool modifyDelegateVector=true;
 		void write(const RenderObject& delegate) override;
 
 	public:
@@ -20,4 +22,5 @@ class RasterInstanceManager final : public InstanceManager {
 
 		/// Create new delegate
 		std::shared_ptr<RenderObject> create() override;
+		void flush(CommandRecorder& recorder);
 };

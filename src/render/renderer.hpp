@@ -46,6 +46,18 @@ class Renderer {
 		/// frame rendering (the CPU can "render ahead" of the GPU)
 		std::vector<RenderFrame> frames;
 
+		struct RenderObjectHash {
+			size_t operator()(const std::shared_ptr<RenderMesh>& mesh) const noexcept {
+				return std::hash<const void*>()(mesh.get());
+			}
+		};
+
+		struct RenderObjectEqual {
+			bool operator()(const std::shared_ptr<RenderMesh>& mesh1, const std::shared_ptr<RenderMesh>& mesh2) const noexcept {
+				return mesh1.get() == mesh2.get();
+			}
+		};
+
 	protected:
 
 		friend class RenderFrame;
@@ -86,6 +98,9 @@ class Renderer {
 		AccelStructFactory bakery;
 		std::shared_ptr<RenderModel> tlas;
 		ShaderTable shader_table;
+
+		//raster
+		std::unique_ptr<RasterInstanceManager> raster_instances;
 
 		// shaders
 		Shader shader_world_vertex;
@@ -155,10 +170,12 @@ class Renderer {
 		// push constants
 		PushConstant mesh_constant;
 
+		PushConstant raster_mesh_constant;
+
 		// current multisampling anti-aliasing setting
 		VkSampleCountFlagBits msaa;
 
-		public: std::vector<std::shared_ptr<RenderMesh>> test_meshes;
+		public: std::unordered_map<std::shared_ptr<RenderMesh>, void*, RenderObjectHash, RenderObjectEqual> object_meshes;
 
 	private:
 
