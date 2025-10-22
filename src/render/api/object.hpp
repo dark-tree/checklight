@@ -84,4 +84,6 @@ class RenderObject {
 		 */
 		void setPortal(const glm::mat4& portal);
 
+		void setIndex(uint32_t index);
+
 };

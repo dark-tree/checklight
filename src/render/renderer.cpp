@@ -1196,7 +1196,7 @@ void Renderer::draw() {
 
 	materials.getTextureManager().updateDescriptorSet(device, frame.set_raytrace, 4);
 
-	raster_instances->flush(recorder);
+	raster_instances->flush(recorder, object_meshes);
 	auto& raster_buffer = raster_instances->getInstanceBuffer();
 	frame.set_raster.buffer(2, raster_buffer.getBuffer(), raster_buffer.getBuffer().size());
 
@@ -1247,8 +1247,6 @@ void Renderer::draw() {
 		for (size_t i = globalInstanceOffset; i < delegates.size(); ++i) {
 			if (delegates[i]->getModel()->getMesh() == mesh.first)
 				++instanceCount;
-			else
-				break;
 		}
 
 		if (instanceCount == 0) continue;

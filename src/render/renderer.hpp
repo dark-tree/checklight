@@ -26,6 +26,12 @@
 #include "render/asset/asset.hpp"
 #include "render/asset/light.hpp"
 
+struct RenderObjectEqual {
+	bool operator()(const std::shared_ptr<RenderMesh>& mesh1, const std::shared_ptr<RenderMesh>& mesh2) const noexcept {
+		return mesh1.get() < mesh2.get();
+	}
+};
+
 class Renderer {
 
 	private:
@@ -45,18 +51,6 @@ class Renderer {
 		/// a ring-buffer like holder for the per frame states, utilized for concurrent
 		/// frame rendering (the CPU can "render ahead" of the GPU)
 		std::vector<RenderFrame> frames;
-
-		struct RenderObjectHash {
-			size_t operator()(const std::shared_ptr<RenderMesh>& mesh) const noexcept {
-				return std::hash<const void*>()(mesh.get());
-			}
-		};
-
-		struct RenderObjectEqual {
-			bool operator()(const std::shared_ptr<RenderMesh>& mesh1, const std::shared_ptr<RenderMesh>& mesh2) const noexcept {
-				return mesh1.get() == mesh2.get();
-			}
-		};
 
 	protected:
 
@@ -175,7 +169,7 @@ class Renderer {
 		// current multisampling anti-aliasing setting
 		VkSampleCountFlagBits msaa;
 
-		public: std::unordered_map<std::shared_ptr<RenderMesh>, void*, RenderObjectHash, RenderObjectEqual> object_meshes;
+		public: std::map<std::shared_ptr<RenderMesh>, void*, RenderObjectEqual> object_meshes;
 
 	private:
 

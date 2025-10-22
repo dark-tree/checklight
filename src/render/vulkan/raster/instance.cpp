@@ -1,5 +1,7 @@
 
 #include "instance.hpp"
+
+#include "render/api/model.hpp"
 #include "shared/math.hpp"
 #include "render/api/object.hpp"
 
@@ -7,14 +9,27 @@
  * RasterInstanceManager
  */
 
-void RasterInstanceManager::sortDelegates() {
-	return;
+void RasterInstanceManager::sortDelegates(const std::map<std::shared_ptr<RenderMesh>, void*, RenderObjectEqual>& object_meshes) {
+	std::vector<std::shared_ptr<RenderObject>> sorted_delegates;
+
+	uint32_t index=0;
+	for (const auto& mesh: object_meshes) {
+		for (auto& delegate: delegates) {
+			if (delegate->getModel()->getMesh() == mesh.first) {
+				delegate->setIndex(index);
+				sorted_delegates.push_back(delegate);
+				index++;
+			}
+		}
+	}
+
+	delegates = std::move(sorted_delegates);
 }
 
-void RasterInstanceManager::flush(CommandRecorder& recorder) {
+void RasterInstanceManager::flush(CommandRecorder& recorder,const std::map<std::shared_ptr<RenderMesh>, void*, RenderObjectEqual>& object_meshes) {
 
 	if (modifyDelegateVector) {
-		sortDelegates();
+		sortDelegates(object_meshes);
 		modifyDelegateVector=false;
 	}
 

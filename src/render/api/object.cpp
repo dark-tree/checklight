@@ -66,3 +66,7 @@ void RenderObject::setActive(bool active) {
 void RenderObject::setPortal(const glm::mat4& portal) {
 	data.portal = portal;
 }
+
+void RenderObject::setIndex(uint32_t index) {
+	this->index = index;
+}
