@@ -24,6 +24,7 @@ ShaderTable::ShaderTable(const LogicalDevice& device, Allocator& allocator, Grap
 		FAULT("Expected a raytrace pipeline!");
 	}
 
+
 	const VkStructureType type = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
 	const auto properties = (const VkPhysicalDeviceRayTracingPipelinePropertiesKHR*) device.getPhysical()->getProperties(type);
 

@@ -27,7 +27,7 @@ class DescriptorSet {
 		 * this set was created must configure the binding to match this resource type.
 		 *
 		 * @param binding descriptor set binding index to update
-		 * @param sampler buffer to update it to
+		 * @param buffer buffer to update it to
 		 * @param length  length of the buffer (or part of it) in bytes
 		 * @param offset  offset in the buffer where the section starts (in bytes)
 		 */

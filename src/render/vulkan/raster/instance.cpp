@@ -70,7 +70,7 @@ std::shared_ptr<RenderObject> RasterInstanceManager::create() {
 			capacity = (capacity > 0) ? (capacity * 2) : 16;
 
 			instance_buffer.close();
-			instance_buffer.allocateBuffers(capacity, sizeof(RasterInstanceManager));
+			instance_buffer.allocateBuffers(capacity, sizeof(RasterInstanceData));
 
 			attachment_buffer.close();
 			attachment_buffer.allocateBuffers(capacity, sizeof(RenderObjectData));
