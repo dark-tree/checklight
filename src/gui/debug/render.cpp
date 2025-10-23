@@ -129,6 +129,18 @@ std::shared_ptr<WidgetContext> RenderSystemOverlay::create(Theme& theme) {
 		settings->addWidget(createOption(theme, "Portal Lighting", control));
 	}
 
+	{
+		auto control = theme.newSelect({"Disabled", "Enabled"});
+		control->setSelected(true);
+		control->width = Unit::grow();
+
+		control->onSelect([] (int index) {
+			RenderSystem::system->changeMode((bool) index);
+		});
+
+		settings->addWidget(createOption(theme, "Raytracing", control));
+	}
+
 	auto info = theme.newText("Press ESC to free the cursor");
 	info->width = Unit::grow();
 	info->horizontal = HorizontalAlignment::CENTER;

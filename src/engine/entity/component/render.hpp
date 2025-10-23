@@ -5,7 +5,9 @@
 
 class RenderComponent : public GameComponent {
 protected:
-	std::shared_ptr<RenderObject> render_object;
+	std::shared_ptr<RenderObject> rtx_render_object;
+	std::shared_ptr<RenderObject> raster_render_object;
+	bool last_known_rtx_mode; //TODO temporary (to fix)
 
 public:
 	RenderComponent(SpatialPawn* sp, Models::Shape s);

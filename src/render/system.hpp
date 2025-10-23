@@ -21,6 +21,7 @@ class RenderSystem : public Renderer {
 
 		int frame_count = 0, frame_rate = 0;
 		std::chrono::steady_clock::time_point previous = std::chrono::steady_clock::now();
+		bool is_rtx_mode = true;
 
 	public:
 
@@ -104,6 +105,22 @@ class RenderSystem : public Renderer {
 		 * Get the current render parameters
 		 */
 		RenderParameters& getParameters();
+
+
+		/**
+		 * Turning on/off raytracing
+		 */
+		void changeMode(bool mode)
+		{
+			is_rtx_mode = mode;
+		}
+
+		/**
+		 * Check if the system is currently in RTX mode
+		 */
+		bool isRTXMode() const {
+			return is_rtx_mode;
+		}
 
 		/**
 		 * Returns current approximate framerate

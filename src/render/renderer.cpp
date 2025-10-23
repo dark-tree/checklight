@@ -1196,9 +1196,18 @@ void Renderer::draw() {
 
 	materials.getTextureManager().updateDescriptorSet(device, frame.set_raytrace, 4);
 
-	raster_instances->flush(recorder, object_meshes);
-	auto& raster_buffer = raster_instances->getInstanceBuffer();
-	frame.set_raster.buffer(2, raster_buffer.getBuffer(), raster_buffer.getBuffer().size());
+	//object_meshes.clear();
+	//todo temporoary solution, fix later
+	if (!RenderSystem::system->isRTXMode())
+	{
+		raster_instances->flush(recorder, object_meshes);
+		auto& raster_buffer = raster_instances->getInstanceBuffer();
+		frame.set_raster.buffer(2, raster_buffer.getBuffer(), raster_buffer.getBuffer().size());
+	}else
+	{
+		frame.set_raster.buffer(2, raster_instances->getInstanceBuffer().getBuffer(), 1);
+	}
+
 
 	// wait for uniform transfer before raytracing or rasterization starts
 	recorder.memoryBarrier()
