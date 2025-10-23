@@ -5,19 +5,18 @@
 #include "engine/entity/pawns/spatialPawn.hpp"
 
 
-RenderComponent::RenderComponent(SpatialPawn* sp, Models::Shape s) : GameComponent(sp) {
+RenderComponent::RenderComponent(SpatialPawn* sp, const std::shared_ptr<RenderModel>& renderModel) : GameComponent(sp) {
     // Get the shared model and initial matrix
-    auto model = Models::getShape(s);
     auto initial_matrix = glm::identity<glm::mat4x3>();
 
     rtx_render_object = RenderSystem::system->createRenderObject(true); // true for RT
     rtx_render_object->setMatrix(initial_matrix);
-    rtx_render_object->setModel(model);
+    rtx_render_object->setModel(renderModel);
     rtx_render_object->setActive(true);
 
     raster_render_object = RenderSystem::system->createRenderObject(false); // false for Raster
     raster_render_object->setMatrix(initial_matrix);
-    raster_render_object->setModel(model);
+    raster_render_object->setModel(renderModel);
     raster_render_object->setActive(false);
 
     last_known_rtx_mode = RenderSystem::system->isRTXMode();

@@ -66,7 +66,7 @@ static void entry(Args& args) {
 	{
 		auto cube_2 = std::make_shared<SpatialPawn>();
 		cube_2->setPosition({30, 1.1, 5});
-		cube_2->createComponent<RenderComponent>(Models::CUBE);
+		cube_2->createComponent<RenderComponent>(Models::getShape(Models::CUBE));
 		cube_2->setRotation(rotate(glm::quat(), {0, 0, 0}));
 		cube_2->createComponent<SoundComponent>("assets/sounds/1.ogg");
 		auto pc = cube_2->createComponent<PhysicsComponent>();
@@ -79,7 +79,7 @@ static void entry(Args& args) {
 	{
 		auto cube_2 = std::make_shared<SpatialPawn>();
 		cube_2->setPosition({30, 1.1, 10});
-		cube_2->createComponent<RenderComponent>(Models::CUBE);
+		cube_2->createComponent<RenderComponent>(Models::getShape(Models::CUBE));
 		cube_2->setRotation(rotate(glm::quat(), {0, 0, 0}));
 		cube_2->createComponent<SoundComponent>("assets/sounds/1.ogg");
 		auto pc = cube_2->createComponent<PhysicsComponent>();
@@ -111,7 +111,7 @@ static void entry(Args& args) {
 	{
 		auto cube_2_5 = std::make_shared<SpatialPawn>();
 		cube_2_5->setPosition({30, 1.1, 15});
-		cube_2_5->createComponent<RenderComponent>(Models::CUBE);
+		cube_2_5->createComponent<RenderComponent>(Models::getShape(Models::CUBE));
 		cube_2_5->setRotation(rotate(glm::quat(), {0, 0, 0}));
 		cube_2_5->createComponent<SoundComponent>("assets/sounds/1.ogg");
 		auto pc = cube_2_5->createComponent<PhysicsComponent>();
@@ -124,7 +124,7 @@ static void entry(Args& args) {
 	{
 		auto sphere = std::make_shared<SpatialPawn>();
 		sphere->setPosition({35, 1.1, 15});
-		sphere->createComponent<RenderComponent>(Models::SPHERE);
+		sphere->createComponent<RenderComponent>(Models::getShape(Models::SPHERE));
 		sphere->createComponent<MatrixAnimation>(MatrixAnimation::TRANSLATE);
 		//sphere->createComponent<SoundComponent>("assets/sounds/5.ogg");
 		sp->addPawnToRoot(sphere);
@@ -132,7 +132,7 @@ static void entry(Args& args) {
 	{
 		auto cube_3 = std::make_shared<SpatialPawn>();
 		cube_3->setPosition({30, 1.1, 20});
-		cube_3->createComponent<RenderComponent>(Models::CUBE);
+		cube_3->createComponent<RenderComponent>(Models::getShape(Models::CUBE));
 		cube_3->createComponent<SoundComponent>("assets/sounds/3.ogg");
 		auto pc = cube_3->createComponent<PhysicsComponent>();
 		pc->setVelocity({0, 10, 0});
@@ -142,7 +142,7 @@ static void entry(Args& args) {
 	{
 		auto cube_1 = std::make_shared<SpatialPawn>();
 		cube_1->setPosition({-2, 1, -2});
-		cube_1->createComponent<RenderComponent>(Models::CUBE);
+		cube_1->createComponent<RenderComponent>(Models::getShape(Models::CUBE));
 		cube_1->createComponent<MatrixAnimation>(MatrixAnimation::ROTATE);
 		cube_1->createComponent<SoundComponent>("assets/sounds/2.ogg");
 		sp->addPawnToRoot(cube_1);
@@ -158,21 +158,28 @@ static void entry(Args& args) {
 	std::vector<std::shared_ptr<RenderObject>> objects;
 
 	for(auto& model : models) {
-		auto object = system.createRenderObject(false);
-		object->setMatrix(glm::identity<glm::mat4x3>());
-		object->setModel(model);
-		objects.push_back(object);
+		auto pawn = std::make_shared<SpatialPawn>();
+		pawn->createComponent<RenderComponent>(model);
+		sp->addPawnToRoot(pawn);
+
+		// auto object = system.createRenderObject(false);
+		// object->setMatrix(glm::identity<glm::mat4x3>());
+		// object->setModel(model);
+		// objects.push_back(object);
 	}
 
 	for(auto& model : cube) {
-		auto object = system.createRenderObject(true);
-		object->setMatrix(glm::translate(glm::identity<glm::mat4>(), glm::vec3(4, 0, 4)));
-		object->setModel(model);
-
-		glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(-4, 8, 4));
-		portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 0, 1));
-		object->setPortal(portal);
-		objects.push_back(object);
+		auto pawn = std::make_shared<SpatialPawn>();
+		pawn->createComponent<RenderComponent>(model);
+		sp->addPawnToRoot(pawn);
+		// auto object = system.createRenderObject(true);
+		// object->setMatrix(glm::translate(glm::identity<glm::mat4>(), glm::vec3(4, 0, 4)));
+		// object->setModel(model);
+		//
+		// glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(-4, 8, 4));
+		// portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 0, 1));
+		// object->setPortal(portal);
+		// objects.push_back(object);
 	}
 
 	system.getParameters().setAmbientLight(glm::vec3(0.0, 0.0, 0.0));

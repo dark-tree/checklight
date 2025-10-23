@@ -10,12 +10,13 @@ protected:
 	bool last_known_rtx_mode; //TODO temporary (to fix)
 
 public:
-	RenderComponent(SpatialPawn* sp, Models::Shape s);
+	RenderComponent(SpatialPawn* sp, const std::shared_ptr<RenderModel>& renderModel);
 
 	~RenderComponent() override;
 
 protected:
 	bool rendering;
+
 
 	void onUpdate(Context c) override;
 
