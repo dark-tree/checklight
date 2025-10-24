@@ -44,6 +44,7 @@ RenderFrame::RenderFrame(Renderer& renderer, const CommandPool& pool, const Logi
 	set_raytrace.view(12, renderer.attachment_prev_world_position.getView(), VK_IMAGE_LAYOUT_GENERAL);
 
 	set_raster = renderer.descriptor_pool.allocate(renderer.layout_raster);
+	set_compose.sampler(0, renderer.attachment_albedo.getTexture(), VK_IMAGE_LAYOUT_GENERAL);
 	set_raster.buffer(1, uniform_buffer, sizeof(SceneUniform));
 }
 

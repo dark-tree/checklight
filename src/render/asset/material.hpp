@@ -34,7 +34,7 @@ class TextureManager {
 		/**
 		* Updates the descriptor set with the textures
 		*/
-		void updateDescriptorSet(LogicalDevice& device, DescriptorSet& set, uint32_t binding);
+		void updateDescriptorSet(LogicalDevice& device, DescriptorSet& set, uint32_t binding, bool setDirty);
 
 		/**
 		* Maximum number of textures that can be created and stored in a single TextureManager instance

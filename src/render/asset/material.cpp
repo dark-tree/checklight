@@ -68,7 +68,7 @@ void TextureManager::flush(Allocator& allocator, CommandRecorder& recorder, Task
 	dirty = true;
 }
 
-void TextureManager::updateDescriptorSet(LogicalDevice& device, DescriptorSet& set, uint32_t binding) {
+void TextureManager::updateDescriptorSet(LogicalDevice& device, DescriptorSet& set, uint32_t binding, bool setDirty) {
 
 	if (dirty) {
 		if (initialized) {
@@ -89,9 +89,10 @@ void TextureManager::updateDescriptorSet(LogicalDevice& device, DescriptorSet& s
 			}
 
 			set.samplerArray(binding, all_textures, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-			initialized = true;
 		}
-		dirty = false;
+		if (setDirty) {
+			dirty = false;
+		}
 	}
 }
 

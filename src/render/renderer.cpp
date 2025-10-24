@@ -1064,7 +1064,9 @@ Renderer::Renderer(ApplicationParameters& parameters)
 	layout_raster = DescriptorSetLayoutBuilder::begin()
 		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.descriptor(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-		.descriptor(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER)
+		.descriptor(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+		.descriptor(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, TextureManager::MAX_TEXTURES)
+		.descriptor(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.done(device);
 
 	// add layouts to the pool so that they can be allocated
@@ -1194,11 +1196,14 @@ void Renderer::draw() {
 	auto& light_buffer = lights.getBuffer();
 	frame.set_raytrace.buffer(13, light_buffer.getBuffer(), light_buffer.getBuffer().size());
 
-	materials.getTextureManager().updateDescriptorSet(device, frame.set_raytrace, 4);
+	materials.getTextureManager().updateDescriptorSet(device, frame.set_raytrace, 4, false);
 
 	raster_instances->flush(recorder, object_meshes);
 	auto& raster_buffer = raster_instances->getInstanceBuffer();
 	frame.set_raster.buffer(2, raster_buffer.getBuffer(), raster_buffer.getBuffer().size());
+	frame.set_raster.buffer(4, material_buffer.getBuffer(), material_buffer.getBuffer().size());
+
+	materials.getTextureManager().updateDescriptorSet(device, frame.set_raster, 3, true);
 
 	// wait for uniform transfer before raytracing or rasterization starts
 	recorder.memoryBarrier()
