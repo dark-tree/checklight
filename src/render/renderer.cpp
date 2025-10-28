@@ -1215,12 +1215,24 @@ void Renderer::draw() {
 		.then(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_ACCESS_UNIFORM_READ_BIT)
 		.done();
 
-	// ray trace
-	recorder.bindPipeline(pipeline_trace_3d)
-		.bindDescriptorSet(frame.set_raytrace)
-		.traceRays(shader_table, width(), height());
 
-	if (parameters.getDenoise()) {
+	// ray trace
+	static bool lastRTX = false;
+	static bool extraFrame = false;
+	bool currentRTX = RenderSystem::system->isRTXMode();
+	if (currentRTX != lastRTX) {
+		extraFrame = true; // trigger one extra frame
+	}
+	lastRTX = currentRTX;
+
+	if (currentRTX || extraFrame) {
+		recorder.bindPipeline(pipeline_trace_3d)
+			.bindDescriptorSet(frame.set_raytrace)
+			.traceRays(shader_table, width(), height());
+		extraFrame = false; // consume extra frame
+	}
+
+	if (parameters.getDenoise() && RenderSystem::system->isRTXMode()) {
 		// denoise
 		recorder.beginRenderPass(pass_denoise, current_image, swapchain.getExtend())
 			.bindPipeline(pipeline_denoise_2d)
@@ -1242,6 +1254,7 @@ void Renderer::draw() {
 		.bindDescriptorSet(frame.set_compose)
 		.draw(3)
 		.endRenderPass();
+
 
 	recorder.beginRenderPass(pass_raster, current_image, swapchain.getExtend());
 	recorder.bindPipeline(pipeline_raster_3d);

@@ -22,7 +22,12 @@ layout(location = 2) out vec4 fPrevPosition;
 #define STEP_SIZE 9
 
 void main() {
-	
+	// fill buffers first
+	fColor = vec4(0.0, 0.0, 0.0, 1.0);
+	fPrevNormal = vec4(0.0);
+	fPrevPosition = vec4(0.0);
+	gl_FragDepth = 1.0;
+
 	vec4 centerIllumSample = texture(uIlluminationSampler, vTexture);
 	vec4 centerNormal = texture(uNormalSampler, vTexture);
 	float centerDepth = centerNormal.w;
