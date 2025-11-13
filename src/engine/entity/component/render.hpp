@@ -12,7 +12,11 @@ protected:
 public:
 	RenderComponent(SpatialPawn* sp, const std::shared_ptr<RenderModel>& renderModel);
 
+    RenderComponent(SpatialPawn* sp, std::string path);
+
 	~RenderComponent() override;
+
+    std::shared_ptr<RenderObject> getRenderObject();
 
 protected:
 	bool rendering;

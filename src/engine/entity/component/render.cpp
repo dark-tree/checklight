@@ -24,6 +24,15 @@ RenderComponent::RenderComponent(SpatialPawn* sp, const std::shared_ptr<RenderMo
     rendering = true;
 }
 
+RenderComponent::RenderComponent(SpatialPawn *sp, std::string path) : GameComponent(sp) {
+    render_object = RenderSystem::system->createRenderObject();
+    render_object->setMatrix(glm::identity<glm::mat4x3>());
+    auto obj = RenderSystem::system->importObj(path);
+    render_object->setModel(obj[0]);
+    render_object->setActive(false);
+    rendering = false;
+}
+
 void RenderComponent::onUpdate(Context c) {
     glm::mat4x3 matrix = dynamic_cast<SpatialPawn*>(parent)->getMatrix();
 
@@ -87,3 +96,9 @@ void RenderComponent::remove() {
 
 RenderComponent::~RenderComponent() {
 }
+
+std::shared_ptr<RenderObject> RenderComponent::getRenderObject() {
+    return render_object;
+}
+
+

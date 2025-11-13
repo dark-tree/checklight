@@ -18,6 +18,7 @@ void SpatialPawn::addPosition(const glm::vec3 new_position) {
 
 void SpatialPawn::setPosition(const glm::vec3 new_position) {
 	position = new_position;
+    //printf("POZYCJA: %f,%f,%f\n", new_position.x, new_position.y, new_position.z);
 }
 
 glm::vec3 SpatialPawn::getPosition() const {

@@ -37,6 +37,7 @@ static void entry(Args& args) {
 	window.getInputDispatcher().registerListener(context, 1);
 	auto models = system.importObj("assets/models/checklight.obj");
 	auto cube = system.importObj("assets/models/cube.obj");
+    auto wall = system.importObj("assets/models/Wall.obj");
 
 	/*std::vector<Vertex3D> triangle = {
 		{30.5f, -10.5f, 10.0f, 1, 0, 0, 255, 0.0f, 1.0f},
@@ -56,13 +57,22 @@ static void entry(Args& args) {
 	BoardManager manager(dispacher);
 	manager.setGravity(glm::vec3(0, -10, 0));
 
-	std::shared_ptr<Board> sp = manager.getCurrentBoard().lock(); {
+	std::shared_ptr<Board> sp = manager.getCurrentBoard().lock();
+	{
 		auto invisible_pawn = std::make_shared<SpatialPawn>();
 		invisible_pawn->setPosition(glm::vec3(0, 10, 0));
-		invisible_pawn->createComponent<SoundComponent>("assets/sounds/4.ogg");
-		sp->addPawnToRoot(invisible_pawn);
+		//invisible_pawn->createComponent<SoundComponent>("assets/sounds/4.ogg");
+		//sp->addPawnToRoot(invisible_pawn);
 	}
-
+	// ODTAD MOZNA USUNAC
+    {
+		auto cube_1 = std::make_shared<SpatialPawn>();
+		cube_1->setPosition({-2, 1, -2});
+		cube_1->createComponent<RenderComponent>(Models::getShape(Models::CUBE));
+		cube_1->createComponent<MatrixAnimation>(MatrixAnimation::ROTATE);
+		cube_1->createComponent<SoundComponent>("assets/sounds/2.ogg");
+		sp->addPawnToRoot(cube_1);
+	}
 	{
 		auto cube_2 = std::make_shared<SpatialPawn>();
 		cube_2->setPosition({30, 1.1, 5});
@@ -77,18 +87,50 @@ static void entry(Args& args) {
 		sp->addPawnToRoot(cube_2);
 	}
 	{
-		auto cube_2 = std::make_shared<SpatialPawn>();
-		cube_2->setPosition({30, 1.1, 10});
-		cube_2->createComponent<RenderComponent>(Models::getShape(Models::CUBE));
-		cube_2->setRotation(rotate(glm::quat(), {0, 0, 0}));
-		cube_2->createComponent<SoundComponent>("assets/sounds/1.ogg");
-		auto pc = cube_2->createComponent<PhysicsComponent>();
+		auto cube_3 = std::make_shared<SpatialPawn>();
+		cube_3->setPosition({30, 1.1, 10});
+		cube_3->createComponent<RenderComponent>(Models::getShape(Models::CUBE));
+		cube_3->setRotation(rotate(glm::quat(), {0, 0, 0}));
+		cube_3->createComponent<SoundComponent>("assets/sounds/1.ogg");
+		auto pc = cube_3->createComponent<PhysicsComponent>();
 		pc->setVelocity({0, 10, 0});
 		pc->setAngularVelocity({0, 0, 0});
 		pc->setGravityScale({0, 1, 0});
 		pc->getMaterial().coefficient_of_restitution = 0.5f;
-		sp->addPawnToRoot(cube_2);
+		sp->addPawnToRoot(cube_3);
 	}
+	{
+		auto cube_4 = std::make_shared<SpatialPawn>();
+		cube_4->setPosition({30, 1.1, 15});
+		cube_4->createComponent<RenderComponent>(Models::getShape(Models::CUBE));
+		cube_4->setRotation(rotate(glm::quat(), {0, 0, 0}));
+		cube_4->createComponent<SoundComponent>("assets/sounds/1.ogg");
+		auto pc = cube_4->createComponent<PhysicsComponent>();
+		pc->setVelocity({0, 10, 0});
+		pc->setAngularVelocity({0, 0, 0});
+		pc->setGravityScale({0, 1, 0});
+		pc->getMaterial().coefficient_of_restitution = 1.f;
+		sp->addPawnToRoot(cube_4);
+	}
+	{
+		auto cube_5 = std::make_shared<SpatialPawn>();
+		cube_5->setPosition({30, 1.1, 20});
+		cube_5->createComponent<RenderComponent>(Models::getShape(Models::CUBE));
+		cube_5->createComponent<SoundComponent>("assets/sounds/3.ogg");
+		auto pc = cube_5->createComponent<PhysicsComponent>();
+		pc->setVelocity({0, 10, 0});
+		pc->getMaterial().coefficient_of_restitution = 1.8f;
+		sp->addPawnToRoot(cube_3);
+	}
+	{
+		auto sphere = std::make_shared<SpatialPawn>();
+		sphere->setPosition({35, 1.1, 15});
+		sphere->createComponent<RenderComponent>(Models::getShape(Models::SPHERE));
+		sphere->createComponent<MatrixAnimation>(MatrixAnimation::TRANSLATE);
+		//sphere->createComponent<SoundComponent>("assets/sounds/5.ogg");
+		sp->addPawnToRoot(sphere);
+	}
+	// DOTAD MOZNA USUNAC
 	{
 		auto floor = std::make_shared<SpatialPawn>();
 		floor->setPosition({0, -1000, 0});
@@ -108,79 +150,119 @@ static void entry(Args& args) {
 		});
 		sp->addPawnToRoot(floor);
 	}
-	{
-		auto cube_2_5 = std::make_shared<SpatialPawn>();
-		cube_2_5->setPosition({30, 1.1, 15});
-		cube_2_5->createComponent<RenderComponent>(Models::getShape(Models::CUBE));
-		cube_2_5->setRotation(rotate(glm::quat(), {0, 0, 0}));
-		cube_2_5->createComponent<SoundComponent>("assets/sounds/1.ogg");
-		auto pc = cube_2_5->createComponent<PhysicsComponent>();
-		pc->setVelocity({0, 10, 0});
-		pc->setAngularVelocity({0, 0, 0});
-		pc->setGravityScale({0, 1, 0});
-		pc->getMaterial().coefficient_of_restitution = 1.f;
-		sp->addPawnToRoot(cube_2_5);
-	}
-	{
-		auto sphere = std::make_shared<SpatialPawn>();
-		sphere->setPosition({35, 1.1, 15});
-		sphere->createComponent<RenderComponent>(Models::getShape(Models::SPHERE));
-		sphere->createComponent<MatrixAnimation>(MatrixAnimation::TRANSLATE);
-		//sphere->createComponent<SoundComponent>("assets/sounds/5.ogg");
-		sp->addPawnToRoot(sphere);
-	}
-	{
-		auto cube_3 = std::make_shared<SpatialPawn>();
-		cube_3->setPosition({30, 1.1, 20});
-		cube_3->createComponent<RenderComponent>(Models::getShape(Models::CUBE));
-		cube_3->createComponent<SoundComponent>("assets/sounds/3.ogg");
-		auto pc = cube_3->createComponent<PhysicsComponent>();
-		pc->setVelocity({0, 10, 0});
-		pc->getMaterial().coefficient_of_restitution = 1.8f;
-		sp->addPawnToRoot(cube_3);
-	}
-	{
-		auto cube_1 = std::make_shared<SpatialPawn>();
-		cube_1->setPosition({-2, 1, -2});
-		cube_1->createComponent<RenderComponent>(Models::getShape(Models::CUBE));
-		cube_1->createComponent<MatrixAnimation>(MatrixAnimation::ROTATE);
-		cube_1->createComponent<SoundComponent>("assets/sounds/2.ogg");
-		sp->addPawnToRoot(cube_1);
-	}
-
 
 	// sp->addPawnToRoot(cube_1);
 	// sp->addPawnToRoot(sphere);
 
+    std::shared_ptr<SpatialPawn> wallObj0;
+    for (int i = 0; i < 2; i++) {
+        auto wallObj = std::make_shared<SpatialPawn>();
+        wallObj->setPosition({i * 4, 2.5, 0}); //hiper dziwne, pokazać skajowi
+        wallObj->createComponent<RenderComponent>("assets/models/Wall.obj");
+        auto pc = wallObj->createComponent<PhysicsComponent>();
+        pc->setVelocity({0, 0, 0});
+        pc->setGravityScale({0, 0, 0});
+        sp->addPawnToRoot(wallObj);
+        wallObj0 = wallObj;
+    }
+
+    auto roofObj = std::make_shared<SpatialPawn>();
+    roofObj->setPosition({2, 5,  0});
+    roofObj->createComponent<RenderComponent>("assets/models/Roof.obj");
+    sp->addPawnToRoot(roofObj);
+
+    for (int i = 0; i < 2; i++) {
+        auto wallObj = std::make_shared<SpatialPawn>();
+        wallObj->setPosition({-300 + i * 604, 1.5, 495 + i * 0.0001});
+        wallObj->createComponent<RenderComponent>("assets/models/Fence.obj");
+        auto pc = wallObj->createComponent<PhysicsComponent>();
+        pc->setVelocity({0, 0, 0});
+        pc->setGravityScale({0, 0, 0});
+        sp->addPawnToRoot(wallObj);
+    }
+
+    //wall + portal
+    for (int i = 0; i < 2; i++) {
+        auto wallObj = std::make_shared<SpatialPawn>();
+        wallObj->setPosition({-300 + i * 604, 4.5, 495 + i * 0.0001});
+        auto object = wallObj->createComponent<RenderComponent>("assets/models/Fence1.obj");
+
+
+        glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, 0, -990));
+		//portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 1, 0));
+		object->getRenderObject()->setPortal(portal);
+
+        sp->addPawnToRoot(wallObj);
+    }
+
+    //wall other side
+    for (int i = 0; i < 2; i++) {
+        auto wallObj = std::make_shared<SpatialPawn>();
+        wallObj->setPosition({-300 + i * 604, 1.5, -495 + i * 0.0001});
+        wallObj->createComponent<RenderComponent>("assets/models/Fence.obj");
+        auto pc = wallObj->createComponent<PhysicsComponent>();
+        pc->setVelocity({0, 0, 0});
+        pc->setGravityScale({0, 0, 0});
+        sp->addPawnToRoot(wallObj);
+    }
+
+    //wall + portal other side
+//    for (int i = 0; i < 2; i++) {
+//        auto wallObj = std::make_shared<SpatialPawn>();
+//        wallObj->setPosition({-300 + i * 604, 4.5, -495 + i * 0.0001});
+//        auto object = wallObj->createComponent<RenderComponent>("assets/models/Fence1.obj");
+//
+//
+////        glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, 0, 989));
+////        //portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 1, 0));
+////        object->getRenderObject()->setPortal(portal);
+//
+//        sp->addPawnToRoot(wallObj);
+//    }
+
+//	sp->addPawnToRoot(cube_1);
+//	sp->addPawnToRoot(sphere);
+
 	auto camera_pawn = static_pointer_cast<SpatialPawn>(sp->getTree().findByName("Main Camera"));
-	camera_pawn->setPosition({10, 5, 10});
+	camera_pawn->setPosition({0, 4, 505});
+    //camera_pawn->setRotation(glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 1, 0)));
+    static_pointer_cast<Camera>(camera_pawn->getComponents()[0])->setRotation(glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 1, 0)));
 
 	std::vector<std::shared_ptr<RenderObject>> objects;
+    //logika z rebase
+//    for(auto& model : models) {
+//		auto pawn = std::make_shared<SpatialPawn>();
+//		pawn->createComponent<RenderComponent>(model);
+//		sp->addPawnToRoot(pawn);
+//
+//		// auto object = system.createRenderObject(false);
+//		// object->setMatrix(glm::identity<glm::mat4x3>());
+//		// object->setModel(model);
+//		// objects.push_back(object);
+//	}
 
-	for(auto& model : models) {
-		auto pawn = std::make_shared<SpatialPawn>();
-		pawn->createComponent<RenderComponent>(model);
-		sp->addPawnToRoot(pawn);
+    auto object = system.createRenderObject();
+    object->setMatrix(glm::identity<glm::mat4x3>());
+    object->setModel(models[1]);
+    objects.push_back(object);
 
-		// auto object = system.createRenderObject(false);
-		// object->setMatrix(glm::identity<glm::mat4x3>());
-		// object->setModel(model);
-		// objects.push_back(object);
-	}
-
-	for(auto& model : cube) {
-		// auto pawn = std::make_shared<SpatialPawn>();
-		// pawn->createComponent<RenderComponent>(model);
-		// sp->addPawnToRoot(pawn);
-		// auto object = system.createRenderObject(true);
-		// object->setMatrix(glm::translate(glm::identity<glm::mat4>(), glm::vec3(4, 0, 4)));
-		// object->setModel(model);
-		//
-		// glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(-4, 8, 4));
-		// portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 0, 1));
-		// object->setPortal(portal);
-		// objects.push_back(object);
-	}
+//	for(auto& model : models) {
+//		auto object = system.createRenderObject();
+//		object->setMatrix(glm::identity<glm::mat4x3>());
+//		object->setModel(model);
+//		objects.push_back(object);
+//	}
+//
+//	for(auto& model : cube) {
+//		auto object = system.createRenderObject();
+//		object->setMatrix(glm::translate(glm::identity<glm::mat4>(), glm::vec3(4, 0, 4)));
+//		object->setModel(model);
+//
+//		glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(-4, 8, 4));
+//		portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 0, 1));
+//		object->setPortal(portal);
+//		objects.push_back(object);
+//	}
 
 	system.getParameters().setAmbientLight(glm::vec3(0.0, 0.0, 0.0));
 	system.getParameters().setDenoise(true);
@@ -188,7 +270,7 @@ static void entry(Args& args) {
 	system.getParameters().setGISamples(1);
 
 	system.getLightManager().createDirectionalLight(
-		{0.0, 3.5, -1.0},
+		{0, 3.5, 0},
 		{1.0, 1.0, 1.0},
 		1.5,
 		true
@@ -201,14 +283,12 @@ static void entry(Args& args) {
 		true
 	);
 
-	//for (auto& object : objects) {
-	//	system.test_meshes.push_back(object->);
-	//}
 
 	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 	while(!window.shouldClose()) {
 		window.poll();
 
+        //roofObj->setPosition(roofObj->getPosition() + glm::vec3 {0.001, 0.001, 0.001});
 		//physics update before rendering
 		manager.updateCycle();
 		std::shared_ptr<Board> current_board = manager.getCurrentBoard().lock();
