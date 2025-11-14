@@ -119,6 +119,7 @@ static void entry(Args& args) {
 		sp->addPawnToRoot(sphere);
 	}
 	// DOTAD MOZNA USUNAC
+	std::shared_ptr<PhysicsComponent> pc1;
 	{
 		auto floor = std::make_shared<SpatialPawn>();
 		floor->setPosition({0, -1000, 0});
@@ -169,20 +170,36 @@ static void entry(Args& args) {
 
     {
         auto cube_3 = std::make_shared<SpatialPawn>();
-        cube_3->setPosition({-35, 2.5, 499});
+        cube_3->setPosition({-35, 2.5, 503.1});
         cube_3->createComponent<RenderComponent>(Models::getShape(Models::CUBE));
         auto pc = cube_3->createComponent<PhysicsComponent>();
         pc->setVelocity({10, 10, 0});
         pc->getMaterial().coefficient_of_restitution = 1.f;
-        pc->getMaterial().coefficient_of_friction = -0.2f;
+        pc->getMaterial().coefficient_of_friction = 0;
         pc->setGravityScale({0, 1, 0});
         sp->addPawnToRoot(cube_3);
     }
-
-    auto roofObj = std::make_shared<SpatialPawn>();
-    roofObj->setPosition({2, 5,  0});
-    roofObj->createComponent<RenderComponent>("assets/models/Roof.obj");
-    sp->addPawnToRoot(roofObj);
+    {
+        auto roofObj = std::make_shared<SpatialPawn>();
+        roofObj->setPosition({2, 5.1, 0});
+        roofObj->createComponent<RenderComponent>("assets/models/Roof.obj");
+        sp->addPawnToRoot(roofObj);
+        auto pc = roofObj->createComponent<PhysicsComponent>();
+        pc->setVelocity({0, 0, 0});
+        pc->setGravityScale({0, 0, 0});
+        pc->setVertices({
+                {-1.f, -0.2f, 500.f},
+                {1.f,  -0.2f, 500.f},
+                {1.f,  0.2f,  500.f},
+                {-1.f, 0.2f,  500.f},
+                {1.f,  -0.2f, -500.f},
+                {-1.f, -0.2f, -500.f},
+                {-1.f, 0.2f,  -500.f},
+                {1.f,  0.2f,  -500.f}
+        });
+        pc->setMass(99999999999);
+        pc->setStatic(true);
+    }
 
     auto overpassObj = std::make_shared<SpatialPawn>();
     overpassObj->setPosition({2, 5,  495});
@@ -193,6 +210,15 @@ static void entry(Args& args) {
     overpassObj2->setPosition({2, 5,  -485});
     overpassObj2->createComponent<RenderComponent>("assets/models/Overpass.obj");
     sp->addPawnToRoot(overpassObj2);
+
+    auto speakerObj = std::make_shared<SpatialPawn>();
+    speakerObj->setPosition({-5, -0.15,  502});
+    speakerObj->createComponent<RenderComponent>("assets/models/Speakers.obj");
+    speakerObj->createComponent<RenderComponent>("assets/models/Speakers.obj", 1);
+    speakerObj->createComponent<RenderComponent>("assets/models/Speakers.obj", 2);
+    speakerObj->createComponent<RenderComponent>("assets/models/Speakers.obj", 3);
+    speakerObj->createComponent<SoundComponent>("assets/sounds/portal_radio_loop.ogg");
+    sp->addPawnToRoot(speakerObj);
 
     //wall
     for (int i = 0; i < 2; i++) {
@@ -270,12 +296,26 @@ static void entry(Args& args) {
 //	sp->addPawnToRoot(sphere);
 
     auto playerObj = std::make_shared<SpatialPawn>();
-    playerObj->setPosition({-10, 4, 505});
+    playerObj->setPosition({-10, 4.2, 510});
     auto pc = playerObj->createComponent<PhysicsComponent>();
     auto mc = playerObj->createComponent<MovementComponent>();
+    mc->setMaxSpeed(15);
+    mc->setAcceleration(50);
     pc->setVelocity({0, 0, 0});
     pc->setGravityScale({0, 1, 0});
+    pc->setVertices({
+        {-1.f, -4.f, 1.f},
+        {1.f, -4.f, 1.f},
+        {1.f, .5f, 1.f},
+        {-1.f, .5f, 1.f},
+        {1.f, -4.f, -1.f},
+        {-1.f, -4.f, -1.f},
+        {-1.f, .5f, -1.f},
+        {1.f, .5f, -1.f}
+    });
     pc->setMass(12);
+    pc->getMaterial().coefficient_of_restitution = -0.2f;
+    pc->getMaterial().coefficient_of_friction = 3.f;
     sp->addPawnToRoot(playerObj);
 
     dispacher->registerListener(mc);
@@ -342,7 +382,7 @@ static void entry(Args& args) {
                 20.0,
                 true
         );
-        printf("%f, %f, %f \n", i >= 4 ? 1.0 : 0, ((i + 2) % 4 == 0 || (i + 1) % 4 == 0) ? 1.0 : 0, i % 2 != 0 ? 1.0 : 0);
+        //printf("%f, %f, %f \n", i >= 4 ? 1.0 : 0, ((i + 2) % 4 == 0 || (i + 1) % 4 == 0) ? 1.0 : 0, i % 2 != 0 ? 1.0 : 0);
     }
 
 
@@ -357,6 +397,8 @@ static void entry(Args& args) {
         lastTime = currentTime;
         currentTime = glfwGetTime();
         deltaT = currentTime - lastTime;
+
+        camera_pawn->setPosition(playerObj->getPosition());
 
         mc->setDirection(static_pointer_cast<Camera>(camera_pawn->getComponents()[0])->getCamFacing());
         //roofObj->setPosition(roofObj->getPosition() + glm::vec3 {0.001, 0.001, 0.001});

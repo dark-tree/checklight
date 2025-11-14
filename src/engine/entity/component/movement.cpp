@@ -10,10 +10,11 @@ MovementComponent::MovementComponent(SpatialPawn *s) : GameComponent(s) {
     pressed_left = false;
     pressed_backwards = false;
     pressed_forward = false;
+    pressed_space = false;
 
     acceleration = 10.0;
     max_speed = 1.0;
-
+    jumpTrigger = 4.1;
 
     physicsComponent = std::static_pointer_cast<PhysicsComponent>(getSpatialParent()->getComponents()[0]);
 
@@ -22,7 +23,6 @@ MovementComponent::MovementComponent(SpatialPawn *s) : GameComponent(s) {
 void MovementComponent::onUpdate(Context c) {
     float speed_multiplier = c.delta * acceleration;
 
-    printf("%f, %f, %f \n", physicsComponent->getVelocity().x, physicsComponent->getVelocity().y, physicsComponent->getVelocity().z);
     glm::vec3 speed = physicsComponent->getVelocity();
 
     if(pressed_forward) {
@@ -38,9 +38,15 @@ void MovementComponent::onUpdate(Context c) {
         speed += normalize(glm::cross(direction, math::UP)) * speed_multiplier;
     }
 
-    if (speed.length() > max_speed)
+    if (glm::length(glm::vec3(speed.x, 0, speed.z)) > max_speed)
     {
-        speed = glm::normalize(speed) * (float)max_speed;
+        speed = glm::normalize(glm::vec3(speed.x, 0, speed.z)) * (float)max_speed + glm::vec3(0, speed.y, 0);
+    }
+
+    if (pressed_space && jumpTrigger >= getSpatialParent()->getPosition().y)
+    {
+        speed += glm::vec3{0, 6, 0};
+        pressed_space = false;
     }
 
     //printf("%f, %f, %f \n", speed.x, speed.y, speed.z);
@@ -61,7 +67,6 @@ InputResult MovementComponent::onEvent(const InputEvent &event) {
         //forward
         if(key_event->wasPressed(GLFW_KEY_W)) {
             pressed_forward = true;
-            printf("skibidiusz");
         }
         else if(key_event->wasReleased(GLFW_KEY_W)) pressed_forward = false;
             //left
@@ -73,6 +78,7 @@ InputResult MovementComponent::onEvent(const InputEvent &event) {
             //right
         else if(key_event->wasPressed(GLFW_KEY_D)) pressed_right = true;
         else if(key_event->wasReleased(GLFW_KEY_D)) pressed_right = false;
+        else if(key_event->wasPressed(GLFW_KEY_SPACE)) pressed_space = true;
             //down
         //printf("skibidiusz");
     }
@@ -88,7 +94,7 @@ void MovementComponent::setAcceleration(double speed) {
 }
 
 void MovementComponent::setDirection(glm::vec3 dir) {
-    this->direction = dir;
+    this->direction = glm::normalize(glm::vec3{dir.x, 0, dir.z});
 }
 
 

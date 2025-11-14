@@ -33,6 +33,15 @@ RenderComponent::RenderComponent(SpatialPawn *sp, std::string path) : GameCompon
     rendering = false;
 }
 
+RenderComponent::RenderComponent(SpatialPawn *sp, std::string path, int index) : GameComponent(sp) {
+    render_object = RenderSystem::system->createRenderObject();
+    render_object->setMatrix(glm::identity<glm::mat4x3>());
+    auto obj = RenderSystem::system->importObj(path);
+    render_object->setModel(obj[index]);
+    render_object->setActive(false);
+    rendering = false;
+}
+
 void RenderComponent::onUpdate(Context c) {
     glm::mat4x3 matrix = dynamic_cast<SpatialPawn*>(parent)->getMatrix();
 

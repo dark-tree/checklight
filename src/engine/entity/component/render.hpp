@@ -14,6 +14,8 @@ public:
 
     RenderComponent(SpatialPawn* sp, std::string path);
 
+    RenderComponent(SpatialPawn* sp, std::string path, int index);
+
 	~RenderComponent() override;
 
     std::shared_ptr<RenderObject> getRenderObject();

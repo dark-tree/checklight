@@ -8,6 +8,7 @@ class MovementComponent : public GameComponent {
 protected:
     double acceleration;
     double max_speed;
+    double jumpTrigger;
 
     std::shared_ptr<PhysicsComponent> physicsComponent;
 
@@ -16,7 +17,8 @@ protected:
     bool pressed_left,
             pressed_right,
             pressed_forward,
-            pressed_backwards;
+            pressed_backwards,
+            pressed_space;
 
     void onUpdate(Context c) override;
 
