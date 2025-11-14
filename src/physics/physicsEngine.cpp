@@ -6,10 +6,10 @@
 #include "engine/entity/component/physics.hpp"
 
 
-PhysicsEngine::PhysicsEngine(glm::vec3 gravity_strength, BoardManager *skibidi) {
+PhysicsEngine::PhysicsEngine(glm::vec3 gravity_strength, BoardManager *manager) {
 	elements = std::vector<PhysicsElement>();
 	this->gravity_strength = gravity_strength;
-	boardManager = skibidi;
+	boardManager = manager;
 }
 
 PhysicsEngine::~PhysicsEngine() {

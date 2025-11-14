@@ -7,6 +7,7 @@
 #include "engine/engine.hpp"
 #include "engine/entity/component/matrixAnimation.hpp"
 #include "gui/debug/render.hpp"
+#include "engine/entity/component/movement.hpp"
 
 static void entry(Args& args) {
 	// Basic information about the program being run
@@ -38,19 +39,6 @@ static void entry(Args& args) {
 	auto models = system.importObj("assets/models/checklight.obj");
 	auto cube = system.importObj("assets/models/cube.obj");
     auto wall = system.importObj("assets/models/Wall.obj");
-
-	/*std::vector<Vertex3D> triangle = {
-		{30.5f, -10.5f, 10.0f, 1, 0, 0, 255, 0.0f, 1.0f},
-		{30.5f, -10.5f, 15.0f, 0, 255, 0, 255, 0.0f, 0.0f},
-		{30.5f, 10.5f, 15.0f, 0, 0, 255, 255, 0.0f, 1.0f },
-		{30.5f, 10.5f, 10.0f, 255, 255, 255, 255, 1.0f, 1.0f},
-		{30.5f, -10.5f, 10.0f, 1, 0, 0, 255, 0.0f, 1.0f},
-		{30.5f, -10.5f, 15.0f, 0, 255, 0, 255, 0.0f, 0.0f},
-	};
-	auto commander = system.createTransientCommander();
-	system.test_mesh = system.createMesh();
-	system.test_mesh->uploadVertices(*commander, triangle);
-	commander->complete();*/
 
 	auto dispacher = std::make_shared<InputDispatcher>();
 	window.getInputDispatcher().registerListener(dispacher, 2);
@@ -138,7 +126,7 @@ static void entry(Args& args) {
 		pc->setGravityScale({0, 0, 0});
 		pc->setVelocity({0, 0, 0});
 		pc->setAngularVelocity({0, 0, 0});
-		pc->getCollider().setVertices({
+		pc->setVertices({
 			{-1000.f, -1000.f, 1000.f},
 			{1000.f, -1000.f, 1000.f},
 			{1000.f, 1000.f, 1000.f},
@@ -149,6 +137,7 @@ static void entry(Args& args) {
 			{1000.f, 1000.f, -1000.f}
 		});
 		sp->addPawnToRoot(floor);
+        pc1 = pc;
 	}
 
 	// sp->addPawnToRoot(cube_1);
@@ -157,13 +146,37 @@ static void entry(Args& args) {
     std::shared_ptr<SpatialPawn> wallObj0;
     for (int i = 0; i < 2; i++) {
         auto wallObj = std::make_shared<SpatialPawn>();
-        wallObj->setPosition({i * 4, 2.5, 0}); //hiper dziwne, pokazać skajowi
+        wallObj->setPosition({i * 4, 2.501, 0}); //hiper dziwne, pokazać skajowi
         wallObj->createComponent<RenderComponent>("assets/models/Wall.obj");
         auto pc = wallObj->createComponent<PhysicsComponent>();
         pc->setVelocity({0, 0, 0});
         pc->setGravityScale({0, 0, 0});
+        pc->setVertices({
+            {-0.2f, -2.5f, 500.f},
+            {0.2f, -2.5f, 500.f},
+            {0.2f, 2.5f, 500.f},
+            {-0.2f, 2.5f, 500.f},
+            {0.2f, -2.5f, -500.f},
+            {-0.2f, -2.5f, -500.f},
+            {-0.2f, 2.5f, -500.f},
+            {0.2f, 2.5f, -500.f}
+        });
+        pc->setMass(999999999999999);
+        pc->setStatic(true);
         sp->addPawnToRoot(wallObj);
         wallObj0 = wallObj;
+    }
+
+    {
+        auto cube_3 = std::make_shared<SpatialPawn>();
+        cube_3->setPosition({-35, 2.5, 499});
+        cube_3->createComponent<RenderComponent>(Models::getShape(Models::CUBE));
+        auto pc = cube_3->createComponent<PhysicsComponent>();
+        pc->setVelocity({10, 10, 0});
+        pc->getMaterial().coefficient_of_restitution = 1.f;
+        pc->getMaterial().coefficient_of_friction = -0.2f;
+        pc->setGravityScale({0, 1, 0});
+        sp->addPawnToRoot(cube_3);
     }
 
     auto roofObj = std::make_shared<SpatialPawn>();
@@ -171,6 +184,17 @@ static void entry(Args& args) {
     roofObj->createComponent<RenderComponent>("assets/models/Roof.obj");
     sp->addPawnToRoot(roofObj);
 
+    auto overpassObj = std::make_shared<SpatialPawn>();
+    overpassObj->setPosition({2, 5,  495});
+    overpassObj->createComponent<RenderComponent>("assets/models/Overpass.obj");
+    sp->addPawnToRoot(overpassObj);
+
+    auto overpassObj2 = std::make_shared<SpatialPawn>();
+    overpassObj2->setPosition({2, 5,  -485});
+    overpassObj2->createComponent<RenderComponent>("assets/models/Overpass.obj");
+    sp->addPawnToRoot(overpassObj2);
+
+    //wall
     for (int i = 0; i < 2; i++) {
         auto wallObj = std::make_shared<SpatialPawn>();
         wallObj->setPosition({-300 + i * 604, 1.5, 495 + i * 0.0001});
@@ -178,17 +202,28 @@ static void entry(Args& args) {
         auto pc = wallObj->createComponent<PhysicsComponent>();
         pc->setVelocity({0, 0, 0});
         pc->setGravityScale({0, 0, 0});
+        pc->setVertices({
+            {-300.f, -1.5f, 0.2f},
+            {300.f, -1.5f, 0.2f},
+            {300.f, 1.5f, 0.2f},
+            {-300.f, 1.5f, 0.2f},
+            {300.f, -1.5f, -0.2f},
+            {-300.f, -1.5f, -0.2f},
+            {-300.f, 1.5f, -0.2f},
+            {300.f, 1.5f, -0.2f}
+        });
+        pc->setMass(999999999999999);
         sp->addPawnToRoot(wallObj);
     }
 
     //wall + portal
     for (int i = 0; i < 2; i++) {
         auto wallObj = std::make_shared<SpatialPawn>();
-        wallObj->setPosition({-300 + i * 604, 4.5, 495 + i * 0.0001});
+        wallObj->setPosition({-304 + i * 612, 4.5, 495 + i * 0.0001});
         auto object = wallObj->createComponent<RenderComponent>("assets/models/Fence1.obj");
 
 
-        glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, 0, -990));
+        glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, 0, -980));
 		//portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 1, 0));
 		object->getRenderObject()->setPortal(portal);
 
@@ -198,11 +233,22 @@ static void entry(Args& args) {
     //wall other side
     for (int i = 0; i < 2; i++) {
         auto wallObj = std::make_shared<SpatialPawn>();
-        wallObj->setPosition({-300 + i * 604, 1.5, -495 + i * 0.0001});
+        wallObj->setPosition({-300 + i * 604, 1.5, -485 + i * 0.0001});
         wallObj->createComponent<RenderComponent>("assets/models/Fence.obj");
         auto pc = wallObj->createComponent<PhysicsComponent>();
         pc->setVelocity({0, 0, 0});
         pc->setGravityScale({0, 0, 0});
+        pc->setVertices({
+            {-300.f, -1.5f, 0.2f},
+            {300.f, -1.5f, 0.2f},
+            {300.f, 1.5f, 0.2f},
+            {-300.f, 1.5f, 0.2f},
+            {300.f, -1.5f, -0.2f},
+            {-300.f, -1.5f, -0.2f},
+            {-300.f, 1.5f, -0.2f},
+            {300.f, 1.5f, -0.2f}
+        });
+        pc->setMass(999999999999999);
         sp->addPawnToRoot(wallObj);
     }
 
@@ -223,10 +269,22 @@ static void entry(Args& args) {
 //	sp->addPawnToRoot(cube_1);
 //	sp->addPawnToRoot(sphere);
 
+    auto playerObj = std::make_shared<SpatialPawn>();
+    playerObj->setPosition({-10, 4, 505});
+    auto pc = playerObj->createComponent<PhysicsComponent>();
+    auto mc = playerObj->createComponent<MovementComponent>();
+    pc->setVelocity({0, 0, 0});
+    pc->setGravityScale({0, 1, 0});
+    pc->setMass(12);
+    sp->addPawnToRoot(playerObj);
+
+    dispacher->registerListener(mc);
+
 	auto camera_pawn = static_pointer_cast<SpatialPawn>(sp->getTree().findByName("Main Camera"));
-	camera_pawn->setPosition({0, 4, 505});
+	camera_pawn->setPosition({-10, 4, 505});
     //camera_pawn->setRotation(glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 1, 0)));
-    static_pointer_cast<Camera>(camera_pawn->getComponents()[0])->setRotation(glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 1, 0)));
+    static_pointer_cast<Camera>(camera_pawn->getComponents()[0])->setSpeed(0);
+    playerObj->addChild(camera_pawn);
 
 	std::vector<std::shared_ptr<RenderObject>> objects;
     //logika z rebase
@@ -268,26 +326,39 @@ static void entry(Args& args) {
 	system.getParameters().setDenoise(true);
 	system.getParameters().setShadows(true);
 	system.getParameters().setGISamples(1);
+    system.getParameters().setPortalGIEnable(true);
 
 	system.getLightManager().createDirectionalLight(
-		{0, 3.5, 0},
+		{2, 3.5, 1.5},
 		{1.0, 1.0, 1.0},
 		1.5,
 		true
 	);
 
-	auto point_light = system.getLightManager().createPointLight(
-		{3.0, 2.0, 18.0},
-		{0.0, 0.0, 1.0},
-		50.0,
-		true
-	);
+    for (int i = 0; i < 8; i++) {
+        auto point_light = system.getLightManager().createPointLight(
+                {2.0, 4.5, -475 + i * 125},
+                {i >= 4 ? 1.0 : 0, ((i + 2) % 4 == 0 || (i + 1) % 4 == 0) ? 1.0 : 0, i % 2 != 0 ? 1.0 : 0},
+                20.0,
+                true
+        );
+        printf("%f, %f, %f \n", i >= 4 ? 1.0 : 0, ((i + 2) % 4 == 0 || (i + 1) % 4 == 0) ? 1.0 : 0, i % 2 != 0 ? 1.0 : 0);
+    }
 
+
+    double lastTime;
+    double currentTime = glfwGetTime();
+    float deltaT;
 
 	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 	while(!window.shouldClose()) {
 		window.poll();
 
+        lastTime = currentTime;
+        currentTime = glfwGetTime();
+        deltaT = currentTime - lastTime;
+
+        mc->setDirection(static_pointer_cast<Camera>(camera_pawn->getComponents()[0])->getCamFacing());
         //roofObj->setPosition(roofObj->getPosition() + glm::vec3 {0.001, 0.001, 0.001});
 		//physics update before rendering
 		manager.updateCycle();
@@ -308,7 +379,6 @@ static void entry(Args& args) {
 		immediate.drawString2D(system.width() - 10, 10, "FPS: " + std::to_string(fps));
 
 		// DEBUG
-
 		immediate.setBillboardTarget(current_board->getCamPos());
 		current_board->getTree().getRoot()->debugDraw(immediate);
 
@@ -317,9 +387,9 @@ static void entry(Args& args) {
 		system.setViewMatrix(current_board->getCamPos(), current_board->getCamForward());
 
 		// update lights
-		point_light->vector = glm::vec3(3.0, 2.0, 18.0 * sin(glfwGetTime() / 8));
-		point_light->color = glm::vec3(sin(glfwGetTime() / 2) * 0.5 + 0.5, sin(glfwGetTime() / 3 + 2) * 0.5 + 0.5,
-		                               sin(glfwGetTime() / 5 + 4) * 0.5 + 0.5);
+//		point_light->vector = glm::vec3(3.0, 2.0, 18.0 * sin(glfwGetTime() / 8));
+//		point_light->color = glm::vec3(sin(glfwGetTime() / 2) * 0.5 + 0.5, sin(glfwGetTime() / 3 + 2) * 0.5 + 0.5,
+//		                               sin(glfwGetTime() / 5 + 4) * 0.5 + 0.5);
 		system.getLightManager().flush();
 
 		// render the scene

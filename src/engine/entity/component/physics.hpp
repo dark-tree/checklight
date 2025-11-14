@@ -41,6 +41,8 @@ public:
 	/// Sets the collider of the object
 	void setCollider(const Collider& c);
 
+	void setVertices(const std::vector<glm::vec3>& vertices);
+
 	/// Gets the gravity scale
 	glm::vec3 getGravityScale() const;
 

@@ -24,11 +24,12 @@ PhysicsComponent::PhysicsComponent(SpatialPawn* sp): GameComponent(sp) {
 
 
 void PhysicsComponent::onFixedUpdate(FixedContext c) {
-	init_mass = false;
+	//init_mass = false;
 }
 
 void PhysicsComponent::setCollider(const Collider& c) {
 	this->collider = c;
+    init_mass = false;
 }
 
 void PhysicsComponent::setGravityScale(glm::vec3 scale) {
@@ -37,6 +38,7 @@ void PhysicsComponent::setGravityScale(glm::vec3 scale) {
 
 void PhysicsComponent::setMass(float mass) {
 	this->mass = mass;
+    init_mass = true;
 }
 
 void PhysicsComponent::setMaterial(Material material) {
@@ -85,7 +87,8 @@ float PhysicsComponent::calculateMass() {
 }
 
 float PhysicsComponent::getMass() {
-	if(!init_mass) mass = calculateMass();
+	if(!init_mass){ mass = calculateMass();
+        init_mass = true;}
 	return mass;
 }
 
@@ -102,4 +105,9 @@ void PhysicsComponent::remove() {
 }
 
 PhysicsComponent::~PhysicsComponent() {
+}
+
+void PhysicsComponent::setVertices(const std::vector<glm::vec3> &vertices) {
+    collider.setVertices(vertices);
+    init_mass = false;
 }

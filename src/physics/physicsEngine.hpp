@@ -28,7 +28,7 @@ protected:
 public:
 
 
-    PhysicsEngine(glm::vec3 gravity_strength,BoardManager* skibidi);
+    PhysicsEngine(glm::vec3 gravity_strength,BoardManager* manager);
 
     ~PhysicsEngine();
 
