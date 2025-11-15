@@ -10,40 +10,40 @@
 #include "engine/entity/component/movement.hpp"
 
 static void entry(Args& args) {
-	// Basic information about the program being run
-	ApplicationParameters parameters;
-	parameters.setName("My Checklight Game!");
-	parameters.setDimensions(1500, 1000);
+    // Basic information about the program being run
+    ApplicationParameters parameters;
+    parameters.setName("My Checklight Game!");
+    parameters.setDimensions(1500, 1000);
 
-	// Open the window and start the vulkan renderer
-	auto guard = RenderSystem::init(parameters);
-	Models::init();
+    // Open the window and start the vulkan renderer
+    auto guard = RenderSystem::init(parameters);
+    Models::init();
 
-	RenderSystem& system = *RenderSystem::system;
-	Window& window = system.getWindow();
-	RenderParameters& options = system.getParameters();
+    RenderSystem& system = *RenderSystem::system;
+    Window& window = system.getWindow();
+    RenderParameters &options = system.getParameters();
 
-	// Configure the renderer
-	options.setAmbientLight(glm::vec3(0.0, 0.0, 0.0));
-	options.setDenoise(true);
-	options.setShadows(true);
-	options.setGISamples(1);
-	options.setPortalGIEnable(false);
+    // Configure the renderer
+    options.setAmbientLight(glm::vec3(0.0, 0.0, 0.0));
+    options.setDenoise(true);
+    options.setShadows(true);
+    options.setGISamples(1);
+    options.setPortalGIEnable(false);
 
-	// Simple overlay to play with render options
-	AutoTheme theme{};
-	auto context = RenderSystemOverlay::create(theme);
+    // Simple overlay to play with render options
+    AutoTheme theme{};
+    auto context = RenderSystemOverlay::create(theme);
 
-	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
-	window.getInputDispatcher().registerListener(context, 1);
-	auto models = system.importObj("assets/models/checklight.obj");
-	auto cube = system.importObj("assets/models/cube.obj");
+    //window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
+    window.getInputDispatcher().registerListener(context, 1);
+    auto models = system.importObj("assets/models/checklight.obj");
+    auto cube = system.importObj("assets/models/cube.obj");
     auto wall = system.importObj("assets/models/Wall.obj");
 
-	auto dispacher = std::make_shared<InputDispatcher>();
-	window.getInputDispatcher().registerListener(dispacher, 2);
-	BoardManager manager(dispacher);
-	manager.setGravity(glm::vec3(0, -10, 0));
+    auto dispacher = std::make_shared<InputDispatcher>();
+    window.getInputDispatcher().registerListener(dispacher, 2);
+    BoardManager manager(dispacher);
+    manager.setGravity(glm::vec3(0, -10, 0));
 
 	std::shared_ptr<Board> sp = manager.getCurrentBoard().lock();
 	{
@@ -139,7 +139,7 @@ static void entry(Args& args) {
 		});
 		sp->addPawnToRoot(floor);
         pc1 = pc;
-	}
+    }
 
 	// sp->addPawnToRoot(cube_1);
 	// sp->addPawnToRoot(sphere);
@@ -188,36 +188,94 @@ static void entry(Args& args) {
         pc->setVelocity({0, 0, 0});
         pc->setGravityScale({0, 0, 0});
         pc->setVertices({
-                {-1.f, -0.2f, 500.f},
-                {1.f,  -0.2f, 500.f},
-                {1.f,  0.2f,  500.f},
-                {-1.f, 0.2f,  500.f},
-                {1.f,  -0.2f, -500.f},
-                {-1.f, -0.2f, -500.f},
-                {-1.f, 0.2f,  -500.f},
-                {1.f,  0.2f,  -500.f}
+            {-1.f, -0.2f, 500.f},
+            {1.f,  -0.2f, 500.f},
+            {1.f,  0.2f,  500.f},
+            {-1.f, 0.2f,  500.f},
+            {1.f,  -0.2f, -500.f},
+            {-1.f, -0.2f, -500.f},
+            {-1.f, 0.2f,  -500.f},
+            {1.f,  0.2f,  -500.f}
         });
         pc->setMass(99999999999);
         pc->setStatic(true);
     }
 
+    for (int k = 0; k < 2; k++) {
+        for (int j = 0; j < 2; j++) {
+            for (int i = 0; i < 10; i++) {
+                auto fenceObj = std::make_shared<SpatialPawn>();
+                fenceObj->setPosition({25 - 50 * j, 1, 498 + i * 6.2 - 1041.8 * k});
+                fenceObj->createComponent<RenderComponent>("assets/models/Gate.obj");
+                sp->addPawnToRoot(fenceObj);
+                auto pc = fenceObj->createComponent<PhysicsComponent>();
+                pc->setVelocity({0, 0, 0});
+                pc->setGravityScale({0, 0, 0});
+                pc->setVertices({
+                                        {-.5f, -.5f, 3.f},
+                                        {.5f,  -.5f, 3.f},
+                                        {.5f,  1.5f, 3.f},
+                                        {-.5f, 1.5f, 3.f},
+                                        {.5f,  -.5f, -3.f},
+                                        {-.5f, -.5f, -3.f},
+                                        {-.5f, 1.5f, -3.f},
+                                        {.5f,  1.5f, -3.f}
+                                });
+                pc->setMass(99999999999);
+                pc->setStatic(true);
+            }
+        }
+        for (int i = 0; i < 9; i++) {
+            auto fenceObj = std::make_shared<SpatialPawn>();
+            fenceObj->setPosition({24.7 - 6.2 * i, 1, 557 - 1104 * k});
+            fenceObj->setRotation(glm::rotate(glm::identity<glm::quat>(), glm::radians(90.0f), glm::vec3(0, 1, 0)));
+            fenceObj->createComponent<RenderComponent>("assets/models/Gate.obj");
+            sp->addPawnToRoot(fenceObj);
+            auto pc = fenceObj->createComponent<PhysicsComponent>();
+            pc->setVelocity({0, 0, 0});
+            pc->setGravityScale({0, 0, 0});
+            pc->setVertices({
+                                    {-.5f, -.5f, 3.f},
+                                    {.5f,  -.5f, 3.f},
+                                    {.5f,  1.5f, 3.f},
+                                    {-.5f, 1.5f, 3.f},
+                                    {.5f,  -.5f, -3.f},
+                                    {-.5f, -.5f, -3.f},
+                                    {-.5f, 1.5f, -3.f},
+                                    {.5f,  1.5f, -3.f}
+                            });
+            pc->setMass(99999999999);
+            pc->setStatic(true);
+        }
+    }
+
     auto overpassObj = std::make_shared<SpatialPawn>();
-    overpassObj->setPosition({2, 5,  495});
+    overpassObj->setPosition({2, 5, 495});
     overpassObj->createComponent<RenderComponent>("assets/models/Overpass.obj");
     sp->addPawnToRoot(overpassObj);
 
     auto overpassObj2 = std::make_shared<SpatialPawn>();
-    overpassObj2->setPosition({2, 5,  -485});
+    overpassObj2->setPosition({2, 5, -485});
     overpassObj2->createComponent<RenderComponent>("assets/models/Overpass.obj");
     sp->addPawnToRoot(overpassObj2);
 
+    auto flagObj = std::make_shared<SpatialPawn>();
+    flagObj->setPosition({2, -10, -515});
+    flagObj->setScale({5, 5, 5});
+    flagObj->setRotation((glm::identity<glm::quat>(), glm::radians(90.0f), glm::vec3(0, 1, 0)));
+    //flagObj->createComponent<RenderComponent>("assets/models/Flag.obj");
+    flagObj->createComponent<RenderComponent>("assets/models/Flag.obj", 1);
+    flagObj->createComponent<RenderComponent>("assets/models/Flag.obj", 2);
+    flagObj->createComponent<RenderComponent>("assets/models/Flag.obj", 3);
+    sp->addPawnToRoot(flagObj);
+
     auto speakerObj = std::make_shared<SpatialPawn>();
-    speakerObj->setPosition({-5, -0.15,  502});
+    speakerObj->setPosition({-5, -0.15, 502});
     speakerObj->createComponent<RenderComponent>("assets/models/Speakers.obj");
     speakerObj->createComponent<RenderComponent>("assets/models/Speakers.obj", 1);
     speakerObj->createComponent<RenderComponent>("assets/models/Speakers.obj", 2);
     speakerObj->createComponent<RenderComponent>("assets/models/Speakers.obj", 3);
-    speakerObj->createComponent<SoundComponent>("assets/sounds/portal_radio_loop.ogg");
+    //speakerObj->createComponent<SoundComponent>("assets/sounds/portal_radio_loop.ogg");
     sp->addPawnToRoot(speakerObj);
 
     //wall
@@ -243,17 +301,27 @@ static void entry(Args& args) {
     }
 
     //wall + portal
-    for (int i = 0; i < 2; i++) {
-        auto wallObj = std::make_shared<SpatialPawn>();
-        wallObj->setPosition({-304 + i * 612, 4.5, 495 + i * 0.0001});
-        auto object = wallObj->createComponent<RenderComponent>("assets/models/Fence1.obj");
+    for (int j = 0; j < 2; j++) {
+        for (int i = 0; i < 2; i++) {
+            auto wallObj = std::make_shared<SpatialPawn>();
+            wallObj->setPosition({-304 + i * 612, 4.5 + 3*j, 495 + i * 0.0001});
+            auto object = wallObj->createComponent<RenderComponent>("assets/models/Fence1.obj");
 
+            glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, 0, -980));
+            //portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 1, 0));
+            object->getRenderObject()->setPortal(portal);
 
-        glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, 0, -980));
-		//portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 1, 0));
-		object->getRenderObject()->setPortal(portal);
-
-        sp->addPawnToRoot(wallObj);
+            sp->addPawnToRoot(wallObj);
+        }
+        {
+            auto wallObj = std::make_shared<SpatialPawn>();
+            wallObj->setPosition({2, 8 + 3*j, 495});
+            auto object = wallObj->createComponent<RenderComponent>("assets/models/Fence1.obj");
+            glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, 0, -980));
+            //portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 1, 0));
+            object->getRenderObject()->setPortal(portal);
+            sp->addPawnToRoot(wallObj);
+        }
     }
 
     //wall other side
