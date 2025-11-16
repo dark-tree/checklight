@@ -8,6 +8,9 @@ class SoundComponent : public GameComponent {
 
 	std::shared_ptr<SoundSourceObject> sound_source_object;
 
+    bool looping;
+    bool played;
+
 public:
 	SoundComponent(SpatialPawn* t, const std::string& path);
 
@@ -24,4 +27,6 @@ protected:
 
 public:
 	void debugDraw(ImmediateRenderer& renderer) override;
+
+    void setLooping(bool loop);
 };

@@ -212,15 +212,15 @@ static void entry(Args& args) {
                 pc->setVelocity({0, 0, 0});
                 pc->setGravityScale({0, 0, 0});
                 pc->setVertices({
-                                        {-.5f, -.5f, 3.f},
-                                        {.5f,  -.5f, 3.f},
-                                        {.5f,  1.5f, 3.f},
-                                        {-.5f, 1.5f, 3.f},
-                                        {.5f,  -.5f, -3.f},
-                                        {-.5f, -.5f, -3.f},
-                                        {-.5f, 1.5f, -3.f},
-                                        {.5f,  1.5f, -3.f}
-                                });
+                    {-.5f, -.5f, 3.f},
+                    {.5f,  -.5f, 3.f},
+                    {.5f,  1.5f, 3.f},
+                    {-.5f, 1.5f, 3.f},
+                    {.5f,  -.5f, -3.f},
+                    {-.5f, -.5f, -3.f},
+                    {-.5f, 1.5f, -3.f},
+                    {.5f,  1.5f, -3.f}
+                });
                 pc->setMass(99999999999);
                 pc->setStatic(true);
             }
@@ -235,15 +235,15 @@ static void entry(Args& args) {
             pc->setVelocity({0, 0, 0});
             pc->setGravityScale({0, 0, 0});
             pc->setVertices({
-                                    {-.5f, -.5f, 3.f},
-                                    {.5f,  -.5f, 3.f},
-                                    {.5f,  1.5f, 3.f},
-                                    {-.5f, 1.5f, 3.f},
-                                    {.5f,  -.5f, -3.f},
-                                    {-.5f, -.5f, -3.f},
-                                    {-.5f, 1.5f, -3.f},
-                                    {.5f,  1.5f, -3.f}
-                            });
+                {-.5f, -.5f, 3.f},
+                {.5f,  -.5f, 3.f},
+                {.5f,  1.5f, 3.f},
+                {-.5f, 1.5f, 3.f},
+                {.5f,  -.5f, -3.f},
+                {-.5f, -.5f, -3.f},
+                {-.5f, 1.5f, -3.f},
+                {.5f,  1.5f, -3.f}
+            });
             pc->setMass(99999999999);
             pc->setStatic(true);
         }
@@ -259,10 +259,56 @@ static void entry(Args& args) {
     overpassObj2->createComponent<RenderComponent>("assets/models/Overpass.obj");
     sp->addPawnToRoot(overpassObj2);
 
+    auto pl = std::make_shared<SpatialPawn>();
+    pl->setPosition({2, 0, 505});
+    pl->createComponent<RenderComponent>("assets/models/Player.obj");
+    pl->setRotation(glm::quat (glm::vec3(0, glm::radians(90.f), 0)));
+    pl->setScale({3, 3, 3});
+    sp->addPawnToRoot(pl);
+
+    auto mirrorObj = std::make_shared<SpatialPawn>();
+    mirrorObj->setPosition({10, -0.4, 505});
+    mirrorObj->setRotation(glm::quat (glm::vec3(glm::radians(7.f), 0, 0)));
+    mirrorObj->createComponent<RenderComponent>("assets/models/Mirror.obj");
+    mirrorObj->createComponent<RenderComponent>("assets/models/Mirror.obj", 1);
+    sp->addPawnToRoot(mirrorObj);
+    {
+        auto wallObj = std::make_shared<SpatialPawn>();
+        wallObj->setPosition({10, 0, 505.1});
+        wallObj->setRotation(glm::quat (glm::vec3(glm::radians(7.f), 0, 0)));
+        wallObj->setScale({0.9, 0.9, 0.9});
+        auto object = wallObj->createComponent<RenderComponent>("assets/models/Mirror.obj", 1);
+
+
+        glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3{0, 0, 1011});
+        portal = glm::rotate(portal, glm::radians(180.0f), glm::vec3(1, 0, 0));
+        portal = glm::scale(portal, glm::vec3 (1, -1, 1));
+
+        object->getRenderObject()->setPortal(portal);
+
+        auto pc = wallObj->createComponent<PhysicsComponent>();
+        pc->setVelocity({0, 0, 0});
+        pc->setGravityScale({0, 0, 0});
+        pc->setVertices({
+            {-.5f, .5f, 0.2f},
+            {.5f,  .5f, 0.2f},
+            {.5f,  4.5f, 0.2f},
+            {-.5f, 4.5f, 0.2f},
+            {.5f,  .5f, -0.1f},
+            {-.5f, .5f, -0.1f},
+            {-.5f, 4.5f, -0.1f},
+            {.5f,  4.5f, -0.1f}
+        });
+        pc->setMass(99999999999);
+        pc->setStatic(true);
+
+        sp->addPawnToRoot(wallObj);
+    }
+
     auto flagObj = std::make_shared<SpatialPawn>();
     flagObj->setPosition({2, -10, -515});
     flagObj->setScale({5, 5, 5});
-    flagObj->setRotation((glm::identity<glm::quat>(), glm::radians(90.0f), glm::vec3(0, 1, 0)));
+    flagObj->setRotation((glm::vec3(0, glm::radians(90.f), 0)));
     //flagObj->createComponent<RenderComponent>("assets/models/Flag.obj");
     flagObj->createComponent<RenderComponent>("assets/models/Flag.obj", 1);
     flagObj->createComponent<RenderComponent>("assets/models/Flag.obj", 2);
@@ -273,9 +319,9 @@ static void entry(Args& args) {
     speakerObj->setPosition({-5, -0.15, 502});
     speakerObj->createComponent<RenderComponent>("assets/models/Speakers.obj");
     speakerObj->createComponent<RenderComponent>("assets/models/Speakers.obj", 1);
-    speakerObj->createComponent<RenderComponent>("assets/models/Speakers.obj", 2);
-    speakerObj->createComponent<RenderComponent>("assets/models/Speakers.obj", 3);
-    //speakerObj->createComponent<SoundComponent>("assets/sounds/portal_radio_loop.ogg");
+//    speakerObj->createComponent<RenderComponent>("assets/models/Speakers.obj", 2);
+//    speakerObj->createComponent<RenderComponent>("assets/models/Speakers.obj", 3);
+    speakerObj->createComponent<SoundComponent>("assets/sounds/portal_radio_loop.ogg");
     sp->addPawnToRoot(speakerObj);
 
     //wall
@@ -301,26 +347,28 @@ static void entry(Args& args) {
     }
 
     //wall + portal
-    for (int j = 0; j < 2; j++) {
-        for (int i = 0; i < 2; i++) {
-            auto wallObj = std::make_shared<SpatialPawn>();
-            wallObj->setPosition({-304 + i * 612, 4.5 + 3*j, 495 + i * 0.0001});
-            auto object = wallObj->createComponent<RenderComponent>("assets/models/Fence1.obj");
+    for (int k = 0; k < 2; k++) {
+        for (int j = 0; j < 2; j++) {
+            for (int i = 0; i < 2; i++) {
+                auto wallObj = std::make_shared<SpatialPawn>();
+                wallObj->setPosition({-304 + i * 612, 4.5 + 3 * j, 495 - k * 979.59});
+                auto object = wallObj->createComponent<RenderComponent>("assets/models/Fence1.obj");
 
-            glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, 0, -980));
-            //portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 1, 0));
-            object->getRenderObject()->setPortal(portal);
+                glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, 0, -980 + k * 1960));
+                //portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 1, 0));
+                object->getRenderObject()->setPortal(portal);
 
-            sp->addPawnToRoot(wallObj);
-        }
-        {
-            auto wallObj = std::make_shared<SpatialPawn>();
-            wallObj->setPosition({2, 8 + 3*j, 495});
-            auto object = wallObj->createComponent<RenderComponent>("assets/models/Fence1.obj");
-            glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, 0, -980));
-            //portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 1, 0));
-            object->getRenderObject()->setPortal(portal);
-            sp->addPawnToRoot(wallObj);
+                sp->addPawnToRoot(wallObj);
+            }
+            {
+                auto wallObj = std::make_shared<SpatialPawn>();
+                wallObj->setPosition({2, 8 + 3 * j, 495 - k * 979.59});
+                auto object = wallObj->createComponent<RenderComponent>("assets/models/Fence1.obj");
+                glm::mat4 portal = glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, 0, -980 + k * 1960));
+                //portal = glm::rotate(portal, glm::radians(90.0f), glm::vec3(0, 1, 0));
+                object->getRenderObject()->setPortal(portal);
+                sp->addPawnToRoot(wallObj);
+            }
         }
     }
 
@@ -368,7 +416,7 @@ static void entry(Args& args) {
     auto pc = playerObj->createComponent<PhysicsComponent>();
     auto mc = playerObj->createComponent<MovementComponent>();
     mc->setMaxSpeed(15);
-    mc->setAcceleration(50);
+    mc->setAcceleration(70);
     pc->setVelocity({0, 0, 0});
     pc->setGravityScale({0, 1, 0});
     pc->setVertices({
@@ -458,6 +506,8 @@ static void entry(Args& args) {
     double currentTime = glfwGetTime();
     float deltaT;
 
+    bool winTrigger = false;
+
 	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 	while(!window.shouldClose()) {
 		window.poll();
@@ -466,7 +516,21 @@ static void entry(Args& args) {
         currentTime = glfwGetTime();
         deltaT = currentTime - lastTime;
 
+        glm::vec3 distance{playerObj->getPosition().x - flagObj->getPosition().x, 0, playerObj->getPosition().z - flagObj->getPosition().z};
+
+        if (glm::length(distance) <= 0.5 && winTrigger == false)
+        {
+            winTrigger = true;
+            auto sc = flagObj->createComponent<SoundComponent>("assets/sounds/win.ogg");
+            sc->setLooping(false);
+            printf("victory!");
+        }
+
         camera_pawn->setPosition(playerObj->getPosition());
+        float angle = atan2(camera_pawn->getForwardVector().z, camera_pawn->getForwardVector().x);
+        //printf("%f\n", angle);
+        pl->setPosition(playerObj->getPosition() + glm::rotate(glm::quat(glm::vec3(0, -angle, 0)),glm::vec3 (-0.65, -4, 0)));
+        pl->setRotation(glm::quat (glm::vec3(0, -angle + glm::radians(90.f), 0)));
 
         mc->setDirection(static_pointer_cast<Camera>(camera_pawn->getComponents()[0])->getCamFacing());
         //roofObj->setPosition(roofObj->getPosition() + glm::vec3 {0.001, 0.001, 0.001});
@@ -487,6 +551,59 @@ static void entry(Args& args) {
 		immediate.setTextAlignment(HorizontalAlignment::RIGHT);
 		immediate.setTextAlignment(VerticalAlignment::TOP);
 		immediate.drawString2D(system.width() - 10, 10, "FPS: " + std::to_string(fps));
+
+        if (winTrigger)
+        {
+//            immediate.drawRect2D(system.width() / 2 - 100, system.height() / 2 - 50, 200, 100);
+//            immediate.setFill(255, 255, 255);
+//            immediate.drawString2D(system.width() / 2, system.height() / 2, "VICODIN!");
+
+            RenderSystem& system = *RenderSystem::system;
+            RenderParameters& parameters = system.getParameters();
+
+            // create root panel
+            auto context = std::make_shared<WidgetContext>();
+            auto panel = theme.newRoot(system.width() / 2 - 100, system.height() / 2 - 50);
+
+            auto settings = theme.newPanel();
+            settings->flow = Flow::TOP_TO_BOTTOM;
+            settings->gap = Unit::px(10);
+            settings->width = Unit::px(250);
+            settings->padding = Unit::px(10);
+            settings->horizontal = HorizontalAlignment::LEFT;
+
+            auto text = theme.newText("Victory!");
+            text->size = 100;
+
+            panel->addWidget(settings);
+            settings->addWidget(text);
+
+            //settings->horizontal = HorizontalAlignment::CENTER;
+
+            {
+                auto control = theme.newButton();
+                control->width = Unit::px(100);
+                control->horizontal = HorizontalAlignment::CENTER;
+
+                auto label = theme.newText("Restart");
+
+                control->addWidget(label);
+
+                control->onClick ([&winTrigger, &playerObj, &context, &window]() -> void {
+                    winTrigger = false;
+                    playerObj->setPosition({-10, 4, 505});
+                    window.getInputDispatcher().removeListener(context);
+                    context.reset();
+
+                });
+
+                settings->addWidget(control);
+            }
+
+            context->setRoot(panel);
+            context->draw(system.getImmediateRenderer());
+            window.getInputDispatcher().registerListener(context, 1);
+        }
 
 		// DEBUG
 		immediate.setBillboardTarget(current_board->getCamPos());

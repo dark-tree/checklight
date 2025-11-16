@@ -7,13 +7,18 @@ SoundComponent::SoundComponent(SpatialPawn* t, const std::string& path) : GameCo
 	sound_manager.addSource(sound_source_object);
 	sound_manager.createSoundClipAndAddToSourceObject(path.c_str(), sound_source_object);
 	//sound_source_object->setReferenceDistance(10.f);
+    looping = true;
+    played = false;
 }
 
 SoundComponent::~SoundComponent() {
 }
 
 void SoundComponent::onUpdate(Context c) {
-	SoundManager::getInstance().playSound(sound_source_object);
+    if (!played || looping) {
+        SoundManager::getInstance().playSound(sound_source_object);
+        played = true;
+    }
 }
 
 void SoundComponent::onFixedUpdate(FixedContext c) {
@@ -33,4 +38,8 @@ void SoundComponent::debugDraw(ImmediateRenderer& renderer) {
 	renderer.setBillboardMode(BillboardMode::TWO_AXIS);
 	renderer.setSprite(default_file_name);
 	renderer.drawRect3D(position.x, position.y, position.z, 1.0f, 1.0f);
+}
+
+void SoundComponent::setLooping(bool loop) {
+    looping = loop;
 }

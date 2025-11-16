@@ -1,0 +1,7 @@
+sounds/win.ogg - by u_it78ck90s3 - https://pixabay.com/sound-effects/orchestral-win-331233/
+sounds/portal_radio_loop.ogg - by MarkIvanowich - https://www.zedge.net/ringtones/66146542-6019-3bc6-b72d-8db8f39da750
+models/Flag.obj - "Mario Goal Flag" (https://skfb.ly/oRKWR) by matthewlok is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+models/Gate.obj - "Low Poly Wooden Fence" (https://skfb.ly/orurQ) by thelegokid4455 is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+models/Speakers.obj - "Speakers Low Poly" (https://skfb.ly/6WSDS) by Condo is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+models/Player.obj - "Peasant Character" (https://skfb.ly/69V9q) by Inuciian is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+models/Mirror.obj - "Mirror" (https://skfb.ly/ou6zD) by eucocker is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
