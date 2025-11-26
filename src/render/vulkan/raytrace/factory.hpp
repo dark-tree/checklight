@@ -33,8 +33,8 @@ class AccelStructFactory {
 
 		/**
 		 * Create new RenderModel (AccelStruct) from AccelStructConfig, the returned model CAN NOT
-		 * BE USED until the next call to AccelStructFactory::bake(), setting a unbaked model as a model of
-		 * a active (or unactive) RenderObject is invalid and won't be detected.
+		 * BE USED until the next call to AccelStructFactory::bake(), setting an unbaked model as a model of
+		 * an active (or unactive) RenderObject is invalid and won't be detected.
 		 */
 		std::shared_ptr<RenderModel> submit(const LogicalDevice& device, Allocator& allocator, AccelStructConfig& config);
 
