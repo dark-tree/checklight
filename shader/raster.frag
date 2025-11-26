@@ -1,8 +1,11 @@
 #version 450
+#extension GL_GOOGLE_include_directive : enable
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_nonuniform_qualifier : enable
 
-layout(location = 0) in vec4 vColor;
+#include "scene.glsl"
+
+layout(location = 0) in vec3 vNormal;
 layout(location = 1) in vec2 vTexture;
 layout(location = 2) in flat uint vMaterialIndex;
 
@@ -17,18 +20,42 @@ struct RenderMaterial {
     uint albedoTextureIndex;
 };
 
+layout(binding = 1, set = 0, scalar) uniform _SceneUniform { SceneUniform uSceneObject; };
 layout(binding = 3, set = 0) uniform sampler2D textures[];
 layout(binding = 4, set = 0, scalar) readonly buffer MaterialBuffer { RenderMaterial i[]; } materials;
 
+//temporary
+vec3 lightdir = vec3(1,1,1);
+float shininess = 100;
+float ambient = 0.2;
+vec3 shadowLight = vec3(0.06,0.06,0.1);
+vec3 lightColor = vec3(1,0.98,0.95);
 
 void main() {
     RenderMaterial mat = materials.i[vMaterialIndex];
-    vec4 baseColor = mat.albedo * vColor;
 
+    vec3 N = normalize(vNormal);
+    vec3 L = normalize(lightdir);
+    vec3 V = normalize((uSceneObject.viewInv * vec4(0.0, 0.0, -1.0, 0.0)).xyz);
+    vec3 R = reflect(-L, N);
+
+    float diff = max(dot(N, L), 0.0);
+    float spec = pow(max(dot(V, R), 0.0), shininess);
+
+    vec4 baseColor;
     if (mat.albedoTextureIndex != 0) {
-        fColor = texture(textures[nonuniformEXT(mat.albedoTextureIndex)], vTexture);
+        baseColor = texture(textures[nonuniformEXT(mat.albedoTextureIndex)], vTexture);
+    } else {
+        baseColor = vec4(1,1,1,1);
     }
-    else{
-        fColor=vColor;
-    }
+
+    vec3 lighting = baseColor.rgb * (diff + ambient) * lightColor;
+    vec3 shadow = baseColor.rgb * shadowLight * (1 + ambient);
+
+    vec3 final = mix(shadow,lighting, diff) + mat.specular * spec + mat.emissive;
+
+
+    fColor = vec4(final,1.0);
+    //diff + 0.5;
+    //fColor = vec4(diff,diff,diff,1.0);
 }

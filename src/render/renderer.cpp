@@ -1063,7 +1063,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 
 	layout_raster = DescriptorSetLayoutBuilder::begin()
 		.descriptor(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-		.descriptor(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+		.descriptor(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL)
 		.descriptor(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 		.descriptor(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, TextureManager::MAX_TEXTURES)
 		.descriptor(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -1198,10 +1198,27 @@ void Renderer::draw() {
 
 	materials.getTextureManager().updateDescriptorSet(device, frame.set_raytrace, 4, false);
 
+	// ray trace
+	static bool lastRTX = false;
+	static bool extraFrameRTX = false;
+	bool currentRTX = RenderSystem::system->isRTXMode();
+	if (currentRTX != lastRTX) {
+		extraFrameRTX = true; // trigger one extra frame
+	}
+	lastRTX = currentRTX;
+
 	raster_instances->flush(recorder, object_meshes);
 	auto& raster_buffer = raster_instances->getInstanceBuffer();
-	frame.set_raster.buffer(2, raster_buffer.getBuffer(), raster_buffer.getBuffer().size());
-	frame.set_raster.buffer(4, material_buffer.getBuffer(), material_buffer.getBuffer().size());
+	if (!RenderSystem::system->isRTXMode())
+	{
+		frame.set_raster.buffer(2, raster_buffer.getBuffer(), raster_buffer.getBuffer().size());
+		frame.set_raster.buffer(4, material_buffer.getBuffer(), material_buffer.getBuffer().size());
+	} else
+	{
+		frame.set_raster.buffer(2, raster_buffer.getBuffer(), 1);
+		frame.set_raster.buffer(4, material_buffer.getBuffer(), 1);
+	}
+
 
 	materials.getTextureManager().updateDescriptorSet(device, frame.set_raster, 3, true);
 
@@ -1212,20 +1229,11 @@ void Renderer::draw() {
 		.done();
 
 
-	// ray trace
-	static bool lastRTX = false;
-	static bool extraFrame = false;
-	bool currentRTX = RenderSystem::system->isRTXMode();
-	if (currentRTX != lastRTX) {
-		extraFrame = true; // trigger one extra frame
-	}
-	lastRTX = currentRTX;
-
-	if (currentRTX || extraFrame) {
+	if (currentRTX || extraFrameRTX) {
 		recorder.bindPipeline(pipeline_trace_3d)
 			.bindDescriptorSet(frame.set_raytrace)
 			.traceRays(shader_table, width(), height());
-		extraFrame = false; // consume extra frame
+		extraFrameRTX = false; // consume extra frame
 	}
 
 	if (parameters.getDenoise() && RenderSystem::system->isRTXMode()) {

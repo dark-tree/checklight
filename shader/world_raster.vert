@@ -9,7 +9,7 @@ layout(location = 1) in vec4 iColor;
 layout(location = 2) in vec2 iTexture;
 layout(location = 3) in uint iMaterial;
 
-layout(location = 0) out vec4 vColor;
+layout(location = 0) out vec3 vNormal;
 layout(location = 1) out vec2 vTexture;
 layout(location = 2) out flat uint vMaterialIndex;
 
@@ -34,7 +34,7 @@ void main() {
 	mat4 matrix = uSceneObject.projection * uSceneObject.view * inst.model;
 
 	gl_Position = matrix * vec4(iPosition, 1.0);
-	vColor = iColor;
+	vNormal = vec3(iColor-.5);
 	vTexture = iTexture;
 	vMaterialIndex = iMaterial;
 }
