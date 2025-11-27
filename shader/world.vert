@@ -13,7 +13,6 @@ layout(location = 0) out vec4 vColor;
 layout(location = 1) out vec2 vTexture;
 
 layout(binding = 1, set = 0, scalar) uniform _SceneUniform { SceneUniform uSceneObject; };
-
 layout(push_constant) uniform MeshConstant {
 	mat4 matrix;
 } uMeshObject;

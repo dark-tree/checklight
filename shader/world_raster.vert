@@ -12,6 +12,7 @@ layout(location = 3) in uint iMaterial;
 layout(location = 0) out vec3 vNormal;
 layout(location = 1) out vec2 vTexture;
 layout(location = 2) out flat uint vMaterialIndex;
+layout(location = 3) out vec3 vWorldPos;
 
 layout(binding = 1, set = 0, scalar) uniform _SceneUniform { SceneUniform uSceneObject; };
 
@@ -33,6 +34,7 @@ void main() {
 
 	mat4 matrix = uSceneObject.projection * uSceneObject.view * inst.model;
 
+	vWorldPos = vec3(inst.model * vec4(iPosition, 1.0));
 	gl_Position = matrix * vec4(iPosition, 1.0);
 	vNormal = vec3(iColor-.5);
 	vTexture = iTexture;

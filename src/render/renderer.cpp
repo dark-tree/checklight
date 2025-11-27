@@ -1067,6 +1067,7 @@ Renderer::Renderer(ApplicationParameters& parameters)
 		.descriptor(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 		.descriptor(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, TextureManager::MAX_TEXTURES)
 		.descriptor(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.descriptor(5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.done(device);
 
 	// add layouts to the pool so that they can be allocated
@@ -1213,10 +1214,12 @@ void Renderer::draw() {
 	{
 		frame.set_raster.buffer(2, raster_buffer.getBuffer(), raster_buffer.getBuffer().size());
 		frame.set_raster.buffer(4, material_buffer.getBuffer(), material_buffer.getBuffer().size());
+		frame.set_raster.buffer(5, light_buffer.getBuffer(), light_buffer.getBuffer().size());
 	} else
 	{
 		frame.set_raster.buffer(2, raster_buffer.getBuffer(), 1);
 		frame.set_raster.buffer(4, material_buffer.getBuffer(), 1);
+		frame.set_raster.buffer(5, light_buffer.getBuffer(), 1);
 	}
 
 
