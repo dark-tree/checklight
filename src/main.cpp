@@ -169,9 +169,9 @@ static void entry(Args& args) {
 	}
 
 	for(auto& model : cube) {
-		auto pawn = std::make_shared<SpatialPawn>();
-		pawn->createComponent<RenderComponent>(model);
-		sp->addPawnToRoot(pawn);
+		// auto pawn = std::make_shared<SpatialPawn>();
+		// pawn->createComponent<RenderComponent>(model);
+		// sp->addPawnToRoot(pawn);
 		// auto object = system.createRenderObject(true);
 		// object->setMatrix(glm::translate(glm::identity<glm::mat4>(), glm::vec3(4, 0, 4)));
 		// object->setModel(model);

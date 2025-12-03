@@ -1202,21 +1202,34 @@ void Renderer::draw() {
 	// ray trace
 	static bool lastRTX = false;
 	static bool extraFrameRTX = false;
+	static bool extraFrameRaster = false;
 	bool currentRTX = RenderSystem::system->isRTXMode();
 	if (currentRTX != lastRTX) {
-		extraFrameRTX = true; // trigger one extra frame
+		if (currentRTX == false)
+		{
+			extraFrameRTX = true; // trigger one extra frame
+		}else
+		{
+			extraFrameRaster = true;
+		}
+
 	}
 	lastRTX = currentRTX;
 
 	raster_instances->flush(recorder, object_meshes);
 	auto& raster_buffer = raster_instances->getInstanceBuffer();
-	if (!RenderSystem::system->isRTXMode())
+	if (!RenderSystem::system->isRTXMode() || extraFrameRaster)
 	{
 		frame.set_raster.buffer(2, raster_buffer.getBuffer(), raster_buffer.getBuffer().size());
 		frame.set_raster.buffer(4, material_buffer.getBuffer(), material_buffer.getBuffer().size());
 		frame.set_raster.buffer(5, light_buffer.getBuffer(), light_buffer.getBuffer().size());
+		extraFrameRaster = false;
+		extraFrameRTX = true;
 	} else
 	{
+		// frame.set_raster.buffer(2, raster_buffer.getBuffer(), raster_buffer.getBuffer().size());
+		// frame.set_raster.buffer(4, material_buffer.getBuffer(), material_buffer.getBuffer().size());
+		// frame.set_raster.buffer(5, light_buffer.getBuffer(), light_buffer.getBuffer().size());
 		frame.set_raster.buffer(2, raster_buffer.getBuffer(), 1);
 		frame.set_raster.buffer(4, material_buffer.getBuffer(), 1);
 		frame.set_raster.buffer(5, light_buffer.getBuffer(), 1);

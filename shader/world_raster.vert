@@ -36,7 +36,8 @@ void main() {
 
 	vWorldPos = vec3(inst.model * vec4(iPosition, 1.0));
 	gl_Position = matrix * vec4(iPosition, 1.0);
-	vNormal = vec3(iColor-.5);
+	vec3 localNormal = vec3(iColor-.5);
+	vNormal = normalize(mat3(inst.model) * localNormal);
 	vTexture = iTexture;
 	vMaterialIndex = iMaterial;
 }
