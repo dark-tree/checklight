@@ -508,6 +508,8 @@ static void entry(Args& args) {
 
     bool winTrigger = false;
 
+    bool done = false;
+
 	//window.getInputDispatcher().registerListener(std::make_shared<DebugInputListener>());
 	while(!window.shouldClose()) {
 		window.poll();
@@ -538,8 +540,11 @@ static void entry(Args& args) {
 		manager.updateCycle();
 		std::shared_ptr<Board> current_board = manager.getCurrentBoard().lock();
 
-		// draw render system overlay
-		context->draw(system.getImmediateRenderer());
+        if (!done) {
+            // draw render system overlay
+            context->draw(system.getImmediateRenderer());
+            done = true;
+        }
 
 		// draw framerate onto the screen
 		const int fps = system.getFrameRate();
