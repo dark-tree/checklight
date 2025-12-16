@@ -88,10 +88,10 @@ void main() {
             vec3 pReflect = reflect(-lightDir,R);
             float pSpec = pow(max(dot(V,pReflect), 0.0), shininess);
 
-            totalPointLight += (diffuseLight + mat.specular * pSpec * 0.5) * attenuation * intensity;
+            totalPointLight += (diffuseLight + mat.specular * pSpec * 0.3) * attenuation * intensity;
         }
     }
-    vec3 final = mix(shadow,lighting, diff) + mat.specular * spec * 0.5 + mat.emissive;
+    vec3 final = mix(shadow,lighting, diff) + mat.specular * spec * 0.8 + mat.emissive;
 
     fColor = vec4(final + totalPointLight, 1.0);
 }
