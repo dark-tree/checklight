@@ -18,7 +18,7 @@ public:
 
 	~RenderComponent() override;
 
-    std::shared_ptr<RenderObject> getRenderObject();
+    std::shared_ptr<RenderObject> getRtxRenderObject();
 
 protected:
 	bool rendering;

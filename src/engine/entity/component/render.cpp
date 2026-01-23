@@ -25,20 +25,40 @@ RenderComponent::RenderComponent(SpatialPawn* sp, const std::shared_ptr<RenderMo
 }
 
 RenderComponent::RenderComponent(SpatialPawn *sp, std::string path) : GameComponent(sp) {
-    render_object = RenderSystem::system->createRenderObject();
-    render_object->setMatrix(glm::identity<glm::mat4x3>());
     auto obj = RenderSystem::system->importObj(path);
-    render_object->setModel(obj[0]);
-    render_object->setActive(false);
+    auto initial_matrix = glm::identity<glm::mat4x3>();
+
+    rtx_render_object = RenderSystem::system->createRenderObject(true);
+    rtx_render_object->setMatrix(initial_matrix);
+    rtx_render_object->setModel(obj[0]);
+    rtx_render_object->setActive(false);
+
+    raster_render_object = RenderSystem::system->createRenderObject(false);
+    raster_render_object->setMatrix(initial_matrix);
+    raster_render_object->setModel(obj[0]);
+    raster_render_object->setActive(false);
+
+    last_known_rtx_mode = RenderSystem::system->isRTXMode();
+
     rendering = false;
 }
 
 RenderComponent::RenderComponent(SpatialPawn *sp, std::string path, int index) : GameComponent(sp) {
-    render_object = RenderSystem::system->createRenderObject();
-    render_object->setMatrix(glm::identity<glm::mat4x3>());
     auto obj = RenderSystem::system->importObj(path);
-    render_object->setModel(obj[index]);
-    render_object->setActive(false);
+    auto initial_matrix = glm::identity<glm::mat4x3>();
+
+    rtx_render_object = RenderSystem::system->createRenderObject(true);
+    rtx_render_object->setMatrix(initial_matrix);
+    rtx_render_object->setModel(obj[index]);
+    rtx_render_object->setActive(false);
+
+    raster_render_object = RenderSystem::system->createRenderObject(false);
+    raster_render_object->setMatrix(initial_matrix);
+    raster_render_object->setModel(obj[index]);
+    raster_render_object->setActive(false);
+
+    last_known_rtx_mode = RenderSystem::system->isRTXMode();
+
     rendering = false;
 }
 
@@ -106,8 +126,8 @@ void RenderComponent::remove() {
 RenderComponent::~RenderComponent() {
 }
 
-std::shared_ptr<RenderObject> RenderComponent::getRenderObject() {
-    return render_object;
+std::shared_ptr<RenderObject> RenderComponent::getRtxRenderObject() {
+    return rtx_render_object;
 }
 
 
