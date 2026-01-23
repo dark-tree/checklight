@@ -69,7 +69,7 @@ void DynamicAtlas::close(const LogicalDevice& device) {
 	image.close();
 }
 
-ImageData & DynamicAtlas::getImage() {
+ImageData& DynamicAtlas::getImage() {
 	return atlas;
 }
 

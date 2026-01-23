@@ -22,6 +22,7 @@ void ImageData::resize(int w, int h) {
 	close();
 
 	this->pixels = buffer.pixels;
+	this->type = buffer.type;
 	this->w = w;
 	this->h = h;
 }

@@ -82,7 +82,7 @@ class ImageData {
 
 		/**
 		 * Creates an image copy expanded in every direction by given number of pixels,
-		 * the new pixels are filled according to the given mode
+		 * the new pixels are filled according the pixels on the image border
 		 */
 		ImageData expand(int margin);
 

@@ -419,13 +419,13 @@ void ImmediateRenderer::drawSlantedLine2D(glm::vec2 p1, glm::vec2 d1, glm::vec2 
 	glm::vec2 b1 = p2 + s2;
 	glm::vec2 b2 = p2 - s2;
 
-	drawVertex2D(fill, a1.x, a1.y, sprite.u1, sprite.v1);
-	drawVertex2D(fill, a2.x, a2.y, sprite.u2, sprite.v1);
-	drawVertex2D(fill, b1.x, b1.y, sprite.u1, sprite.v2);
+	drawVertex2D(fill, a1, sprite.u1, sprite.v1);
+	drawVertex2D(fill, a2, sprite.u2, sprite.v1);
+	drawVertex2D(fill, b1, sprite.u1, sprite.v2);
 
-	drawVertex2D(fill, b1.x, b1.y, sprite.u1, sprite.v2);
-	drawVertex2D(fill, a2.x, a2.y, sprite.u2, sprite.v1);
-	drawVertex2D(fill, b2.x, b2.y, sprite.u2, sprite.v2);
+	drawVertex2D(fill, b1, sprite.u1, sprite.v2);
+	drawVertex2D(fill, a2, sprite.u2, sprite.v1);
+	drawVertex2D(fill, b2, sprite.u2, sprite.v2);
 }
 
 void ImmediateRenderer::drawArc2D(float x, float y, float hrad, float vrad, float start, float angle, ArcMode mode) {
