@@ -3,6 +3,15 @@ cmake_minimum_required(VERSION 3.20)
 project(CHECKLIGHT)
 include(FetchContent)
 
+set(BUILD_SHARED_LIBS OFF)
+
+if(MSVC)
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
+
+set(GLFW_BUILD_SHARED_LIBRARY OFF CACHE BOOL "" FORCE)
+set(LIBTYPE STATIC CACHE STRING "" FORCE)
+
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(FETCHCONTENT_QUIET OFF)
@@ -35,16 +44,16 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 if (NOT OpenAL_FOUND)
-    message(STATUS "OpenAL was NOT found, falling back to OpenAL-Soft!")
+	message(STATUS "OpenAL was NOT found, falling back to OpenAL-Soft!")
 
-    FetchContent_Declare(
-            openal-soft
-            GIT_REPOSITORY https://github.com/kcat/openal-soft
-            GIT_TAG 1.24.3
-            GIT_PROGRESS TRUE
-    )
+	FetchContent_Declare(
+			openal-soft
+			GIT_REPOSITORY https://github.com/kcat/openal-soft
+			GIT_TAG 1.24.3
+			GIT_PROGRESS TRUE
+	)
 
-    FetchContent_MakeAvailable(openal-soft)
+	FetchContent_MakeAvailable(openal-soft)
 endif()
 
 # Don't fail on systems without X11 libraries
@@ -107,7 +116,7 @@ set(MSDFGEN_DISABLE_PNG ON CACHE BOOL "" FORCE)
 set(MSDFGEN_USE_SKIA OFF CACHE BOOL "" FORCE)
 set(MSDFGEN_USE_VCPKG OFF CACHE BOOL "" FORCE)
 set(MSDFGEN_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
-set(MSDFGEN_DYNAMIC_RUNTIME ON CACHE BOOL "" FORCE)
+set(MSDFGEN_DYNAMIC_RUNTIME OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(glfw stb glm vma msdfgen vstl)
 
@@ -137,6 +146,8 @@ target_include_directories(checklight_common INTERFACE
 		lib/
 		${CHECKLIGHT_LIBRARIES}
 )
+
+target_compile_definitions(checklight_common INTERFACE AL_LIBTYPE_STATIC)
 
 file(GLOB_RECURSE CHECKLIGHT_ENGINE_SOURCES "src/engine/*.cpp")
 add_library(checklight_engine_system ${CHECKLIGHT_ENGINE_SOURCES})
@@ -229,7 +240,7 @@ target_link_libraries(checklight PRIVATE
 		checklight_sound_system
 		checklight_gui_system
 		checklight_engine_system
-        checklight_physics_system
+		checklight_physics_system
 )
 
 target_link_libraries(checklight_test PRIVATE
@@ -314,14 +325,6 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
 
 	add_dependencies(checklight_common copy-assets)
 	add_dependencies(checklight_common compile-shaders)
-endif()
-
-# Needed on MSVS to fix missing DLL errors during runtime
-if (WIN32)
-	add_custom_command(TARGET checklight_sound_system POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy_if_different
-			"${openal-soft_BINARY_DIR}/OpenAL32.dll"
-			"${CMAKE_BINARY_DIR}/OpenAL32.dll")
 endif()
 
 target_compile_options(checklight_common INTERFACE -fnon-call-exceptions)
