@@ -52,7 +52,7 @@ static void entry(Args& args) {
 	auto fenceModel1 = system.importObj("assets/models/Fence1.obj");
 
     auto dispacher = std::make_shared<InputDispatcher>();
-    window.getInputDispatcher().registerListener(dispacher, 2);
+    window.getInputDispatcher().registerListener(dispacher, 1);
     BoardManager manager(dispacher);
     manager.setGravity(glm::vec3(0, -10, 0));
 
@@ -340,7 +340,7 @@ static void entry(Args& args) {
     playerObj->setPosition({-10, 4.2, 510});
     auto pc = playerObj->createComponent<PhysicsComponent>();
     auto mc = playerObj->createComponent<MovementComponent>();
-    mc->setMaxSpeed(60);
+    mc->setMaxSpeed(15);
     mc->setAcceleration(70);
     pc->setVelocity({0, 0, 0});
     pc->setGravityScale({0, 1, 0});
