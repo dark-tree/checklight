@@ -3,15 +3,6 @@ cmake_minimum_required(VERSION 3.20)
 project(CHECKLIGHT)
 include(FetchContent)
 
-set(BUILD_SHARED_LIBS OFF)
-
-if(MSVC)
-	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
-
-set(GLFW_BUILD_SHARED_LIBRARY OFF CACHE BOOL "" FORCE)
-set(LIBTYPE STATIC CACHE STRING "" FORCE)
-
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(FETCHCONTENT_QUIET OFF)
@@ -23,7 +14,6 @@ include(${CMAKE_SOURCE_DIR}/cmake/ShaderBuild.cmake)
 find_package(Threads REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(Vulkan REQUIRED)
-find_package(OpenAL)
 
 # Try: cmake . -B build && cmake --build build/
 if (CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
@@ -45,6 +35,12 @@ endif()
 
 if (NOT OpenAL_FOUND)
 	message(STATUS "OpenAL was NOT found, falling back to OpenAL-Soft!")
+
+	set(LIBTYPE STATIC CACHE STRING "" FORCE)
+	set(ALSOFT_UTILS OFF CACHE BOOL "" FORCE)
+	set(ALSOFT_EXAMPLES OFF CACHE BOOL "" FORCE)
+	set(ALSOFT_TESTS OFF CACHE BOOL "" FORCE)
+	set(ALSOFT_INSTALL OFF CACHE BOOL "" FORCE)
 
 	FetchContent_Declare(
 			openal-soft
@@ -116,7 +112,7 @@ set(MSDFGEN_DISABLE_PNG ON CACHE BOOL "" FORCE)
 set(MSDFGEN_USE_SKIA OFF CACHE BOOL "" FORCE)
 set(MSDFGEN_USE_VCPKG OFF CACHE BOOL "" FORCE)
 set(MSDFGEN_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
-set(MSDFGEN_DYNAMIC_RUNTIME OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_DYNAMIC_RUNTIME ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(glfw stb glm vma msdfgen vstl)
 
@@ -141,13 +137,16 @@ set(CHECKLIGHT_LIBRARIES
 )
 
 add_library(checklight_common INTERFACE)
+
+target_compile_definitions(checklight_common INTERFACE
+		AL_LIBTYPE_STATIC
+)
+
 target_include_directories(checklight_common INTERFACE
 		src/
 		lib/
 		${CHECKLIGHT_LIBRARIES}
 )
-
-target_compile_definitions(checklight_common INTERFACE AL_LIBTYPE_STATIC)
 
 file(GLOB_RECURSE CHECKLIGHT_ENGINE_SOURCES "src/engine/*.cpp")
 add_library(checklight_engine_system ${CHECKLIGHT_ENGINE_SOURCES})
@@ -271,6 +270,12 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 		endif()
 	endif()
 
+	target_link_options(checklight_common INTERFACE
+			-static-libgcc
+			-static-libstdc++
+			-static
+	)
+
 	target_compile_options(checklight_common INTERFACE
 			-Wall
 			-Wextra
@@ -303,16 +308,12 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-
 	# we4715 - treat missing return statement as error
 	target_compile_options(checklight_common INTERFACE /W4 /we4715)
 endif()
 
 # Copy assets if any exist
 if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
-	# This seams to work or at least be better but if there are still issues
-	# consider doing it like this: https://stackoverflow.com/a/77075253
-
 	add_custom_target(copy-assets ALL
 			COMMAND ${CMAKE_COMMAND} -E copy_directory
 			"${CMAKE_SOURCE_DIR}/assets"
